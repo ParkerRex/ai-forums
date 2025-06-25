@@ -45,3 +45,8 @@ package-lock.json
 
 # clerk configuration (can include secrets)
 /.clerk/
+
+# Member data files (contains real user data)
+members.json
+transformed-members.json
+import-batches/

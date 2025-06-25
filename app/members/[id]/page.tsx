@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import Header from "@/components/header";
 import MemberProfile from "@/components/member-profile";
 import PostCard from "@/components/post-card"; // Assuming PostCard is reusable
 

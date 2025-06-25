@@ -1,41 +1,53 @@
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
-import { Github, Twitter, Youtube, MapPin, CalendarDays, Globe, Mail, Clock } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import {
+  Github,
+  Twitter,
+  Youtube,
+  MapPin,
+  CalendarDays,
+  Globe,
+  Mail,
+  Clock,
+} from "lucide-react";
 
 interface Member {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  status: "active" | "churned" | "free"
-  joinedDate: string
-  country: string
-  updatedAt: string
-  bio: string
-  lastOnline: string
-  linkGithub?: string
-  linkX?: string
-  linkYouTube?: string
-  location?: string
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  status: "active" | "churned" | "free";
+  joinedDate: string;
+  country: string;
+  updatedAt: string;
+  bio: string;
+  lastOnline: string;
+  linkGithub?: string;
+  linkX?: string;
+  linkYouTube?: string;
+  location?: string;
 }
 
 interface MemberProfileProps {
-  member: Member
+  member: Member;
 }
 
 const statusColors = {
   active: "bg-green-100 text-green-800 border-green-300",
   churned: "bg-red-100 text-red-800 border-red-300",
   free: "bg-blue-100 text-blue-800 border-blue-300",
-}
+};
 
 export default function MemberProfile({ member }: MemberProfileProps) {
-  const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase()
-  const joinedDateFormatted = new Date(member.joinedDate).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
+  const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
+  const joinedDateFormatted = new Date(member.joinedDate).toLocaleDateString(
+    "en-US",
+    {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    },
+  );
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-8">
@@ -51,7 +63,10 @@ export default function MemberProfile({ member }: MemberProfileProps) {
             <h1 className="text-3xl font-bold text-gray-900">
               {member.firstName} {member.lastName}
             </h1>
-            <Badge variant="outline" className={`text-sm capitalize ${statusColors[member.status]}`}>
+            <Badge
+              variant="outline"
+              className={`text-sm capitalize ${statusColors[member.status]}`}
+            >
               {member.status}
             </Badge>
           </div>
@@ -118,5 +133,5 @@ export default function MemberProfile({ member }: MemberProfileProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }

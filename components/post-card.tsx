@@ -1,20 +1,26 @@
-import Link from "next/link"
-import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import Link from "next/link";
+import {
+  ArrowUp,
+  ArrowDown,
+  MessageSquare,
+  Share,
+  Bookmark,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 // TODO: Update to use real types
 interface Post {
-  id: number
-  title: string
-  author: string
-  community: string
-  timeAgo: string
-  votes: number
-  comments: number
-  content: string
+  id: number;
+  title: string;
+  author: string;
+  community: string;
+  timeAgo: string;
+  votes: number;
+  comments: number;
+  content: string;
 }
 
 interface PostCardProps {
-  post: Post
+  post: Post;
 }
 
 export default function PostCard({ post }: PostCardProps) {
@@ -23,11 +29,21 @@ export default function PostCard({ post }: PostCardProps) {
       <div className="flex">
         {/* Voting */}
         <div className="flex flex-col items-center p-4 space-y-1">
-          <Button variant="ghost" size="sm" className="p-1 h-auto hover:bg-gray-100">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-1 h-auto hover:bg-gray-100"
+          >
             <ArrowUp className="w-5 h-5 text-gray-400 hover:text-green-700" />
           </Button>
-          <span className="text-sm font-medium text-gray-900">{post.votes}</span>
-          <Button variant="ghost" size="sm" className="p-1 h-auto hover:bg-gray-100">
+          <span className="text-sm font-medium text-gray-900">
+            {post.votes}
+          </span>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-1 h-auto hover:bg-gray-100"
+          >
             <ArrowDown className="w-5 h-5 text-gray-400 hover:text-red-500" />
           </Button>
         </div>
@@ -35,12 +51,18 @@ export default function PostCard({ post }: PostCardProps) {
         {/* Content */}
         <div className="flex-1 p-4 pl-0">
           <div className="flex items-center text-sm text-gray-500 mb-2">
-            <Link href={`/ai/${post.community}`} className="text-green-700 hover:underline">
+            <Link
+              href={`/ai/${post.community}`}
+              className="text-green-700 hover:underline"
+            >
               /ai/{post.community}
             </Link>
             <span className="mx-2">•</span>
             <span>posted by</span>
-            <Link href={`/u/${post.author}`} className="ml-1 text-green-700 hover:underline">
+            <Link
+              href={`/u/${post.author}`}
+              className="ml-1 text-green-700 hover:underline"
+            >
               /u/{post.author}
             </Link>
             <span className="mx-2">•</span>
@@ -51,19 +73,33 @@ export default function PostCard({ post }: PostCardProps) {
             <h2 className="text-lg font-medium text-gray-900 group-hover:text-green-700 transition-colors mb-2">
               {post.title}
             </h2>
-            <p className="text-gray-700 text-sm leading-relaxed mb-4">{post.content}</p>
+            <p className="text-gray-700 text-sm leading-relaxed mb-4">
+              {post.content}
+            </p>
           </Link>
 
           <div className="flex items-center space-x-4 text-sm text-gray-500">
-            <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-gray-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2 h-auto hover:bg-gray-100"
+            >
               <MessageSquare className="w-4 h-4 mr-1" />
               {post.comments} comments
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-gray-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2 h-auto hover:bg-gray-100"
+            >
               <Share className="w-4 h-4 mr-1" />
               share
             </Button>
-            <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-gray-100">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2 h-auto hover:bg-gray-100"
+            >
               <Bookmark className="w-4 h-4 mr-1" />
               save
             </Button>
@@ -71,5 +107,5 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
