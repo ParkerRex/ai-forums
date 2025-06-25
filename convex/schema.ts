@@ -16,7 +16,8 @@ export default defineSchema({
     linkX: v.optional(v.string()),
     linkYouTube: v.optional(v.string()),
     location: v.optional(v.string()),
-  }),
+    tokenIdentifier: v.string(),
+  }).index("by_token", ["tokenIdentifier"]), 
   categories: defineTable({
     name: v.string(),
     hotScore: v.number(),

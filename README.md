@@ -11,13 +11,34 @@ its fun to work on, easy to understand, and a great way for devs to contribute i
 
 - [x] **Scaffold out the data models needed (members, posts, content, events)**
 - [x] Breadboard the different pages and components needed for the site
-- [ ] Make simple layout
+
+**ACTIONS:**
+
+> in order to get the dopamine flowing, im going to put the components in place and stub them out.....
+
+- [x] Add ShadCN/ui
+- [x] Make simple layout
+- [x] Connect the `header.tsx`
+- [ ] Connect the `post-sidebar.tsx`
+- [ ] Connect the `post-detail.tsx`
+- [ ] Connect the `post-card.tsx`
+- [ ] Connect the `post-list.tsx`
+- [ ] Connect the `comment-section.tsx`
+- [ ] Connect the `member-card.tsx`
+- [ ] Connect the `sign-in-form.tsx`
+- [ ] Write the queries for the members
+- [ ] Write the queries for posts
+- [ ] Write the queries for categories
+- [ ] Write the mutations for members
+- [ ] Write the mutations for posts
+- [ ] Write the mutations for categories
 - [ ] Export the member data as a csv
 - [ ] Set up the brand guidelines and add as a cursor rule
-- [ ] **make a reddit style voting system for posts for members only (will test this then give it to differetn tiers later)**
+- [x] **make a reddit style voting system for posts for members only (will test this then give it to differetn tiers later)**
 - [ ] Set up payments via stripe
 - [ ] Set up a discord bot that can keep track of memberships
 - [ ] Set up a discord bot that can provide users with automated summaries of channels on a set scheduel (this is probably just a cron using convex)
+- [ ] Make a 3d /AI object that rotates on screen
 
 ---
 
