@@ -1,6 +1,7 @@
 "use client";
 
 import MemberCard from "@/components/member-card";
+import { MemberCardSkeletonGrid } from "@/components/member-skeleton";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useQuery } from "convex/react";
@@ -33,8 +34,23 @@ export default function MembersPage() {
             <h1 className="text-3xl font-bold text-gray-900 mb-2">
               Members Directory
             </h1>
-            <p className="text-gray-600">Loading members...</p>
+            <p className="text-gray-600">
+              Discover and connect with developers in the VAI community.
+            </p>
           </div>
+
+          <div className="mb-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Input
+                placeholder="Search members by name, skill, or location..."
+                className="pl-12 py-3 text-md border-gray-300 focus:border-green-700 focus:ring-green-700"
+                disabled
+              />
+            </div>
+          </div>
+
+          <MemberCardSkeletonGrid count={6} />
         </div>
       </div>
     );

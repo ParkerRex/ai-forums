@@ -4,26 +4,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import MemberProfile from "@/components/member-profile";
 import PostCard from "@/components/post-card";
+import { MemberProfileSkeleton, PostSkeletonList, ActivitySkeletonList } from "@/components/member-skeleton";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { use } from "react";
-
-// Mock comments data - TODO: Replace with real activity query
-const recentActivity = [
-  {
-    type: "comment",
-    content: "Great point on the /patterns post!",
-    timeAgo: "1h",
-    postId: 3,
-  },
-  {
-    type: "comment",
-    content: "Thanks for sharing this in /tools!",
-    timeAgo: "5h",
-    postId: 4,
-  },
-];
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -48,6 +33,15 @@ export default function MemberDetailPage({ params }: PageProps) {
     isValidId ? {
       memberId: id as Id<"members">,
       paginationOpts: { numItems: 10, cursor: null } // Get first 10 posts
+    } : "skip",
+  );
+
+  // Fetch member activity from Convex (only if ID format is valid)
+  const memberActivityData = useQuery(
+    api.members.getMemberActivity,
+    isValidId ? {
+      memberId: id as Id<"members">,
+      paginationOpts: { numItems: 10, cursor: null } // Get first 10 activities
     } : "skip",
   );
 
@@ -84,6 +78,17 @@ export default function MemberDetailPage({ params }: PageProps) {
     content: post.content,
   })) || [];
 
+  // Transform activity data for UI
+  const memberActivity = memberActivityData?.page?.map((activity) => ({
+    id: activity._id,
+    type: "comment" as const,
+    content: activity.content,
+    timeAgo: activity.timeAgo,
+    postId: activity.postId,
+    postTitle: activity.post?.title || "Unknown Post",
+    netVotes: activity.netVotes,
+  })) || [];
+
   // Invalid ID format
   if (!isValidId) {
     notFound();
@@ -94,13 +99,20 @@ export default function MemberDetailPage({ params }: PageProps) {
     return (
       <div className="font-mono min-h-screen bg-white">
         <div className="max-w-7xl mx-auto px-4 py-10">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">
-              Loading member...
-            </h1>
-            <p className="text-gray-600">
-              Please wait while we fetch the member information.
-            </p>
+          <MemberProfileSkeleton />
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              Posts by Member
+            </h2>
+            <PostSkeletonList count={3} />
+          </div>
+
+          <div className="mt-12">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+              Recent Activity
+            </h2>
+            <ActivitySkeletonList count={4} />
           </div>
         </div>
       </div>
@@ -124,9 +136,7 @@ export default function MemberDetailPage({ params }: PageProps) {
 
           {/* Posts loading state */}
           {memberPostsData === undefined ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600">Loading posts...</p>
-            </div>
+            <PostSkeletonList count={3} />
           ) : memberPosts.length > 0 ? (
             <div className="space-y-6">
               {memberPosts.map((post) => (
@@ -147,28 +157,37 @@ export default function MemberDetailPage({ params }: PageProps) {
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
             Recent Activity
           </h2>
-          {recentActivity.length > 0 ? (
+
+          {/* Activity loading state */}
+          {memberActivityData === undefined ? (
+            <ActivitySkeletonList count={4} />
+          ) : memberActivity.length > 0 ? (
             <div className="space-y-4">
-              {recentActivity.map((activity, index) => (
+              {memberActivity.map((activity) => (
                 <div
-                  key={index}
+                  key={activity.id}
                   className="bg-gray-50 border border-gray-200 rounded-lg p-4"
                 >
                   <p className="text-sm text-gray-700">{activity.content}</p>
                   <p className="text-xs text-gray-500 mt-1">
-                    {activity.timeAgo} on post{" "}
+                    {activity.timeAgo} on{" "}
                     <Link
                       href={`/post/${activity.postId}`}
                       className="text-green-700 hover:underline"
                     >
-                      #{activity.postId}
+                      {activity.postTitle}
                     </Link>
                   </p>
                 </div>
               ))}
             </div>
           ) : (
-            <p className="text-gray-600">No recent activity.</p>
+            <div className="text-center py-8">
+              <p className="text-gray-600">No recent activity.</p>
+              <p className="text-sm text-gray-500 mt-2">
+                {member.firstName} hasn&apos;t commented on any posts recently.
+              </p>
+            </div>
           )}
         </div>
       </div>

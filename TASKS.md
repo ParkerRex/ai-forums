@@ -32,13 +32,13 @@
 - **Impact**: ✅ Shows real member posts instead of mocks | **Time**: 45 minutes
 
 ### **Task 1.4: Replace Mock Activity Data**
-- [ ] Open `app/members/[id]/page.tsx`
-- [ ] Add `api.members.getMemberActivity` query import
-- [ ] Replace `recentActivity` mock with real query call
-- [ ] Create activity display component
-- [ ] Add loading state for activity section
-- [ ] Remove mock activity data
-- [ ] Test member activity displays correctly
+- [x] Open `app/members/[id]/page.tsx`
+- [x] Add `api.members.getMemberActivity` query import
+- [x] Replace `recentActivity` mock with real query call
+- [x] Create activity display component
+- [x] Add loading state for activity section
+- [x] Remove mock activity data
+- [x] Test member activity displays correctly
 - **Impact**: ✅ Shows real member activity instead of mocks | **Time**: 45 minutes
 
 ---
@@ -47,14 +47,14 @@
 *Priority: High | Time: 3-5 hours*
 
 ### **Task 2.1: Create Loading Skeleton Components**
-- [ ] Create `components/ui/skeleton.tsx` base component
-- [ ] Create `components/member-skeleton.tsx` component
-- [ ] Design member card skeleton layout
-- [ ] Design member profile skeleton layout
-- [ ] Design post skeleton layout
-- [ ] Replace "Loading..." text in members directory
-- [ ] Replace "Loading..." text in member profiles
-- [ ] Test skeleton animations work smoothly
+- [x] Create `components/ui/skeleton.tsx` base component
+- [x] Create `components/member-skeleton.tsx` component
+- [x] Design member card skeleton layout
+- [x] Design member profile skeleton layout
+- [x] Design post skeleton layout
+- [x] Replace "Loading..." text in members directory
+- [x] Replace "Loading..." text in member profiles
+- [x] Test skeleton animations work smoothly
 - **Impact**: 🎨 Professional loading experience | **Time**: 1 hour
 
 ### **Task 2.2: Implement Search Functionality**
