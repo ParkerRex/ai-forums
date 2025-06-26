@@ -10,6 +10,7 @@
 - ✅ **Basic Activity Feed**: Shows member's recent comments
 
 ### **Current Limitations:**
+- 🔴 **Limited Search**: Basic search in header only searches posts, no global search
 - 🔴 **Limited Activity Types**: Only tracks comments, missing other engagement
 - 🔴 **No Starring/Bookmarking**: Users can't save posts for later
 - 🔴 **Incomplete Activity Feed**: Missing post creation, votes, views
@@ -88,6 +89,74 @@ Show comprehensive activity timeline:
 - ⭐ **Stars**: "Lisa starred your post 'Database Design'"
 - 👀 **Views**: "Your post has 50+ views this week"
 - 👥 **Follows**: "Alex started following you"
+
+### **1.4 Global Search System** 🔍
+Implement a powerful, unified search experience accessible from anywhere:
+
+```typescript
+// Enhanced search index for full-text search
+searchIndex: defineTable({
+  contentId: v.string(), // ID of the searchable content
+  contentType: v.union(
+    v.literal("member"),
+    v.literal("post"), 
+    v.literal("comment")
+  ),
+  title: v.string(), // Main searchable text (name, post title, comment preview)
+  content: v.string(), // Full content for search
+  categoryName: v.optional(v.string()), // For posts
+  authorName: v.string(), // Author for context
+  authorId: v.id("members"),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index("by_content_type", ["contentType"])
+  .index("by_author", ["authorId"])
+  .searchIndex("search_content", {
+    searchField: "content",
+    filterFields: ["contentType", "categoryName", "authorId"]
+  })
+```
+
+**Features:**
+- ⌨️ **Cmd+K Shortcut**: Quick access from anywhere in the app
+- 🔍 **Unified Search**: Search across members, posts, and comments simultaneously
+- 🏷️ **Result Type Indicators**: Clear visual labels ("Member", "Post", "Comment")
+- 🎛️ **Smart Filtering**: Toggle result types on/off dynamically
+- ⚡ **Real-time Search**: Instant results as you type
+- 📊 **Search Analytics**: Track popular searches and improve relevance
+- 🎯 **Contextual Results**: Show relevant metadata (author, date, category)
+- ⌨️ **Keyboard Navigation**: Arrow keys and Enter for power users
+
+**UI/UX Design:**
+- 🎨 **Modal Overlay**: Clean, focused search interface
+- 📱 **Responsive Design**: Works seamlessly on mobile and desktop
+- 🔤 **Syntax Highlighting**: Different styling for each result type
+- 📋 **Recent Searches**: Show user's recent search history
+- 🎯 **Smart Suggestions**: Auto-complete based on existing content
+
+**Search Result Layout:**
+```
+┌─────────────────────────────────────────────────┐
+│ 🔍 Search VAI...                               │
+│                                                 │
+│ 👤 John Doe                            Member  │
+│    Senior Frontend Developer                    │
+│                                                 │
+│ 📝 React Best Practices Guide           Post   │
+│    by Sarah Chen • 2 days ago • /frontend      │
+│                                                 │
+│ 💬 "Great explanation of hooks..."    Comment  │
+│    by Mike Johnson • on React Patterns         │
+└─────────────────────────────────────────────────┘
+```
+
+**Filter Controls:**
+- 🔘 **All Results** (default)
+- 👥 **Members Only**
+- 📝 **Posts Only** 
+- 💬 **Comments Only**
+- 🏷️ **Category Filter**: Additional dropdown for post categories
 
 ---
 
@@ -249,21 +318,29 @@ Encourage engagement through game-like features:
 
 ## 🎯 **Immediate Next Steps**
 
-### **Week 1-2: Star System Implementation**
+### **Week 1-2: Global Search Implementation**
+1. Add `searchIndex` table to schema with full-text search capabilities
+2. Create search indexing mutations for members, posts, and comments
+3. Build global search modal component with Cmd+K shortcut
+4. Implement real-time search with filtering and result type indicators
+5. Add keyboard navigation and mobile responsiveness
+6. Update header.tsx to integrate with new global search system
+
+### **Week 3-4: Star System Implementation**
 1. Add `stars` table to schema
 2. Create star/unstar mutations
 3. Add star counts to post queries
 4. Update UI with star buttons and counts
 5. Create "My Starred Posts" page
 
-### **Week 3-4: Enhanced Activity Tracking**
+### **Week 5-6: Enhanced Activity Tracking**
 1. Add comprehensive `activities` table
 2. Update all mutations to log activities
 3. Create unified activity feed query
 4. Update member profile activity section
 5. Add activity filtering and search
 
-### **Week 5-6: Notifications Foundation**
+### **Week 7-8: Notifications Foundation**
 1. Add `notifications` table
 2. Create notification generation system
 3. Build notification UI components

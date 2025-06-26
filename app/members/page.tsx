@@ -107,7 +107,7 @@ export default function MembersPage() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
-              value={searchTerm}
+              value={searchTerm || ""}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search members by name or location..."
               className="pl-12 pr-10 py-3 text-md border-gray-300 focus:border-green-700 focus:ring-green-700"
