@@ -9,15 +9,13 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { use } from "react";
+import { PageErrorBoundary, QueryErrorBoundary } from "@/components/error-boundary";
 
 interface PageProps {
   params: Promise<{ id: string }>;
 }
 
-export default function MemberDetailPage({ params }: PageProps) {
-  // Unwrap the params Promise using React.use()
-  const { id } = use(params);
-
+function MemberDetailContent({ id }: { id: string }) {
   // Validate that the ID looks like a Convex ID before making the query
   const isValidId = id.length > 20 && id.match(/^[a-z0-9]+$/);
 
@@ -134,23 +132,25 @@ export default function MemberDetailPage({ params }: PageProps) {
             Posts by {member.firstName}
           </h2>
 
-          {/* Posts loading state */}
-          {memberPostsData === undefined ? (
-            <PostSkeletonList count={3} />
-          ) : memberPosts.length > 0 ? (
-            <div className="space-y-6">
-              {memberPosts.map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-600">No posts yet.</p>
-              <p className="text-sm text-gray-500 mt-2">
-                {member.firstName} hasn&apos;t shared any posts with the community yet.
-              </p>
-            </div>
-          )}
+          <QueryErrorBoundary context="loading member posts">
+            {/* Posts loading state */}
+            {memberPostsData === undefined ? (
+              <PostSkeletonList count={3} />
+            ) : memberPosts.length > 0 ? (
+              <div className="space-y-6">
+                {memberPosts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">No posts yet.</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  {member.firstName} hasn&apos;t shared any posts with the community yet.
+                </p>
+              </div>
+            )}
+          </QueryErrorBoundary>
         </div>
 
         <div className="mt-12">
@@ -158,39 +158,52 @@ export default function MemberDetailPage({ params }: PageProps) {
             Recent Activity
           </h2>
 
-          {/* Activity loading state */}
-          {memberActivityData === undefined ? (
-            <ActivitySkeletonList count={4} />
-          ) : memberActivity.length > 0 ? (
-            <div className="space-y-4">
-              {memberActivity.map((activity) => (
-                <div
-                  key={activity.id}
-                  className="bg-gray-50 border border-gray-200 rounded-lg p-4"
-                >
-                  <p className="text-sm text-gray-700">{activity.content}</p>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {activity.timeAgo} on{" "}
-                    <Link
-                      href={`/post/${activity.postId}`}
-                      className="text-green-700 hover:underline"
-                    >
-                      {activity.postTitle}
-                    </Link>
-                  </p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <p className="text-gray-600">No recent activity.</p>
-              <p className="text-sm text-gray-500 mt-2">
-                {member.firstName} hasn&apos;t commented on any posts recently.
-              </p>
-            </div>
-          )}
+          <QueryErrorBoundary context="loading member activity">
+            {/* Activity loading state */}
+            {memberActivityData === undefined ? (
+              <ActivitySkeletonList count={4} />
+            ) : memberActivity.length > 0 ? (
+              <div className="space-y-4">
+                {memberActivity.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                  >
+                    <p className="text-sm text-gray-700">{activity.content}</p>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {activity.timeAgo} on{" "}
+                      <Link
+                        href={`/post/${activity.postId}`}
+                        className="text-green-700 hover:underline"
+                      >
+                        {activity.postTitle}
+                      </Link>
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <p className="text-gray-600">No recent activity.</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  {member.firstName} hasn&apos;t commented on any posts recently.
+                </p>
+              </div>
+            )}
+          </QueryErrorBoundary>
         </div>
       </div>
     </div>
+  );
+}
+
+export default function MemberDetailPage({ params }: PageProps) {
+  // Unwrap the params Promise using React.use()
+  const { id } = use(params);
+
+  return (
+    <PageErrorBoundary context="loading member profile">
+      <MemberDetailContent id={id} />
+    </PageErrorBoundary>
   );
 }

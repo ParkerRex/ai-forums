@@ -7,8 +7,9 @@ import { Search, X } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect } from "react";
+import { PageErrorBoundary } from "@/components/error-boundary";
 
-export default function MembersPage() {
+function MembersPageContent() {
   // Search state management
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -165,5 +166,13 @@ export default function MembersPage() {
         ) : null}
       </div>
     </div>
+  );
+}
+
+export default function MembersPage() {
+  return (
+    <PageErrorBoundary context="loading members directory">
+      <MembersPageContent />
+    </PageErrorBoundary>
   );
 }

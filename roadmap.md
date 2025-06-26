@@ -91,49 +91,75 @@ Show comprehensive activity timeline:
 - 👥 **Follows**: "Alex started following you"
 
 ### **1.4 Global Search System** 🔍
-Implement a powerful, unified search experience accessible from anywhere:
+Implement a powerful, unified search experience leveraging Convex's full-text and vector search capabilities:
 
 ```typescript
-// Enhanced search index for full-text search
-searchIndex: defineTable({
-  contentId: v.string(), // ID of the searchable content
-  contentType: v.union(
-    v.literal("member"),
-    v.literal("post"), 
-    v.literal("comment")
-  ),
-  title: v.string(), // Main searchable text (name, post title, comment preview)
-  content: v.string(), // Full content for search
-  categoryName: v.optional(v.string()), // For posts
-  authorName: v.string(), // Author for context
-  authorId: v.id("members"),
-  createdAt: v.number(),
-  updatedAt: v.number(),
+// Add search indexes to existing tables (not separate search table)
+members: defineTable({
+  name: v.string(),
+  email: v.string(),
+  bio: v.optional(v.string()),
+  skills: v.optional(v.array(v.string())),
+  // ... existing fields
 })
-  .index("by_content_type", ["contentType"])
-  .index("by_author", ["authorId"])
-  .searchIndex("search_content", {
+  .searchIndex("search_members", {
+    searchField: "name", // Primary search on name
+    filterFields: ["skills"] // Filter by skills/expertise
+  })
+  .searchIndex("search_member_bio", {
+    searchField: "bio", // Secondary search on bio content
+    filterFields: ["skills"]
+  }),
+
+posts: defineTable({
+  title: v.string(),
+  content: v.string(),
+  category: v.string(),
+  authorId: v.id("members"),
+  // ... existing fields
+})
+  .searchIndex("search_posts_title", {
+    searchField: "title",
+    filterFields: ["category", "authorId"]
+  })
+  .searchIndex("search_posts_content", {
+    searchField: "content", 
+    filterFields: ["category", "authorId"]
+  }),
+
+comments: defineTable({
+  content: v.string(),
+  postId: v.id("posts"),
+  authorId: v.id("members"),
+  // ... existing fields
+})
+  .searchIndex("search_comments", {
     searchField: "content",
-    filterFields: ["contentType", "categoryName", "authorId"]
+    filterFields: ["postId", "authorId"]
   })
 ```
 
-**Features:**
+**Core Features:**
 - ⌨️ **Cmd+K Shortcut**: Quick access from anywhere in the app
-- 🔍 **Unified Search**: Search across members, posts, and comments simultaneously
+- 🔍 **Multi-Table Search**: Parallel search across members, posts, and comments
 - 🏷️ **Result Type Indicators**: Clear visual labels ("Member", "Post", "Comment")
-- 🎛️ **Smart Filtering**: Toggle result types on/off dynamically
-- ⚡ **Real-time Search**: Instant results as you type
-- 📊 **Search Analytics**: Track popular searches and improve relevance
-- 🎯 **Contextual Results**: Show relevant metadata (author, date, category)
-- ⌨️ **Keyboard Navigation**: Arrow keys and Enter for power users
+- ⚡ **Typeahead Search**: Instant prefix matching as you type (powered by Tantivy)
+- 📊 **Relevance Ranking**: BM25 scoring with intelligent result merging
+- 🎯 **Smart Filtering**: Filter by content type, category, author, date range
+- ⌨️ **Keyboard Navigation**: Full keyboard support for power users
 
-**UI/UX Design:**
-- 🎨 **Modal Overlay**: Clean, focused search interface
-- 📱 **Responsive Design**: Works seamlessly on mobile and desktop
-- 🔤 **Syntax Highlighting**: Different styling for each result type
-- 📋 **Recent Searches**: Show user's recent search history
-- 🎯 **Smart Suggestions**: Auto-complete based on existing content
+**Advanced Search Syntax:**
+- 🔍 **Type Filtering**: `type:post`, `type:member`, `type:comment`
+- 👤 **Author Search**: `author:username` to find content by specific users
+- 🏷️ **Category Search**: `category:frontend` for posts in specific categories
+- 📅 **Date Filtering**: `before:2024-01-01`, `after:2024-01-01`
+- 🎯 **Skill Filtering**: `skill:react` to find members with specific skills
+
+**Performance Optimizations:**
+- 🚀 **Reactive Queries**: Real-time updates when content changes
+- ⚡ **Debounced Input**: Optimized search triggering (300ms delay)
+- 📄 **Smart Pagination**: Handle up to 1024 results efficiently
+- 💾 **Client-side Caching**: Cache frequent searches and results
 
 **Search Result Layout:**
 ```
@@ -157,6 +183,45 @@ searchIndex: defineTable({
 - 📝 **Posts Only** 
 - 💬 **Comments Only**
 - 🏷️ **Category Filter**: Additional dropdown for post categories
+
+### **1.5 AI-Powered Semantic Search** 🤖
+*Phase 2 Enhancement: Add vector search for intelligent content discovery*
+
+```typescript
+// Add vector embeddings to posts and comments for semantic search
+posts: defineTable({
+  // ... existing fields
+  embedding: v.optional(v.array(v.float64())), // OpenAI embeddings
+})
+  .vectorIndex("semantic_search", {
+    vectorField: "embedding",
+    dimensions: 1536, // OpenAI ada-002 dimensions
+    filterFields: ["category", "authorId"]
+  }),
+
+comments: defineTable({
+  // ... existing fields  
+  embedding: v.optional(v.array(v.float64())),
+})
+  .vectorIndex("semantic_search", {
+    vectorField: "embedding", 
+    dimensions: 1536,
+    filterFields: ["postId", "authorId"]
+  })
+```
+
+**Semantic Search Features:**
+- 🧠 **Intent Understanding**: Find "state management" when searching "React hooks"
+- 🔍 **Hybrid Search**: Combine keyword matching with semantic similarity
+- 🎯 **Smart Recommendations**: "Similar posts" and "Related discussions"
+- 📊 **Intelligent Ranking**: Blend text relevance with semantic similarity
+- 🤖 **Auto-tagging**: AI-suggested categories and tags for new posts
+
+**Implementation Strategy:**
+- 🔄 **Background Processing**: Generate embeddings via Convex actions
+- ⚡ **Fallback Search**: Full-text search when embeddings unavailable
+- 📈 **Progressive Enhancement**: Start with text search, add AI features
+- 💰 **Cost Optimization**: Cache embeddings, batch API calls
 
 ---
 
@@ -296,11 +361,13 @@ Encourage engagement through game-like features:
 ## 🛠️ **Implementation Strategy**
 
 ### **Technical Considerations:**
-1. **Database Design**: Efficient indexing for activity queries
-2. **Real-time Updates**: WebSocket integration for live notifications  
-3. **Performance**: Pagination and caching for activity feeds
-4. **Privacy**: Granular privacy controls for activity visibility
-5. **Moderation**: Tools to handle spam and inappropriate activity
+1. **Search Architecture**: Multi-table search with client-side result aggregation
+2. **Performance Optimization**: Convex's 1024 result limit, debouncing, caching
+3. **AI Integration**: OpenAI embeddings for semantic search (cost management)
+4. **Real-time Updates**: Reactive search results when content changes
+5. **Database Design**: Efficient indexing for activity queries  
+6. **Privacy**: Granular privacy controls for searchable content
+7. **Moderation**: Search result filtering and spam detection
 
 ### **Development Phases:**
 1. **Foundation** (Phase 1): Core activity tracking and starring
@@ -318,13 +385,21 @@ Encourage engagement through game-like features:
 
 ## 🎯 **Immediate Next Steps**
 
-### **Week 1-2: Global Search Implementation**
-1. Add `searchIndex` table to schema with full-text search capabilities
-2. Create search indexing mutations for members, posts, and comments
-3. Build global search modal component with Cmd+K shortcut
-4. Implement real-time search with filtering and result type indicators
-5. Add keyboard navigation and mobile responsiveness
-6. Update header.tsx to integrate with new global search system
+### **Week 1-2: Core Full-Text Search**
+1. Add search indexes to existing tables (members, posts, comments)
+2. Create multi-table search queries with proper filtering
+3. Build global search modal component with Cmd+K shortcut  
+4. Implement typeahead search with debouncing and caching
+5. Add result aggregation and relevance-based ranking
+6. Create advanced search syntax parser (`type:`, `author:`, etc.)
+
+### **Week 2-3: Search UX & Performance** 
+1. Add keyboard navigation and accessibility features
+2. Implement search analytics and popular searches tracking
+3. Create responsive mobile search interface
+4. Add search result highlighting and context snippets
+5. Optimize performance with pagination and result limits
+6. Update header.tsx with enhanced search integration
 
 ### **Week 3-4: Star System Implementation**
 1. Add `stars` table to schema
@@ -340,7 +415,15 @@ Encourage engagement through game-like features:
 4. Update member profile activity section
 5. Add activity filtering and search
 
-### **Week 7-8: Notifications Foundation**
+### **Week 7-8: AI-Powered Semantic Search**
+1. Add embedding fields to posts and comments tables
+2. Create OpenAI integration for generating embeddings
+3. Build vector search queries with hybrid ranking
+4. Implement "Similar Posts" and content recommendations
+5. Add semantic search toggle in search interface
+6. Optimize embedding generation and caching
+
+### **Week 9-10: Notifications Foundation**
 1. Add `notifications` table
 2. Create notification generation system
 3. Build notification UI components
