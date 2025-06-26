@@ -31,11 +31,8 @@ const statusColors = {
 
 export default function MemberCard({ member }: MemberCardProps) {
   const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase()
-  const joinedDateFormatted = new Date(member.joinedDate).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
+  // Use the pre-formatted date from server (member.joinedDate is already formatted)
+  const joinedDateFormatted = member.joinedDate
 
   return (
     <Link href={`/members/${member.id}`} className="block group">

@@ -69,31 +69,25 @@ export default function MemberDetailPage({ params }: PageProps) {
     isValidId ? { id: id as Id<"members"> } : "skip",
   );
 
-  // Transform Convex data to match MemberProfile interface
+  // Minimal transformation using server-computed data
   const member = memberData
     ? {
-        id: memberData._id,
-        firstName: memberData.firstName,
-        lastName: memberData.lastName,
-        email: memberData.email,
-        status: memberData.status,
-        joinedDate: new Date(memberData.joinedDate).toISOString().split("T")[0],
-        country: memberData.country || "",
-        updatedAt: new Date(memberData.updatedAt).toISOString().split("T")[0],
-        bio: memberData.bio || "",
-        lastOnline: new Date(memberData.lastOnline).toLocaleDateString(
-          "en-US",
-          {
-            year: "numeric",
-            month: "short",
-            day: "numeric",
-          },
-        ),
-        linkGithub: memberData.linkGithub,
-        linkX: memberData.linkX,
-        linkYouTube: memberData.linkYouTube,
-        location: memberData.location,
-      }
+      id: memberData._id,
+      firstName: memberData.firstName,
+      lastName: memberData.lastName,
+      email: memberData.email,
+      status: memberData.status,
+      joinedDate: memberData.joinedDateFormatted, // Use server-formatted date
+      country: memberData.country,
+      updatedAt: new Date(memberData.updatedAt).toISOString().split("T")[0], // Convert to date string
+      bio: memberData.bio,
+      lastOnline: memberData.lastOnlineFormatted, // Use server-formatted date
+      initials: memberData.initials, // Use server-computed initials
+      linkGithub: memberData.linkGithub,
+      linkX: memberData.linkX,
+      linkYouTube: memberData.linkYouTube,
+      location: memberData.location,
+    }
     : null;
 
   // TODO: Replace with real posts query filtered by member ID
@@ -139,7 +133,7 @@ export default function MemberDetailPage({ params }: PageProps) {
           {memberPosts.length > 0 ? (
             <div className="space-y-6">
               {memberPosts.map((post) => (
-                <PostCard key={post.id} post={post as any} /> // Cast to any to match PostCard props
+                <PostCard key={post.id} post={post} />
               ))}
             </div>
           ) : (

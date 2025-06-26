@@ -7,18 +7,18 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 
 export default function MembersPage() {
-  const membersData = useQuery(api.members.getMembers);
+  const membersData = useQuery(api.members.getAllMembers);
 
-  // Transform Convex data to match MemberCard interface
+  // Transform server data to match MemberCard interface (minimal transformation now)
   const members =
     membersData?.map((member) => ({
-      id: member._id,
+      id: member._id, // Convert _id to id for MemberCard
       firstName: member.firstName,
       lastName: member.lastName,
       status: member.status,
-      joinedDate: new Date(member.joinedDate).toISOString().split("T")[0], // Convert timestamp to date string
-      country: member.country || "",
-      bio: member.bio || "",
+      joinedDate: member.joinedDateFormatted, // Use server-formatted date
+      country: member.country,
+      bio: member.bio,
       linkGithub: member.linkGithub,
       linkX: member.linkX,
       linkYouTube: member.linkYouTube,

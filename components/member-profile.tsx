@@ -22,6 +22,7 @@ interface Member {
   updatedAt: string;
   bio: string;
   lastOnline: string;
+  initials: string;
   linkGithub?: string;
   linkX?: string;
   linkYouTube?: string;
@@ -39,15 +40,8 @@ const statusColors = {
 };
 
 export default function MemberProfile({ member }: MemberProfileProps) {
-  const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
-  const joinedDateFormatted = new Date(member.joinedDate).toLocaleDateString(
-    "en-US",
-    {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    },
-  );
+  const initials = member.initials;
+  const joinedDateFormatted = member.joinedDate;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-8">
