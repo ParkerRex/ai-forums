@@ -7,15 +7,16 @@ import {
   Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-// TODO: Update to use real types
+
+// Updated interface to match real Convex data structure
 interface Post {
-  id: number;
+  id: string; // Convex _id
   title: string;
-  author: string;
-  community: string;
+  author: string; // Author's full name
+  community: string; // Category display name
   timeAgo: string;
-  votes: number;
-  comments: number;
+  votes: number; // netVotes
+  comments: number; // commentCount
   content: string;
 }
 

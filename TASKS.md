@@ -4,32 +4,31 @@
 *Priority: Critical | Time: 2-4 hours*
 
 ### **Task 1.1: Update Members Directory Page**
-- [ ] Open `app/members/page.tsx`
-- [ ] Replace `api.members.getMembers` with `api.members.getAllMembers`
-- [ ] Remove client-side `.map()` data transformation
-- [ ] Update TypeScript interface to match server-transformed data
-- [ ] Fix loading state to handle new data structure
-- [ ] Test members directory loads correctly
+- [x] Open `app/members/page.tsx`
+- [x] Replace `api.members.getMembers` with `api.members.getAllMembers`
+- [x] Remove client-side `.map()` data transformation
+- [x] Update TypeScript interface to match server-transformed data
+- [x] Fix loading state to handle new data structure
+- [x] Test members directory loads correctly
 - **Impact**: ✅ Fixes broken members directory | **Time**: 30 minutes
 
 ### **Task 1.2: Update Member Profile Page**  
-- [ ] Open `app/members/[id]/page.tsx`
-- [ ] Keep `api.members.getMemberById` query
-- [ ] Remove client-side data transformation
-- [ ] Update member interface to match server data
-- [ ] Fix loading state implementation
-- [ ] Fix error state implementation
-- [ ] Test individual member profiles load correctly
+- [x] Open `app/members/[id]/page.tsx`
+- [x] Keep `api.members.getMemberById` query
+- [x] Remove client-side data transformation
+- [x] Update member interface to match server data
+- [x] Fix loading state implementation
+- [x] Fix error state implementation
+- [x] Test individual member profiles load correctly
 - **Impact**: ✅ Fixes broken member profiles | **Time**: 30 minutes
-
 ### **Task 1.3: Replace Mock Posts Data**
-- [ ] Open `app/members/[id]/page.tsx`
-- [ ] Add `api.members.getMemberPosts` query import
-- [ ] Replace `allPosts.filter()` with real query call
-- [ ] Update PostCard component props to match new data structure
-- [ ] Add loading state for posts section
-- [ ] Remove mock posts data
-- [ ] Test member posts display correctly
+- [x] Open `app/members/[id]/page.tsx`
+- [x] Add `api.members.getMemberPosts` query import
+- [x] Replace `allPosts.filter()` with real query call
+- [x] Update PostCard component props to match new data structure
+- [x] Add loading state for posts section
+- [x] Remove mock posts data
+- [x] Test member posts display correctly
 - **Impact**: ✅ Shows real member posts instead of mocks | **Time**: 45 minutes
 
 ### **Task 1.4: Replace Mock Activity Data**

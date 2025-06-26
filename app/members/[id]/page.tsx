@@ -9,33 +9,6 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { use } from "react";
 
-// Mock posts data - TODO: Replace with real posts query
-const allPosts = [
-  {
-    id: 1,
-    title: "My journey into AI development",
-    authorId: "1",
-    author: "AliceSmith",
-    community: "ai-dev",
-    timeAgo: "1d",
-    votes: 150,
-    comments: 30,
-    content: "Sharing my experience learning AI and building my first model...",
-  },
-  {
-    id: 2,
-    title: "Open source tool for code generation",
-    authorId: "1",
-    author: "AliceSmith",
-    community: "open-source",
-    timeAgo: "3d",
-    votes: 220,
-    comments: 55,
-    content: "Excited to release a new tool I've been working on...",
-  },
-  // ... other posts
-];
-
 // Mock comments data - TODO: Replace with real activity query
 const recentActivity = [
   {
@@ -69,6 +42,15 @@ export default function MemberDetailPage({ params }: PageProps) {
     isValidId ? { id: id as Id<"members"> } : "skip",
   );
 
+  // Fetch member posts from Convex (only if ID format is valid)
+  const memberPostsData = useQuery(
+    api.members.getMemberPosts,
+    isValidId ? {
+      memberId: id as Id<"members">,
+      paginationOpts: { numItems: 10, cursor: null } // Get first 10 posts
+    } : "skip",
+  );
+
   // Minimal transformation using server-computed data
   const member = memberData
     ? {
@@ -90,8 +72,17 @@ export default function MemberDetailPage({ params }: PageProps) {
     }
     : null;
 
-  // TODO: Replace with real posts query filtered by member ID
-  const memberPosts = allPosts.filter((p) => p.authorId === id);
+  // Transform posts data to match PostCard interface
+  const memberPosts = memberPostsData?.page?.map((post) => ({
+    id: post._id,
+    title: post.title,
+    author: member ? `${member.firstName} ${member.lastName}` : "Unknown",
+    community: post.category?.displayName || post.category?.name || "general",
+    timeAgo: post.timeAgo,
+    votes: post.netVotes,
+    comments: post.commentCount,
+    content: post.content,
+  })) || [];
 
   // Invalid ID format
   if (!isValidId) {
@@ -130,14 +121,25 @@ export default function MemberDetailPage({ params }: PageProps) {
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
             Posts by {member.firstName}
           </h2>
-          {memberPosts.length > 0 ? (
+
+          {/* Posts loading state */}
+          {memberPostsData === undefined ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600">Loading posts...</p>
+            </div>
+          ) : memberPosts.length > 0 ? (
             <div className="space-y-6">
               {memberPosts.map((post) => (
                 <PostCard key={post.id} post={post} />
               ))}
             </div>
           ) : (
-            <p className="text-gray-600">No posts yet.</p>
+            <div className="text-center py-8">
+              <p className="text-gray-600">No posts yet.</p>
+              <p className="text-sm text-gray-500 mt-2">
+                {member.firstName} hasn&apos;t shared any posts with the community yet.
+              </p>
+            </div>
           )}
         </div>
 
