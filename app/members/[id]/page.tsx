@@ -1,30 +1,15 @@
+"use client";
+
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import MemberProfile from "@/components/member-profile";
-import PostCard from "@/components/post-card"; // Assuming PostCard is reusable
+import PostCard from "@/components/post-card";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { use } from "react";
 
-// Mock member data - in a real app this would come from a database
-const members = [
-  {
-    id: "1",
-    firstName: "Alice",
-    lastName: "Smith",
-    email: "alice.smith@example.com",
-    status: "active",
-    joinedDate: "2023-01-15",
-    country: "USA",
-    updatedAt: "2024-06-20",
-    bio: "Full-stack developer passionate about open source and AI. Building tools to make developers' lives easier. I enjoy contributing to various projects and exploring new technologies. My current focus is on developing scalable AI applications and improving developer productivity through automation.",
-    lastOnline: "2 hours ago",
-    linkGithub: "https://github.com/alicesmith",
-    linkX: "https://x.com/alicesmithdev",
-    linkYouTube: "https://youtube.com/alicesmithcodes",
-    location: "San Francisco, CA",
-  },
-  // ... other members
-];
-
-// Mock posts data - in a real app this would come from a database
+// Mock posts data - TODO: Replace with real posts query
 const allPosts = [
   {
     id: 1,
@@ -51,7 +36,7 @@ const allPosts = [
   // ... other posts
 ];
 
-// Mock comments data
+// Mock comments data - TODO: Replace with real activity query
 const recentActivity = [
   {
     type: "comment",
@@ -68,14 +53,77 @@ const recentActivity = [
 ];
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
 export default function MemberDetailPage({ params }: PageProps) {
-  const member = members.find((m) => m.id === params.id);
-  const memberPosts = allPosts.filter((p) => p.authorId === params.id);
+  // Unwrap the params Promise using React.use()
+  const { id } = use(params);
 
-  if (!member) {
+  // Validate that the ID looks like a Convex ID before making the query
+  const isValidId = id.length > 20 && id.match(/^[a-z0-9]+$/);
+
+  // Fetch member data from Convex (only if ID format is valid)
+  const memberData = useQuery(
+    api.members.getMemberById,
+    isValidId ? { id: id as Id<"members"> } : "skip",
+  );
+
+  // Transform Convex data to match MemberProfile interface
+  const member = memberData
+    ? {
+        id: memberData._id,
+        firstName: memberData.firstName,
+        lastName: memberData.lastName,
+        email: memberData.email,
+        status: memberData.status,
+        joinedDate: new Date(memberData.joinedDate).toISOString().split("T")[0],
+        country: memberData.country || "",
+        updatedAt: new Date(memberData.updatedAt).toISOString().split("T")[0],
+        bio: memberData.bio || "",
+        lastOnline: new Date(memberData.lastOnline).toLocaleDateString(
+          "en-US",
+          {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+          },
+        ),
+        linkGithub: memberData.linkGithub,
+        linkX: memberData.linkX,
+        linkYouTube: memberData.linkYouTube,
+        location: memberData.location,
+      }
+    : null;
+
+  // TODO: Replace with real posts query filtered by member ID
+  const memberPosts = allPosts.filter((p) => p.authorId === id);
+
+  // Invalid ID format
+  if (!isValidId) {
+    notFound();
+  }
+
+  // Loading state
+  if (memberData === undefined) {
+    return (
+      <div className="font-mono min-h-screen bg-white">
+        <div className="max-w-7xl mx-auto px-4 py-10">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">
+              Loading member...
+            </h1>
+            <p className="text-gray-600">
+              Please wait while we fetch the member information.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Member not found
+  if (memberData === null || !member) {
     notFound();
   }
 
