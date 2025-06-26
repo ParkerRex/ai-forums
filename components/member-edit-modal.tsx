@@ -34,6 +34,8 @@ export default function MemberEditModal({
   onClose,
 }: MemberEditModalProps) {
   const handleSuccess = () => {
+    // Close modal after successful update
+    // The form already shows success toast via useMutationError hook
     onClose();
   };
 

@@ -10,7 +10,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Loader2, Save, X } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { useMutationError } from "@/hooks/use-mutation-error";
+import { useNetworkStatus } from "@/hooks/use-network-status";
 
 interface Member {
   _id: Id<"members">;
@@ -77,6 +78,8 @@ const validateHandle = (handle: string): boolean => {
 export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEditFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const updateMemberProfile = useMutation(api.members.updateMemberProfile);
+  const { handleMutationError, handleMutationSuccess } = useMutationError();
+  const { isOnline } = useNetworkStatus();
 
   const {
     register,
@@ -100,21 +103,27 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
     if (isSubmitting) return;
 
     setIsSubmitting(true);
-    try {
-      await updateMemberProfile({
-        id: member._id,
-        bio: data.bio.trim() || undefined,
-        location: data.location.trim() || undefined,
-        linkGithub: constructUrl(data.githubHandle, "github") || undefined,
-        linkX: constructUrl(data.xHandle, "x") || undefined,
-        linkYouTube: constructUrl(data.youtubeHandle, "youtube") || undefined,
-      });
 
-      toast.success("Profile updated successfully!");
+    const updateData = {
+      id: member._id,
+      bio: data.bio.trim() || undefined,
+      location: data.location.trim() || undefined,
+      linkGithub: constructUrl(data.githubHandle, "github") || undefined,
+      linkX: constructUrl(data.xHandle, "x") || undefined,
+      linkYouTube: constructUrl(data.youtubeHandle, "youtube") || undefined,
+    };
+
+    try {
+      await updateMemberProfile(updateData);
+      handleMutationSuccess("Profile updated successfully!");
       onSuccess();
     } catch (error) {
-      console.error("Failed to update profile:", error);
-      toast.error("Failed to update profile. Please try again.");
+      handleMutationError(error, async () => {
+        await updateMemberProfile(updateData);
+      }, {
+        context: "updating profile",
+        maxRetries: 3
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -250,14 +259,15 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting || !isDirty}
+          disabled={isSubmitting || !isDirty || !isOnline}
+          title={!isOnline ? "You're offline. Please check your connection." : undefined}
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
           ) : (
             <Save className="w-4 h-4 mr-2" />
           )}
-          {isSubmitting ? "Saving..." : "Save Changes"}
+          {isSubmitting ? "Saving..." : !isOnline ? "Offline" : "Save Changes"}
         </Button>
       </div>
     </form>

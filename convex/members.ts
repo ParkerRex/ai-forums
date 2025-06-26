@@ -1,5 +1,5 @@
 import { query, mutation } from "./_generated/server";
-import { v } from "convex/values";
+import { v, ConvexError } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { Doc } from "./_generated/dataModel";
 
@@ -446,18 +446,40 @@ export const updateMemberProfile = mutation({
     // Check authentication
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-      throw new Error("Not authenticated");
+      throw new ConvexError("You must be signed in to update your profile");
     }
 
     // Get the member being updated
     const member = await ctx.db.get(args.id);
     if (!member) {
-      throw new Error("Member not found");
+      throw new ConvexError("Member profile not found");
     }
 
     // Verify the authenticated user can edit this profile
     if (member.email !== identity.email) {
-      throw new Error("Can only edit your own profile");
+      throw new ConvexError("You can only edit your own profile");
+    }
+
+    // Validate input data
+    if (args.bio && args.bio.length > 500) {
+      throw new ConvexError("Bio must be less than 500 characters");
+    }
+
+    if (args.location && args.location.length > 100) {
+      throw new ConvexError("Location must be less than 100 characters");
+    }
+
+    // Validate social media URLs
+    if (args.linkGithub && !args.linkGithub.startsWith("https://github.com/")) {
+      throw new ConvexError("Invalid GitHub URL format");
+    }
+
+    if (args.linkX && !args.linkX.startsWith("https://x.com/")) {
+      throw new ConvexError("Invalid X (Twitter) URL format");
+    }
+
+    if (args.linkYouTube && !args.linkYouTube.startsWith("https://youtube.com/@")) {
+      throw new ConvexError("Invalid YouTube URL format");
     }
 
     const { id, ...updates } = args;
@@ -467,10 +489,15 @@ export const updateMemberProfile = mutation({
       Object.entries(updates).filter(([, value]) => value !== undefined)
     );
 
-    await ctx.db.patch(id, {
-      ...filteredUpdates,
-      updatedAt: Date.now(),
-    });
+    try {
+      await ctx.db.patch(id, {
+        ...filteredUpdates,
+        updatedAt: Date.now(),
+      });
+    } catch (error) {
+      console.error("Database error updating member profile:", error);
+      throw new ConvexError("Failed to save profile changes. Please try again.");
+    }
 
     return null;
   },

@@ -110,6 +110,7 @@ export function getContextualErrorMessage(error: unknown, context: string): stri
     "loading member activity": "Failed to load member activity",
     "searching members": "Search failed",
     "updating member": "Failed to update member profile",
+    "updating profile": "Failed to update profile",
   };
 
   const contextMessage = contextMessages[context.toLowerCase()];
