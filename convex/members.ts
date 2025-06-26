@@ -319,17 +319,66 @@ export const searchMembers = query({
     lastOnlineFormatted: v.string(),
   })),
   handler: async (ctx, args) => {
-    const limit = args.limit || 20;
+    const limit = args.limit || 100; // Increased from 20 to 100
+    const searchTerm = args.searchTerm.toLowerCase().trim();
 
-    // Search by first name using search index
-    const members = await ctx.db
+    if (!searchTerm) {
+      return [];
+    }
+
+    // Get all active members and filter in memory for multi-field search
+    // This is more flexible than search index limitations
+    const allMembers = await ctx.db
       .query("members")
-      .withSearchIndex("search_members", (q) =>
-        q.search("firstName", args.searchTerm).eq("status", "active")
-      )
-      .take(limit);
+      .withIndex("by_status_and_joinedDate", (q) => q.eq("status", "active"))
+      .collect();
 
-    return members.map(transformMemberForUI);
+    // Filter members based on search term matching firstName, lastName, or location
+    const filteredMembers = allMembers.filter((member) => {
+      const firstName = member.firstName.toLowerCase();
+      const lastName = member.lastName.toLowerCase();
+      const location = (member.location || "").toLowerCase();
+      const fullName = `${firstName} ${lastName}`;
+
+      return (
+        firstName.includes(searchTerm) ||
+        lastName.includes(searchTerm) ||
+        fullName.includes(searchTerm) ||
+        location.includes(searchTerm)
+      );
+    });
+
+    // Sort results by relevance (exact matches first, then partial matches)
+    const sortedMembers = filteredMembers.sort((a, b) => {
+      const aFirstName = a.firstName.toLowerCase();
+      const aLastName = a.lastName.toLowerCase();
+      const aLocation = (a.location || "").toLowerCase();
+      const aFullName = `${aFirstName} ${aLastName}`;
+
+      const bFirstName = b.firstName.toLowerCase();
+      const bLastName = b.lastName.toLowerCase();
+      const bLocation = (b.location || "").toLowerCase();
+      const bFullName = `${bFirstName} ${bLastName}`;
+
+      // Exact matches first
+      const aExactMatch = aFirstName === searchTerm || aLastName === searchTerm || aLocation === searchTerm;
+      const bExactMatch = bFirstName === searchTerm || bLastName === searchTerm || bLocation === searchTerm;
+
+      if (aExactMatch && !bExactMatch) return -1;
+      if (!aExactMatch && bExactMatch) return 1;
+
+      // Then starts with matches
+      const aStartsWith = aFirstName.startsWith(searchTerm) || aLastName.startsWith(searchTerm) || aFullName.startsWith(searchTerm);
+      const bStartsWith = bFirstName.startsWith(searchTerm) || bLastName.startsWith(searchTerm) || bFullName.startsWith(searchTerm);
+
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+
+      // Finally, sort by join date (newest first)
+      return b.joinedDate - a.joinedDate;
+    });
+
+    return sortedMembers.slice(0, limit).map(transformMemberForUI);
   },
 });
 
