@@ -1,72 +1,83 @@
+"use client";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import PostCard from "@/components/post-card";
 import PostHeader from "./post-header";
+import { Skeleton } from "@/components/ui/skeleton";
 
-const posts = [
-  {
-    id: 1,
-    title:
-      "What's your favorite debugging technique that most developers don't know about?",
-    author: "debugmaster",
-    community: "programming",
-    timeAgo: "2h",
-    votes: 127,
-    comments: 43,
-    content:
-      "I've been coding for 10+ years and recently discovered rubber duck debugging. Game changer. What are your hidden gems?",
-  },
-  {
-    id: 2,
-    title:
-      "Built a CLI tool to automatically generate API documentation from TypeScript interfaces",
-    author: "typescriptdev",
-    community: "typescript",
-    timeAgo: "4h",
-    votes: 89,
-    comments: 21,
-    content:
-      "Tired of maintaining docs manually? This tool parses your TS files and generates markdown docs. Open source and looking for feedback!",
-  },
-  {
-    id: 3,
-    title: "Why I switched from React to Svelte for my side projects",
-    author: "frontend_explorer",
-    community: "webdev",
-    timeAgo: "6h",
-    votes: 156,
-    comments: 78,
-    content:
-      "After 3 years with React, I gave Svelte a try. Here's what I learned and why I'm not going back for personal projects.",
-  },
-  {
-    id: 4,
-    title: "Docker vs Podman in 2024: A practical comparison",
-    author: "containerdev",
-    community: "devops",
-    timeAgo: "8h",
-    votes: 203,
-    comments: 92,
-    content:
-      "Spent the last month migrating our infrastructure. Here's a detailed breakdown of the differences that actually matter.",
-  },
-  {
-    id: 5,
-    title: "The hidden costs of microservices nobody talks about",
-    author: "architect_thoughts",
-    community: "architecture",
-    timeAgo: "12h",
-    votes: 341,
-    comments: 134,
-    content:
-      "Everyone talks about the benefits, but here are the real challenges we faced after 2 years of microservices in production.",
-  },
-];
+interface PostListProps {
+  categoryId?: Id<"categories">;
+  sortBy?: "newest" | "popular" | "trending";
+}
 
-export default function PostList() {
+export default function PostList({ categoryId, sortBy = "newest" }: PostListProps) {
+  const posts = useQuery(api.posts.getPosts, {
+    categoryId,
+    limit: 20,
+    sortBy,
+  });
+
+  // Loading state
+  if (posts === undefined) {
+    return (
+      <div className="space-y-4">
+        <PostHeader />
+        {[...Array(5)].map((_, i) => (
+          <div key={i} className="bg-white border border-gray-200 rounded-lg p-4">
+            <div className="flex">
+              <div className="flex flex-col items-center space-y-2 mr-4">
+                <Skeleton className="h-6 w-6" />
+                <Skeleton className="h-4 w-8" />
+                <Skeleton className="h-6 w-6" />
+              </div>
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-2/3" />
+                <div className="flex space-x-4">
+                  <Skeleton className="h-4 w-20" />
+                  <Skeleton className="h-4 w-16" />
+                  <Skeleton className="h-4 w-16" />
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Error state
+  if (posts === null) {
+    return (
+      <div className="space-y-4">
+        <PostHeader />
+        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+          <p className="text-gray-500">Unable to load posts. Please try again later.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state
+  if (posts.length === 0) {
+    return (
+      <div className="space-y-4">
+        <PostHeader />
+        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+          <p className="text-gray-500">No posts found. Be the first to create one!</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <PostHeader />
       {posts.map((post) => (
-        <PostCard key={post.id} post={post} />
+        <PostCard key={post._id} post={post} />
       ))}
     </div>
   );

@@ -1,23 +1,62 @@
 import Link from "next/link";
 import {
   ArrowUp,
-  ArrowDown,
   MessageSquare,
   Share,
   Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Id } from "@/convex/_generated/dataModel";
 
-// Updated interface to match real Convex data structure
+// Interface to match Convex post data structure
 interface Post {
-  id: string; // Convex _id
+  _id: Id<"posts">;
   title: string;
-  author: string; // Author's full name
-  community: string; // Category display name
-  timeAgo: string;
-  votes: number; // netVotes
-  comments: number; // commentCount
   content: string;
+  createdAt: number;
+  updatedAt: number;
+  authorId: Id<"members">;
+  categoryId: Id<"categories">;
+  status: "active" | "deleted" | "hidden" | "archived";
+  upvotes: number;
+  downvotes: number;
+  netVotes: number;
+  commentCount: number;
+  viewCount: number;
+  isPinned?: boolean;
+  isLocked?: boolean;
+  editedAt?: number;
+  editReason?: string;
+  author: {
+    _id: Id<"members">;
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+  } | null;
+  category: {
+    _id: Id<"categories">;
+    name: string;
+    displayName: string;
+    icon?: string;
+  } | null;
+}
+
+// Helper function to format time ago
+function getTimeAgo(timestamp: number): string {
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+
+  if (minutes < 60) {
+    return `${minutes}m`;
+  } else if (hours < 24) {
+    return `${hours}h`;
+  } else {
+    return `${days}d`;
+  }
 }
 
 interface PostCardProps {
@@ -38,39 +77,33 @@ export default function PostCard({ post }: PostCardProps) {
             <ArrowUp className="w-5 h-5 text-gray-400 hover:text-green-700" />
           </Button>
           <span className="text-sm font-medium text-gray-900">
-            {post.votes}
+            {post.netVotes}
           </span>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-1 h-auto hover:bg-gray-100"
-          >
-            <ArrowDown className="w-5 h-5 text-gray-400 hover:text-red-500" />
-          </Button>
+          {/* Remove downvote button for upvote-only system */}
         </div>
 
         {/* Content */}
         <div className="flex-1 p-4 pl-0">
           <div className="flex items-center text-sm text-gray-500 mb-2">
             <Link
-              href={`/ai/${post.community}`}
+              href={`/ai/${post.category?.name || 'general'}`}
               className="text-green-700 hover:underline"
             >
-              /ai/{post.community}
+              /ai/{post.category?.name || 'general'}
             </Link>
             <span className="mx-2">•</span>
             <span>posted by</span>
             <Link
-              href={`/u/${post.author}`}
+              href={`/members/${post.author?._id}`}
               className="ml-1 text-green-700 hover:underline"
             >
-              /u/{post.author}
+              {post.author?.firstName || 'Unknown'}
             </Link>
             <span className="mx-2">•</span>
-            <span>{post.timeAgo} ago</span>
+            <span>{getTimeAgo(post.createdAt)} ago</span>
           </div>
 
-          <Link href={`/post/${post.id}`} className="block group">
+          <Link href={`/post/${post._id}`} className="block group">
             <h2 className="text-lg font-medium text-gray-900 group-hover:text-green-700 transition-colors mb-2">
               {post.title}
             </h2>
@@ -86,7 +119,7 @@ export default function PostCard({ post }: PostCardProps) {
               className="p-2 h-auto hover:bg-gray-100"
             >
               <MessageSquare className="w-4 h-4 mr-1" />
-              {post.comments} comments
+              {post.commentCount} comments
             </Button>
             <Button
               variant="ghost"

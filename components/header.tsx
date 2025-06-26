@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Search, Plus } from "lucide-react";
 import { SignUpButton, UserButton, SignInButton } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated } from "convex/react";
+import { MembershipCTAModal } from "@/components/membership-cta-modal";
 
 export default function Header() {
   return (
@@ -41,14 +42,33 @@ export default function Header() {
             >
               settings
             </Link>
-            <Button
-              variant="outline"
-              size="sm"
-              className="border-gray-300 hover:border-green-700"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              create
-            </Button>
+            <Authenticated>
+              <Link href="/create">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 hover:border-green-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  create
+                </Button>
+              </Link>
+            </Authenticated>
+            <Unauthenticated>
+              <MembershipCTAModal
+                title="Create Your First Post"
+                description="Join VAI to share your AI workflows, prompts, and insights with the community"
+              >
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 hover:border-green-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  create
+                </Button>
+              </MembershipCTAModal>
+            </Unauthenticated>
             <Authenticated>
               <UserButton />
             </Authenticated>
