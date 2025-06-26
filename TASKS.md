@@ -81,13 +81,13 @@
 - **Impact**: ✅ Robust error handling with toast notifications and retry mechanisms | **Time**: 1 hour
 
 ### **Task 2.4: Improve Loading States**
-- [ ] Add section-specific loading states to member profiles
-- [ ] Implement progressive loading (show ready sections first)
-- [ ] Add loading indicators for user actions
-- [ ] Add loading states for search
-- [ ] Add loading states for pagination
-- [ ] Test all loading states work smoothly
-- **Impact**: ⚡ Smooth loading experience | **Time**: 1 hour
+- [x] Add section-specific loading states to member profiles
+- [x] Implement progressive loading (show ready sections first)
+- [x] Add loading indicators for user actions
+- [x] Add loading states for search
+- [x] Add loading states for pagination
+- [x] Test all loading states work smoothly
+- **Impact**: ✅ Smooth loading experience with progressive loading and enhanced search feedback | **Time**: 1 hour
 
 ---
 
@@ -106,16 +106,19 @@
 - **Impact**: 📄 Handles large datasets smoothly | **Time**: 2 hours
 
 ### **Task 3.2: Create Profile Edit Functionality**
-- [ ] Create `components/member-edit-form.tsx`
-- [ ] Design edit profile modal/form UI
-- [ ] Add form validation using react-hook-form
-- [ ] Implement `api.members.updateMemberProfile` mutation
-- [ ] Add optimistic updates
-- [ ] Add save/cancel functionality
-- [ ] Add form field validation
-- [ ] Add success/error notifications
-- [ ] Test profile editing works correctly
-- **Impact**: ✏️ Users can edit their profiles | **Time**: 2-3 hours
+- [x] Create `components/member-edit-form.tsx`
+- [x] Create `components/member-edit-modal.tsx`
+- [x] Design edit profile modal/form UI with prefilled social links
+- [x] Add form validation using react-hook-form
+- [x] Implement `api.members.updateMemberProfile` mutation with auth
+- [x] Add `api.members.getCurrentMember` query for auth
+- [x] Add optimistic updates
+- [x] Add save/cancel functionality
+- [x] Add form field validation (bio, location, social handles)
+- [x] Add success/error notifications using sonner
+- [x] Add handle-based social links (github.com/, x.com/, youtube.com/@)
+- [x] Test profile editing works correctly
+- **Impact**: ✅ Users can edit their profiles with elegant handle-based social links | **Time**: 2-3 hours
 
 ### **Task 3.3: Add Advanced Search Features**
 - [ ] Add search filters component (status, location, etc.)
@@ -149,10 +152,10 @@
 - [ ] All member pages load without errors
 
 ### **Phase 2 Complete When:**
-- [ ] Loading states are smooth and professional
-- [ ] Search functionality works perfectly
-- [ ] Errors are handled gracefully with user feedback
-- [ ] UI feels polished and professional
+- [x] Loading states are smooth and professional
+- [x] Search functionality works perfectly
+- [x] Errors are handled gracefully with user feedback
+- [x] UI feels polished and professional
 
 ### **Phase 3 Complete When:**
 - [ ] Large datasets are handled efficiently

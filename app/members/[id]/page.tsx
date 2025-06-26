@@ -43,6 +43,21 @@ function MemberDetailContent({ id }: { id: string }) {
     } : "skip",
   );
 
+  // Invalid ID format
+  if (!isValidId) {
+    notFound();
+  }
+
+  // Member not found (only check this after data has loaded)
+  if (memberData === null) {
+    notFound();
+  }
+
+  // Progressive loading states
+  const isMemberLoading = memberData === undefined;
+  const arePostsLoading = memberPostsData === undefined;
+  const isActivityLoading = memberActivityData === undefined;
+
   // Minimal transformation using server-computed data
   const member = memberData
     ? {
@@ -87,54 +102,24 @@ function MemberDetailContent({ id }: { id: string }) {
     netVotes: activity.netVotes,
   })) || [];
 
-  // Invalid ID format
-  if (!isValidId) {
-    notFound();
-  }
-
-  // Loading state
-  if (memberData === undefined) {
-    return (
-      <div className="font-mono min-h-screen bg-white">
-        <div className="max-w-7xl mx-auto px-4 py-10">
-          <MemberProfileSkeleton />
-
-          <div className="mt-12">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-              Posts by Member
-            </h2>
-            <PostSkeletonList count={3} />
-          </div>
-
-          <div className="mt-12">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-              Recent Activity
-            </h2>
-            <ActivitySkeletonList count={4} />
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Member not found
-  if (memberData === null || !member) {
-    notFound();
-  }
-
   return (
     <div className="font-mono min-h-screen bg-white">
       <div className="max-w-7xl mx-auto px-4 py-10">
-        <MemberProfile member={member} />
+        {/* Member Profile Section - Progressive Loading */}
+        {isMemberLoading ? (
+          <MemberProfileSkeleton />
+        ) : member ? (
+          <MemberProfile member={member} />
+        ) : null}
 
+        {/* Posts Section - Independent Loading */}
         <div className="mt-12">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
-            Posts by {member.firstName}
+            {member ? `Posts by ${member.firstName}` : 'Posts by Member'}
           </h2>
 
           <QueryErrorBoundary context="loading member posts">
-            {/* Posts loading state */}
-            {memberPostsData === undefined ? (
+            {arePostsLoading ? (
               <PostSkeletonList count={3} />
             ) : memberPosts.length > 0 ? (
               <div className="space-y-6">
@@ -146,21 +131,21 @@ function MemberDetailContent({ id }: { id: string }) {
               <div className="text-center py-8">
                 <p className="text-gray-600">No posts yet.</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  {member.firstName} hasn&apos;t shared any posts with the community yet.
+                  {member?.firstName || 'This member'} hasn&apos;t shared any posts with the community yet.
                 </p>
               </div>
             )}
           </QueryErrorBoundary>
         </div>
 
+        {/* Activity Section - Independent Loading */}
         <div className="mt-12">
           <h2 className="text-2xl font-semibold text-gray-900 mb-6">
             Recent Activity
           </h2>
 
           <QueryErrorBoundary context="loading member activity">
-            {/* Activity loading state */}
-            {memberActivityData === undefined ? (
+            {isActivityLoading ? (
               <ActivitySkeletonList count={4} />
             ) : memberActivity.length > 0 ? (
               <div className="space-y-4">
@@ -186,7 +171,7 @@ function MemberDetailContent({ id }: { id: string }) {
               <div className="text-center py-8">
                 <p className="text-gray-600">No recent activity.</p>
                 <p className="text-sm text-gray-500 mt-2">
-                  {member.firstName} hasn&apos;t commented on any posts recently.
+                  {member?.firstName || 'This member'} hasn&apos;t commented on any posts recently.
                 </p>
               </div>
             )}

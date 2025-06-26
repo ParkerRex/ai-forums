@@ -383,6 +383,53 @@ export const searchMembers = query({
 });
 
 /**
+ * Get the current authenticated member
+ */
+export const getCurrentMember = query({
+  args: {},
+  returns: v.union(
+    v.object({
+      _id: v.id("members"),
+      firstName: v.string(),
+      lastName: v.string(),
+      email: v.string(),
+      status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
+      joinedDate: v.number(),
+      country: v.string(),
+      updatedAt: v.number(),
+      bio: v.string(),
+      lastOnline: v.number(),
+      linkGithub: v.optional(v.string()),
+      linkX: v.optional(v.string()),
+      linkYouTube: v.optional(v.string()),
+      location: v.optional(v.string()),
+      fullName: v.string(),
+      initials: v.string(),
+      joinedDateFormatted: v.string(),
+      lastOnlineFormatted: v.string(),
+    }),
+    v.null()
+  ),
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      return null;
+    }
+
+    const member = await ctx.db
+      .query("members")
+      .filter((q) => q.eq(q.field("email"), identity.email))
+      .unique();
+
+    if (!member) {
+      return null;
+    }
+
+    return transformMemberForUI(member);
+  },
+});
+
+/**
  * Update member profile (for optimistic updates)
  */
 export const updateMemberProfile = mutation({
@@ -396,6 +443,23 @@ export const updateMemberProfile = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
+    // Check authentication
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    // Get the member being updated
+    const member = await ctx.db.get(args.id);
+    if (!member) {
+      throw new Error("Member not found");
+    }
+
+    // Verify the authenticated user can edit this profile
+    if (member.email !== identity.email) {
+      throw new Error("Can only edit your own profile");
+    }
+
     const { id, ...updates } = args;
 
     // Filter out undefined values

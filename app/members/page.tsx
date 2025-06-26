@@ -3,7 +3,7 @@
 import MemberCard from "@/components/member-card";
 import { MemberCardSkeletonGrid } from "@/components/member-skeleton";
 import { Input } from "@/components/ui/input";
-import { Search, X } from "lucide-react";
+import { Search, X, Loader2 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect } from "react";
@@ -34,11 +34,12 @@ function MembersPageContent() {
     debouncedSearchTerm ? { searchTerm: debouncedSearchTerm } : "skip"
   );
 
-  // Determine which data to display
+  // Determine which data to display and loading states
   const membersData = debouncedSearchTerm ? searchResults : allMembersData;
   const isSearching = debouncedSearchTerm.length > 0;
   const isLoading = membersData === undefined;
   const hasSearchTerm = searchTerm.length > 0;
+  const isTyping = searchTerm !== debouncedSearchTerm;
 
   // Transform server data to match MemberCard interface
   const members =
@@ -61,7 +62,7 @@ function MembersPageContent() {
     setSearchTerm("");
   };
 
-  // Loading state
+  // Initial loading state (no search term)
   if (isLoading && !hasSearchTerm) {
     return (
       <div className="font-mono min-h-screen bg-white">
@@ -108,27 +109,35 @@ function MembersPageContent() {
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
             <Input
-              value={searchTerm || ""}
+              value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search members by name or location..."
               className="pl-12 pr-10 py-3 text-md border-gray-300 focus:border-green-700 focus:ring-green-700"
             />
             {hasSearchTerm && (
-              <button
-                onClick={clearSearch}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
+              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
+                {isTyping && (
+                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                )}
+                <button
+                  onClick={clearSearch}
+                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Search results info */}
+        {/* Enhanced search results info */}
         {isSearching && (
-          <div className="mb-4 text-sm text-gray-600">
+          <div className="mb-4 text-sm text-gray-600 flex items-center">
             {isLoading ? (
-              "Searching..."
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Searching for &ldquo;{debouncedSearchTerm}&rdquo;...
+              </>
             ) : (
               <>
                 {members.length > 0 ? (
@@ -141,17 +150,19 @@ function MembersPageContent() {
           </div>
         )}
 
-        {/* Results grid */}
+        {/* Results grid with enhanced loading states */}
         {isLoading ? (
-          <MemberCardSkeletonGrid count={6} />
+          <div className="transition-opacity duration-300">
+            <MemberCardSkeletonGrid count={isSearching ? 3 : 6} />
+          </div>
         ) : members.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-300">
             {members.map((member) => (
               <MemberCard key={member.id} member={member} />
             ))}
           </div>
         ) : isSearching ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12 transition-opacity duration-300">
             <div className="text-gray-500 text-lg mb-2">No members found</div>
             <p className="text-gray-400">
               Try adjusting your search terms or{" "}

@@ -1,5 +1,6 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Github,
   Twitter,
@@ -9,7 +10,13 @@ import {
   Globe,
   Mail,
   Clock,
+  Edit,
 } from "lucide-react";
+import { useConvexAuth, useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { useState } from "react";
+import MemberEditModal from "./member-edit-modal";
 
 interface Member {
   id: string;
@@ -40,8 +47,28 @@ const statusColors = {
 };
 
 export default function MemberProfile({ member }: MemberProfileProps) {
+  const { isAuthenticated } = useConvexAuth();
+  const currentMember = useQuery(api.members.getCurrentMember);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
   const initials = member.initials;
   const joinedDateFormatted = member.joinedDate;
+
+  // Check if the current user can edit this profile
+  const canEdit = isAuthenticated && currentMember?._id === member.id;
+
+  // Transform member data for the edit modal
+  const memberForEdit = {
+    _id: member.id as Id<"members">,
+    firstName: member.firstName,
+    lastName: member.lastName,
+    email: member.email,
+    bio: member.bio,
+    location: member.location,
+    linkGithub: member.linkGithub,
+    linkX: member.linkX,
+    linkYouTube: member.linkYouTube,
+  };
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg p-8">
@@ -57,12 +84,24 @@ export default function MemberProfile({ member }: MemberProfileProps) {
             <h1 className="text-3xl font-bold text-gray-900">
               {member.firstName} {member.lastName}
             </h1>
-            <Badge
-              variant="outline"
-              className={`text-sm capitalize ${statusColors[member.status]}`}
-            >
-              {member.status}
-            </Badge>
+            <div className="flex items-center space-x-3">
+              <Badge
+                variant="outline"
+                className={`text-sm capitalize ${statusColors[member.status]}`}
+              >
+                {member.status}
+              </Badge>
+              {canEdit && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditModalOpen(true)}
+                >
+                  <Edit className="w-4 h-4 mr-2" />
+                  Edit Profile
+                </Button>
+              )}
+            </div>
           </div>
           <p className="text-gray-600 mb-6">{member.bio}</p>
 
@@ -126,6 +165,13 @@ export default function MemberProfile({ member }: MemberProfileProps) {
           </div>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      <MemberEditModal
+        member={memberForEdit}
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+      />
     </div>
   );
 }

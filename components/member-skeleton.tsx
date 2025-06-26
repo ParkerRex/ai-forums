@@ -1,4 +1,5 @@
 import { Skeleton } from "@/components/ui/skeleton";
+import { Loader2 } from "lucide-react";
 
 /**
  * Skeleton for Member Card component
@@ -199,6 +200,86 @@ export function ActivitySkeleton() {
         <Skeleton className="h-3 w-6 mx-1" />
         <Skeleton className="h-3 w-24" />
       </div>
+    </div>
+  );
+}
+
+/**
+ * Loading indicator for user actions
+ * Reusable component for buttons, forms, etc.
+ */
+export function LoadingIndicator({
+  size = "sm",
+  text,
+  className = ""
+}: {
+  size?: "xs" | "sm" | "md" | "lg";
+  text?: string;
+  className?: string;
+}) {
+  const sizeClasses = {
+    xs: "w-3 h-3",
+    sm: "w-4 h-4",
+    md: "w-5 h-5",
+    lg: "w-6 h-6"
+  };
+
+  return (
+    <div className={`flex items-center space-x-2 ${className}`}>
+      <Loader2 className={`animate-spin text-gray-500 ${sizeClasses[size]}`} />
+      {text && <span className="text-sm text-gray-500">{text}</span>}
+    </div>
+  );
+}
+
+/**
+ * Load More button with loading state
+ * Prepared for future pagination implementation
+ */
+export function LoadMoreButton({
+  onClick,
+  isLoading,
+  disabled,
+  children = "Load More"
+}: {
+  onClick: () => void;
+  isLoading: boolean;
+  disabled?: boolean;
+  children?: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled || isLoading}
+      className="w-full py-3 px-4 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+    >
+      {isLoading ? (
+        <LoadingIndicator text="Loading..." />
+      ) : (
+        children
+      )}
+    </button>
+  );
+}
+
+/**
+ * Section loading wrapper
+ * Shows loading state for individual sections
+ */
+export function SectionLoader({
+  isLoading,
+  skeleton,
+  children,
+  className = ""
+}: {
+  isLoading: boolean;
+  skeleton: React.ReactNode;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`transition-opacity duration-300 ${className}`}>
+      {isLoading ? skeleton : children}
     </div>
   );
 }
