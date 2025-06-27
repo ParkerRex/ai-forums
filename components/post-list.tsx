@@ -3,7 +3,6 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import PostCard from "@/components/post-card";
-import PostHeader from "./post-header";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface PostListProps {
@@ -22,7 +21,6 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   if (posts === undefined) {
     return (
       <div className="space-y-4">
-        <PostHeader />
         {[...Array(5)].map((_, i) => (
           <div key={i} className="bg-white border border-gray-200 rounded-lg p-4">
             <div className="flex">
@@ -53,7 +51,6 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   if (posts === null) {
     return (
       <div className="space-y-4">
-        <PostHeader />
         <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
           <p className="text-gray-500">Unable to load posts. Please try again later.</p>
         </div>
@@ -65,7 +62,6 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   if (posts.length === 0) {
     return (
       <div className="space-y-4">
-        <PostHeader />
         <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
           <p className="text-gray-500">No posts found. Be the first to create one!</p>
         </div>
@@ -75,7 +71,6 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
 
   return (
     <div className="space-y-4">
-      <PostHeader />
       {posts.map((post) => (
         <PostCard key={post._id} post={post} />
       ))}

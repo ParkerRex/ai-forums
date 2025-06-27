@@ -125,3 +125,77 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Tiptap Editor Styles */
+.prose-editor .ProseMirror {
+  outline: none;
+  padding: 1rem;
+  min-height: 200px;
+}
+
+.prose-editor .ProseMirror p {
+  margin: 0.5rem 0;
+}
+
+.prose-editor .ProseMirror h1,
+.prose-editor .ProseMirror h2,
+.prose-editor .ProseMirror h3 {
+  margin: 1rem 0 0.5rem 0;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.prose-editor .ProseMirror h1 {
+  font-size: 1.875rem;
+}
+
+.prose-editor .ProseMirror h2 {
+  font-size: 1.5rem;
+}
+
+.prose-editor .ProseMirror h3 {
+  font-size: 1.25rem;
+}
+
+.prose-editor .ProseMirror ul,
+.prose-editor .ProseMirror ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
+.prose-editor .ProseMirror li {
+  margin: 0.25rem 0;
+}
+
+.prose-editor .ProseMirror blockquote {
+  border-left: 4px solid #22c55e;
+  padding-left: 1rem;
+  margin: 1rem 0;
+  font-style: italic;
+  color: #6b7280;
+}
+
+.prose-editor .ProseMirror code {
+  background-color: #f3f4f6;
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.875rem;
+}
+
+.prose-editor .ProseMirror a {
+  color: #22c55e;
+  text-decoration: underline;
+}
+
+.prose-editor .ProseMirror a:hover {
+  color: #16a34a;
+}
+
+.prose-editor .ProseMirror p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: #9ca3af;
+  pointer-events: none;
+  height: 0;
+}

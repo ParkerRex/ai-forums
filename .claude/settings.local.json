@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(touch:*)",
+      "Bash(node:*)",
+      "Bash(npm install:*)",
+      "Bash(chmod:*)",
+      "Bash(ls:*)",
+      "Bash(jq:*)",
+      "Bash(pkill:*)"
+    ],
+    "deny": []
+  }
+}

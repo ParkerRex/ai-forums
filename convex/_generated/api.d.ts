@@ -17,6 +17,7 @@ import type * as categories from "../categories.js";
 import type * as comments from "../comments.js";
 import type * as importMembers from "../importMembers.js";
 import type * as members from "../members.js";
+import type * as migration from "../migration.js";
 import type * as posts from "../posts.js";
 import type * as votes from "../votes.js";
 
@@ -33,6 +34,7 @@ declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   importMembers: typeof importMembers;
   members: typeof members;
+  migration: typeof migration;
   posts: typeof posts;
   votes: typeof votes;
 }>;

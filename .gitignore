@@ -50,3 +50,5 @@ package-lock.json
 members.json
 transformed-members.json
 import-batches/
+scripts/
+migration-data/

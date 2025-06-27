@@ -1,70 +1,95 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Plus, TrendingUp } from "lucide-react"
-
-const trendingPosts = [
-  { name: "programming", members: "2.1M", description: "General programming discussions" },
-  { name: "webdev", members: "890K", description: "Web development and design" },
-  { name: "typescript", members: "456K", description: "TypeScript language discussions" },
-  { name: "devops", members: "234K", description: "DevOps practices and tools" },
-  { name: "architecture", members: "178K", description: "Software architecture patterns" },
-]
+"use client";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Plus, TrendingUp } from "lucide-react";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { MembershipCTAModal } from "@/components/membership-cta-modal";
 
 export default function PostSidebar() {
   return (
     <div className="space-y-6">
+      {/* Create Post Card */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">Create Post</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <Button className="w-full bg-green-700 hover:bg-green-800">
-            <Plus className="w-4 h-4 mr-2" />
-            Create Post
-          </Button>
-          <p className="text-xs text-gray-500">Share your thoughts, questions, or projects with the dev community</p>
+          <Authenticated>
+            <Link href="/create">
+              <Button className="w-full bg-green-700 hover:bg-green-800">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Post
+              </Button>
+            </Link>
+          </Authenticated>
+          <Unauthenticated>
+            <MembershipCTAModal
+              title="Share Your Ideas"
+              description="Join VAI to create posts and share your AI insights with the community"
+            >
+              <Button className="w-full bg-green-700 hover:bg-green-800">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Post
+              </Button>
+            </MembershipCTAModal>
+          </Unauthenticated>
+          <p className="text-xs text-gray-500">Share your AI workflows, prompts, and insights with the community</p>
         </CardContent>
       </Card>
 
+      {/* Recent AI News Card */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center">
             <TrendingUp className="w-5 h-5 mr-2" />
-            Trending Posts
+            Recent AI News
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {trendingPosts.map((community, index) => (
-              <div key={community.name} className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center">
-                    <span className="text-sm text-gray-500 w-6">{index + 1}</span>
-                    <Link href={`/ai/${community.name}`} className="text-green-700 hover:underline font-medium">
-                      /ai/{community.name}
-                    </Link>
-                  </div>
-                  <p className="text-xs text-gray-500 ml-6">{community.description}</p>
-                  <p className="text-xs text-gray-400 ml-6">{community.members} members</p>
-                </div>
-              </div>
-            ))}
+          <div className="space-y-4">
+            <div className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+              <h4 className="text-sm font-medium text-gray-900 mb-1">
+                OpenAI Announces GPT-5 Development
+              </h4>
+              <p className="text-xs text-gray-600 mb-2">
+                Next-generation model promises significant improvements in reasoning and multimodal capabilities.
+              </p>
+              <span className="text-xs text-gray-400">2 hours ago</span>
+            </div>
+            <div className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+              <h4 className="text-sm font-medium text-gray-900 mb-1">
+                Google Releases Gemini 2.0 Flash
+              </h4>
+              <p className="text-xs text-gray-600 mb-2">
+                New model features enhanced speed and efficiency for real-time AI applications.
+              </p>
+              <span className="text-xs text-gray-400">4 hours ago</span>
+            </div>
+            <div className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+              <h4 className="text-sm font-medium text-gray-900 mb-1">
+                Meta AI Unveils Llama 3.3 70B
+              </h4>
+              <p className="text-xs text-gray-600 mb-2">
+                Open-source model achieves performance comparable to larger proprietary models.
+              </p>
+              <span className="text-xs text-gray-400">6 hours ago</span>
+            </div>
           </div>
         </CardContent>
       </Card>
 
+      {/* About VAI Card */}
       <Card>
         <CardHeader>
           <CardTitle className="text-lg">About VAI</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-gray-600 leading-relaxed">
-            A minimal, developer-focused community platform for sharing conversations, insights, and building
-            connections in the tech world.
+            A community platform for AI professionals to share workflows, prompts, insights, and connect with like-minded practitioners.
           </p>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -7,6 +7,11 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Id } from "@/convex/_generated/dataModel";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { MembershipCTAModal } from "@/components/membership-cta-modal";
+import { useState } from "react";
 
 // Interface to match Convex post data structure
 interface Post {
@@ -64,22 +69,68 @@ interface PostCardProps {
 }
 
 export default function PostCard({ post }: PostCardProps) {
+  const [isVoting, setIsVoting] = useState(false);
+  const voteOnPost = useMutation(api.votes.voteOnPost);
+  const userVote = useQuery(api.votes.getUserVote, {
+    targetId: post._id,
+    targetType: "post",
+  });
+
+  const handleUpvote = async () => {
+    if (isVoting) return;
+    setIsVoting(true);
+
+    try {
+      const voteType = userVote === "upvote" ? "remove" : "upvote";
+      await voteOnPost({
+        postId: post._id,
+        voteType,
+      });
+    } catch (error) {
+      console.error("Error voting:", error);
+    } finally {
+      setIsVoting(false);
+    }
+  };
+
   return (
     <div className="bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
       <div className="flex">
         {/* Voting */}
         <div className="flex flex-col items-center p-4 space-y-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-1 h-auto hover:bg-gray-100"
-          >
-            <ArrowUp className="w-5 h-5 text-gray-400 hover:text-green-700" />
-          </Button>
+          <Authenticated>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 h-auto hover:bg-gray-100"
+              onClick={handleUpvote}
+              disabled={isVoting}
+            >
+              <ArrowUp
+                className={`w-5 h-5 transition-colors ${userVote === "upvote"
+                  ? "text-green-700"
+                  : "text-gray-400 hover:text-green-700"
+                  }`}
+              />
+            </Button>
+          </Authenticated>
+          <Unauthenticated>
+            <MembershipCTAModal
+              title="Upvote Great Content"
+              description="Join VAI to upvote posts and help surface the best content in the community"
+            >
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-1 h-auto hover:bg-gray-100"
+              >
+                <ArrowUp className="w-5 h-5 text-gray-400 hover:text-green-700" />
+              </Button>
+            </MembershipCTAModal>
+          </Unauthenticated>
           <span className="text-sm font-medium text-gray-900">
             {post.netVotes}
           </span>
-          {/* Remove downvote button for upvote-only system */}
         </div>
 
         {/* Content */}
@@ -113,14 +164,33 @@ export default function PostCard({ post }: PostCardProps) {
           </Link>
 
           <div className="flex items-center space-x-4 text-sm text-gray-500">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2 h-auto hover:bg-gray-100"
-            >
-              <MessageSquare className="w-4 h-4 mr-1" />
-              {post.commentCount} comments
-            </Button>
+            <Authenticated>
+              <Link href={`/post/${post._id}`}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 h-auto hover:bg-gray-100"
+                >
+                  <MessageSquare className="w-4 h-4 mr-1" />
+                  {post.commentCount} comments
+                </Button>
+              </Link>
+            </Authenticated>
+            <Unauthenticated>
+              <MembershipCTAModal
+                title="Join the Conversation"
+                description="Sign up to read comments and share your thoughts with the VAI community"
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-2 h-auto hover:bg-gray-100"
+                >
+                  <MessageSquare className="w-4 h-4 mr-1" />
+                  {post.commentCount} comments
+                </Button>
+              </MembershipCTAModal>
+            </Unauthenticated>
             <Button
               variant="ghost"
               size="sm"

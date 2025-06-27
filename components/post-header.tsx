@@ -1,28 +1,55 @@
+"use client";
 import React from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { Skeleton } from "@/components/ui/skeleton";
 
-export default function PostHeader() {
+interface PostHeaderProps {
+  selectedCategoryId?: Id<"categories">;
+  onCategorySelect?: (categoryId: Id<"categories"> | undefined) => void;
+}
+
+export default function PostHeader({ selectedCategoryId, onCategorySelect }: PostHeaderProps) {
+  const categories = useQuery(api.categories.getCategories);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-6 overflow-x-auto">
-          <button className="text-green-700 font-medium border-b-2 border-green-700 pb-1 whitespace-nowrap">
-            /announcements
+        <div className="flex space-x-6 overflow-x-auto pb-2">
+          {/* All Posts Tab */}
+          <button
+            onClick={() => onCategorySelect?.(undefined)}
+            className={`font-medium pb-1 whitespace-nowrap transition-colors border-b-2 ${!selectedCategoryId
+              ? "text-green-700 border-green-700"
+              : "text-gray-600 hover:text-green-700 border-transparent hover:border-gray-300"
+              }`}
+          >
+            all posts
           </button>
-          <button className="text-gray-600 hover:text-green-700 transition-colors whitespace-nowrap">
-            /showcase
-          </button>
-          <button className="text-gray-600 hover:text-green-700 transition-colors whitespace-nowrap">
-            /patterns
-          </button>
-          <button className="text-gray-600 hover:text-green-700 transition-colors whitespace-nowrap">
-            /tools
-          </button>
-          <button className="text-gray-600 hover:text-green-700 transition-colors whitespace-nowrap">
-            /shipyard
-          </button>
-          <button className="text-gray-600 hover:text-green-700 transition-colors whitespace-nowrap">
-            /prompts
-          </button>
+
+          {/* Category Tabs */}
+          {categories === undefined ? (
+            // Loading state
+            [...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-6 w-20" />
+            ))
+          ) : categories?.length === 0 ? (
+            <span className="text-gray-500 text-sm">No categories available</span>
+          ) : (
+            categories?.map((category) => (
+              <button
+                key={category._id}
+                onClick={() => onCategorySelect?.(category._id)}
+                className={`font-medium pb-1 whitespace-nowrap transition-colors border-b-2 ${selectedCategoryId === category._id
+                  ? "text-green-700 border-green-700"
+                  : "text-gray-600 hover:text-green-700 border-transparent hover:border-gray-300"
+                  }`}
+              >
+                {category.icon} /{category.name}
+              </button>
+            ))
+          )}
         </div>
       </div>
     </div>
