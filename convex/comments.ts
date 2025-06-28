@@ -133,10 +133,38 @@ export const createComment = mutation({
     }
 
     const now = Date.now();
+    const trimmedContent = content.trim();
+
+    // Check for duplicate comment before creating
+    // Look for comments from the same author on the same post with the same content
+    // within the last minute (60 seconds)
+    const oneMinuteAgo = now - 60000;
+    const existingComments = await ctx.db
+      .query("comments")
+      .withIndex("by_post_and_createdAt", (q) => q.eq("postId", postId))
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("authorId"), member._id),
+          q.eq(q.field("status"), "active"),
+          q.gte(q.field("createdAt"), oneMinuteAgo)
+        )
+      )
+      .collect();
+
+    // Check if any existing comment has the same content
+    const duplicateComment = existingComments.find(
+      comment => comment.content === trimmedContent && 
+                 comment.parentCommentId === parentCommentId
+    );
+
+    if (duplicateComment) {
+      console.log(`Duplicate comment detected, returning existing comment ID: ${duplicateComment._id}`);
+      return duplicateComment._id;
+    }
 
     // Create the comment
     const commentId = await ctx.db.insert("comments", {
-      content: content.trim(),
+      content: trimmedContent,
       createdAt: now,
       updatedAt: now,
       authorId: member._id,

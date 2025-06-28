@@ -127,7 +127,8 @@ export default defineSchema({
     .index("by_post_and_createdAt", ["postId", "createdAt"])
     .index("by_post_and_netVotes", ["postId", "netVotes"])
     .index("by_parent_and_createdAt", ["parentCommentId", "createdAt"])
-    .index("by_status", ["status"]),
+    .index("by_status", ["status"])
+    .index("by_post_author_createdAt", ["postId", "authorId", "createdAt"]),
   votes: defineTable({
     userId: v.id("members"),
     targetId: v.string(),
