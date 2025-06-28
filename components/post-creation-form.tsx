@@ -304,10 +304,16 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
               <TabsContent value="preview" className="mt-4">
                 <Suspense fallback={<PostPreviewSkeleton />}>
                   <PostPreview
-                    title={formData.title}
-                    content={formData.content}
-                    categoryName={categories?.find(c => c._id === formData.categoryId)?.displayName}
-                    categoryIcon={categories?.find(c => c._id === formData.categoryId)?.icon}
+                    post={{
+                      _id: "preview",
+                      title: formData.title || "Untitled Post",
+                      content: formData.content || "No content yet...",
+                      createdAt: Date.now(),
+                      author: {
+                        firstName: "You",
+                        lastName: "",
+                      },
+                    }}
                   />
                 </Suspense>
               </TabsContent>

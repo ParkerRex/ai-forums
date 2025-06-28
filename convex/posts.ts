@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 
 // Get all posts with pagination and filtering
 export const getPosts = query({
@@ -108,6 +109,51 @@ export const getPostById = query({
   },
 });
 
+// Get single post by slug
+export const getPostBySlug = query({
+  args: { slug: v.string() },
+  handler: async (ctx, { slug }) => {
+    const post = await ctx.db
+      .query("posts")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .first();
+      
+    if (!post) {
+      return null;
+    }
+
+    // Get author and category data
+    const [author, category] = await Promise.all([
+      ctx.db.get(post.authorId),
+      ctx.db.get(post.categoryId),
+    ]);
+
+    return {
+      ...post,
+      author: author ? {
+        _id: author._id,
+        firstName: author.firstName,
+        lastName: author.lastName,
+        email: author.email,
+        username: author.email.split('@')[0],
+        bio: author.bio,
+        location: author.location,
+        linkGithub: author.linkGithub,
+        linkX: author.linkX,
+        linkYouTube: author.linkYouTube,
+      } : null,
+      category: category ? {
+        _id: category._id,
+        name: category.name,
+        displayName: category.displayName,
+        description: category.description,
+        icon: category.icon,
+      } : null,
+    };
+  },
+});
+
 // Create new post
 export const createPost = mutation({
   args: {
@@ -137,12 +183,24 @@ export const createPost = mutation({
       throw new Error("Invalid category");
     }
 
+    // Generate unique slug
+    const baseSlug = generateSlug(title);
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_slug")
+      .collect();
+    const existingSlugs = posts
+      .map(p => p.slug)
+      .filter((slug): slug is string => slug !== undefined);
+    const slug = ensureUniqueSlug(baseSlug, existingSlugs);
+
     const now = Date.now();
 
     // Create the post
     const postId = await ctx.db.insert("posts", {
       title: title.trim(),
       content: content.trim(),
+      slug,
       createdAt: now,
       updatedAt: now,
       authorId: member._id,
@@ -207,15 +265,30 @@ export const updatePost = mutation({
       editedAt: number;
       title?: string;
       content?: string;
+      slug?: string;
       editReason?: string;
     } = {
       updatedAt: now,
       editedAt: now,
     };
 
+    // If title is being updated, regenerate slug
     if (title !== undefined) {
       updates.title = title.trim();
+      
+      // Generate new slug from updated title
+      const baseSlug = generateSlug(title);
+      const posts = await ctx.db
+        .query("posts")
+        .withIndex("by_slug")
+        .filter((q) => q.neq(q.field("_id"), postId)) // Exclude current post
+        .collect();
+      const existingSlugs = posts
+        .map(p => p.slug)
+        .filter((slug): slug is string => slug !== undefined);
+      updates.slug = ensureUniqueSlug(baseSlug, existingSlugs);
     }
+    
     if (content !== undefined) {
       updates.content = content.trim();
     }
@@ -287,7 +360,6 @@ export const trackPostView = mutation({
     const identity = await ctx.auth.getUserIdentity();
     let userId: Id<"members"> | undefined;
 
-    // Get user ID if authenticated
     if (identity) {
       const member = await ctx.db
         .query("members")
@@ -296,35 +368,50 @@ export const trackPostView = mutation({
       userId = member?._id;
     }
 
-    // Check if this user/IP has already viewed this post recently (within 1 hour)
-    const oneHourAgo = Date.now() - 60 * 60 * 1000;
-    const existingView = await ctx.db
-      .query("postViews")
-      .withIndex("by_post_and_user", (q) => q.eq("postId", postId).eq("userId", userId))
-      .filter((q) => q.gt(q.field("viewedAt"), oneHourAgo))
-      .first();
-
-    if (existingView) {
-      return; // Don't count duplicate views within an hour
+    // Check if this user/IP has already viewed this post recently (within 24 hours)
+    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+    
+    let existingView;
+    if (userId) {
+      existingView = await ctx.db
+        .query("postViews")
+        .withIndex("by_post_and_user", (q) => q.eq("postId", postId).eq("userId", userId))
+        .filter((q) => q.gt(q.field("viewedAt"), oneDayAgo))
+        .first();
+    } else if (ipAddress) {
+      existingView = await ctx.db
+        .query("postViews")
+        .withIndex("by_postId", (q) => q.eq("postId", postId))
+        .filter((q) => 
+          q.and(
+            q.eq(q.field("ipAddress"), ipAddress),
+            q.gt(q.field("viewedAt"), oneDayAgo)
+          )
+        )
+        .first();
     }
 
-    // Record the view
-    await ctx.db.insert("postViews", {
-      postId,
-      userId,
-      viewedAt: Date.now(),
-      ipAddress,
-      userAgent,
-    });
-
-    // Increment post view count
-    const post = await ctx.db.get(postId);
-    if (post) {
-      await ctx.db.patch(postId, {
-        viewCount: (post.viewCount || 0) + 1,
-        updatedAt: Date.now(),
+    if (!existingView) {
+      // Record the view
+      await ctx.db.insert("postViews", {
+        postId,
+        userId,
+        viewedAt: Date.now(),
+        ipAddress,
+        userAgent,
       });
+
+      // Increment post view count
+      const post = await ctx.db.get(postId);
+      if (post) {
+        await ctx.db.patch(postId, {
+          viewCount: (post.viewCount || 0) + 1,
+          updatedAt: Date.now(),
+        });
+      }
     }
+
+    return { viewRecorded: !existingView };
   },
 });
 
@@ -413,5 +500,63 @@ export const getPostsByAuthor = query({
     );
 
     return enrichedPosts;
+  },
+});
+
+// Migration mutation to add slugs to existing posts
+export const addSlugsToExistingPosts = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Get all posts that don't have slugs yet
+    const posts = await ctx.db.query("posts").collect();
+    
+    console.log(`Processing ${posts.length} posts for slug generation...`);
+    
+    // Track existing slugs to ensure uniqueness
+    const existingSlugs = new Set<string>();
+    
+    // Process posts in batches to avoid overwhelming the system
+    const batchSize = 50;
+    for (let i = 0; i < posts.length; i += batchSize) {
+      const batch = posts.slice(i, i + batchSize);
+      
+      await Promise.all(
+        batch.map(async (post) => {
+          // Skip if post already has slug
+          if ('slug' in post && post.slug) {
+            existingSlugs.add(post.slug as string);
+            return;
+          }
+          
+          // Generate slug from title
+          const baseSlug = post.title
+            .toLowerCase()
+            .trim()
+            .replace(/[^\w\s-]/g, '')
+            .replace(/[\s_-]+/g, '-')
+            .replace(/^-+|-+$/g, '')
+            .substring(0, 60)
+            .replace(/-+$/, '');
+          
+          // Ensure uniqueness
+          let slug = baseSlug;
+          let counter = 1;
+          while (existingSlugs.has(slug)) {
+            slug = `${baseSlug}-${counter}`;
+            counter++;
+          }
+          
+          existingSlugs.add(slug);
+          
+          // Update the post with the generated slug
+          await ctx.db.patch(post._id, { slug });
+        })
+      );
+      
+      console.log(`Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(posts.length / batchSize)}`);
+    }
+    
+    console.log("Slug generation migration completed successfully!");
+    return { processed: posts.length };
   },
 }); 

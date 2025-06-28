@@ -9,7 +9,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useConvexAuth } from "convex/react";
-import { MemberEditModal } from "@/components/member-edit-modal";
+import MemberEditModal from "@/components/member-edit-modal";
 
 interface MemberProfileProps {
   member: {

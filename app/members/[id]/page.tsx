@@ -80,16 +80,7 @@ function MemberDetailContent({ id }: { id: string }) {
     : null;
 
   // Transform posts data to match PostCard interface
-  const memberPosts = memberPostsData?.page?.map((post) => ({
-    id: post._id,
-    title: post.title,
-    author: member ? `${member.firstName} ${member.lastName}` : "Unknown",
-    community: post.category?.displayName || post.category?.name || "general",
-    timeAgo: post.timeAgo,
-    votes: post.netVotes,
-    comments: post.commentCount,
-    content: post.content,
-  })) || [];
+  const memberPosts = memberPostsData?.page || [];
 
   // Transform activity data for UI
   const memberActivity = memberActivityData?.page?.map((activity) => ({
@@ -124,7 +115,7 @@ function MemberDetailContent({ id }: { id: string }) {
             ) : memberPosts.length > 0 ? (
               <div className="space-y-6">
                 {memberPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
+                  <PostCard key={post._id} post={post} />
                 ))}
               </div>
             ) : (
@@ -158,7 +149,7 @@ function MemberDetailContent({ id }: { id: string }) {
                     <p className="text-xs text-gray-500 mt-1">
                       {activity.timeAgo} on{" "}
                       <Link
-                        href={`/post/${activity.postId}`}
+                        href={`#`}
                         className="text-green-700 hover:underline"
                       >
                         {activity.postTitle}

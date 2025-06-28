@@ -10,33 +10,36 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import CommentSection from "@/components/comment-section";
 import { use } from "react";
+import { notFound } from "next/navigation";
 
-interface PageClientProps {
+interface PostPageClientProps {
   params: Promise<{
-    id: string;
+    category: string;
+    slug: string;
   }>;
 }
 
-export default function PostPageClient({ params }: PageClientProps) {
+export default function PostPageClient({ params }: PostPageClientProps) {
   // Unwrap the params promise (Next.js 15 behavior)
   const resolvedParams = use(params);
+  const { category, slug } = resolvedParams;
   
-  // Check if we have a valid post ID
-  const hasValidPostId = resolvedParams?.id && typeof resolvedParams.id === "string" && resolvedParams.id.trim() !== "";
+  // Check if we have valid parameters
+  const hasValidParams = category && slug && 
+    typeof category === "string" && category.trim() !== "" &&
+    typeof slug === "string" && slug.trim() !== "";
   
-  // Only create args object if we have a valid ID, otherwise skip query
-  const queryArgs = hasValidPostId ? { postId: resolvedParams.id as Id<"posts"> } : "skip";
+  // Query for the post by slug
+  const post = useQuery(api.posts.getPostBySlug, hasValidParams ? { slug } : "skip");
 
-  const post = useQuery(api.posts.getPostById, queryArgs);
+  console.log("PostPageClient - category:", category, "slug:", slug, "hasValidParams:", hasValidParams);
 
-  console.log("PostPageClient - resolvedParams:", resolvedParams, "hasValidPostId:", hasValidPostId, "queryArgs:", queryArgs);
-
-  if (!hasValidPostId) {
+  if (!hasValidParams) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Loading...</h1>
-          <p className="text-muted-foreground">Loading post details...</p>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Invalid URL</h1>
+          <p className="text-muted-foreground">The URL format is invalid.</p>
         </div>
       </div>
     );
@@ -55,15 +58,9 @@ export default function PostPageClient({ params }: PageClientProps) {
     );
   }
 
-  if (post === null) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Post Not Found</h1>
-          <p className="text-muted-foreground">The post you&apos;re looking for doesn&apos;t exist.</p>
-        </div>
-      </div>
-    );
+  // If post not found or category doesn't match, show 404
+  if (post === null || post.category?.name !== category) {
+    notFound();
   }
 
   return (
@@ -71,7 +68,7 @@ export default function PostPageClient({ params }: PageClientProps) {
       <Authenticated>
         <PostDetail post={post} />
         <div className="mt-8">
-          <CommentSection postId={post._id} />
+          <CommentSection postId={post._id as Id<"posts">} />
         </div>
       </Authenticated>
 

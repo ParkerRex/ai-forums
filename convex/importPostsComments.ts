@@ -63,9 +63,20 @@ export const importPost = mutation({
       throw new Error(`Failed to create or find author: ${args.authorEmail}`);
     }
 
+    // Generate slug from title
+    const baseSlug = args.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 60)
+      .replace(/-+$/, '');
+
     const postId = await ctx.db.insert("posts", {
       title: args.title,
       content: args.content,
+      slug: baseSlug,
       createdAt: args.createdAt,
       updatedAt: args.updatedAt,
       authorId: author._id,
@@ -197,9 +208,20 @@ export const importPostsBatch = mutation({
         continue;
       }
       
+      // Generate slug from title
+      const baseSlug = post.title
+        .toLowerCase()
+        .trim()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/[\s_-]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .substring(0, 60)
+        .replace(/-+$/, '');
+
       const postId = await ctx.db.insert("posts", {
         title: post.title,
         content: post.content,
+        slug: baseSlug,
         createdAt: post.createdAt,
         updatedAt: post.updatedAt,
         authorId,

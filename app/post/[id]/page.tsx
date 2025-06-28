@@ -1,11 +1,7 @@
-import PostPageClient from "./page-client";
+import { redirect } from "next/navigation";
 
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
-
-export default function PostPage({ params }: PageProps) {
-  return <PostPageClient params={params} />;
+export default async function PostPage() {
+  // For now, redirect all old post URLs to home
+  // This provides backwards compatibility while we transition
+  redirect('/');
 }

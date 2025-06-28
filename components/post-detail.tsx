@@ -59,10 +59,10 @@ export default function PostDetail({ post }: PostDetailProps) {
           <div className="flex-1 p-6">
             <div className="flex items-center text-sm text-muted-foreground mb-4">
               <Link 
-                href={`/ai/${post.category?.name || "general"}`}
+                href={`/${post.category?.name || "general"}`}
                 className="text-primary hover:underline"
               >
-                /ai/{post.category?.name || "general"}
+                /{post.category?.name || "general"}
               </Link>
               <span className="mx-2">•</span>
               <span>posted by</span>

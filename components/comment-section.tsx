@@ -34,7 +34,7 @@ type CommentWithReplies = {
 
 interface CommentItemProps {
   comment: CommentWithReplies;
-  onReply: (parentId: Id<"comments">) => void;
+  onReply: (parentId: Id<"comments"> | null) => void;
   replyingTo: Id<"comments"> | null;
   newReply: string;
   setNewReply: (content: string) => void;
@@ -172,26 +172,25 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   
   const comments = useQuery(api.comments.getCommentsByPost, { postId });
   const createComment = useMutation(api.comments.createComment);
-  const { handleMutation } = useMutationError();
+  const { handleMutationError, handleMutationSuccess } = useMutationError();
 
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return;
 
     setIsSubmitting(true);
 
-    await handleMutation(
-      () => createComment({
+    try {
+      await createComment({
         postId,
         content: newComment.trim(),
-      }),
-      {
-        onSuccess: () => {
-          setNewComment("");
-          setIsSubmitting(false);
-        },
-        successMessage: "Comment posted successfully!",
-      }
-    );
+      });
+      setNewComment("");
+      handleMutationSuccess("Comment posted successfully!");
+    } catch (error) {
+      handleMutationError(error, () => handleSubmitComment());
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleSubmitReply = async (parentId: Id<"comments">) => {
@@ -199,21 +198,20 @@ export default function CommentSection({ postId }: CommentSectionProps) {
 
     setIsSubmittingReply(true);
 
-    await handleMutation(
-      () => createComment({
+    try {
+      await createComment({
         postId,
         content: newReply.trim(),
         parentCommentId: parentId,
-      }),
-      {
-        onSuccess: () => {
-          setNewReply("");
-          setReplyingTo(null);
-          setIsSubmittingReply(false);
-        },
-        successMessage: "Reply posted successfully!",
-      }
-    );
+      });
+      setNewReply("");
+      setReplyingTo(null);
+      handleMutationSuccess("Reply posted successfully!");
+    } catch (error) {
+      handleMutationError(error, () => handleSubmitReply(parentId));
+    } finally {
+      setIsSubmittingReply(false);
+    }
   };
 
   const handleReply = (parentId: Id<"comments"> | null) => {

@@ -78,6 +78,7 @@ export default defineSchema({
   posts: defineTable({
     title: v.string(),
     content: v.string(),
+    slug: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
     authorId: v.id("members"),
@@ -98,6 +99,7 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_createdAt", ["createdAt"])
     .index("by_netVotes", ["netVotes"])
+    .index("by_slug", ["slug"])
     .index("by_category_and_createdAt", ["categoryId", "createdAt"])
     .index("by_category_and_netVotes", ["categoryId", "netVotes"])
     .index("by_author_and_createdAt", ["authorId", "createdAt"])

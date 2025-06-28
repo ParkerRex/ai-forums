@@ -80,10 +80,21 @@ export const importSkoolPost = mutation({
       return existingPost._id;
     }
 
+    // Generate slug from title
+    const baseSlug = args.title
+      .toLowerCase()
+      .trim()
+      .replace(/[^\w\s-]/g, '')
+      .replace(/[\s_-]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .substring(0, 60)
+      .replace(/-+$/, '');
+
     // Create the post using schema field names
     const postId = await ctx.db.insert("posts", {
       title: args.title,
       content: args.content,
+      slug: baseSlug,
       authorId: member._id,
       categoryId: category._id,
       createdAt: args.createdAt,

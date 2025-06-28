@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Users, Zap, MessageSquare, BookOpen, CheckCircle } from "lucide-react";
+import { Sparkles, Users, Zap, MessageSquare, BookOpen, CheckCircle } from "lucide-react";
 
 interface MembershipCTAModalProps {
   children: React.ReactNode;

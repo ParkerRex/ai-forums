@@ -64,9 +64,20 @@ export const importPosts = mutation({
       // Should always have an authorId now
       
       try {
+        // Generate slug from title
+        const baseSlug = post.title
+          .toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, '')
+          .replace(/[\s_-]+/g, '-')
+          .replace(/^-+|-+$/g, '')
+          .substring(0, 60)
+          .replace(/-+$/, '');
+
         const postId = await ctx.db.insert("posts", {
           title: post.title,
           content: post.content,
+          slug: baseSlug,
           createdAt: post.createdAt,
           updatedAt: post.updatedAt,
           authorId,

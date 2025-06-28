@@ -18,6 +18,7 @@ interface Post {
   _id: Id<"posts">;
   title: string;
   content: string;
+  slug: string;
   createdAt: number;
   updatedAt: number;
   authorId: Id<"members">;
@@ -137,10 +138,10 @@ export default function PostCard({ post }: PostCardProps) {
         <div className="flex-1 p-4 pl-0">
           <div className="flex items-center text-sm text-muted-foreground mb-2">
             <Link
-              href={`/ai/${post.category?.name || 'general'}`}
+              href={`/${post.category?.name || 'general'}`}
               className="text-primary hover:underline"
             >
-              /ai/{post.category?.name || 'general'}
+              /{post.category?.name || 'general'}
             </Link>
             <span className="mx-2">•</span>
             <span>posted by</span>
@@ -154,7 +155,7 @@ export default function PostCard({ post }: PostCardProps) {
             <span>{getTimeAgo(post.createdAt)} ago</span>
           </div>
 
-          <Link href={`/post/${post._id}`} className="block group">
+          <Link href={`/${post.category?.name || 'general'}/${post.slug}`} className="block group">
             <h2 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors mb-2">
               {post.title}
             </h2>
@@ -165,7 +166,7 @@ export default function PostCard({ post }: PostCardProps) {
 
           <div className="flex items-center space-x-4 text-sm text-muted-foreground">
             <Authenticated>
-              <Link href={`/post/${post._id}`}>
+              <Link href={`/${post.category?.name || 'general'}/${post.slug}`}>
                 <Button
                   variant="ghost"
                   size="sm"

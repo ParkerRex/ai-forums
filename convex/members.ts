@@ -172,6 +172,7 @@ export const getMemberPosts = query({
       _id: v.id("posts"),
       title: v.string(),
       content: v.string(),
+      slug: v.string(),
       createdAt: v.number(),
       updatedAt: v.number(),
       authorId: v.id("members"),
@@ -182,13 +183,25 @@ export const getMemberPosts = query({
       netVotes: v.number(),
       commentCount: v.number(),
       viewCount: v.number(),
+      isPinned: v.optional(v.boolean()),
+      isLocked: v.optional(v.boolean()),
+      editedAt: v.optional(v.number()),
+      editReason: v.optional(v.string()),
       // Add computed fields
       timeAgo: v.string(),
-      category: v.optional(v.object({
+      author: v.union(v.object({
+        _id: v.id("members"),
+        firstName: v.string(),
+        lastName: v.string(),
+        email: v.string(),
+        username: v.string(),
+      }), v.null()),
+      category: v.union(v.object({
         _id: v.id("categories"),
         name: v.string(),
         displayName: v.string(),
-      })),
+        icon: v.optional(v.string()),
+      }), v.null()),
     })),
     isDone: v.boolean(),
     continueCursor: v.union(v.string(), v.null()),
@@ -201,20 +214,31 @@ export const getMemberPosts = query({
       .order("desc")
       .paginate(args.paginationOpts);
 
-    // Enrich posts with category information
+    // Enrich posts with category and author information
     const enrichedPage = await Promise.all(
       result.page.map(async (post) => {
-        const category = await ctx.db.get(post.categoryId);
+        const [category, author] = await Promise.all([
+          ctx.db.get(post.categoryId),
+          ctx.db.get(post.authorId),
+        ]);
         const timeAgo = getTimeAgo(post.createdAt);
 
         return {
           ...post,
           timeAgo,
+          author: author ? {
+            _id: author._id,
+            firstName: author.firstName,
+            lastName: author.lastName,
+            email: author.email,
+            username: author.email, // Use email as username for now
+          } : null,
           category: category ? {
             _id: category._id,
             name: category.name,
             displayName: category.displayName,
-          } : undefined,
+            icon: category.icon,
+          } : null,
         };
       })
     );

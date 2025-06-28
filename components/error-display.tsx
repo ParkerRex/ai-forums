@@ -4,7 +4,7 @@ import React from "react";
 import { AlertTriangle, RefreshCw, Wifi, WifiOff } from "lucide-react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { processError } from "@/lib/error-utils";
+
 import { useNetworkStatus } from "@/hooks/use-network-status";
 
 export interface ErrorInfo {
@@ -19,6 +19,7 @@ export interface ErrorDisplayProps {
   context?: string;
   onRetry?: () => void;
   variant?: "inline" | "banner" | "fullPage";
+  className?: string;
 }
 
 /**
@@ -261,95 +262,4 @@ export function NetworkStatusIndicator() {
   );
 }
 
-const NetworkStatusIndicatorNew = () => {
-  const { isOnline, wasOffline } = useNetworkStatus();
-
-  if (isOnline && !wasOffline) {
-    return null;
-  }
-
-  return (
-    <div className="fixed bottom-4 right-4 z-50">
-      <div className={`
-        flex items-center px-4 py-2 rounded-lg shadow-lg transition-all duration-300 transform
-        ${isOnline 
-          ? "bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20 dark:text-primary" 
-          : "bg-destructive/10 text-destructive border border-destructive/20 dark:bg-destructive/20 dark:text-destructive"
-        }
-        ${showIndicator ? "translate-y-0 opacity-100" : "translate-y-full opacity-0"}
-      `}>
-        {isOnline ? (
-          <>
-            <Wifi className="h-4 w-4 mr-2 text-primary" />
-            <span className="text-primary">Connection restored</span>
-          </>
-        ) : (
-          <>
-            <WifiOff className="h-4 w-4 mr-2 text-destructive" />
-            <span className="text-destructive">Connection lost</span>
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const NetworkStatusIndicatorNewInline = () => {
-  const { isOnline, wasOffline } = useNetworkStatus();
-
-  if (isOnline && !wasOffline) {
-    return null;
-  }
-
-  return (
-    <div className={`
-      flex items-center px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200
-      ${isOnline 
-        ? "bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20 dark:text-primary" 
-        : "bg-destructive/10 text-destructive border border-destructive/20 dark:bg-destructive/20 dark:text-destructive"
-      }
-    `}>
-      {isOnline ? (
-        <>
-          <Wifi className="h-4 w-4 mr-2 text-primary" />
-          <span className="text-primary">Connection restored</span>
-        </>
-      ) : (
-        <>
-          <WifiOff className="h-4 w-4 mr-2 text-destructive" />
-          <span className="text-destructive">Connection lost</span>
-        </>
-      )}
-    </div>
-  );
-};
-
-const NetworkStatusIndicatorNewInlineSmall = () => {
-  const { isOnline, wasOffline } = useNetworkStatus();
-
-  if (isOnline && !wasOffline) {
-    return null;
-  }
-
-  return (
-    <div className={`
-      inline-flex items-center px-2 py-1 rounded text-xs font-medium
-      ${isOnline 
-        ? "bg-primary/10 text-primary border border-primary/20 dark:bg-primary/20 dark:text-primary"
-        : "bg-destructive/10 text-destructive border border-destructive/20 dark:bg-destructive/20 dark:text-destructive"
-      }
-    `}>
-      {isOnline ? (
-        <>
-          <Wifi className="h-4 w-4 mr-2 text-primary" />
-          <span className="text-primary">Connection restored</span>
-        </>
-      ) : (
-        <>
-          <WifiOff className="h-4 w-4 mr-2 text-destructive" />
-          <span className="text-destructive">Connection lost</span>
-        </>
-      )}
-    </div>
-  );
-}; 
+ 
