@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Users, Zap, MessageSquare } from "lucide-react";
+import { Check, Sparkles, Users, Zap, MessageSquare, BookOpen, CheckCircle } from "lucide-react";
 
 interface MembershipCTAModalProps {
   children: React.ReactNode;
@@ -22,102 +22,94 @@ interface MembershipCTAModalProps {
 
 export function MembershipCTAModal({
   children,
-  title = "Join the VAI Community",
-  description = "Unlock full access to connect with AI professionals and share your expertise"
+  title = "Join VAI Community",
+  description = "Unlock exclusive content and connect with AI engineers"
 }: MembershipCTAModalProps) {
-  const [open, setOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-  const benefits = [
+  const features = [
     {
-      icon: <MessageSquare className="w-5 h-5 text-green-600" />,
-      title: "Create & Comment on Posts",
-      description: "Share your AI workflows, prompts, and insights with the community"
+      icon: MessageSquare,
+      title: "Full Discussion Access",
+      description: "Read complete posts and join conversations"
     },
     {
-      icon: <Zap className="w-5 h-5 text-green-600" />,
-      title: "Upvote Content",
-      description: "Help surface the best content by voting on posts and comments"
+      icon: Users,
+      title: "Community Network",
+      description: "Connect with engineers from top companies"
     },
     {
-      icon: <Users className="w-5 h-5 text-green-600" />,
-      title: "Connect with Professionals",
-      description: "Network with AI practitioners, researchers, and enthusiasts"
+      icon: BookOpen,
+      title: "Learning Resources",
+      description: "Access workflows, prompts, and tutorials"
     },
     {
-      icon: <Sparkles className="w-5 h-5 text-green-600" />,
-      title: "Access Premium Content",
-      description: "Get exclusive access to advanced workflows and expert insights"
+      icon: Zap,
+      title: "Early Access",
+      description: "Get first access to new features and content"
     }
   ];
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
       <DialogContent className="sm:max-w-md">
-        <DialogHeader className="text-center space-y-3">
-          <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-green-600" />
+        <DialogHeader className="text-center">
+          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+            <Sparkles className="w-6 h-6 text-primary" />
           </div>
-          <DialogTitle className="text-xl font-semibold">
+          <DialogTitle className="text-xl font-bold">
             {title}
           </DialogTitle>
-          <DialogDescription className="text-gray-600">
+          <DialogDescription className="text-muted-foreground">
             {description}
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          <div className="space-y-3">
-            {benefits.map((benefit, index) => (
-              <div key={index} className="flex items-start space-x-3">
-                <div className="flex-shrink-0 mt-0.5">
-                  {benefit.icon}
+        <div className="space-y-4 my-6">
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
+              ✨ Free to Join
+            </Badge>
+            <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
+              🚀 Instant Access
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3">
+            {features.map((feature, index) => (
+              <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
+                <div className="flex-shrink-0">
+                  <feature.icon className="w-4 h-4 text-primary mt-0.5" />
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h4 className="text-sm font-medium text-gray-900">
-                    {benefit.title}
-                  </h4>
-                  <p className="text-sm text-gray-600">
-                    {benefit.description}
-                  </p>
+                <div>
+                  <h4 className="text-sm font-medium text-foreground">{feature.title}</h4>
+                  <p className="text-xs text-muted-foreground">{feature.description}</p>
                 </div>
               </div>
             ))}
           </div>
+        </div>
 
-          <div className="pt-4 border-t">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100">
-                <Check className="w-3 h-3 mr-1" />
-                Free to Join
-              </Badge>
-              <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100">
-                <Check className="w-3 h-3 mr-1" />
-                No Credit Card
-              </Badge>
-            </div>
-
-            <SignUpButton mode="modal">
-              <Button
-                className="w-full bg-green-700 hover:bg-green-800 text-white"
-                size="lg"
-              >
-                Join VAI Community
-              </Button>
-            </SignUpButton>
-
-            <p className="text-xs text-gray-500 text-center mt-3">
-              Already have an account?{" "}
-              <button
-                onClick={() => setOpen(false)}
-                className="text-green-700 hover:text-green-800 font-medium"
-              >
-                Sign in instead
-              </button>
-            </p>
-          </div>
+        <div className="space-y-3">
+          <SignUpButton mode="modal">
+            <Button 
+              className="w-full"
+              onClick={() => setIsOpen(false)}
+            >
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Join VAI Community
+            </Button>
+          </SignUpButton>
+          <Button 
+            variant="ghost" 
+            className="w-full text-muted-foreground"
+            onClick={() => setIsOpen(false)}
+          >
+            Maybe later
+          </Button>
         </div>
       </DialogContent>
     </Dialog>

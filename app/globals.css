@@ -168,15 +168,16 @@
 }
 
 .prose-editor .ProseMirror blockquote {
-  border-left: 4px solid #22c55e;
+  border-left: 4px solid hsl(var(--primary));
   padding-left: 1rem;
   margin: 1rem 0;
   font-style: italic;
-  color: #6b7280;
+  color: hsl(var(--muted-foreground));
 }
 
 .prose-editor .ProseMirror code {
-  background-color: #f3f4f6;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
   padding: 0.125rem 0.25rem;
   border-radius: 0.25rem;
   font-family: 'Courier New', monospace;
@@ -184,18 +185,19 @@
 }
 
 .prose-editor .ProseMirror a {
-  color: #22c55e;
+  color: hsl(var(--primary));
   text-decoration: underline;
 }
 
 .prose-editor .ProseMirror a:hover {
-  color: #16a34a;
+  color: hsl(var(--primary));
+  opacity: 0.8;
 }
 
 .prose-editor .ProseMirror p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: #9ca3af;
+  color: hsl(var(--muted-foreground));
   pointer-events: none;
   height: 0;
 }

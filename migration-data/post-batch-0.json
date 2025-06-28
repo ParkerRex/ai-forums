@@ -1,0 +1,1628 @@
+{
+  "posts": [
+    {
+      "skoolId": "5c816b40f48448f0a5d685119b6f7405",
+      "title": "🆕 VAI WORKSHOP: MCP Jedi Deep Dive ft. JD",
+      "content": "JD ( @Jd Fiscus ) did a fantastic job breaking down MCP 101, future of MCP, MCP for beginner to advanced... and crushed Q&A at the end.\n\nIf you want to dig deeper either:\n\n- [Ping him on Discord](https://discord.gg/BAbK8MsG2F), he is Nerding I/O on there and said he's happy to answer any questions anyone has. - [Check out this playlist on YouTube (its him!)](https://youtube.com/playlist?list=PLjOCx_PNfJ4S_oOSqrMi6t9_x1GllvQZO&si=Q79PzuP-7O5IcPVQ)\n\nPDF attached with Opus 4 summary, thanks to the great prompt from @Jasen Lew\n\nSeveral members reached out about hosting workshops on topics theyre excited to share.\n\nTHIS IS WHAT ITS ALL ABOUT!\n\nAlso - I got RiverSide FM since it's better for this use case.\n\nI notice the AI chops can be a bit jarring.\n\nWill give that a go on future workshops.",
+      "createdAt": 1750979056940,
+      "updatedAt": 1750999292028,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 5,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "2118091a2ea84b9cb0fc8b0a29fdeeaa",
+          "name": "jd-fiscus-9018",
+          "firstName": "Jd",
+          "lastName": "Fiscus"
+        },
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        }
+      ]
+    },
+    {
+      "skoolId": "76bfd2b4e09242499ca1916354947cc8",
+      "title": "VAI EP3: Agent Frameworks, Claude Code, AI Workplace Use Cases (Encrypted Hong Kong CEO Surprise)",
+      "content": "Chapter markers in description.\n\nZoom summary below. Thx everyone that was fun!\n\nQuick recap\nThe meeting covered various aspects of AI-powered software development, including building property management tools, leveraging AI for code audits and documentation, and creating custom agents and frameworks. Participants shared their experiences with different AI tools and frameworks, discussing challenges and potential improvements in areas such as chatbots, CRM applications, and newsletter creation workflows. The group also explored the adoption of AI in engineering, emphasizing its potential to significantly increase productivity while acknowledging the need to overcome skepticism and navigate learning curves.\n\nNext steps\n• Parker: Debug and fix Postgres issues in the Vai project\n• Trent: Follow up with business partner to further define target market and sales process for demo booking platform\n• Daniel: Continue development of the newsletter creation agent framework and consider making it open source\n• Parker: Set up Github issues for the Vai project to enable collaboration\n• Nick: Explore AI agent solutions for modernizing internal processes at his company\n• Parker: Share the Vai project repository access with meeting attendees\n• Daniel: Share the repository comparing simple agent implementations across different frameworks in Discord\n\nSummary\nAI Property Management Tool Development\nJason shared his experience building an AI-powered property management tool using the OpenAI SDK and Python. He started by creating a simple chatbot using regex and gradually refined it, eventually implementing database connectivity and API calls. Jason emphasized the importance of starting with a basic version and gradually adding features, rather than trying to create a full product from the outset. He is currently debugging the use of the OpenAI SDK and plans to further develop the tool, potentially expanding it into an assistant with responses API.\nPython Agent Development Challenges\nJason discussed the challenges of building a Python-based agent and the need for a clear structure similar to front-end and back-end layers, emphasizing the importance of staying within the Python ecosystem. Parker shared his experience using Claude Code, highlighting its efficiency in creating tools and templates, and expressed satisfaction with the results achieved in a short time. Both participants agreed on the benefits of using English-based instructions and custom tools within projects, with Parker mentioning the potential for further improvements and the need for more time to fully utilize the tool.",
+      "createdAt": 1750443481250,
+      "updatedAt": 1750908291038,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 10,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "285d1ec160904be3b884397c9345448d",
+          "name": "jasen-lew-8712",
+          "firstName": "Jasen",
+          "lastName": "Lew"
+        },
+        {
+          "id": "71cd64833c62415f9ea9e774dd703b63",
+          "name": "daniel-tedesco-5614",
+          "firstName": "Daniel",
+          "lastName": "Tedesco"
+        },
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        }
+      ]
+    },
+    {
+      "skoolId": "11e0624689cf43c094fe621998dd14e6",
+      "title": "Welcome! Start Here!",
+      "content": "\"Play long-term games with long-term people.\" - Naval Ravikant\n\nThe best communities are built on trust and shared long-term vision.\n\nThe long-term vision for Vibe with AI is to be the most fun and approachable brand for the world to learn AI from.\n\nSociety needs to learn AI, but most people don't know it yet!\n\nTo get to know one another,r please introduce yourself below.\n\nCopy/paste this template!\n----\n\nHey, I'm {my name}.\n\nI am {type of role}\n\nI'm interested in learning {these topics/things/areas of AI}\n\nHere are some things I've explored with AI:\n{thing1}\n{thing 2}\n{thing 3}\n\n(If you haven't explored AI. That's cool, too!)\n\nHere is why I joined:\n{short description}\n----\n\nTrue value creation happens when communities coalesce around service and vision.\n\nLet's do it.",
+      "createdAt": 1743527536820,
+      "updatedAt": 1750703422470,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 9,
+      "downvotes": 0,
+      "netVotes": 9,
+      "commentCount": 133,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "7b905ef2aa04432c93cd481f9a239128",
+          "name": "aiden-hooper-2882",
+          "firstName": "Aiden",
+          "lastName": "Hooper"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "285d1ec160904be3b884397c9345448d",
+          "name": "jasen-lew-8712",
+          "firstName": "Jasen",
+          "lastName": "Lew"
+        },
+        {
+          "id": "4781517e1b2c4afc9f31655e843ce071",
+          "name": "jeff-boothe-5707",
+          "firstName": "Jeff",
+          "lastName": "Boothe"
+        },
+        {
+          "id": "a60e92ce8f6b4b38af2ac5f16d2c8895",
+          "name": "helps-ministries-8562",
+          "firstName": "Helps",
+          "lastName": "Ministries"
+        }
+      ]
+    },
+    {
+      "skoolId": "14a1cfeea9a0489d838eed53868af584",
+      "title": "Auggie interview rocked, credits landed?",
+      "content": "The 60$ should’ve landed in everyone’s accounts.\n\nLearned a lot from the ceo about how to use it.\n\nLots of community questions answered!!\n\nThanks for submitting them.\n\nInterview drops Friday lunchtime ET.\n\nTHANKS for being AWESOME🙏",
+      "createdAt": 1750890564902,
+      "updatedAt": 1750999313320,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 9,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        },
+        {
+          "id": "4781517e1b2c4afc9f31655e843ce071",
+          "name": "jeff-boothe-5707",
+          "firstName": "Jeff",
+          "lastName": "Boothe"
+        },
+        {
+          "id": "e0b2934633154fa193e4ce4377448e14",
+          "name": "shane-griffiths-7424",
+          "firstName": "Shane",
+          "lastName": "Griffiths"
+        },
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "9f11f9d293014a1b946d0a000a54c867",
+      "title": "Auggie Credits arrive tonight, everyone gets $60 instead of $50! :D",
+      "content": "",
+      "createdAt": 1750794273563,
+      "updatedAt": 1750941483337,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 5,
+      "downvotes": 0,
+      "netVotes": 5,
+      "commentCount": 4,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "4781517e1b2c4afc9f31655e843ce071",
+          "name": "jeff-boothe-5707",
+          "firstName": "Jeff",
+          "lastName": "Boothe"
+        },
+        {
+          "id": "efd6523b78e443ec8dd4aec3b0fa4d21",
+          "name": "javier-rios-1815",
+          "firstName": "Javier",
+          "lastName": "Rios"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "bfc41aa47805487889335e0eebce41db",
+      "title": "Do you believe in Magic?",
+      "content": "I have just discovered a tool that works like magic.\n\nQuicktype is an open-source tool that automatically generates type definitions and (de)serialization code in dozens of programming languages from sample data or JSON Schemas. It helps you go from raw JSON → strongly-typed models in seconds.\n\nBeyond speed, Quicktype turbocharges your workflow: integrate it into your CI pipeline to auto-generate models whenever contracts change, or use its VS Code extension for on-the-fly scaffolding. Whether you’re building microservices, crafting frontend applications, or experimenting with data science, Quicktype keeps your codebase DRY, reliable, and up to date.\n\n[https://marketplace.visualstudio.com/items?itemName=quicktype.quicktype](https://marketplace.visualstudio.com/items?itemName=quicktype.quicktype)\n\n[https://quicktype.io/](https://quicktype.io/)",
+      "createdAt": 1750811876271,
+      "updatedAt": 1750906233374,
+      "authorEmail": "daniel-ngari-4339@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "4781517e1b2c4afc9f31655e843ce071",
+          "name": "jeff-boothe-5707",
+          "firstName": "Jeff",
+          "lastName": "Boothe"
+        }
+      ]
+    },
+    {
+      "skoolId": "66671eccf4da4940820a37a6e11d95c8",
+      "title": "What’s up VAI!",
+      "content": "I’m a fullstack web developer in Fort Lauderdale, FL. Learning everyday how to better leverage AI for the products I’m building.\n\nSuper excited to be part of the community!",
+      "createdAt": 1750470571049,
+      "updatedAt": 1750900146886,
+      "authorEmail": "riley-mahoney-2241@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        },
+        {
+          "id": "4781517e1b2c4afc9f31655e843ce071",
+          "name": "jeff-boothe-5707",
+          "firstName": "Jeff",
+          "lastName": "Boothe"
+        }
+      ]
+    },
+    {
+      "skoolId": "c9578e4eec95445b8a6a3662ea9566c5",
+      "title": "Excited to Join",
+      "content": "Hey VAI!! I'm a junior full-stack dev based in Medford, OR. I've been using AI for a while with my work, but am looking to improve my workflows. I have experience with Cursor, ClaudeCode, and most of the top LLMs through the web. Just started using Augment and it is a game changer! Looking to learn the following:\n[ol:1]- improved workflows / leverage involving AI- remote agent setups- n8n and [maker.com](http://maker.com) automations\nsuper stoked to be here",
+      "createdAt": 1750646418752,
+      "updatedAt": 1750890604204,
+      "authorEmail": "crusoe-birkhead-1232@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "543cd72f69f043948add19ca3dd96b5c",
+      "title": "Google Released their CLI Coding tool (free)",
+      "content": "“Introducing Gemini CLI, a light and powerful open-source AI agent that brings Gemini directly into your terminal. >_\n\nWrite code, debug, and automate tasks with Gemini 2.5 Pro with industry-leading high usage limits at no cost.”\n\n[https://blog.google/technology/developers/introducing-gemini-cli-open-source-ai-agent/](https://blog.google/technology/developers/introducing-gemini-cli-open-source-ai-agent/)\n\n[https://x.com/googleaidevs/status/1937861646082515205?s=46](https://x.com/googleaidevs/status/1937861646082515205?s=46)\n\n[https://x.com/_philschmid/status/1937862749205205456?s=46](https://x.com/_philschmid/status/1937862749205205456?s=46)\n\n[https://x.com/parkerrex/status/1937862089004949749?s=46](https://x.com/parkerrex/status/1937862089004949749?s=46)",
+      "createdAt": 1750859142813,
+      "updatedAt": 1750995853689,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "6624794d6f024a2cb1f8adf07a2116e9",
+          "name": "nicolas-peralta-baron-1802",
+          "firstName": "Nicolas",
+          "lastName": "Peralta Baron"
+        },
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "165b2f0aba554469ab872382eb53d903",
+      "title": "Reminder to get your questions in for Augment CEO/Founder. Doing VAI interview tomorrow! Drop them below!",
+      "content": "",
+      "createdAt": 1750734467063,
+      "updatedAt": 1750901857093,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 5,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "a60e92ce8f6b4b38af2ac5f16d2c8895",
+          "name": "helps-ministries-8562",
+          "firstName": "Helps",
+          "lastName": "Ministries"
+        },
+        {
+          "id": "4781517e1b2c4afc9f31655e843ce071",
+          "name": "jeff-boothe-5707",
+          "firstName": "Jeff",
+          "lastName": "Boothe"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "e88e5290576d49c4bd5113849a5cd7eb",
+      "title": "Impromptu office hours in 8 minutes on discord if you want to chat",
+      "content": "",
+      "createdAt": 1750794582468,
+      "updatedAt": 1750795440759,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 4,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "3b2a84fa038e453bb3ba4c6990d0a989",
+          "name": "chris-drago-7720",
+          "firstName": "Chris",
+          "lastName": "Drago"
+        },
+        {
+          "id": "cf350996a86846368b6a922194f6af95",
+          "name": "riley-mahoney-2241",
+          "firstName": "Riley",
+          "lastName": "Mahoney"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "de4a2445c74148e48452d2cf6301fafe",
+      "title": "$50 Auggie Credits LAST Call!!! (wow!)",
+      "content": "Just in time for the new tasks release (its bananas)\n\nI have a spreadsheet of ppl who requested but want to make sure no one misses out.\n\nThey can be applied to existing accounts.\n\nPS. we got upgraded from talking to head of agents to the cofounder this friday.\n\nWonder if I can get him to join discord..\n\nDrop your email below associated with an existing account, or an email you plan to sign up with!",
+      "createdAt": 1750220318451,
+      "updatedAt": 1750794328860,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 22,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "71cd64833c62415f9ea9e774dd703b63",
+          "name": "daniel-tedesco-5614",
+          "firstName": "Daniel",
+          "lastName": "Tedesco"
+        },
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        },
+        {
+          "id": "c5a9185ec0da48b68929116038e46b5f",
+          "name": "arnav-grover-3032",
+          "firstName": "Arnav",
+          "lastName": "Grover"
+        },
+        {
+          "id": "bbd5d031f59a47c09f36569499750a8b",
+          "name": "william-mulcahy-1083",
+          "firstName": "William",
+          "lastName": "Mulcahy"
+        },
+        {
+          "id": "a60e92ce8f6b4b38af2ac5f16d2c8895",
+          "name": "helps-ministries-8562",
+          "firstName": "Helps",
+          "lastName": "Ministries"
+        }
+      ]
+    },
+    {
+      "skoolId": "8bba0198d97a49ab8931c007c43af0e1",
+      "title": "$50 for 30 Min Feedback Sesh w/ MIT Engineer Led WisprFlow Competitor",
+      "content": "Posted about this a month ago and just got word from the founder that they're prepping a release.\n\nIto is voice control of your Mac\n\n- Open-source\n\n- goes beyond current tools: dictation + LLMs + actions\n\n- working on deeper vibe coding integrations- $50 for 30 min discovery call around making vibe coding w/ voice as magical as possible- MCP support down the road\n\nMy buddy Barron is the founder/ceo and has a fleet of killer engineers working on it - well funded.\n\nif you want to get paid to give feedback about what you want, drop your email below and I'll pass it to Barron.\n\nalso... you'll get early access to the product and your feedback sculpts what they build!",
+      "createdAt": 1750716316999,
+      "updatedAt": 1750891926820,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 4,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "dbdfffdff495492fbc2dc78ff55abb69",
+          "name": "aman-lohia-8444",
+          "firstName": "Aman",
+          "lastName": "Lohia"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "c5a9185ec0da48b68929116038e46b5f",
+          "name": "arnav-grover-3032",
+          "firstName": "Arnav",
+          "lastName": "Grover"
+        },
+        {
+          "id": "b4ae5843f13e4a1a9eac0cc320ce05d5",
+          "name": "kyle-marks-4131",
+          "firstName": "Kyle",
+          "lastName": "Marks"
+        }
+      ]
+    },
+    {
+      "skoolId": "66227f89d11f4881a8ce58bf777865da",
+      "title": "Get $$$ Testing Open Source WisprFlow Built by MIT Engineers",
+      "content": "SF Startup (team of 9 MIT engineers) is building an open-source version of Wisprflow.\n\nExcept it has voice commands that trigger real actions.\n\nThey want to pay Vibe with AI members to test it and give feedback.\n\nDrop a comment if you want in.\n\nIf you already replied on Discord, youre already added.\n\nMore details to follow, founder's joining a future workshop as they get ready to launch.\n\nBTW I'm looking at the codebase.. it's gorgeous.",
+      "createdAt": 1747435920073,
+      "updatedAt": 1750716041593,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 12,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "3b2a84fa038e453bb3ba4c6990d0a989",
+          "name": "chris-drago-7720",
+          "firstName": "Chris",
+          "lastName": "Drago"
+        },
+        {
+          "id": "362105a04a8341b584d2c159f49ad13a",
+          "name": "markus-torgersen-5908",
+          "firstName": "Markus",
+          "lastName": "Torgersen"
+        },
+        {
+          "id": "45ccdbd6ca494a62a02a201e73662c23",
+          "name": "brad-w-9079",
+          "firstName": "Brad",
+          "lastName": "W"
+        },
+        {
+          "id": "24783be88e7745deafe49e944231412c",
+          "name": "joseph-kim-5115",
+          "firstName": "Joseph",
+          "lastName": "Kim"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "856cf646abf44c4b9a9d4da53684de25",
+      "title": "IMPORTANT: Vibe with AI V2 Announcement (Major Improvements)",
+      "content": "We're upgrading everything.\n\nThe announcement video attached covers\n\n- Vision- New product announcements - New member perks- New member agent named Val (copilot)- New member events (product roasts, monthly workshops with guests)- New member dev tools (prompt bank, ai SDLC, etc)- New member repo access- New Membership rewards program\n\nComment below one of the following:\n\n- General Feedback- If you want your company to expense VAI for annual sub - If you want early access to the beta - If you want to contribute to the repo\n\nShooting for mid-late June rollout of all V2 with option for members to request early access on REPO/Products.",
+      "createdAt": 1748276771985,
+      "updatedAt": 1750655700890,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 11,
+      "downvotes": 0,
+      "netVotes": 11,
+      "commentCount": 18,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "6624794d6f024a2cb1f8adf07a2116e9",
+          "name": "nicolas-peralta-baron-1802",
+          "firstName": "Nicolas",
+          "lastName": "Peralta Baron"
+        },
+        {
+          "id": "71cd64833c62415f9ea9e774dd703b63",
+          "name": "daniel-tedesco-5614",
+          "firstName": "Daniel",
+          "lastName": "Tedesco"
+        },
+        {
+          "id": "014500af595b46f8a2824f130f16c5a9",
+          "name": "craig-cocker-2740",
+          "firstName": "Craig",
+          "lastName": "Cocker"
+        },
+        {
+          "id": "218e5480ab4e40f7865da9eb3d7020df",
+          "name": "malvinder-singh-6682",
+          "firstName": "Emm",
+          "lastName": "Ess"
+        }
+      ]
+    },
+    {
+      "skoolId": "e80e621184d842f39bb3d636efceffda",
+      "title": "[Event] VAI: MCP Deep Dive w/ JD this Thursday 1PM ET on Zoom",
+      "content": "Topics covered:\n- MCP Basic, high level concepts\n- Resources, Prompts, Tools\n- Server vs Client (n8n, claude, cursor)\n- Limitations (scale)\n- Future thinking (payments)\n\nWhy you should care: MCP allows you to share and connect your tools and apps more broadly. It's a common communication language.\n\n[https://www.skool.com/troublefreeai/calendar?eid=ca422611d9a04d4e99b77d0f9acdb64a](https://www.skool.com/troublefreeai/calendar?eid=ca422611d9a04d4e99b77d0f9acdb64a)",
+      "createdAt": 1750528655571,
+      "updatedAt": 1750606626265,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 5,
+      "downvotes": 0,
+      "netVotes": 5,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "fa272d337b47448eb98a1cff0836f9b9",
+      "title": "Hey there",
+      "content": "Hey, I'm Matt.\nI am an experienced software engineer\nI'm interested in learning about integrating various tools and increasing my impact.\nHere are some things I've explored with AI:\n\n- cursor/copilot- agent workflows with TDD- making different views of documents for different audiences\n\nHere is why I joined:\n\n- The youtube channel is impressive but often the real value is in community and the insights from lots of people sharing their experiences, especially when at the edge of a new tool/paradigm/concept.",
+      "createdAt": 1749827861481,
+      "updatedAt": 1750498272707,
+      "authorEmail": "matt-davidson-2239@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 4,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "a71c74761c2d48158ead5a16e1476d8e",
+          "name": "matt-davidson-2239",
+          "firstName": "Matt",
+          "lastName": "Davidson"
+        }
+      ]
+    },
+    {
+      "skoolId": "4fc34d5d89be417a8ebd31cc7279ab0e",
+      "title": "Payment System Project",
+      "content": "Right now I’m finalizing an internal payment system for my company (startup media company). I worked solo on this project with Cursor + Claude\n\n## What I did\n\nI built it as a distributed event-based system composed of domain driven microservices.\n\nKey components\n\n- transaction service which functions as the main integration point and orchestrates various transaction types (payments, transfers, wallet deposits, etc) atomically- Abstracts external payment processors like Stripe/Paypal behind a unified interface- Wallet component (Uber style) for managing user balances within our ecosystem (mobile app, web app)\n\n## Tech stack\n\n- Backed services in Node Typescript- Zod for schema validations- Inversify for dependency injection- NextJS for web client- AWS RDS Postgres- AWS EventBridge + SQS- AWS Elastic Container Service- CI/CD GitHub Actions\n\n## Lessons Learned\n\nI think I should’ve used a Monorepo rather than separate repos for each service\n\n- Easier to build shared components- would have allowed me to feed context more easily and leverage AI better\n\nUtilize gRPC for semi-event-based instead of fully event based\n\n- Would have simplified direct dependent requests between services- Reduce latency\n\nNestJS\n\n- I built a template for my backend node services that included inversifyJS for dependency injection, a custom modular file structure, custom annotations for auth guards- My services were flexible and lightweight but I kindve reinvented Nest in my own way 😂\n\n## Would love some feedback\n\nIf you’ve built something similar I’d love to hear what patterns/tools/architecture/workflows worked for you guys",
+      "createdAt": 1750472391837,
+      "updatedAt": 1750528987993,
+      "authorEmail": "riley-mahoney-2241@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "436dca0024be46f18acd1cf2af1f3402",
+      "title": "Intro - Jeff",
+      "content": "Hey, I'm Jeff.\nI am the founder of reUrgency, LLC 2009 - an enterprise web app dev firm.\nI definitely want to learn more about Agentic design, MCP consumption/publishing and tying it into the bigger picture of unique AI solutions for our clients.\n\nHere are some things I've explored with AI:\n\n- We've built and deployed several RAG apps for our clients (chat, customer service email)- We currently have a TTS to custom summary to auto form fill in UAT.- We wrapped our code-gen system in an MCP. (that was a blast 🚀)\n\nI joined to get connected with like minded individuals with a passion to explore the bleeding edge of AI dev which is changing everyday. What a ride!\nI look forward to meeting many of you.\nCheers",
+      "createdAt": 1749869829714,
+      "updatedAt": 1750449547713,
+      "authorEmail": "jeff-boothe-5707@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "4781517e1b2c4afc9f31655e843ce071",
+          "name": "jeff-boothe-5707",
+          "firstName": "Jeff",
+          "lastName": "Boothe"
+        }
+      ]
+    },
+    {
+      "skoolId": "26950c84d3e94b8e8e67ac0b02bd86ae",
+      "title": "Intro",
+      "content": "Hi, I’m Paul. Grateful for the community and the opportunity to learn about AI. 🙏",
+      "createdAt": 1749902530162,
+      "updatedAt": 1750448296857,
+      "authorEmail": "17634269@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 7,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "a54b356764e948cca11d971b053173b7",
+          "name": "17634269",
+          "firstName": "P",
+          "lastName": "W"
+        },
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        }
+      ]
+    },
+    {
+      "skoolId": "5a2d14d2b42d48deaac9d2ced3f7a996",
+      "title": "Intro - Michael",
+      "content": "Hey, I'm Michael\nI am a software engineer turned product manager who runs a couple of businesses on the side\nI'm interested in learning AI productivity, AI automation of marketing, AI augmented coding of web and mobile apps.\nHere are some things I've explored with AI:\nBasic LLM stuff\nMCP servers with Claude Desktop to write PRD's",
+      "createdAt": 1749782536098,
+      "updatedAt": 1750299460992,
+      "authorEmail": "michael-tier-4773@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "aa96cd0af0bd4c66b31d587b4839c947",
+          "name": "michael-tier-4773",
+          "firstName": "Michael",
+          "lastName": "Tier"
+        }
+      ]
+    },
+    {
+      "skoolId": "8f860015110c4aa5a1a26edd8de35fd7",
+      "title": "intro",
+      "content": "hey folks, i'm scott. just a dude making some stuff. non-tech background. some coding in college, it never took. had a lot of false starts but never got very far. little projects here and there, c , python, ocr. building stuff myself for my business... i've been doing a fair bit of n8n workflows for the past year. in the past several months i have been vibe coding a bunch... cursor, cline, roo cline/code. now i am fully in claude in vs code. on the $100/mo for now... getting an itchy trigger finger on going to 200.\n\nin the past, ive spent 2 weeks debugging stuff that i vibe coded and now i am starting to take it a lot more seriously. parker's vids have been great learning a lot about how real devs work so that has been great and helped a metric shit ton getting code that is actually somewhat worth a damn (but what the f do i know... i can debug it in a couple of minutes now compared to before) learning a lot for indydevdan too... seeing how dan and parker can just make shit happen on 20 different levels at the same time... that is where i want to get to.",
+      "createdAt": 1750285302127,
+      "updatedAt": 1750285302151,
+      "authorEmail": "scott-dellinger-8638@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "b1640b33998f49b59333c98b4a07a292",
+      "title": "Intro - Rento",
+      "content": "Hi, I'm Rento,\n\nI am a Senior Full-Stack JavaScript Developer with over 16 years of international experience in web application development. My expertise in modern front-end and back-end technologies drives my current exploration of emerging AI technologies.\n\nEvery day, I'm looking for ways to combine established development practices with innovative AI workflows. This group has been a very nice place for inspiration so far. I hope to contribute to this one day as well.",
+      "createdAt": 1750170102658,
+      "updatedAt": 1750263923828,
+      "authorEmail": "rento-rinalds-5472@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "416a0aacdfbd4d73bdcb675d6d116e82",
+          "name": "rento-rinalds-5472",
+          "firstName": "Rento",
+          "lastName": "Rinalds"
+        }
+      ]
+    },
+    {
+      "skoolId": "e541e879a26e46219a51cebf95ecafa8",
+      "title": "Alternative to APify for YouTube",
+      "content": "I was lucky enough for the automation scripts for transcripts to go into meltdown today over at apify and that led me to find [https://github.com/yt-dlp/yt-dlp](https://github.com/yt-dlp/yt-dlp) - An utter treasure-trove of gold dust for youtube downloads nad transcripts (and I think any other social platform)...It's certainly making apify look very redundant right now and (I think) the scraping of social platform data free...I'm still only just getting to grips with it, but Parker's API meta-prompt has been awesome at getting Augment to just 'get' pretty much every api I've thrown at it in the last 72hrs - highly recommend both...",
+      "createdAt": 1749595017704,
+      "updatedAt": 1750474010732,
+      "authorEmail": "rick-williams-8782@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        }
+      ]
+    },
+    {
+      "skoolId": "69eda06075b1429eadfb3aa644e6f3af",
+      "title": "Intro - Rick",
+      "content": "Hey hey,\n\nMy background in short:\n\nCurrently running and coding a small niche EdTech app. Previously spent some years trying to make sense of financial markets as an economist at an investment bank, then switched to making pretty slides as a strategy consultant before starting the SaaS journey.\n\nBeen coding on the side for ~15 years, being able to effectively leverage AI feels like an unbelievable cheat code right now; been soaking up everything i can find since the early co-pilot days.\n\nYour channel/ content is 👌 Also very much enjoy your product angle, very relevant for me and not something i’ve previously had much experience with, so interesting to see how you weave everything together.\n\nMy goal is to have 20 agents working away 24/7 on all the features my future AI PMs dream up\nby reading through my collected thoughts/ yapping, at a fraction of the cost of humans…\n\nOverall i feel like we are broadly looking at a fairly similar situation/ setup and are trying to leverage AI to ship and scale at an increasing pace, so excited to see where the community is heading :)",
+      "createdAt": 1749677219320,
+      "updatedAt": 1750232480518,
+      "authorEmail": "rick-kieffer-5228@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "751d70bd93464dfeba1eb5069aa6696b",
+      "title": "Discord Update 👀 Tutorial Requests & Great Tutorials",
+      "content": "Added [#tutorial-requests](https://discord.com/channels/1355280592962453585/1384545500635861066) for queueing up VAI exclusive content pipeline\n\n- Simply add a detailed title, and any description that helps the viewer understand.,- You can vote on them!\n\nAdded [#great-tutorials](https://discord.com/channels/1355280592962453585/1384709151371952218) for tutorials youve found that saved you hours of time.\n\n- Add a link, video, or any relevant info\n\nps. These are on the roadmap for new platform, and will be exported (emojis included) so dont be bashful, go write something!",
+      "createdAt": 1750220440111,
+      "updatedAt": 1750291809164,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "0f37feceff814e2bbe7b563aa4878ba2",
+      "title": "Keeping ahead of AI trend",
+      "content": "Hey 👋 I’m Chris from the Netherlands. I spent over 8 years working in the hospitality industry, and now I’m building a startup to shake it up with AI. Still very early in the validation stage [www.euron.ai](http://www.euron.ai)\n\nI joined this community because Parker is clearly on the right track, one of the few who really gets the current AI shift. Basically, I’m here to learn from someone who's ahead of the curve.\n\nRight now, I’m messing around with Claude Code, and Cursor trying to level up my dev workflow. Planning to shift my focus to augment to see its capabilities.\n\nIf you have read this far, I am also looking for an co-founder!",
+      "createdAt": 1749232925917,
+      "updatedAt": 1750232247559,
+      "authorEmail": "chris-schuilenburg-3472@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 12,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "e25c21e532e84d53822cf6bfaed47b6d",
+          "name": "chris-schuilenburg-3472",
+          "firstName": "Chris",
+          "lastName": "Schuilenburg"
+        },
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        },
+        {
+          "id": "09c1619c3e3a418fb401bb0242d5aea8",
+          "name": "jon-walz-8683",
+          "firstName": "Jon",
+          "lastName": "Walz"
+        }
+      ]
+    },
+    {
+      "skoolId": "7afc19aaec684c5494afd234970ed202",
+      "title": "VAI EP2: Scraping X, AI for Education, Linux Fedora Woes, New Biz Ideas",
+      "content": "Chapter markers in description. Thx everyone who joined.\n\nFor those who don't want their face on a thumbnail i can remove, it's an unlisted yt vid but nice to put faces to names\n\nand now some zoom notes:\n\n## Quick recap\nThe meeting began with casual conversation about pets and AI note-taking tools before transitioning to technical discussions about parallel pages and auth checks in a project. Parker demonstrated two main projects—​a Twitter scraping tool and a VAI platform—​while the team explored potential improvements and discussed various Zoom features. The group then focused on an educational product project for children, covering backend systems, content generation, and development strategies, before concluding with discussions about productivity tools and technical troubleshooting.\n\n---\n\n## Next steps\n- **James** – Schedule follow-up discussion with Parker about high-level product-development strategy and architecture thinking\n- **Josh** – Create example outputs for the decodable reader generator to use as reference cases before implementing the full system\n- **Christopher** – Research Azure’s native AI assistant/copilot for meeting-assistant project architecture\n- **Parker** – Share the system-instruction prompt used for ChatGPT requests to reduce verbose outputs\n- **Parker** – Share the project-template CLI tool that analyzes codebases and writes architecture templates\n- **Dimitri** – Fix screen-sharing issues in Zoom for next week’s show-and-tell presentation\n\n---\n\n## Summary\n\n### Technical discussion on Zoom features\n- Casual chat about pets and AI note-taking tools\n- Issue raised: parallel pages and auth checks\n- Parker explained code concerns; Michael and Dimitri joined\n- Explored Zoom add-ons; surprised at feature depth\n- Briefly shared locations and backgrounds\n\n### Social media and platform development\n- **Project 1:** Twitter scraping tool built with Augment\n- **Project 2:** VAI platform (marketing vs. platform functionality split)\n- Discussed pinning docs to Discord and managing new content Streams",
+      "createdAt": 1749840757206,
+      "updatedAt": 1750734486509,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 7,
+      "downvotes": 0,
+      "netVotes": 7,
+      "commentCount": 17,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "71cd64833c62415f9ea9e774dd703b63",
+          "name": "daniel-tedesco-5614",
+          "firstName": "Daniel",
+          "lastName": "Tedesco"
+        },
+        {
+          "id": "08688d6f6dbb47ccaef5f8cee3d6724c",
+          "name": "rick-williams-8782",
+          "firstName": "Rick",
+          "lastName": "Williams"
+        }
+      ]
+    },
+    {
+      "skoolId": "998b52a77110455085d2a18de98f512b",
+      "title": "Discord Update | Webhooks for popular dev tools and creator tool AI companies",
+      "content": "Whenever they announce new releases\n\nyou'll see them in\n⁠📢┃creator-tool-updates or ⁠📢┃dev-tool-updates\n\nDev Tools:\nAnthropic\nClaude\nAugment\nOpenai\nAider\nModel Context Protocol\nCursor\nSupabase\nCline\nNext.js\nHugging Face\nPerplexity\nGoogle Labs (Jules, Stitch)\n\nCreator Tools\nOpus Clip\nEleven Labs\nKling AI\nReplicate\n\nIf noisy, right click channel > mute\n\nAlso will tie this to roles later..",
+      "createdAt": 1749919831447,
+      "updatedAt": 1749931118664,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "2118091a2ea84b9cb0fc8b0a29fdeeaa",
+          "name": "jd-fiscus-9018",
+          "firstName": "Jd",
+          "lastName": "Fiscus"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "a0c5b707562742c686e10626227f5738",
+      "title": "Modded AI setup for China trip",
+      "content": "So I'm going to be in China visiting some family, but it occurred to me that several daily driver tools will simply not work. There's one thing with certain domains like Google not working without a VPN (solvable with VPN), but I believe a bunch of these tools don't work if they detect you are on VPN. I think a friend mentioned to me that among these include OpenAI and Claude\n\nWould appreciate some help with suggested alternatives and mentions of other tools that may be borked while I'm out there",
+      "createdAt": 1749853298402,
+      "updatedAt": 1749920096349,
+      "authorEmail": "jason-chiang-5257@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "71cd64833c62415f9ea9e774dd703b63",
+          "name": "daniel-tedesco-5614",
+          "firstName": "Daniel",
+          "lastName": "Tedesco"
+        }
+      ]
+    },
+    {
+      "skoolId": "67b6798155e64a0d917371ba88c0ec2a",
+      "title": "Zoom Link for Todays Show and Tell (12PM ET)",
+      "content": "Upgraded to Zoom to set up automatic note taking, recording... and to not have it sound like it was recorded in a soup can.\n\nCome hang out if ya can! We'd love to hear what you're working on :)\n\n[https://us04web.zoom.us/j/74869321391](https://us04web.zoom.us/j/74869321391)",
+      "createdAt": 1749822957758,
+      "updatedAt": 1749866855442,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "c21a637a6bf944ea8abfccc21e568b22",
+      "title": "Interviewing Augment Engineers, ask anything !",
+      "content": "Drop any questions you have below and il be sure to shout you out on our VAI x Aug Collab!\n\nThanks for making all of this possible, I appreciate each and everyone of you for being early of the VAI journey 🙏\n\nPs. Hope to have beta access to new platform this weekend :-)\n\nAnd also those free 1 months worth of augment credits for 40 users!",
+      "createdAt": 1749671074084,
+      "updatedAt": 1749817980603,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        },
+        {
+          "id": "5babc945fa7a48f180e133927b5d1d20",
+          "name": "reg-user-3481",
+          "firstName": "Reg",
+          "lastName": "User"
+        },
+        {
+          "id": "71cd64833c62415f9ea9e774dd703b63",
+          "name": "daniel-tedesco-5614",
+          "firstName": "Daniel",
+          "lastName": "Tedesco"
+        }
+      ]
+    },
+    {
+      "skoolId": "ebd27101016f44ddae38c441af149850",
+      "title": "Intro - David",
+      "content": "Hey, I'm David.\nI am a Senior Data Scientist in higher ed.\nI'm interested in learning more about how I can leverage AI in my work and beyond that.\nHere are some things I've explored with AI:\nAI automation (To help with documentation of my projects)\nDatabase Text to SQL app (To help with data analysis)\nExploratory data analysis agent (To help with EDA)\nHere is why I joined:\nI found great value in Parker's YouTube videos and decided to give the VAI community a try. I'm looking forward to learning from everyone and seeing where I can contribute.",
+      "createdAt": 1749507127651,
+      "updatedAt": 1750009677476,
+      "authorEmail": "david-ramirez-6321@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "68465a6b81df448698578f610dd6c834",
+          "name": "david-ramirez-6321",
+          "firstName": "David",
+          "lastName": "Ramirez"
+        }
+      ]
+    },
+    {
+      "skoolId": "ddf3350daa764dfca359a5d2f0f6beba",
+      "title": "Intro - Ben",
+      "content": "Hey everyone! Excited to be here. I've been a developer for about 6 years, started out working on a 3D simulation engine at a defense company, then was at DraftKings for a couple years working on some high-traffic marketing systems. Left at the end of last year and am currently at a 7 person sports tech startup as the sole backend engineer.\n\nI've been following along with daily uploads the past few weeks and it's been really helpful for me to get a grasp on the current state of everything. I see so much opportunity over the next 5-10 years for those who invest the time now, so that's what I'm trying to do - I'm sure you all feel the same way.\n\nFeel free to reach out and say hi! I'll be around.",
+      "createdAt": 1749493401901,
+      "updatedAt": 1749788352259,
+      "authorEmail": "ben-morrison-4381@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "9a5c169eb1fb49a289abc0d82533f045",
+          "name": "ben-morrison-4381",
+          "firstName": "Ben",
+          "lastName": "Morrison"
+        }
+      ]
+    },
+    {
+      "skoolId": "01c02a96b29040f4aaf09605f4b3641f",
+      "title": "[answer needed] VAI mobile app question",
+      "content": "are you an android or iOS user?",
+      "createdAt": 1749646412584,
+      "updatedAt": 1749646412607,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "bd090e513fde4a7389928de01200f536",
+      "title": "Feature Deep Dive Prompt",
+      "content": "I'm working on global search for the new VAI platform and it has a few pieces of functionality I've never built before.\n\nI was lucky to find an implementation online to learn from.\n\nIf you want to get a deep understanding of how a feature works...\n\n[Here's a great prompt that breaks everything down. ](https://www.skool.com/troublefreeai/classroom/b981e8f8?md=cc545997d5c1421f81060faf277ca667)\n\nHow to use it:\n\n- Pass in the files you want to explore- Pass in the technologies used to guide the LLM - Hit go - READ the outputs",
+      "createdAt": 1749569000641,
+      "updatedAt": 1749817829930,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "574a498cd33c498890a0aa4c7ce3b8e2",
+      "title": "Bulletproof MCP calls with `available_tools.xml`",
+      "content": "sometimes your coding agents don't listen when you want to reference an MCP.\n\ninstead of smacking them, give them more context..\n\nit's an XML file called `[available_tools](https://github.com/Vibe-with-AI/ai-sdlc/blob/agentic/.aisdlc/refs/available-tools.xml)`\n\nI made this by copying the relevant pieces of each MCP's [README.md](http://README.md), then asked an LLM to give me the README's into a format including:\n\n- Available tools- description of tools- tool- tool summary- tool description- tool capabilities- tool function- tool function description- tool paramaters\n\nI attached a snippet in the photos, and provided the full file as a GIST.\n\n## Where do I store this?\n.ai/refs/\n\n## How do I use this?\nI place it in the user guidelines instructing each request that it has MCP's available, and to reference the `./ai/refs/available_tools.xml` for usage details.\n\n## How do I make my own?\nProvide the example from [the example](https://github.com/Vibe-with-AI/ai-sdlc/blob/agentic/.aisdlc/refs/available-tools.xml), copy/paste each [README.md](http://README.md) from the MCP you are using, into the `.ai/refs/mcps`, then ask the LLM to use the `available_tools.xml` as a template, and swap it with the contents of the mcp's you plan to use in `.ai/refs/mcps`",
+      "createdAt": 1749580320245,
+      "updatedAt": 1749817533492,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "2adaa64a3d0148798ebd6abaa30841c0",
+      "title": "APAC people! What time works best for you for Show & Tell slot on fridays?",
+      "content": "Times listed in Beijing Time\n\nI'll get the space / event set up with associated Zoom Link.\n\nAdding new events soon and want to this get one added.",
+      "createdAt": 1749564147637,
+      "updatedAt": 1749848776136,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "59a98cb93b494d58ad2524c7fe77fe02",
+      "title": "Who wants to try Augment for a month? (got us $1k worth of accounts)",
+      "content": "Comment below if interested in trying Augment\n\nI’ll share full details on YouTube tomorrow (and here)\n\nBTW: They offered me a job. I passed. Then they offered a sponsorship. I said sure, but only if I could say whatever I want. No ads, no BS. If it sucked, I’d say so.\n\nGOOD NEWS: It doesn’t suck. It solves context like nothing else!\n\nWrote a 26K token specific plan (snippets attached) to migrate VAI-v2 from:\nAstro -> Next.js\nExpress -> FASTAPI w/ Pydantic",
+      "createdAt": 1748527811927,
+      "updatedAt": 1749515236738,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 18,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "e0b2934633154fa193e4ce4377448e14",
+          "name": "shane-griffiths-7424",
+          "firstName": "Shane",
+          "lastName": "Griffiths"
+        },
+        {
+          "id": "dbdfffdff495492fbc2dc78ff55abb69",
+          "name": "aman-lohia-8444",
+          "firstName": "Aman",
+          "lastName": "Lohia"
+        },
+        {
+          "id": "e25c21e532e84d53822cf6bfaed47b6d",
+          "name": "chris-schuilenburg-3472",
+          "firstName": "Chris",
+          "lastName": "Schuilenburg"
+        },
+        {
+          "id": "9a5c169eb1fb49a289abc0d82533f045",
+          "name": "ben-morrison-4381",
+          "firstName": "Ben",
+          "lastName": "Morrison"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "9473dbc550b1444bab9fd28fbefbf95a",
+      "title": "Intro - James",
+      "content": "Hi everyone,\n\nI'm James--been a follower of Parker's videos for a while, just found the community and am excited to dive in.\n\nI come from a healthcare education background, and have worked in sales and product management at a couple startups. Most recently I was an entrepreneur in residence at a venture fund, working on a DTC telehealth brand.\n\nI've used AI a lot as a solo-founder, but I know I can be using it to create even more leverage and make myself more efficient. What excites me most right now is the idea of entering boring, unsexy industries with new software and tools I can build with AI--thinking along the lines of cooking oil removal, roofing, and septic-tank plumbing--so this is what I want to try to build for.\n\nLooking forward to learning alongside you all!",
+      "createdAt": 1749245915533,
+      "updatedAt": 1749788407928,
+      "authorEmail": "james-loesch-2252@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "ef4d1160360c443ab3c8fd43bb0ad699",
+      "title": "Intro - Merlin",
+      "content": "Hey, I'm Merlin (yes, real name).\nI am a solutions architect at a finance company in Hong Kong\nI'm interested in learning how to build up a small business and leverage my skill and AI coding tools to ramp up product quickly but in a way that will scale to an enterprise.\nHere are some things I've explored with AI:\n\n- AI workflows- AI agent- devcontainers- prompt chaining\n(If you haven't explored AI. That's cool, too!)\nHere is why I joined:\nParker's free content was massively helpful in helping me refine and validate my ideas and there is clearly more in this community for me to learn from and contribute back to.",
+      "createdAt": 1749262354906,
+      "updatedAt": 1749773204726,
+      "authorEmail": "merlin-floyd-2662@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "55b586dd27404f44b871b3a5f42a2e16",
+      "title": "VAI Show & Tell x June 6 Recording",
+      "content": "Thanks everyone for joining! Was fun. For those in different time zones, please drop what times work for you, and we'll add a weekly slot on fridays\n\n-----\n\nIn this episode of VAI Show and Tell, the discussion centers around innovative tools for workflow optimization and documentation, including VAI, Claude, and Bmad. The session kicks off with a demonstration of Michael’s cloud code workflows, including multi-agent orchestration and custom tools for cloud code management. Parker presents an idea for '10 essential docs' aimed at standardizing documentation templates for various projects, addressing the common need for well-structured documentation in full stack projects. The conversation later shifts to Bmad, a framework for better project management and task execution using AI personas to streamline various project tasks. Contributors share their insights and experiences, including setting up and customizing agents, and the potential for integrating these tools into other professional domains.",
+      "createdAt": 1749232635007,
+      "updatedAt": 1749564155864,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 7,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "71cd64833c62415f9ea9e774dd703b63",
+          "name": "daniel-tedesco-5614",
+          "firstName": "Daniel",
+          "lastName": "Tedesco"
+        }
+      ]
+    },
+    {
+      "skoolId": "01644eccdb814a729ea38057aac7ec32",
+      "title": "Challenges with the Classroom content",
+      "content": "In the 'Coding Prompt Vault' classroom I'm finding it difficult to follow because the references aren't correctly linkable...e.g. in 'Plussing Up PRD Draft':\nExpected outputs:\n- [prd.md](http://prd.md): Full requirements document\n- \\[[file-structure-comparison.md](http://file-structure-comparison.md)\\]([http://file-structure-comparison.md](http://file-structure-comparison.md)): Current vs. proposed structure\n- \\[[implementation-tasks.md](http://implementation-tasks.md)\\]([http://implementation-tasks.md](http://implementation-tasks.md)): Prioritized implementation tasks\n- examples/: Sample implementations of key components",
+      "createdAt": 1749161818359,
+      "updatedAt": 1749236250978,
+      "authorEmail": "rick-williams-8782@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "0fdf6cc169f74e97a51edf9b406e66b7",
+      "title": "Live Coding Session - Swapping OTel for Sentry",
+      "content": "Got a request yesterday in Discord for an unscripted session using my latest workflow.\n\nHere you go!\n\nHope you learn something or have a critique for me :)\n\n[https://www.youtube.com/watch?v=_ShRUHiggjk](https://www.youtube.com/watch?v=_ShRUHiggjk)",
+      "createdAt": 1748737391945,
+      "updatedAt": 1749133173372,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        }
+      ]
+    },
+    {
+      "skoolId": "a02175dd34ce4a159dc9b5f3c76c3202",
+      "title": "🌵 Weekly Event Added: Show & Tell. 12PM ET on Fridays on Discord",
+      "content": "New weekly event added: Show & Tell. 12PM ET on Fridays on Discord.\n\n3-5 minutes to demo your product, MVP, prototype, workflow or idea.\n\nNo pressure, just explain where your head is at and get feedback from builders!\n\nEach slot should take 15 minutes total.\n\n- 5 mins demo- 10 mins max roundtable. \n\nLet's see how it goes!\n\nJoin the discord #show-and-tell voice channel at the top!\n\n[Link to add to calendar ](https://www.skool.com/troublefreeai/calendar?eid=557e681e844c4ea594a34b77738aeb9d&eoid=1749225600) 📆",
+      "createdAt": 1749060316895,
+      "updatedAt": 1749236254350,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "69d1fb38609e4b1b833ae1b44710fc42",
+          "name": "mike-courian-7465",
+          "firstName": "Mike",
+          "lastName": "Courian"
+        }
+      ]
+    },
+    {
+      "skoolId": "789576f4ca9449fe9db34d5e206dbb74",
+      "title": "Spotlight: Chris Drago makes amazing thumbnails",
+      "content": "A group member @Chris Drago makes great content for his fashion brand.\n\nHe also has a CRAZY Airtable setup for managing content / SEO / etc.\n\nIts like out of a movie\n\nHe's the guy to talk to if you want a masterclass on webhooks and Airtable.\n\nOr if you want a design opinion of course.",
+      "createdAt": 1745294838728,
+      "updatedAt": 1749065529987,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 9,
+      "downvotes": 0,
+      "netVotes": 9,
+      "commentCount": 6,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "3b2a84fa038e453bb3ba4c6990d0a989",
+          "name": "chris-drago-7720",
+          "firstName": "Chris",
+          "lastName": "Drago"
+        },
+        {
+          "id": "06385ae8c5ac407c86f34ed7d815a483",
+          "name": "bazel-shaw-6093",
+          "firstName": "Bazel",
+          "lastName": "Shaw"
+        },
+        {
+          "id": "02741d100c774c9395fedff6ae8ed944",
+          "name": "andy-harvey-5452",
+          "firstName": "Andy",
+          "lastName": "Harvey"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "e0226d69bdf649b29bcf78e3dcc13168",
+      "title": "[VAI] Announcements & Raw Build Vid of New VAI",
+      "content": "QUICK TEASE of what’s coming, peek the API routes + docs I dropped in.\n\nAlso, here’s a 45-minute screen share to toss on while you work. You might spot workflows I don’t even notice anymore\n\nAugment’s running in the background (25% of the screen), while I’m setting up another repo ahead of the PRD (75%).\n\nNo voiceover just raw, real-time flow.\n\n([I throw on Notch sometimes](https://www.youtube.com/watch?v=s2yOF4jDgNU&list=PL5FctBTKh9muCuKW6jvhl6ttD2pf8HESu) — dude streamed himself building Minecraft, blasting house music and clacking keys… then sold to Microsoft for $2.5B and bought the most expensive house in LA. Respect.)\n\n🌵 On the events front: I’m updating the schedule to bring in legit experts across different domains.\n\n🌵 On free Augment: I'm working on getting us more than 4 accounts... :)\n\n🌵 On getting paid to test WisprFlow competitor: I'm waiting for them to ship. CLASSIC.\n\nWe’re also kicking off weekly product hot seats. First one is this friday! join in and get live feedback from the Discord crowd.\n\nComment below if youd like to be put in the hot seat! Demo your product in 2 minutes. Get feedback!\n\nLots more coming.\n\nAlways a message away,\nParker",
+      "createdAt": 1748983886957,
+      "updatedAt": 1749060372945,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "b7b40ca2ce0e4909a6b688c42b379185",
+      "title": "Introduction",
+      "content": "Hi Everyone,\n\nI have been a Business Intelligence Consultant for over 15 years and before that I was a Webdesigner. Always did some hobby projects in Python and lately Golang. I feel more at home as backend developer because.\n\nWith this new era of AI my programming ambitions grew and I want to get out of Business Intelligence and try to launch some own app creations.\n\nI'm working on an AI Marketing Agent for local business branches using crawl4ai for some scraping. The idea is to have a personal AI Marketing agent that leverages their own data with specific goals and strategies a user sets. The product will combine user data with branch specific news and competitor data to help their business grow.\n\nFound this community through Taskmaster AI which really boosted my focus and productivity in getting my projects rolling forward.\n\nHope to learn a lot and see how we can help each other.",
+      "createdAt": 1748958431122,
+      "updatedAt": 1749084974108,
+      "authorEmail": "dimitri-pietersz-9089@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "1757797c070c4c5fa45050247e2daea9",
+      "title": "Introduction",
+      "content": "I'm a software developer with 20 years of experience building backends, web and mobile apps. Most recently I worked at Yuga Labs. Now, I'm focused on making apps solo. Trying to maximize my AI workflow so I can be as productive as possible.",
+      "createdAt": 1746853555716,
+      "updatedAt": 1748896827988,
+      "authorEmail": "joseph-kim-5115@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "47d2f961ecc442a7a024a4a51b78c9e0",
+          "name": "sam-zemro-8896",
+          "firstName": "Sam",
+          "lastName": "Zemro"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "e7dfd8863e0e4ed6b3f3dbbc9b3f2850",
+      "title": "Intro",
+      "content": "Hello everyone.\n\nI've been a full-time web design/graphic design guy for the last five years, got heavily invested in AI back in 2022 and haven't looked back since.\n\nCurrently working on:\n\n- Systems & Frameworks for all pre-development, development, and post-development- Browser automation system for additional token leverage\n\nGlad to have found a community that seems to thinking differently from the rest and more aligned with my own approach.",
+      "createdAt": 1747864779872,
+      "updatedAt": 1748896853243,
+      "authorEmail": "brad-w-9079@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 5,
+      "downvotes": 0,
+      "netVotes": 5,
+      "commentCount": 4,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "e0b2934633154fa193e4ce4377448e14",
+          "name": "shane-griffiths-7424",
+          "firstName": "Shane",
+          "lastName": "Griffiths"
+        },
+        {
+          "id": "45ccdbd6ca494a62a02a201e73662c23",
+          "name": "brad-w-9079",
+          "firstName": "Brad",
+          "lastName": "W"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "47d2f961ecc442a7a024a4a51b78c9e0",
+          "name": "sam-zemro-8896",
+          "firstName": "Sam",
+          "lastName": "Zemro"
+        }
+      ]
+    }
+  ]
+}

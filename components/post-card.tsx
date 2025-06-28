@@ -94,7 +94,7 @@ export default function PostCard({ post }: PostCardProps) {
   };
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg hover:border-gray-300 transition-colors">
+    <div className="bg-card border border-border rounded-lg hover:border-muted-foreground/20 transition-colors">
       <div className="flex">
         {/* Voting */}
         <div className="flex flex-col items-center p-4 space-y-1">
@@ -102,14 +102,14 @@ export default function PostCard({ post }: PostCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="p-1 h-auto hover:bg-gray-100"
+              className="p-1 h-auto hover:bg-muted"
               onClick={handleUpvote}
               disabled={isVoting}
             >
               <ArrowUp
                 className={`w-5 h-5 transition-colors ${userVote === "upvote"
-                  ? "text-green-700"
-                  : "text-gray-400 hover:text-green-700"
+                  ? "text-primary"
+                  : "text-muted-foreground hover:text-primary"
                   }`}
               />
             </Button>
@@ -122,23 +122,23 @@ export default function PostCard({ post }: PostCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="p-1 h-auto hover:bg-gray-100"
+                className="p-1 h-auto hover:bg-muted"
               >
-                <ArrowUp className="w-5 h-5 text-gray-400 hover:text-green-700" />
+                <ArrowUp className="w-5 h-5 text-muted-foreground hover:text-primary" />
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
-          <span className="text-sm font-medium text-gray-900">
+          <span className="text-sm font-medium text-foreground">
             {post.netVotes}
           </span>
         </div>
 
         {/* Content */}
         <div className="flex-1 p-4 pl-0">
-          <div className="flex items-center text-sm text-gray-500 mb-2">
+          <div className="flex items-center text-sm text-muted-foreground mb-2">
             <Link
               href={`/ai/${post.category?.name || 'general'}`}
-              className="text-green-700 hover:underline"
+              className="text-primary hover:underline"
             >
               /ai/{post.category?.name || 'general'}
             </Link>
@@ -146,7 +146,7 @@ export default function PostCard({ post }: PostCardProps) {
             <span>posted by</span>
             <Link
               href={`/members/${post.author?._id}`}
-              className="ml-1 text-green-700 hover:underline"
+              className="ml-1 text-primary hover:underline"
             >
               {post.author?.firstName || 'Unknown'}
             </Link>
@@ -155,21 +155,21 @@ export default function PostCard({ post }: PostCardProps) {
           </div>
 
           <Link href={`/post/${post._id}`} className="block group">
-            <h2 className="text-lg font-medium text-gray-900 group-hover:text-green-700 transition-colors mb-2">
+            <h2 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors mb-2">
               {post.title}
             </h2>
-            <p className="text-gray-700 text-sm leading-relaxed mb-4">
+            <p className="text-muted-foreground text-sm leading-relaxed mb-4">
               {post.content}
             </p>
           </Link>
 
-          <div className="flex items-center space-x-4 text-sm text-gray-500">
+          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
             <Authenticated>
               <Link href={`/post/${post._id}`}>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="p-2 h-auto hover:bg-gray-100"
+                  className="p-2 h-auto hover:bg-muted"
                 >
                   <MessageSquare className="w-4 h-4 mr-1" />
                   {post.commentCount} comments
@@ -184,7 +184,7 @@ export default function PostCard({ post }: PostCardProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="p-2 h-auto hover:bg-gray-100"
+                  className="p-2 h-auto hover:bg-muted"
                 >
                   <MessageSquare className="w-4 h-4 mr-1" />
                   {post.commentCount} comments
@@ -194,7 +194,7 @@ export default function PostCard({ post }: PostCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="p-2 h-auto hover:bg-gray-100"
+              className="p-2 h-auto hover:bg-muted"
             >
               <Share className="w-4 h-4 mr-1" />
               share
@@ -202,7 +202,7 @@ export default function PostCard({ post }: PostCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="p-2 h-auto hover:bg-gray-100"
+              className="p-2 h-auto hover:bg-muted"
             >
               <Bookmark className="w-4 h-4 mr-1" />
               save

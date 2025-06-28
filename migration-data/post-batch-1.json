@@ -1,0 +1,1337 @@
+{
+  "posts": [
+    {
+      "skoolId": "2c7f32f59670470893dce0e6262de5a0",
+      "title": "On the journey from 'CFO' to 'Full Stack'",
+      "content": "Hey all 👋.\n\nCame across Parker on YouTube a month ago talking about Task Master. A few videos later it was clear to me he had a finger on the pulse, was focusing on the right things, and was on a similar learning hunt to me.\n\nI've always wanted to write code, but never thought I could manage the learning curve 17 years into a varied career in accounting, cinematography, and business. Then when our developer showed me GPT-3.5 at the end of 2022 I saw I might be wrong (and my imagination was hooked).\n\n2.5 years later AI has written a lot of code, and I have been having SO much fun. Started with scraping, and automations to support some of my roles in my startup (My title is CFO, but I manage everything other than sales and product). I've build a moderately complex Node.js (no UI, haven't got my head around Frontend yet) lead sourcing tool for our outbound cold email campaigns (which brought over a week of SDR work for me down to less than a day). It was my first stab into a db (SQLite). Love poking around in the Network tab and seeing the XHR logs. Chrome extensions for pulling LinkedIn data have been fun too.\n\nLast year I started writing all of our E2E playwright tests for our group learning app to help the team out (we are a small team). Working sudo in our application made me really want to be able to contribute to the codebase, but I knew my knowledge gap would create more headaches for our CTO and Senior Dev than was helpful.\n\nI'm really well up to date with all the models and AI tooling for the job, but I have very low understanding of how any of the TS/JS or Python that AI writes for me actually works.\n\nSo, here is my goal for this community. To learn and grow to the point I can start raising PR's for our codebase. I have a lot of Typescript, React, and Node to learn—and will need all the help I can get.\n\nI warmly welcome all the help any of you are kind enough to offer me along the way 🙋‍♂️!\n\nPS - If your curious, my company is called [Makeshapes](https://www.makeshapes.com/).",
+      "createdAt": 1748431655671,
+      "updatedAt": 1749086463296,
+      "authorEmail": "mike-courian-7465@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 6,
+      "downvotes": 0,
+      "netVotes": 6,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "6a2aeb581cb84b7aa4cc1d0bcf131f3d",
+          "name": "brian-smith-5944",
+          "firstName": "Brian",
+          "lastName": "Smith"
+        }
+      ]
+    },
+    {
+      "skoolId": "b05b145f116d437bac5c73cc149228ae",
+      "title": "Enable custom modes in cursor",
+      "content": "Allows you to set rules around each request. This set is for making your designs tight.",
+      "createdAt": 1744376133350,
+      "updatedAt": 1748714478901,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "efd6523b78e443ec8dd4aec3b0fa4d21",
+          "name": "javier-rios-1815",
+          "firstName": "Javier",
+          "lastName": "Rios"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "60e8ac80cc694998bcdc517fb996b679",
+      "title": "Cline Memory + Gemini 2.5 + Feature+Bug Planning Keyboard Shortcuts",
+      "content": "This is an elite flow.\n\n[ol:1]- Check out how to [set up cline](https://marketplace.visualstudio.com/items?itemName=saoudrizwan.claude-dev) here [memory bank here: ](https://docs.cline.bot/improving-your-prompting-skills/cline-memory-bank#getting-started-with-memory-bank)- Check out how to [get $300 Gemini credits here](https://cloud.google.com/products/gemini)- Check out how to setup keyboard shortcuts [for feature](https://www.skool.com/troublefreeai/classroom/4576e8a2?md=5d47400e09d149bd8ad4cf131f897bf5) and [bug work here](https://www.skool.com/troublefreeai/classroom/4576e8a2?md=4405c7961e414e5997f2f308067abe8e)",
+      "createdAt": 1743636279302,
+      "updatedAt": 1748714451263,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "efd6523b78e443ec8dd4aec3b0fa4d21",
+          "name": "javier-rios-1815",
+          "firstName": "Javier",
+          "lastName": "Rios"
+        }
+      ]
+    },
+    {
+      "skoolId": "aca02de2b23041c1ac8df7e01e95daa0",
+      "title": "Prompt for Documenting Your Codebase",
+      "content": "(posting the coding workshop as soon as its done rendering keep an eye out for that)\n\nWhen to use this:\nNow\n\nTailor it for your needs but it does a good job of outlining existing patterns in your project. This can be combined with a global cursor rule to ensure your patterns are used moving forward.",
+      "createdAt": 1746214575053,
+      "updatedAt": 1748714458264,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "aec0dda5983e432d8a8c1bdb893aeb55",
+          "name": "garrett",
+          "firstName": "Garrett",
+          "lastName": "F"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "efd6523b78e443ec8dd4aec3b0fa4d21",
+          "name": "javier-rios-1815",
+          "firstName": "Javier",
+          "lastName": "Rios"
+        }
+      ]
+    },
+    {
+      "skoolId": "d78be3a918324205a5eaaf73e4433421",
+      "title": "Looking for teammates for World’s Largest Hackathon",
+      "content": "Having worked in the fitness and health industry, I’ve seen firsthand that the more we truly understand someone’s body and habits, the more effectively we can help them reach their goals. I believe that by harnessing the power of data and new technology, we can create solutions that are far more personalized and effective than what’s out there today. For me, it all starts with understanding—if we understand people better, we can help them better.\n\nI’m passionate about using AI, wearables, and real-world health data to develop new ways of providing actionable, personalized insights for wellness and performance. I’m particularly excited about projects that blend technology and health to actually improve people’s lives in practical ways.\n\nI’m participating in the [World’s Largest Hackathon](https://hackathon.dev/) (May 30 – June 30) and looking to team up with fellow students who are interested in building something meaningful in health tech. I’m especially eager to connect with people in the Bay Area for in-person collaboration, but I’m also open to working remotely with passionate contributors.\n\nIf you’re excited about AI, biometrics, and building tools that help people take charge of their health, I’d love to connect—send me a message if you’re interested in joining the team or just want to learn more!",
+      "createdAt": 1748644076064,
+      "updatedAt": 1748707637185,
+      "authorEmail": "brandon-milligan-4350@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "e29a4d2efc4d4b02993d8e87edab6980",
+          "name": "jasen-dickan-6629",
+          "firstName": "Jasen",
+          "lastName": "Dickan"
+        },
+        {
+          "id": "e2bc58e4e8bd40d9ae6c175f9933dd39",
+          "name": "brandon-milligan-4350",
+          "firstName": "Brandon",
+          "lastName": "Milligan"
+        }
+      ]
+    },
+    {
+      "skoolId": "ec1535734341471fb361c993fb7042de",
+      "title": "Goal: Become a full stack AI Creator",
+      "content": "Looking to improve my workflow with AI in Code and Design primary. Also very interested in becoming a full stack AI creator and utilize my past experience in marketing and grow skills in sales.",
+      "createdAt": 1748704385963,
+      "updatedAt": 1748704406321,
+      "authorEmail": "javier-rios-1815@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "5dc64fb44b7e4afcad43a71132d8f8cf",
+      "title": "impromptu office hours in 15 mins (1p et)",
+      "content": "for anyone who wants to do AMA, chat on discord channel.",
+      "createdAt": 1748623596246,
+      "updatedAt": 1748623596263,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "8f3a912dcd3d44b7bb7644af82e41c03",
+      "title": "Transforming a Product Team to a team of builders",
+      "content": "Hey, I'm Andy,\nI am Product Manager. I am currently leading a product team away from the traditional PM job roles to AI powered builders. I am a massive fan Claire Vo and her take on the death of traditional Product Managers, you should check out her talk about it below.\n\nI'm interested in learning about the best ways that we can scale our impact with AI.\nHere are some things I've explored with AI:\nCreating CMD apps to automate aspects of the job (mainly data reporting)\nBuilding small apps with AI, React & Convex\nCreating documentation, meeting notes and anything that will give me time back.",
+      "createdAt": 1748561877464,
+      "updatedAt": 1748819304228,
+      "authorEmail": "andy-harvey-5452@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "96a2fb52e80d402d95d7794589bd731c",
+      "title": "Old Skool Dev",
+      "content": "Hi guys, I finally pulled the trigger on a community. Parkers approach seems to hold water. After using internal tools on my previous project, I'm skilling up on the open stack. I've spent 20 years making SPAs among many other things. Lately working on Computer Vision. Looking forward to get a mean stack working.😃",
+      "createdAt": 1748355822057,
+      "updatedAt": 1748563994766,
+      "authorEmail": "henrik-vendelbo-2768@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "0a629f47147944aab86434ecd6d4e128",
+      "title": "Group learning platform",
+      "content": "Here is a 60sec[ video](https://www.makeshapes.com/landing/makeshapes-60s-demo) of what my startup [Makeshapes](https://www.makeshapes.com/) does.\n\nMakeshapes is a digital platform that enables large organisations to utilise group learning at a greater scale in flexible, new formats. In short, we've brought together the existing facilitator tech stack (COMMUNICATION {power point, videos, audio}, ENGAGEMENT {slido, menti, kahoot}, and FEEDBACK {paper, Google form}) into a a clean and simple UX so that a person of any skill level is able to lead (we call 'host') an effective workshop.\n\nThe key things our Enterprise customers love is that it allows them to deliver facilitated programs to hundreds of employees with consistent messaging, high engagement, and a lot quicker than traditional delivery methods.\n\nThere is a builder part of our app (where you design and build experiences) and a delivery part where a group of participants come together live to partake in an experience (using WebSockets for real time interactions).\n\nWe are 3 years in. Modest friends and family round to get to break even. AI is helping our whole team punch way above their weight as we sell into 10,000+ person companies.",
+      "createdAt": 1748473287310,
+      "updatedAt": 1748552829690,
+      "authorEmail": "mike-courian-7465@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "4d7b74f09bbe44728396726d79b70e54",
+      "title": "Working with task-master ai mcp tool",
+      "content": "I'm coming up to only 60 tasks, but the file size is becoming problematic (almost 2000 lines and 300+kb)...Should I keep going with a large json file or 'restart clean'? I remember watching a video of yours @Parker Rex where I remember you saying something about this...Any pointers?",
+      "createdAt": 1748462127946,
+      "updatedAt": 1748564023846,
+      "authorEmail": "rick-williams-8782@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "8b67ca5b87da42eeacb11a7830d8c88f",
+      "title": "Teaser: Massive Upgrade to Your Membership Coming",
+      "content": "Howdy - been dialed in building a significantly upgraded offer for the membership.\n\nAnnouncing this friday.\n\nIn the meantime...\n\nHosting office hours tomorrow and friday at 12p ET.\n\nAs always I'm just a dm away.\n\nParker",
+      "createdAt": 1747883898619,
+      "updatedAt": 1748513835106,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 8,
+      "downvotes": 0,
+      "netVotes": 8,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "ffcc033de98d4d6a818d6273229d9697",
+          "name": "zid-kim-9388",
+          "firstName": "Zid",
+          "lastName": "Kim"
+        }
+      ]
+    },
+    {
+      "skoolId": "cbf1491b36494ab09d87b5d77c1b5a6d",
+      "title": "Website to Codebase: Quick Workflow Tip for Converting Live UI to Typescript",
+      "content": "[https://share.descript.com/view/0gpwcyd5YzC](https://share.descript.com/view/0gpwcyd5YzC)",
+      "createdAt": 1747945176091,
+      "updatedAt": 1748561986341,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "9b3a07d155894fb4a744411006fe7e80",
+      "title": "Back from Elopement! It’s time to cook!",
+      "content": "Sorry I’ve been less attentive / active than usual. I left for my wedding on Tuesday and am back today!\n\nBuild videos for polyglot monorepo coming this week, news updates, and a coding workshop on Friday.\n\nI will also seek to get Hari’s recording from the workshop posted. If it wasn’t recorded properly I’ll link with Hari and get the video re recorded!\n\nThanks everyone!\n\nExcited to cook 🔥🔥",
+      "createdAt": 1747140013837,
+      "updatedAt": 1748655094105,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 5,
+      "downvotes": 0,
+      "netVotes": 5,
+      "commentCount": 7,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "e0b2934633154fa193e4ce4377448e14",
+          "name": "shane-griffiths-7424",
+          "firstName": "Shane",
+          "lastName": "Griffiths"
+        },
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        },
+        {
+          "id": "ffcc033de98d4d6a818d6273229d9697",
+          "name": "zid-kim-9388",
+          "firstName": "Zid",
+          "lastName": "Kim"
+        }
+      ]
+    },
+    {
+      "skoolId": "fa764648787d44fb87d218530427c466",
+      "title": "PRD Workshop | 5-16-25 | Deck, Links, Prompts",
+      "content": "Deck: [https://www.figma.com/slides/Uv49lzsSEhK5dgDd7DOgii/Product-Session?node-id=3-161&t=OGANkZFJJOj4cn8r-1](https://www.figma.com/slides/Uv49lzsSEhK5dgDd7DOgii/Product-Session?node-id=3-161&t=OGANkZFJJOj4cn8r-1)\n\n7-step prompt chain\n[https://www.skool.com/troublefreeai/classroom/b981e8f8?md=1c9c65eba7b7459a903e9db3e261adf8](https://www.skool.com/troublefreeai/classroom/b981e8f8?md=1c9c65eba7b7459a903e9db3e261adf8)\n\nThey are all in the coding vault numbered 1-7.\n\nKeep in mind this is unpolished, edit as u see fit.\n\nYOU STILL HAVE TO DO HOMEWORK TO GET THE BEST INPUTS, in order to get equally awesome outputs.",
+      "createdAt": 1747424972345,
+      "updatedAt": 1748984200399,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "c5fd89181c7248a19c5f68396fcb0685",
+      "title": "thx everyone for joining workshop - 4k recording, prompts, and links coming",
+      "content": "that was awesome\n\nbuncha great people just gettin smart together\n\nwaiting for this bad boy to finish rendering then will post..",
+      "createdAt": 1747418707965,
+      "updatedAt": 1747420848474,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "271de9f2715540c19d311edc74d587a4",
+      "title": "📆 PRD WORKSHOP FRIDAY 12PM ET",
+      "content": "We are 1 for 3 on successful recordings which means we can only go up.\n\nBy popular demand we're deep diving product requirements documents on Friday May 16, 12 PM ET.\n\nTopics Covered:\n\n- Why PRDs Matter- Framing the Idea- Amazon‑Style Docs- Writing the PRD- Tools & Process- Live Walkthroughs- Shipping Filter\n\n30 minutes of content followed by 30 minutes of Q&A/Round table discussion.\n\nBring questions and hot takes\n\nParker",
+      "createdAt": 1747242023094,
+      "updatedAt": 1747404938232,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "014500af595b46f8a2824f130f16c5a9",
+          "name": "craig-cocker-2740",
+          "firstName": "Craig",
+          "lastName": "Cocker"
+        },
+        {
+          "id": "c610432829464a53827d7449ff9ae619",
+          "name": "anand-houston-3906",
+          "firstName": "Anand",
+          "lastName": "Houston"
+        }
+      ]
+    },
+    {
+      "skoolId": "ca89ad88d06146e2b3fd807031852929",
+      "title": "WHICH MINI COURSE HELPS YOU MOST? 🔥",
+      "content": "I'm filming multiple mini courses.\n\n$0 for everyone here & offered for payment on Whop as a test.\n\nWhich would you like to see released first?",
+      "createdAt": 1747235465468,
+      "updatedAt": 1747403276255,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "23533e6dea7c4c698ff8933d11853e44",
+          "name": "parikchhit-basnet-5041",
+          "firstName": "Parikchhit",
+          "lastName": "Basnet"
+        },
+        {
+          "id": "c610432829464a53827d7449ff9ae619",
+          "name": "anand-houston-3906",
+          "firstName": "Anand",
+          "lastName": "Houston"
+        }
+      ]
+    },
+    {
+      "skoolId": "22bc154927c54c7b923a6b8fc7216f86",
+      "title": "Transform Notes into ADHD Proof Slides",
+      "content": "Notes + OpenAI Deep Research + Napkin AI + Gamma =\n\n[https://www.napkin.ai/](https://www.napkin.ai/)\n[https://gamma.app/](https://gamma.app/)",
+      "createdAt": 1747373255739,
+      "updatedAt": 1747373255762,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "34e98819db9b4ee9b6aa3f30f2bc0eb3",
+      "title": "OpenAI & Google loosened their Image Content Restrictions",
+      "content": "I made a ton of Star Wars, Disney and other branded image generations.\n\nWonder what happened!?",
+      "createdAt": 1747329538037,
+      "updatedAt": 1747329538065,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 0,
+      "downvotes": 0,
+      "netVotes": 0,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "826f1fda482f4cbb93ffc19ed737d727",
+      "title": "Upgraded YouTube Title Generator using Claude Workbench",
+      "content": "You are a skilled content creator tasked with generating clickbait titles. Your goal is to create increasingly attention-grabbing titles based on a given script and draft title.\n\nHere is the script:\n<script>\n{{SCRIPT}}\n</script>\n\nAnd here is the draft title:\n<draft_title>\n{{DRAFT_TITLE}}\n</draft_title>\n\nYour task is to create 10 titles, each more clickbaity than the last. Follow these steps:\n\n1. Analyze the script and draft title to identify key elements that can be emphasized or exaggerated.\n2. Create a list of 10 titles, starting with a mildly clickbaity version and progressively increasing the clickbait factor.\n3. Ensure that each title is more attention-grabbing than the previous one.\n4. Use common clickbait techniques such as:\n- Creating a sense of urgency\n- Invoking curiosity\n- Using numbers or lists\n- Making bold claims\n- Using emotional triggers\n\nBefore providing your final list of titles, wrap your analysis in <content_analysis> tags. Consider the following:\n- List out 5-10 key elements from the script that could be emphasized.\n- Brainstorm 3-5 different clickbait techniques and how they could be applied to this content.\n- Outline a strategy for escalating clickbait intensity from title 1 to title 10.\n- What emotions or reactions are you trying to evoke in potential viewers?\n\nIt's OK for this section to be quite long.\n\nAfter your analysis, present your list of 10 titles in <titles> tags, with each title on a new line and numbered from 1 to 10.\n\nExample output structure (do not use this content, it's just to illustrate the format):\n\n<content_analysis>\n\\[Your detailed analysis and strategy for creating clickbait titles\\]\n</content_analysis>\n\n<titles>\n1. \\[Mildly clickbaity title\\]\n2. \\[Slightly more clickbaity title\\]\n...\n10. \\[Extremely clickbaity title\\]\n</titles>\n\nNow, proceed with your analysis and creation of clickbait titles based on the provided script and draft title.",
+      "createdAt": 1747232851864,
+      "updatedAt": 1747259916592,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "984a288243a644a499b293778588c5d4",
+      "title": "Building an AI-Powered Content Automation Tool: BuildLog Update #2",
+      "content": "Not a good fit if you're a sr or mid level python eng -- you will scoff at my workflow haha.\n\nShould find this helpful if you are more junior and trying to find the door in the wall on using new tech!\n\nExplaining the topic of how I approached learning a new stack in a week.\n\nWhen to use AI agents and when not to.\n\nStruggle was real to get this all architected.",
+      "createdAt": 1747178553601,
+      "updatedAt": 1747259994463,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "dd1c3f43879a4b6eb508a2b9a528e68e",
+      "title": "I met with a VP at Augment Code, this is what I learned",
+      "content": "Augment’s unique value prop is a powerful context engine.. not code completion. They're all in on making a product that has a deep understanding of what you’re building.",
+      "createdAt": 1747178298656,
+      "updatedAt": 1747312493169,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "f650b647986544f28daf64aba6066e4f",
+      "title": "🔥 Weekly Builds Starting Next Week",
+      "content": "I’m rolling out a new offering to make this community more valuable.\n\nHere’s what’s coming:\n[ol:1]- Exclusive long-form build videos for Vibe With AI members — from idea to launch. I’ll walk through strategy,  product requirements, using Task Master and Augment, gathering feedback, adding analytics if necessary, and deployment. These long-form build videos will be hosted on the Vibe With AI community YouTube (exclusive to members with email verification).- Access to select GitHub Repos, you can clone and learn from (exclusive to members with email verification)- 1-page PDF summaries for each build.- Shorter 20 recap cutdowns will be posted weekly as a 3-part build series on the ParkerRex main channel in case you want the TL;DR to go along with the repo & 1 pager.\n\nThis shift adds real, hands-on value and an elevated member experience. I recognize that Discord can be chaotic (but also fun!), so packaging these Builds up will be extremely valuable to any member who chooses not to live on Discord! Pro Tip: turn on Do Not Disturb as default, check periodically to ingest random one-off value bits and pieces.\n\nUpcoming Weekly Builds Include:\n\n- Google Cloud Platform agentic video uploader + metadata processing- Google Cloud Platform agentic thumbnail builder (Pillow)- Google Cloud Platform audio post-processing agent- AI news aggregator + classifier- Short-form clipper agentic workflow- [iVibeWithAI.com](http://iVibeWithAI.com) membership site buildout- [iVibeWithAI.com](http://iVibeWithAI.com) membership vectorization pipelines- [iVibeWithAI.com](http://iVibeWithAI.com) membership recommendations engine- Discord Membership SDK Work - [MapTheMap.com](http://MapTheMap.com) Google Agent Integration with multiple sub-agents- [MapTheMap.com](http://MapTheMap.com) Health Integration work with Whoop, Oura, and Apple Health- [MaptheMap.com](http://MaptheMap.com) iOS Companion App work \n\nBTW, the weekly marketing/coding workshops will be held on Fridays at 12 PM ET. We alternate between coding and marketing. The format for that is 15 minutes recapping things myself or a guest is implementing, with the option for a member highlight to show and tell, then general QA. I'm upgrading my gear setup so I don't run into technical issues.",
+      "createdAt": 1745954173117,
+      "updatedAt": 1747291113732,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 19,
+      "downvotes": 0,
+      "netVotes": 19,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "182d50c01b1e4e289c07abe3fdf93b52",
+          "name": "carlos-amaya-9389",
+          "firstName": "Carlos",
+          "lastName": "Amaya"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "d359fc88301f4e38abf186ed315fbe4c",
+      "title": "Cursor's Leap Forward: Examining RCP Server Speculations",
+      "content": "Very bullish on this being a feature...\n\nThey released it in beta then yanked it back.\n\nMore info here:\n[https://forum.cursor.com/t/whats-the-rcp-server-option-in-the-beta-settings/89697/3](https://forum.cursor.com/t/whats-the-rcp-server-option-in-the-beta-settings/89697/3)",
+      "createdAt": 1747145710452,
+      "updatedAt": 1747260003181,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "62d5e99afb1640969c3ba224e25330bf",
+      "title": "Hari's call was legendary",
+      "content": "Hopped on that call with Hari and it was amazing.\n\nI learned a lot, and you guys should definitely make sure to make the next ones!!",
+      "createdAt": 1746810849552,
+      "updatedAt": 1747260003897,
+      "authorEmail": "parikchhit-basnet-5041@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 4,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "145370223d84406688aa29ac73818d25",
+          "name": "keith-kabza-4065",
+          "firstName": "Keith",
+          "lastName": "Kabza"
+        },
+        {
+          "id": "2118091a2ea84b9cb0fc8b0a29fdeeaa",
+          "name": "jd-fiscus-9018",
+          "firstName": "Jd",
+          "lastName": "Fiscus"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "8372917083c14a99810dfee9b6ce8f23",
+      "title": "[ACTION NEEDED] AI Features Coming - Need Your Input",
+      "content": "@Parker Rex built a handful of AI features for the community\n\n...because what would an AI community be if we weren't using AI to make it better :)\n\nGoal: drastically improve member experience by\n1) personalizing content recommendations\n2) clustering members are on similar paths and displaying that for serendipitous convos\n3) training GPT's on existing content to provide immediate help on roadblocks\n4) doing sentiment analysis on community engagement to find areas of content that are missing\n\nIt's based on interest and level of experience.\n\nWhat we need from you (4 numbers - copy the template):\n\n---\n\n- Rate your level of interest in coding content (1-10):- Rate your level of interest in marketing content (1-10):- Rate your level of experience in coding (1-10):- Rate your level of experience in marketing (1-10):\n---\n\nDon't over think ratings - these are adjustable in your account, and you'll still be able to see everything of course! This is just bonus material.\n\nThis should make things much better so you aren't overwhelmed.\n\nIf you're not comfortable filling this out publicly, DM me your ratings!\n\nOr if you have feedback on how to make it better, let us know below.",
+      "createdAt": 1744913576602,
+      "updatedAt": 1747291102972,
+      "authorEmail": "bazel-shaw-6093@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 22,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "c53404d736dc446f873d787881044c81",
+          "name": "michael-osborne-3551",
+          "firstName": "Michael",
+          "lastName": "Osborne"
+        },
+        {
+          "id": "014500af595b46f8a2824f130f16c5a9",
+          "name": "craig-cocker-2740",
+          "firstName": "Craig",
+          "lastName": "Cocker"
+        },
+        {
+          "id": "43fa4551800541fd83826483dcb9b94b",
+          "name": "matthew-andrew-1220",
+          "firstName": "Matthew",
+          "lastName": "Andrew"
+        },
+        {
+          "id": "2118091a2ea84b9cb0fc8b0a29fdeeaa",
+          "name": "jd-fiscus-9018",
+          "firstName": "Jd",
+          "lastName": "Fiscus"
+        }
+      ]
+    },
+    {
+      "skoolId": "c298f309a3d74a22b292d1ab5067daff",
+      "title": "Intro - Standard Nerd",
+      "content": "Hey I'm Jd,\n\nI am a Director of R&D - AI which means always hustling and learning.\n\nI'm interested in learning marketing as it's a mystery to me.\n\nHere are some things I've recently explored with AI:\n\n- I wrote the n8n MCP community node- I spend a lot of time focusing on UI outside of chat- I tinker in WebAI, off grid comms, and robotics- I have a YT channel on what I'm building\n\nHere is why I joined:\nLoved the task master videos, how Parker organizes thoughts into products, and to the marketing piece if I could vibe/automate that would be dope. Meet more nerds.",
+      "createdAt": 1746997192012,
+      "updatedAt": 1747260018737,
+      "authorEmail": "jd-fiscus-9018@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "f80f10b48f0d4249bf5bec8f365a963f",
+      "title": "Wordpress Vibe Coding - The why and how",
+      "content": "Let me share this here hoping it can benefit you if you are also in my situation. I am well versed in WordPress, Drupal, Laravel and a variety of PHP-based CMSes and systems. My Python skills are 1 or 2 out of 10 at the moment (but rising).\n\nWhen it comes both coding and learning at the same time, it impairs my speed and confidence in the task at hand. @Parker Rex has shared his thoughts on the topic, especially the need for just-in-time and continuous learning. HOWEVER, THE REALITY IS THAT WE HAVE TO BE PRACTICAL AND GROW AT OUR OWN PACE.\n\nIf you have clients who wanted your services now, they may not have the patience to wait for you to learn new programming languages.\n\nMost PHP content management systems have built-in ecosystems, plugins, themes, packages, modules that fit the bill for many client websites. There is no need to re-invent the wheel or redo in Python what is freely available on GitHub.\n\nMany people look down on PHP, but my friend Gemini says \"PHP is a dominant force on the internet, with a substantial majority of websites relying on this server-side scripting language. As of early to mid-2025, estimates indicate that PHP is used by approximately 74.5% to 80% of all websites whose server-side programming language is known. Some sources suggest that around 77% to 79% of all websites rely on PHP to some degree.\n\nIf you come from the PHP community, there is good news. Actually this may apply to other systems like Shopify or social media accounts but let's focus on PHP systems.\n\nYou can have your server support both Python and PHP.... then you can code CLI programs to integrate with the CMS. For example if you want to generate images through AI, it might be better to do it in Python and then sync them with your content from the CLI. You can batch create articles, generate data and add content directly to the CMS database, use webhooks to post, or do API integrations.\n\nHere are some useful resources if you want to take that route:\n\n[https://deepwiki.com/wp-cli/wp-cli](https://deepwiki.com/wp-cli/wp-cli)",
+      "createdAt": 1746843615490,
+      "updatedAt": 1747260020915,
+      "authorEmail": "daniel-ngari-4339@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 1,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        }
+      ]
+    },
+    {
+      "skoolId": "b4490268cada4e70bfcd142ca6ce0e07",
+      "title": "Introduction",
+      "content": "Hey, I'm Carlos.\nI am Data Science Consultant at Accenture\nI'm interested in learning how to use AI to build my own applications and leveraging ML capabilities to use as a differentiator (I also want to combine with web3 since I think it's the future)\nHere are some things I've explored with AI:\n\n- Understanding how foundational models work - Using ChatGPT to improve my productivity- Leveraging tools like replit, bolt, and lovable to build sites/apps",
+      "createdAt": 1746804001570,
+      "updatedAt": 1747260021459,
+      "authorEmail": "carlos-amaya-9389@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "c1c45dfb774042378431cdabf054244f",
+      "title": "🔥🔥 Logical 3 Step PRD Prompt Flow (bind these to !f1, !f2, !f3) No Task Master Needed (but its great)",
+      "content": "BEFORE YOU START PASTING PROMPTS READ THIS SNIPPET FROM A PREVIOUS POST:\n\nThe P in PRD is product. [I made a whole course on product.](https://www.skool.com/troublefreeai/classroom/4ecde1d9?md=af78606ddf5748449b05dc42937cdef7) If you watch it you'll be better at building product. I tried to make it as anti-snooze as possible.\n\nProduct strategy happens before you write code.\n\nI follow a simplified format from the book [shape up](https://basecamp.com/shapeup) and have for close to a decade.\n\n- Narrow the problem- Sketch out a few rough solutions to solve said problem- List things out of bounds (no goes)- List potential rabbit holes (things you know could be a time bomb)- Then time box it as a constraint (less relevant - never tell the AI a time box)\n\nIt works great for 0 -> 1 and for 1.0 to 1.1 and beyond.\n\nI haven't made videos about this ... but writing it ou,t I realize I should\n\nYou get more leverage on your time writing code / designing if you've thought it out ahead of time.\n\nAnd then you bring it into asking the AI how to further shape your idea, poke holes in it, find open questions, find where it fits into an existing codebase, or where you should start if it's brand new.\n\nWhat HAS changed drastically is once you're in the editor...\nbecause AI confidently paints a picture of how easy this implementation will be ...then it's 4 am and\nYou're about to throw your laptop off a bridge.\n\nSo it requires having discipline around a set of steps you follow for all work.\nIf I spent an hour working on a new feature, I'd spend at least half that time refining the PRD. Taking that initial pitch format, researching tech/designs / other people's repos I can learn from. (use search operators like `language:Typescript <concept_you_want_to_learn`\n\nThen when I get to implementation, using a tool called Task Master, the majority of the intitial thinking is done. Which means the AI doesn't have to waste any valuable compute on it. Instead it plusses up and expands the idea, steel mans both sides.. and improves it.",
+      "createdAt": 1745293012896,
+      "updatedAt": 1746965267990,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 9,
+      "downvotes": 0,
+      "netVotes": 9,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "0d8d36ce7d37452ab6458f73b9c73a53",
+          "name": "dmitri-jarkov-4700",
+          "firstName": "Dmitri",
+          "lastName": "Jarkov"
+        }
+      ]
+    },
+    {
+      "skoolId": "4fffe3a6b238436891b84b32fa85a11a",
+      "title": "Hi all, I am Lainu",
+      "content": "Hi I am Lainu,\nI am working for one of the tech companies in the payment space. looking to learn how I can build an app from start to finish. I am not a developer, although I am familiar with most of the programing languages. looking forward to being part of this community and learning alot",
+      "createdAt": 1746620636982,
+      "updatedAt": 1747260024752,
+      "authorEmail": "lainu-kuruvilla-7624@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 1,
+      "downvotes": 0,
+      "netVotes": 1,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "24929b282644470da936cb87f03b6d95",
+      "title": "Hey I'm Shane 👋🏻 🇬🇧",
+      "content": "Previously, I ran a small web agency for 10 years (where my focus was UI/UX and Product Design with a tiny sprinkle of FE Dev just HTML, CSS etc). I walked away from that, took two years off to have a child, then joined a failing SaaS as a product owner. I left that and am now riding solo going all in! Wanting to get into AI coding with a focus on client work and building products around websites/apps and AI automation solutions.\n\nI genuinely feel Parker (is it Parker or Rex?) is hugely undervalued on YouTube, and I'm excited to join this community. This is my time to FINALLY learn to code.",
+      "createdAt": 1746608174013,
+      "updatedAt": 1747260026233,
+      "authorEmail": "shane-griffiths-7424@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "15af48813ec74c35a2660f3e7bb84256",
+      "title": "OpenAI Buys Windsurf for $3B, Cursor Raises $900M at $9B (TOOLS GOING TO GET BETTER)",
+      "content": "Wow",
+      "createdAt": 1746505068750,
+      "updatedAt": 1747260027741,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 10,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "dbdfffdff495492fbc2dc78ff55abb69",
+          "name": "aman-lohia-8444",
+          "firstName": "Aman",
+          "lastName": "Lohia"
+        },
+        {
+          "id": "014500af595b46f8a2824f130f16c5a9",
+          "name": "craig-cocker-2740",
+          "firstName": "Craig",
+          "lastName": "Cocker"
+        }
+      ]
+    },
+    {
+      "skoolId": "485c3d7574784ce6be8dc7905de489ad",
+      "title": "Vibe Marketing Workshop this Friday, 12pm ET, Ft. Hari",
+      "content": "I'm eloping on Thursday and my (soon to be) wife will lose her cool if I ditch the first day of marriage to yap ai with the fellas.\n\n@Harivansh Rathi is a champion and handling the workshop to share what he's learned using N8N & python for generating content.\n\nLearn how Hari went from zero to landing big clients with N8N in just a few weeks.\n\nIn this workshop, you’ll see real examples, get a crash course in the basics, and learn how to use advanced tools to create content, especially for Instagram.\n\nWalk away with workflows you can start using today.",
+      "createdAt": 1746475119376,
+      "updatedAt": 1747260029664,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 6,
+      "downvotes": 0,
+      "netVotes": 6,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "2cc1cb20cc964ffbb612a7ff65429a3a",
+          "name": "r-hutch-3668",
+          "firstName": "Robert",
+          "lastName": "Hutchison"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "44b02860422b4191915f729d47d2b554",
+      "title": "Video 1 in the New Build Series Live in Classroom",
+      "content": "**if youre not a jr, this will not be a video for you**\n\nI was a day late to post this because honestly I didn't think it would be that helpful because I'm used to watching content like this... aka BUILDS going perfectly but that's not reality. This is me roaming around for half an hour figuring out what it is that I need to even do. This is reality!\n\nA lot of people forget that research and development has research involved. This 30-minute segment goes through my research as a how-to architecture for a polyglot mono repo including Python using FastAPI, TanStack Start, and Vite for the front-end, and Google Cloud Platform for storage and hosting, and SuperBase for user management, auth, and payments.\n\n[https://www.skool.com/troublefreeai/classroom/85919b7f?md=7fe1bfac0fcc4d04bd250ff7544a3ac7](https://www.skool.com/troublefreeai/classroom/85919b7f?md=7fe1bfac0fcc4d04bd250ff7544a3ac7)",
+      "createdAt": 1746544997308,
+      "updatedAt": 1747260030489,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 6,
+      "downvotes": 0,
+      "netVotes": 6,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "670e0700da774efaa6f63259c46e3d14",
+      "title": "Hey everyone, I’m Craig – excited to join the vibe!",
+      "content": "I’m the Managing Director of an IT consultancy and a long-time Angular developer who codes for both work and fun. I’m currently building an internal system that combines CRM, forecasting, and financial reporting – including tracking actuals vs forecast vs budget – all wrapped in a clean UI and backed by Firebase. I’m also integrating AI to help auto-generate data-driven sales proposals and solution design docs.\n\nI’m here to connect with devs who love bringing ideas to life through smart code and great design. Always up for geeking out over Angular signals, AI integration, or efficient architecture in Nx monorepos.\n\nLooking forward to learning, sharing, and vibing with you all!",
+      "createdAt": 1746506502415,
+      "updatedAt": 1747260031841,
+      "authorEmail": "craig-cocker-2740@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "014500af595b46f8a2824f130f16c5a9",
+          "name": "craig-cocker-2740",
+          "firstName": "Craig",
+          "lastName": "Cocker"
+        }
+      ]
+    },
+    {
+      "skoolId": "ca6b29c7ce7a4556a900898c8977750a",
+      "title": "Less is more (my current flow - SHARE YOURS BELOW!)",
+      "content": "I like parts of cline, parts of claude code, parts of augment... gosh its exhausting how much stuff there is. I want to use 1-3 tools and get GREAT with them. GREAT defined by product with paying customers. I want to pay one provider (cursor) and simplify my workflow.\n\nlast week i used every single tool and got caught becoming the tool fiddler\n\n(this was on purpose to learn what is good and bad about each - then share in the workshop)\n\ndont be a tool fiddler\n\nyou want to ship product not get decent at a bunch of diff ai tools\n\ndepending on the circumstances of the project i find it better to go with...\n\n> less tools when i have less knowledge\n> more tools as i become competent in the codebase\n\nmoderate how often you delegate your tasks to ai\n\ndont be afraid to wade a little deeper into the knowledge pool and ask questions\n\nin my case im working on a stack im not strong in, so im using zero addtl tools\n\nas i get skilled up and comfortable with syntax, patterns, etc.. ill add tools in\n\nbecause at that point i can tell if a task or the output is good or not\n\notherwise its the blind leading the blind.\n\nin general i think most of the tools besides task master and augment can be replaced by cursor agent and a few markdown files and rules\n\nim working on simplifying all of it and only using cursor and a handful of prompts, keyboard expanders, and files in the project\n\nI'm currently using 3 rules with modifications for each area of the codebase to add memory-bank to my workflow.\n\nIf you havent heard of memory bank, you can read the blog article here: [https://docs.cline.bot/improving-your-prompting-skills/cline-memory-bank](https://docs.cline.bot/improving-your-prompting-skills/cline-memory-bank)\n\nand you can see all the cline prompts here:\n[https://github.com/cline/prompts/tree/main/clinerules](https://github.com/cline/prompts/tree/main/clinerules)\n\nIf you're working in a monorepo (in my case), you simply update the directories that are referenced by swapping it from:",
+      "createdAt": 1746484056843,
+      "updatedAt": 1747260032642,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 5,
+      "downvotes": 0,
+      "netVotes": 5,
+      "commentCount": 10,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "dbdfffdff495492fbc2dc78ff55abb69",
+          "name": "aman-lohia-8444",
+          "firstName": "Aman",
+          "lastName": "Lohia"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "1083218e620a4bf79bf424554ad093b4",
+      "title": "Make Rules in Cursor As You Build",
+      "content": "Similar to how you should clean as you cook in a kitchen, you should clean your codebase and create rules as you're building. These have a compounding effect on the code quality and the joy you'll get from working in your codebase.\n\nCursor is incredibly powerful because you can start to create rules around how you'd like things done moving forward. You can select the areas of the codebase that you'd like for these rules to apply to.\n\nI want to cover a couple of the different best practices that I found by digging up Cursor Engineers on X\n\nFAQ:\n-----------------\n\nWhat is an .mdc?\n\n| It's just a markdown file with structured frontmatter that we render a custom editor for so you can @-mention files in yoru codebase and to make sure the metadata stays intact.\n\nMichael also mentioned that the “MDC” in the .mdc file extension means “Markdown Cursor”:\n\n| It means “Markdown Cursor” we just needed a unique extension so we could use the custom editor for these but not for regular markdown files.\n\nCreating rules as you go (taken from Task Master).\n\n-----------------\n\nWhen should I create a new rule?\nIntroduce rules when you have new patterns that you want to continue throughout the project. For example, querying data, mutating data, writing components, structuring markdown files, doing external API calls, doing logging, doing traces.\n\nGrab the prompt below and store it in your .cursor/rules/cursor_rules.mdc:\n\n```\n---\ndescription: Guidelines for creating and maintaining Cursor rules to ensure consistency and effectiveness.\nglobs: .cursor/rules/*.mdc\nalwaysApply: true\n---\n\n- **Required Rule Structure:**\n```markdown\n---\ndescription: Clear, one-line description of what the rule enforces\nglobs: path/to/files/*.ext, other/path/**/*\nalwaysApply: boolean\n---\n\n- **Main Points in Bold**\n- Sub-points with details\n- Examples and explanations\n```\n\n- **File References:**\n- Use `\\[filename\\](mdc:path/to/file)` (\\[filename\\](mdc:filename)) to reference files\n- Example: \\[prisma.mdc\\](mdc:.cursor/rules/prisma.mdc) for rule references",
+      "createdAt": 1746480659427,
+      "updatedAt": 1747260034846,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "0d8d36ce7d37452ab6458f73b9c73a53",
+          "name": "dmitri-jarkov-4700",
+          "firstName": "Dmitri",
+          "lastName": "Jarkov"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "3525e8c8375e4367b3c0ccaec18daa14",
+      "title": "More Task Master Common Problems",
+      "content": "I have 1-5 conversations with school members about Taskmaster causing issues. My best recommendation is to bookmark their repository and make sure you're on the latest version. If you're unsure, read through their README and follow their best practices.\n\nSh0 (the creator of task master) is open ears and wants to help.\n\nSimply tag him direct in the `task-master-founder` discord channel and he'll get a notification. `sh0`\n\n[https://github.com/eyaltoledano/claude-task-master/tree/main](https://github.com/eyaltoledano/claude-task-master/tree/main)\n\nThe latest version is 0.13.1\n\nCommon issues are:\n\ninstalling to your GLOBAL cursor AND your project.\n\nIf you installed it in the UI on cursor, it's likely global. But if you have the `mcp.json` in your project files, it's in your project. It works in both. I prefer doing it at the global level.",
+      "createdAt": 1746480865453,
+      "updatedAt": 1747406007575,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "45517b54912649aab724772b53a4cc48",
+      "title": "Cursor Founder 1 Hr Interview Compressed to Most Important Points",
+      "content": "Glad to see his best tips are in direct alignment with what we preach in Vibe with AI.\n\nLets build.",
+      "createdAt": 1746456425763,
+      "updatedAt": 1750388779354,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 5,
+      "downvotes": 0,
+      "netVotes": 5,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "71b33cd037b64386b7d7cf4c53b5a0f3",
+      "title": "Prompt for Writing Professional, Short, Business Emails",
+      "content": "``` markdown\nYou are tasked with drafting a professional email based on the provided parameters. Follow these steps carefully to create an effective and appropriate email:\n\n1. First, review the email parameters provided:\n\n<email_parameters>\n{{EMAIL_PARAMETERS}}\n</email_parameters>\n\n2. Analyze the parameters:\n- Identify the recipient type and adjust your language accordingly\n- Understand the purpose of the email to focus your content\n- Note the required tone to set the appropriate style\n- List the key points to ensure all necessary information is included\n- Take note of any special requirements\n\n3. Structure your email as follows:\na. Greeting: Use an appropriate salutation based on the recipient type\nb. Opening paragraph: Briefly state the purpose of the email\nc. Body paragraphs: Address each key point in a clear and concise manner\nd. Closing paragraph: Summarize the main message and state any expected actions\ne. Sign-off: Use an appropriate closing based on the tone and recipient type\n\n4. When drafting the email:\n- Maintain the specified tone throughout the email\n- Dont use corporate jargon\n- Be optimistic\n- Ensure clarity and conciseness in your writing\n- Keep it short, make every word fight for its right\n- Use professional language and avoid jargon unless appropriate for the recipient\n- Proofread for grammar and spelling errors\n\n5. Address special requirements:\n- If a deadline is specified, clearly mention it in the email body\n- If attachments are needed, list them at the end of the email and ensure to mention them in the body\n- If follow-up is required, indicate the next steps or expected response\n\n6. Once you have drafted the email, present it within <email_draft> tags. Include placeholders for any information that would typically be filled in by the sender (e.g., \\[Your Name\\], \\[Your Title\\], etc.).\n\nRemember to tailor the email to the specific parameters provided and ensure it achieves its intended purpose while maintaining the appropriate tone and professionalism.",
+      "createdAt": 1746383956701,
+      "updatedAt": 1747260040236,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "cc000fb4323242ce8c177da16659a2ec",
+      "title": "Jr Vibe Coders - Don't Forget this Step When Writing Your PRD",
+      "content": "I'm currently working with Python. A language I am not nearly as good at, but need to take advantage of.\n\nThis is good framing for those who are learning from scratch.\n\nThis is a raw video of me exploring, adding new features and doing the work ahead of a PRD.\n\nHope you find this helpful.",
+      "createdAt": 1746299606955,
+      "updatedAt": 1746965417259,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "56fa5204f2774d2199a9992a343357e9",
+      "title": "Banner Ads, YouTube Thumbnails, Event Posters with Tailwind CSS",
+      "content": "Nice tutorial demonstrating how to create a YouTube thumbnail from scratch using Tailwind CSS ... you can extrapolate the basic idea to vibe code all sorts of marketing assets.\n\n[https://www.youtube.com/watch?v=qyBexrnBz_I](https://www.youtube.com/watch?v=qyBexrnBz_I)",
+      "createdAt": 1746151645052,
+      "updatedAt": 1746318200033,
+      "authorEmail": "daniel-ngari-4339@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 3,
+      "downvotes": 0,
+      "netVotes": 3,
+      "commentCount": 6,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        },
+        {
+          "id": "e0ed4d8f8956414381d577a4a765a314",
+          "name": "deividas-paulauskas-6709",
+          "firstName": "Deividas",
+          "lastName": "Paulauskas"
+        }
+      ]
+    },
+    {
+      "skoolId": "d9a27a4c06214fc2a4ad251020a41a4a",
+      "title": "AI writing app",
+      "content": "Here is a link to a Loom video I made of my app. If you are interested in discussing the app please let me know and I'll be happy to set up a time we can talk.\n[michael@enlitrics.com](mailto:michael@enlitrics.com)\n774-423-0083\n[https://www.loom.com/share/b672ed852e5d412c9358420af0d28627?sid=741c60c2-c42f-4450-b440-c1775f238514](https://www.loom.com/share/b672ed852e5d412c9358420af0d28627?sid=741c60c2-c42f-4450-b440-c1775f238514)",
+      "createdAt": 1745680846271,
+      "updatedAt": 1748471757300,
+      "authorEmail": "michael-kelly-2451@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 5,
+      "downvotes": 0,
+      "netVotes": 5,
+      "commentCount": 9,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "e648a81c2db64ed8bb0c5b80b26c93bf",
+          "name": "michael-kelly-2451",
+          "firstName": "Michael",
+          "lastName": "Kelly"
+        },
+        {
+          "id": "145370223d84406688aa29ac73818d25",
+          "name": "keith-kabza-4065",
+          "firstName": "Keith",
+          "lastName": "Kabza"
+        },
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        }
+      ]
+    },
+    {
+      "skoolId": "03dca58cc88f4fee8c368b9f35e5a28d",
+      "title": "💻 VibewithAI Coding Workshop | May 2nd 2025",
+      "content": "Great time today and a great turnout!\n\nHere's the recording.\n\nHope everyone has a lovely weekend! I'm around on discord building out some automations..\n\nJust a message away",
+      "createdAt": 1746218803274,
+      "updatedAt": 1746275008636,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 0,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": []
+    },
+    {
+      "skoolId": "d599c2b255054225a94d20eef9159838",
+      "title": "Vibe Code HTML emails with Tailwind CSS",
+      "content": "Maizzle is a framework that helps you quickly build HTML emails with Tailwind CSS and advanced email optimizations.\n\nMaizzle empowers you with modern web development tools, enabling fast HTML email coding while keeping your entire team on-brand.\n\n[https://maizzle.com/](https://maizzle.com/)",
+      "createdAt": 1746072088349,
+      "updatedAt": 1746230774025,
+      "authorEmail": "daniel-ngari-4339@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 4,
+      "downvotes": 0,
+      "netVotes": 4,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "f2dd1900df96426594d15624cb6085e9",
+          "name": "daniel-ngari-4339",
+          "firstName": "Daniel",
+          "lastName": "Ngari"
+        }
+      ]
+    },
+    {
+      "skoolId": "c84a9ce0fb3c436ca2338b65b47668c2",
+      "title": "Founder of TaskMaster Solves All Your Problems",
+      "content": "[https://x.com/eyaltoledano/status/1911235253269565557?s=46&t=_wqxBidTY_qYhYHJRT3YvA](https://x.com/eyaltoledano/status/1911235253269565557?s=46&t=_wqxBidTY_qYhYHJRT3YvA)\n\nWatch the first ten minutes and it'll solve any issue you're having.\n\nCommon problems:\n[ol:1]- You installed it globally, not to the project- You installed it globally and to the project and theyre conflicting- You have an old version of node- and when in doubt turn it off and on again aka unplug it",
+      "createdAt": 1746149355414,
+      "updatedAt": 1746186543620,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "0d8d36ce7d37452ab6458f73b9c73a53",
+          "name": "dmitri-jarkov-4700",
+          "firstName": "Dmitri",
+          "lastName": "Jarkov"
+        },
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    },
+    {
+      "skoolId": "55ec0f2d192f46f6aa7798f4160109bc",
+      "title": "Excited AI Founder on the journey to refine custom code skillset",
+      "content": "Hey, I'm Dmitri Jarkov\nI am the Founder of an AI Automation Agency specialising in lead generations solutions - Neurov AI ([https://neurov.ai](https://neurov.ai))\nI'm interested in learning how to leverage task-master-ai in Cursor and refine my product manager mindset to build MVPs for my clients but also learning how to build full stack applications for internal utility. I've started learning the basics of React 19, Next.js 15 but i'm quite a beginner.\nHere are some things I've explored with AI:\n\n- Using n8n to link FireFlies AI with [Cal.com](http://Cal.com) and a Notion CRM to automate lead information capture from forms and also from meetings transcripts.- Delivering lead reactivation solutions for clients who have large databases of leads.- Voice AI solutions for inbound and outbound use cases.- Currently diving into the deep end of custom code using Cursor IDE. \n\nIf anyone would like to connect, feel free to send me a message. I love what Parker is doing with this community.\n[https://www.linkedin.com/in/dmitrijarkov/](https://www.linkedin.com/in/dmitrijarkov/)",
+      "createdAt": 1745745202126,
+      "updatedAt": 1746169168804,
+      "authorEmail": "dmitri-jarkov-4700@imported.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 3,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        },
+        {
+          "id": "0d8d36ce7d37452ab6458f73b9c73a53",
+          "name": "dmitri-jarkov-4700",
+          "firstName": "Dmitri",
+          "lastName": "Jarkov"
+        }
+      ]
+    },
+    {
+      "skoolId": "1e4c07d2ca844fa6a757969ac7715c3a",
+      "title": "30% Off Claude Code Tokens",
+      "content": "if privacy is truly a concern, its time to ditch the iphone or android and move into a log cabin off the grid haha.. anyways your call! 30% off til july 31st.",
+      "createdAt": 1746119887634,
+      "updatedAt": 1746163698519,
+      "authorEmail": "me@parkerrex.com",
+      "categoryId": "jh7cfp5t50f6d9pd1h1s0ecw0d7jn2jg",
+      "status": "active",
+      "upvotes": 2,
+      "downvotes": 0,
+      "netVotes": 2,
+      "commentCount": 2,
+      "viewCount": 0,
+      "isPinned": false,
+      "isLocked": false,
+      "contributors": [
+        {
+          "id": "9e1dcceddb0a4f9db7625e2f00680a4b",
+          "name": "parker-rex-5901",
+          "firstName": "Parker",
+          "lastName": "Rex"
+        }
+      ]
+    }
+  ]
+}

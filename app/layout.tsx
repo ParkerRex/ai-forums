@@ -6,6 +6,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import Header from "@/components/header";
 import { Toaster } from "@/components/ui/sonner";
 import { NetworkStatusIndicator } from "@/components/error-display";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,18 +32,25 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased font-mono`}
       >
-        <ClerkProvider dynamic>
-          <ConvexClientProvider>
-            <Header />
-            {children}
-            <Toaster />
-            <NetworkStatusIndicator />
-          </ConvexClientProvider>
-        </ClerkProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <ClerkProvider dynamic>
+            <ConvexClientProvider>
+              <Header />
+              {children}
+              <Toaster />
+              <NetworkStatusIndicator />
+            </ConvexClientProvider>
+          </ClerkProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

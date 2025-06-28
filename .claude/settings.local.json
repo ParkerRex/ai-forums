@@ -7,7 +7,13 @@
       "Bash(chmod:*)",
       "Bash(ls:*)",
       "Bash(jq:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(mv:*)",
+      "Bash(grep:*)",
+      "Bash(rm:*)",
+      "Bash(npx convex:*)",
+      "Bash(cp:*)",
+      "Bash(find:*)"
     ],
     "deny": []
   }

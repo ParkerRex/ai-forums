@@ -1,22 +1,12 @@
 "use client";
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
-import { Markdown } from 'tiptap-markdown';
+import { useState, useCallback, useRef, useEffect, lazy, Suspense } from 'react';
 import { Button } from '@/components/ui/button';
-import {
-  Bold,
-  Italic,
-  List,
-  ListOrdered,
-  Link as LinkIcon,
-  Quote,
-  Code,
-  Undo,
-  Redo
-} from 'lucide-react';
-import { useCallback } from 'react';
+import { Textarea } from '@/components/ui/textarea';
+import { Wand2 } from 'lucide-react';
+
+// Lazy load the full rich text editor
+const FullRichTextEditor = lazy(() => import('./rich-text-editor-full'));
 
 interface RichTextEditorProps {
   content?: string;
@@ -25,192 +15,99 @@ interface RichTextEditorProps {
   className?: string;
 }
 
+// Loading skeleton for the full editor
+function RichEditorSkeleton() {
+  return (
+    <div className="border border-gray-300 rounded-lg">
+      <div className="border-b border-gray-200 p-2 bg-gray-50 rounded-t-lg">
+        <div className="flex items-center justify-center">
+          <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
+          <span className="text-sm text-gray-600">Loading rich editor...</span>
+        </div>
+      </div>
+      <div className="min-h-[200px] p-4">
+        <div className="animate-pulse space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 rounded w-1/2" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function RichTextEditor({
   content = '',
   onChange,
   placeholder = 'Start writing your post...',
   className = ''
 }: RichTextEditorProps) {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: {
-          levels: [1, 2, 3],
-        },
-      }),
-      Link.configure({
-        openOnClick: false,
-        HTMLAttributes: {
-          class: 'text-green-700 underline hover:text-green-800',
-        },
-      }),
-      Markdown.configure({
-        html: true,
-        tightLists: true,
-        bulletListMarker: '-',
-        linkify: true,
-        breaks: false,
-      }),
-    ],
-    content,
-    onUpdate: ({ editor }) => {
-      const markdown = editor.storage.markdown.getMarkdown();
-      onChange?.(markdown);
-    },
-    editorProps: {
-      attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[200px] px-4 py-3',
-        placeholder,
-      },
-    },
-  });
+  const [useRichEditor, setUseRichEditor] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const setLink = useCallback(() => {
-    if (!editor) return;
+  // Handle textarea changes
+  const handleTextareaChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange?.(e.target.value);
+  }, [onChange]);
 
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL', previousUrl);
+  // Upgrade to rich editor
+  const handleUpgrade = useCallback(() => {
+    setUseRichEditor(true);
+  }, []);
 
-    if (url === null) return;
-
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
+  // Auto-resize textarea
+  useEffect(() => {
+    if (textareaRef.current && !useRichEditor) {
+      const textarea = textareaRef.current;
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.max(200, textarea.scrollHeight) + 'px';
     }
+  }, [content, useRichEditor]);
 
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  }, [editor]);
-
-  if (!editor) {
+  // Use rich editor if requested
+  if (useRichEditor) {
     return (
-      <div className={`border border-gray-300 rounded-lg ${className}`}>
-        <div className="border-b border-gray-200 p-2">
-          <div className="flex flex-wrap gap-1">
-            {/* Skeleton toolbar */}
-            <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
-            <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
-            <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
-          </div>
-        </div>
-        <div className="min-h-[200px] p-4">
-          <div className="animate-pulse space-y-2">
-            <div className="h-4 bg-gray-200 rounded w-3/4" />
-            <div className="h-4 bg-gray-200 rounded w-1/2" />
-          </div>
-        </div>
-      </div>
+      <Suspense fallback={<RichEditorSkeleton />}>
+        <FullRichTextEditor
+          content={content}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={className}
+        />
+      </Suspense>
     );
   }
 
+  // Simple mode (fast loading)
   return (
     <div className={`border border-gray-300 rounded-lg focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}>
-      {/* Toolbar */}
+      {/* Simple toolbar */}
       <div className="border-b border-gray-200 p-2 bg-gray-50 rounded-t-lg">
-        <div className="flex flex-wrap gap-1 overflow-x-auto">
-          {/* Undo/Redo */}
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-gray-600">
+            Markdown supported
+          </div>
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            onClick={() => editor.chain().focus().undo().run()}
-            disabled={!editor.can().undo()}
-            className="h-8 w-8 p-0"
+            onClick={handleUpgrade}
+            className="text-green-700 hover:text-green-800 hover:bg-green-50"
           >
-            <Undo className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().redo().run()}
-            disabled={!editor.can().redo()}
-            className="h-8 w-8 p-0"
-          >
-            <Redo className="h-4 w-4" />
-          </Button>
-
-          <div className="w-px h-6 bg-gray-300 mx-1" />
-
-          {/* Text formatting */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('bold') ? 'bg-green-100 text-green-700' : ''}`}
-          >
-            <Bold className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('italic') ? 'bg-green-100 text-green-700' : ''}`}
-          >
-            <Italic className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleCode().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('code') ? 'bg-green-100 text-green-700' : ''}`}
-          >
-            <Code className="h-4 w-4" />
-          </Button>
-
-          <div className="w-px h-6 bg-gray-300 mx-1" />
-
-          {/* Lists */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('bulletList') ? 'bg-green-100 text-green-700' : ''}`}
-          >
-            <List className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('orderedList') ? 'bg-green-100 text-green-700' : ''}`}
-          >
-            <ListOrdered className="h-4 w-4" />
-          </Button>
-
-          <div className="w-px h-6 bg-gray-300 mx-1" />
-
-          {/* Block elements */}
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('blockquote') ? 'bg-green-100 text-green-700' : ''}`}
-          >
-            <Quote className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={setLink}
-            className={`h-8 w-8 p-0 ${editor.isActive('link') ? 'bg-green-100 text-green-700' : ''}`}
-          >
-            <LinkIcon className="h-4 w-4" />
+            <Wand2 className="w-4 h-4 mr-2" />
+            Rich Editor
           </Button>
         </div>
       </div>
 
-      {/* Editor Content */}
-      <div className="prose-editor">
-        <EditorContent
-          editor={editor}
-          className="min-h-[200px] max-w-none"
+      {/* Simple textarea */}
+      <div className="relative">
+        <Textarea
+          ref={textareaRef}
+          value={content}
+          onChange={handleTextareaChange}
+          placeholder={placeholder}
+          className="min-h-[200px] border-0 focus-visible:ring-0 resize-none rounded-t-none"
+          onFocus={handleUpgrade} // Auto-upgrade when user starts typing
         />
       </div>
     </div>

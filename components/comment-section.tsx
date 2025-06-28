@@ -1,102 +1,315 @@
-import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
-import { ArrowUp, ArrowDown, MessageSquare, MoreHorizontal } from "lucide-react"
+"use client";
 
-interface Comment {
-  id: number
-  author: string
-  content: string
-  timeAgo: string
-  votes: number
-  replies?: Comment[]
-}
-
-const mockComments: Comment[] = [
-  {
-    id: 1,
-    author: "rustlang",
-    content:
-      "Make sure your OS is arm64 and not arm32. I had similar issues until I realized I was running the wrong architecture.",
-    timeAgo: "1 point 3 hours ago",
-    votes: 1,
-  },
-  {
-    id: 2,
-    author: "devops_guru",
-    content:
-      "Have you tried using Docker with multi-arch builds? That usually solves most ARM compatibility issues for me.",
-    timeAgo: "2 points 2 hours ago",
-    votes: 2,
-  },
-]
+import { useState } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { SignInButton } from "@clerk/nextjs";
+import { useMutationError } from "@/hooks/use-mutation-error";
+import { formatDistanceToNow } from "date-fns";
+import { ChevronDown, ChevronRight, MessageSquare } from "lucide-react";
 
 interface CommentSectionProps {
-  postId: number
-  commentCount: number
+  postId: Id<"posts">;
 }
 
-export default function CommentSection({ postId, commentCount }: CommentSectionProps) {
+type CommentWithReplies = {
+  _id: Id<"comments">;
+  content: string;
+  createdAt: number;
+  author: {
+    _id: Id<"members">;
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+  } | null;
+  depth: number;
+  replies: CommentWithReplies[];
+};
+
+interface CommentItemProps {
+  comment: CommentWithReplies;
+  onReply: (parentId: Id<"comments">) => void;
+  replyingTo: Id<"comments"> | null;
+  newReply: string;
+  setNewReply: (content: string) => void;
+  onSubmitReply: (parentId: Id<"comments">) => void;
+  isSubmittingReply: boolean;
+}
+
+function CommentItem({ 
+  comment, 
+  onReply, 
+  replyingTo, 
+  newReply, 
+  setNewReply, 
+  onSubmitReply,
+  isSubmittingReply 
+}: CommentItemProps) {
+  const [isExpanded, setIsExpanded] = useState(true);
+  const hasReplies = comment.replies && comment.replies.length > 0;
+  
+  // Calculate indentation based on depth (max 3 levels)
+  const indentLevel = Math.min(comment.depth, 3);
+  const marginLeft = indentLevel * 24; // 24px per level
+
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-medium">all {commentCount} comments</h2>
-        <div className="text-sm text-gray-500">
-          sorted by:{" "}
-          <Button variant="ghost" className="p-0 h-auto text-green-700 hover:underline">
-            best
-          </Button>
-        </div>
-      </div>
-
-      {/* Comment Form */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <Textarea
-          placeholder="What are your thoughts?"
-          className="min-h-[100px] border-gray-300 focus:border-green-700 focus:ring-green-700 mb-3"
-        />
-        <div className="flex justify-end">
-          <Button className="bg-green-700 hover:bg-green-800">comment</Button>
-        </div>
-      </div>
-
-      {/* Comments List */}
-      <div className="space-y-4">
-        {mockComments.map((comment) => (
-          <div key={comment.id} className="bg-white border-l-2 border-gray-200 pl-4">
-            <div className="flex items-start space-x-3">
-              <div className="flex flex-col items-center space-y-1">
-                <Button variant="ghost" size="sm" className="p-1 h-auto">
-                  <ArrowUp className="w-4 h-4 text-gray-400 hover:text-green-700" />
+    <div className="space-y-3" style={{ marginLeft: `${marginLeft}px` }}>
+      <div className="border border-border rounded-lg p-4 bg-card">
+        <div className="flex items-start space-x-3">
+          <Avatar className="w-8 h-8">
+            <AvatarFallback className="bg-muted text-muted-foreground">
+              {comment.author?.firstName?.[0] || 'U'}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center space-x-2">
+              <span className="font-medium text-foreground">
+                {comment.author?.firstName || 'Unknown User'} {comment.author?.lastName || ''}
+              </span>
+              <span className="text-sm text-muted-foreground">
+                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+              </span>
+              {comment.depth > 0 && (
+                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                  Reply
+                </span>
+              )}
+            </div>
+            <p className="text-foreground whitespace-pre-wrap">{comment.content}</p>
+            <div className="flex items-center space-x-2">
+              <Authenticated>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onReply(comment._id)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  <MessageSquare className="w-4 h-4 mr-1" />
+                  Reply
                 </Button>
-                <span className="text-xs text-gray-500">{comment.votes}</span>
-                <Button variant="ghost" size="sm" className="p-1 h-auto">
-                  <ArrowDown className="w-4 h-4 text-gray-400 hover:text-red-500" />
+              </Authenticated>
+              {hasReplies && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  {isExpanded ? (
+                    <ChevronDown className="w-4 h-4 mr-1" />
+                  ) : (
+                    <ChevronRight className="w-4 h-4 mr-1" />
+                  )}
+                  {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
                 </Button>
-              </div>
-
-              <div className="flex-1">
-                <div className="text-sm text-gray-500 mb-2">
-                  <span className="text-green-700 hover:underline cursor-pointer">/u/{comment.author}</span>
-                  <span className="ml-2">{comment.timeAgo}</span>
-                </div>
-                <p className="text-gray-700 text-sm leading-relaxed mb-3">{comment.content}</p>
-                <div className="flex items-center space-x-4 text-xs text-gray-500">
-                  <Button variant="ghost" size="sm" className="p-1 h-auto hover:bg-gray-100">
-                    <MessageSquare className="w-3 h-3 mr-1" />
-                    reply
-                  </Button>
-                  <Button variant="ghost" size="sm" className="p-1 h-auto hover:bg-gray-100">
-                    share
-                  </Button>
-                  <Button variant="ghost" size="sm" className="p-1 h-auto hover:bg-gray-100">
-                    <MoreHorizontal className="w-3 h-3" />
-                  </Button>
-                </div>
-              </div>
+              )}
             </div>
           </div>
-        ))}
+        </div>
+
+        {/* Reply form */}
+        {replyingTo === comment._id && (
+          <div className="mt-4 ml-11 space-y-3">
+            <Textarea
+              placeholder={`Reply to ${comment.author?.firstName || 'this comment'}...`}
+              value={newReply}
+              onChange={(e) => setNewReply(e.target.value)}
+              className="min-h-[80px]"
+            />
+            <div className="flex space-x-2">
+              <Button
+                size="sm"
+                onClick={() => onSubmitReply(comment._id)}
+                disabled={!newReply.trim() || isSubmittingReply}
+              >
+                {isSubmittingReply ? "Posting..." : "Post Reply"}
+              </Button>
+                             <Button
+                 size="sm"
+                 variant="outline"
+                 onClick={() => onReply(null)}
+               >
+                Cancel
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Nested replies */}
+      {hasReplies && isExpanded && (
+        <div className="space-y-3">
+          {comment.replies.map((reply) => (
+            <CommentItem
+              key={reply._id}
+              comment={reply}
+              onReply={onReply}
+              replyingTo={replyingTo}
+              newReply={newReply}
+              setNewReply={setNewReply}
+              onSubmitReply={onSubmitReply}
+              isSubmittingReply={isSubmittingReply}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function CommentSection({ postId }: CommentSectionProps) {
+  const [newComment, setNewComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<Id<"comments"> | null>(null);
+  const [newReply, setNewReply] = useState("");
+  const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+  
+  const comments = useQuery(api.comments.getCommentsByPost, { postId });
+  const createComment = useMutation(api.comments.createComment);
+  const { handleMutation } = useMutationError();
+
+  const handleSubmitComment = async () => {
+    if (!newComment.trim()) return;
+
+    setIsSubmitting(true);
+
+    await handleMutation(
+      () => createComment({
+        postId,
+        content: newComment.trim(),
+      }),
+      {
+        onSuccess: () => {
+          setNewComment("");
+          setIsSubmitting(false);
+        },
+        successMessage: "Comment posted successfully!",
+      }
+    );
+  };
+
+  const handleSubmitReply = async (parentId: Id<"comments">) => {
+    if (!newReply.trim()) return;
+
+    setIsSubmittingReply(true);
+
+    await handleMutation(
+      () => createComment({
+        postId,
+        content: newReply.trim(),
+        parentCommentId: parentId,
+      }),
+      {
+        onSuccess: () => {
+          setNewReply("");
+          setReplyingTo(null);
+          setIsSubmittingReply(false);
+        },
+        successMessage: "Reply posted successfully!",
+      }
+    );
+  };
+
+  const handleReply = (parentId: Id<"comments"> | null) => {
+    setReplyingTo(parentId);
+    setNewReply("");
+  };
+
+  // Count total comments including replies
+  const countTotalComments = (comments: CommentWithReplies[]): number => {
+    return comments.reduce((total, comment) => {
+      return total + 1 + countTotalComments(comment.replies || []);
+    }, 0);
+  };
+
+  const totalComments = comments ? countTotalComments(comments) : 0;
+
+  return (
+    <div className="mt-8">
+      <div className="bg-card border border-border rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-foreground mb-4">
+          Comments ({totalComments})
+        </h3>
+        
+        <Authenticated>
+          <div className="mb-6 space-y-4">
+            <Textarea
+              placeholder="Share your thoughts..."
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              className="min-h-[100px]"
+            />
+            <Button 
+              onClick={handleSubmitComment}
+              disabled={!newComment.trim() || isSubmitting}
+              className="w-full sm:w-auto"
+            >
+              {isSubmitting ? "Posting..." : "Post Comment"}
+            </Button>
+          </div>
+        </Authenticated>
+
+        <Unauthenticated>
+          <div className="mb-6 p-4 bg-muted/50 border border-border rounded-lg text-center">
+            <p className="text-muted-foreground mb-4">
+              Join the conversation! Sign in to post comments.
+            </p>
+            <SignInButton mode="modal">
+              <Button variant="outline">
+                Sign In to Comment
+              </Button>
+            </SignInButton>
+          </div>
+        </Unauthenticated>
+
+        <div className="space-y-4">
+          {comments === undefined ? (
+            <div className="space-y-4">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="border border-border rounded-lg p-4">
+                  <div className="animate-pulse space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-muted rounded-full"></div>
+                      <div className="h-4 bg-muted rounded w-24"></div>
+                    </div>
+                    <div className="space-y-2">
+                      <div className="h-4 bg-muted rounded"></div>
+                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : comments?.length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">
+                No comments yet. Be the first to share your thoughts!
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {comments?.map((comment) => (
+                <CommentItem
+                  key={comment._id}
+                  comment={comment}
+                  onReply={handleReply}
+                  replyingTo={replyingTo}
+                  newReply={newReply}
+                  setNewReply={setNewReply}
+                  onSubmitReply={handleSubmitReply}
+                  isSubmittingReply={isSubmittingReply}
+                />
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  )
+  );
 }

@@ -41,10 +41,11 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect }: Pos
               <button
                 key={category._id}
                 onClick={() => onCategorySelect?.(category._id)}
-                className={`font-medium pb-1 whitespace-nowrap transition-colors border-b-2 ${selectedCategoryId === category._id
-                  ? "text-green-700 border-green-700"
-                  : "text-gray-600 hover:text-green-700 border-transparent hover:border-gray-300"
-                  }`}
+                className={`px-3 py-1 text-sm border-b-2 transition-colors ${
+                  selectedCategoryId === category._id
+                    ? "text-primary border-primary"
+                    : "text-muted-foreground hover:text-primary border-transparent hover:border-muted-foreground"
+                }`}
               >
                 {category.icon} /{category.name}
               </button>

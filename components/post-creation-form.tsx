@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, lazy, Suspense } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -9,10 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RichTextEditor } from "@/components/rich-text-editor";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PostPreview } from "@/components/post-preview";
 import { DraftsModal } from "@/components/drafts-modal";
 import {
   PostFormData,
@@ -23,9 +21,74 @@ import { AlertCircle, Loader2, Send, FileText } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
+// Lazy load heavy components
+const RichTextEditor = lazy(() => import("@/components/rich-text-editor"));
+const PostPreview = lazy(() => import("@/components/post-preview"));
+
 interface PostCreationFormProps {
   onSuccess?: (postId: Id<"posts">) => void;
   onCancel?: () => void;
+}
+
+// Loading skeleton for the rich text editor
+function RichTextEditorSkeleton() {
+  return (
+    <div className="border border-gray-300 rounded-lg">
+      <div className="border-b border-gray-200 p-2 bg-gray-50 rounded-t-lg">
+        <div className="flex flex-wrap gap-1">
+          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+        </div>
+      </div>
+      <div className="min-h-[200px] p-4">
+        <div className="animate-pulse space-y-2">
+          <div className="h-4 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 rounded w-1/2" />
+          <div className="h-4 bg-gray-200 rounded w-5/6" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Loading skeleton for the post preview
+function PostPreviewSkeleton() {
+  return (
+    <Card className="w-full">
+      <CardHeader className="pb-4">
+        <div className="animate-pulse space-y-4">
+          <div className="flex items-center justify-between">
+            <div className="h-6 bg-gray-200 rounded w-32" />
+            <div className="h-4 bg-gray-200 rounded w-24" />
+          </div>
+          <div className="h-8 bg-gray-200 rounded w-3/4" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-gray-200 rounded-full" />
+              <div className="space-y-1">
+                <div className="h-4 bg-gray-200 rounded w-16" />
+                <div className="h-3 bg-gray-200 rounded w-12" />
+              </div>
+            </div>
+            <div className="flex space-x-4">
+              <div className="h-4 bg-gray-200 rounded w-8" />
+              <div className="h-4 bg-gray-200 rounded w-8" />
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 rounded w-full" />
+          <div className="h-4 bg-gray-200 rounded w-5/6" />
+          <div className="h-4 bg-gray-200 rounded w-4/6" />
+        </div>
+      </CardContent>
+    </Card>
+  );
 }
 
 export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps) {
@@ -45,7 +108,10 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Real-time validation (only for touched fields)
-  const { errors, isValid } = validatePostForm(formData, touchedFields);
+  const { errors } = validatePostForm(formData, touchedFields);
+  
+  // Check overall form validity for submit button (regardless of touched state)
+  const { isValid: formIsValid } = validatePostForm(formData);
 
   // Queries and mutations
   const categories = useQuery(api.categories.getCategories);
@@ -77,10 +143,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate all fields for submission (ignore touched state)
-    const { isValid: allFieldsValid } = validatePostForm(formData);
-
-    if (!allFieldsValid || isSubmitting) {
+    if (!formIsValid || isSubmitting) {
       // Mark all fields as touched to show validation errors
       setTouchedFields(new Set(['title', 'content', 'categoryId']));
       return;
@@ -171,12 +234,12 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
               value={formData.title}
               onChange={handleTitleChange}
               placeholder="Enter your post title..."
-              className={`${errors.title ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-green-700 focus:ring-green-700'}`}
+              className={`${errors.title && touchedFields.has('title') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-green-700 focus:ring-green-700'}`}
               disabled={isSubmitting}
             />
             <div className="flex justify-between items-center text-sm">
               <div>
-                {errors.title && (
+                {errors.title && touchedFields.has('title') && (
                   <span className="text-red-500">{errors.title}</span>
                 )}
               </div>
@@ -199,7 +262,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
               onValueChange={handleCategoryChange}
               disabled={isSubmitting}
             >
-              <SelectTrigger className={`${errors.categoryId ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-green-700 focus:ring-green-700'}`}>
+              <SelectTrigger className={`${errors.categoryId && touchedFields.has('categoryId') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-green-700 focus:ring-green-700'}`}>
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
@@ -213,7 +276,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                 ))}
               </SelectContent>
             </Select>
-            {errors.categoryId && (
+            {errors.categoryId && touchedFields.has('categoryId') && (
               <span className="text-red-500 text-sm">{errors.categoryId}</span>
             )}
           </div>
@@ -229,25 +292,29 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                 <TabsTrigger value="preview">Preview</TabsTrigger>
               </TabsList>
               <TabsContent value="edit" className="mt-4">
-                <RichTextEditor
-                  content={formData.content}
-                  onChange={handleContentChange}
-                  placeholder="Write your post content here..."
-                  className={errors.content ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
-                />
+                <Suspense fallback={<RichTextEditorSkeleton />}>
+                  <RichTextEditor
+                    content={formData.content}
+                    onChange={handleContentChange}
+                    placeholder="Write your post content here..."
+                    className={errors.content && touchedFields.has('content') ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
+                  />
+                </Suspense>
               </TabsContent>
               <TabsContent value="preview" className="mt-4">
-                <PostPreview
-                  title={formData.title}
-                  content={formData.content}
-                  categoryName={categories?.find(c => c._id === formData.categoryId)?.displayName}
-                  categoryIcon={categories?.find(c => c._id === formData.categoryId)?.icon}
-                />
+                <Suspense fallback={<PostPreviewSkeleton />}>
+                  <PostPreview
+                    title={formData.title}
+                    content={formData.content}
+                    categoryName={categories?.find(c => c._id === formData.categoryId)?.displayName}
+                    categoryIcon={categories?.find(c => c._id === formData.categoryId)?.icon}
+                  />
+                </Suspense>
               </TabsContent>
             </Tabs>
             <div className="flex justify-between items-center text-sm">
               <div>
-                {errors.content && (
+                {errors.content && touchedFields.has('content') && (
                   <span className="text-red-500">{errors.content}</span>
                 )}
               </div>
@@ -281,7 +348,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
               </Button>
               <Button
                 type="submit"
-                disabled={!isValid || isSubmitting}
+                disabled={!formIsValid || isSubmitting}
                 className="bg-green-700 hover:bg-green-800 w-full sm:w-auto"
               >
                 {isSubmitting ? (

@@ -3,7 +3,6 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import PostCard from "@/components/post-card";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface PostListProps {
   categoryId?: Id<"categories">;
@@ -21,23 +20,17 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   if (posts === undefined) {
     return (
       <div className="space-y-4">
-        {[...Array(5)].map((_, i) => (
-          <div key={i} className="bg-white border border-gray-200 rounded-lg p-4">
-            <div className="flex">
-              <div className="flex flex-col items-center space-y-2 mr-4">
-                <Skeleton className="h-6 w-6" />
-                <Skeleton className="h-4 w-8" />
-                <Skeleton className="h-6 w-6" />
-              </div>
-              <div className="flex-1 space-y-2">
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-6 w-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-2/3" />
-                <div className="flex space-x-4">
-                  <Skeleton className="h-4 w-20" />
-                  <Skeleton className="h-4 w-16" />
-                  <Skeleton className="h-4 w-16" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="bg-card border border-border rounded-lg p-4">
+            <div className="animate-pulse">
+              <div className="flex space-x-4">
+                <div className="rounded-full bg-muted h-10 w-10"></div>
+                <div className="flex-1 space-y-2 py-1">
+                  <div className="h-4 bg-muted rounded w-3/4"></div>
+                  <div className="space-y-2">
+                    <div className="h-4 bg-muted rounded"></div>
+                    <div className="h-4 bg-muted rounded w-5/6"></div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -51,8 +44,8 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   if (posts === null) {
     return (
       <div className="space-y-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-          <p className="text-gray-500">Unable to load posts. Please try again later.</p>
+        <div className="bg-card border border-border rounded-lg p-8 text-center">
+          <p className="text-muted-foreground">Unable to load posts. Please try again later.</p>
         </div>
       </div>
     );
@@ -62,8 +55,8 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   if (posts.length === 0) {
     return (
       <div className="space-y-4">
-        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
-          <p className="text-gray-500">No posts found. Be the first to create one!</p>
+        <div className="bg-card border border-border rounded-lg p-8 text-center">
+          <p className="text-muted-foreground">No posts found. Be the first to create one!</p>
         </div>
       </div>
     );

@@ -214,6 +214,51 @@ export const searchCategories = query({
   },
 });
 
+// Create skool import category
+export const createSkoolCategory = mutation({
+  args: {},
+  handler: async (ctx) => {
+    // Check if skool category already exists
+    const existing = await ctx.db
+      .query("categories")
+      .withIndex("by_name", (q) => q.eq("name", "skool"))
+      .first();
+
+    if (existing) {
+      return {
+        message: "Skool category already exists",
+        categoryId: existing._id,
+        isNew: false,
+      };
+    }
+
+    // Get first member to use as creator
+    const firstMember = await ctx.db.query("members").first();
+    if (!firstMember) {
+      throw new Error("No members found. Please ensure at least one member exists before creating category.");
+    }
+
+    const now = Date.now();
+    const categoryId = await ctx.db.insert("categories", {
+      name: "skool",
+      displayName: "Skool Import",
+      description: "Posts imported from the Skool community",
+      icon: "📚",
+      createdAt: now,
+      updatedAt: now,
+      postCount: 0,
+      status: "active" as const,
+      creatorId: firstMember._id,
+    });
+
+    return {
+      message: "Skool category created successfully",
+      categoryId,
+      isNew: true,
+    };
+  },
+});
+
 // Seed categories for initial setup (no auth required - use only for initial seeding)
 export const seedCategories = mutation({
   args: {},

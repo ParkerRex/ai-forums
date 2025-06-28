@@ -6,14 +6,15 @@ import { Search, Plus } from "lucide-react";
 import { SignUpButton, UserButton, SignInButton } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export default function Header() {
   return (
-    <header className="border-b border-gray-200 bg-white sticky top-0 z-50">
+    <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
-            <Link href="/" className="text-2xl font-bold text-black">
+            <Link href="/" className="text-2xl font-bold text-foreground">
               VAI
             </Link>
             <nav className="hidden md:flex space-x-6"></nav>
@@ -21,10 +22,10 @@ export default function Header() {
 
           <div className="flex-1 max-w-md mx-8">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 placeholder="search VAI"
-                className="pl-10 border-gray-300 focus:border-green-700 focus:ring-green-700"
+                className="pl-10"
               />
             </div>
           </div>
@@ -32,22 +33,22 @@ export default function Header() {
           <div className="flex items-center space-x-4">
             <Link
               href="/members"
-              className="text-gray-600 hover:text-green-700 transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               members
             </Link>
             <Link
               href="/settings"
-              className="text-gray-600 hover:text-green-700 transition-colors"
+              className="text-muted-foreground hover:text-foreground transition-colors"
             >
               settings
             </Link>
+            <ThemeToggle />
             <Authenticated>
               <Link href="/create">
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-gray-300 hover:border-green-700"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   create
@@ -62,7 +63,6 @@ export default function Header() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-gray-300 hover:border-green-700"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   create
