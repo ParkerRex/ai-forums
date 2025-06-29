@@ -22,9 +22,11 @@ import type * as importMembers from "../importMembers.js";
 import type * as importPostsComments from "../importPostsComments.js";
 import type * as members from "../members.js";
 import type * as migration from "../migration.js";
+import type * as migrations_add_member_fields from "../migrations/add_member_fields.js";
 import type * as migrations_deduplicateComments from "../migrations/deduplicateComments.js";
 import type * as posts from "../posts.js";
 import type * as search from "../search.js";
+import type * as stats from "../stats.js";
 import type * as votes from "../votes.js";
 
 /**
@@ -45,9 +47,11 @@ declare const fullApi: ApiFromModules<{
   importPostsComments: typeof importPostsComments;
   members: typeof members;
   migration: typeof migration;
+  "migrations/add_member_fields": typeof migrations_add_member_fields;
   "migrations/deduplicateComments": typeof migrations_deduplicateComments;
   posts: typeof posts;
   search: typeof search;
+  stats: typeof stats;
   votes: typeof votes;
 }>;
 export declare const api: FilterApi<

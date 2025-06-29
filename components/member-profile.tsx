@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Globe, Github, Youtube, Edit, ExternalLink } from "lucide-react";
+import { CalendarDays, MapPin, Globe, Github, Youtube, Edit, ExternalLink, Linkedin } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -26,6 +26,10 @@ interface MemberProfileProps {
     linkGithub?: string;
     linkX?: string;
     linkYouTube?: string;
+    avatarUrl?: string;
+    websiteUrl?: string;
+    linkedinUrl?: string;
+    skills?: string[];
   };
 }
 
@@ -67,7 +71,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
       <div className="flex flex-col md:flex-row items-start">
         <Avatar className="h-32 w-32 mr-8 mb-6 md:mb-0 flex-shrink-0">
           <AvatarImage
-            src={`/placeholder.svg?width=128&height=128&query=${member.firstName}+${member.lastName}+profile+picture`}
+            src={member.avatarUrl || ""}
           />
           <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
         </Avatar>
@@ -96,6 +100,20 @@ export default function MemberProfile({ member }: MemberProfileProps) {
             </div>
           </div>
           <p className="text-muted-foreground mb-6">{member.bio}</p>
+
+          {/* Skills */}
+          {member.skills && member.skills.length > 0 && (
+            <div className="mb-6">
+              <h3 className="text-sm font-semibold text-foreground mb-2">Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {member.skills.map((skill) => (
+                  <Badge key={skill} variant="secondary" className="text-xs">
+                    {skill}
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-muted-foreground mb-6">
             <div className="flex items-center">
@@ -151,6 +169,30 @@ export default function MemberProfile({ member }: MemberProfileProps) {
               >
                 <Youtube className="w-4 h-4 mr-2" />
                 YouTube
+                <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
+            )}
+            {member.linkedinUrl && (
+              <a
+                href={member.linkedinUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 py-1.5 text-sm bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-md transition-colors"
+              >
+                <Linkedin className="w-4 h-4 mr-2" />
+                LinkedIn
+                <ExternalLink className="w-3 h-3 ml-1" />
+              </a>
+            )}
+            {member.websiteUrl && (
+              <a
+                href={member.websiteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center px-3 py-1.5 text-sm bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-md transition-colors"
+              >
+                <Globe className="w-4 h-4 mr-2" />
+                Website
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             )}

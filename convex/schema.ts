@@ -46,11 +46,21 @@ export default defineSchema({
     linkX: v.optional(v.string()),
     linkYouTube: v.optional(v.string()),
     location: v.optional(v.string()),
+    // New fields for member upgrades
+    avatarUrl: v.optional(v.string()),
+    websiteUrl: v.optional(v.string()),
+    linkedinUrl: v.optional(v.string()),
+    skills: v.optional(v.array(v.string())),
+    // Cached stats fields
+    postCount: v.optional(v.number()),
+    commentCount: v.optional(v.number()),
+    netVoteCount: v.optional(v.number()),
   })
     .index("by_status", ["status"])
     .index("by_joinedDate", ["joinedDate"])
     .index("by_lastOnline", ["lastOnline"])
     .index("by_status_and_joinedDate", ["status", "joinedDate"])
+    .index("by_skills", ["skills"])
     .searchIndex("search_members", {
       searchField: "firstName",
       filterFields: ["status"]

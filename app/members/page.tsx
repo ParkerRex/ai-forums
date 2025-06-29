@@ -55,6 +55,15 @@ function MembersPageContent() {
       linkX: member.linkX,
       linkYouTube: member.linkYouTube,
       location: member.location,
+      // New fields
+      avatarUrl: member.avatarUrl,
+      websiteUrl: member.websiteUrl,
+      linkedinUrl: member.linkedinUrl,
+      skills: member.skills,
+      postCount: member.postCount,
+      commentCount: member.commentCount,
+      netVoteCount: member.netVoteCount,
+      lastOnlineRelative: member.lastOnlineRelative,
     })) || [];
 
   // Clear search function
@@ -65,23 +74,23 @@ function MembersPageContent() {
   // Initial loading state (no search term)
   if (isLoading && !hasSearchTerm) {
     return (
-      <div className="font-mono min-h-screen bg-white">
+      <div className="font-mono min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 py-10">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            <h1 className="text-3xl font-bold text-foreground mb-2">
               Members Directory
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               Discover and connect with developers in the VAI community.
             </p>
           </div>
 
           <div className="mb-8">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
                 placeholder="Search members by name or location..."
-                className="pl-12 py-3 text-md border-gray-300 focus:border-green-700 focus:ring-green-700"
+                className="pl-12 py-3 text-md"
                 disabled
               />
             </div>
@@ -94,34 +103,34 @@ function MembersPageContent() {
   }
 
   return (
-    <div className="font-mono min-h-screen bg-white">
+    <div className="font-mono min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-10">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Members Directory
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Discover and connect with developers in the VAI community.
           </p>
         </div>
 
         <div className="mb-8">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search members by name or location..."
-              className="pl-12 pr-10 py-3 text-md border-gray-300 focus:border-green-700 focus:ring-green-700"
+              className="pl-12 pr-10 py-3 text-md"
             />
             {hasSearchTerm && (
               <div className="absolute right-3 top-1/2 transform -translate-y-1/2 flex items-center space-x-2">
                 {isTyping && (
-                  <Loader2 className="w-4 h-4 text-gray-400 animate-spin" />
+                  <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
                 )}
                 <button
                   onClick={clearSearch}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -132,7 +141,7 @@ function MembersPageContent() {
 
         {/* Enhanced search results info */}
         {isSearching && (
-          <div className="mb-4 text-sm text-gray-600 flex items-center">
+          <div className="mb-4 text-sm text-muted-foreground flex items-center">
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -163,12 +172,12 @@ function MembersPageContent() {
           </div>
         ) : isSearching ? (
           <div className="text-center py-12 transition-opacity duration-300">
-            <div className="text-gray-500 text-lg mb-2">No members found</div>
-            <p className="text-gray-400">
+            <div className="text-muted-foreground text-lg mb-2">No members found</div>
+            <p className="text-muted-foreground/70">
               Try adjusting your search terms or{" "}
               <button
                 onClick={clearSearch}
-                className="text-green-700 hover:text-green-800 underline"
+                className="text-primary hover:text-primary/80 underline"
               >
                 browse all members
               </button>

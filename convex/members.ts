@@ -3,6 +3,39 @@ import { v, ConvexError } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { Doc } from "./_generated/dataModel";
 
+// Shared validator for transformed member data
+const MemberUIValidator = v.object({
+  _id: v.id("members"),
+  firstName: v.string(),
+  lastName: v.string(),
+  email: v.string(),
+  status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
+  joinedDate: v.number(),
+  country: v.string(),
+  updatedAt: v.number(),
+  bio: v.string(),
+  lastOnline: v.number(),
+  linkGithub: v.optional(v.string()),
+  linkX: v.optional(v.string()),
+  linkYouTube: v.optional(v.string()),
+  location: v.optional(v.string()),
+  // New fields
+  avatarUrl: v.optional(v.string()),
+  websiteUrl: v.optional(v.string()),
+  linkedinUrl: v.optional(v.string()),
+  skills: v.array(v.string()),
+  // Cached stats
+  postCount: v.number(),
+  commentCount: v.number(),
+  netVoteCount: v.number(),
+  // Computed fields
+  fullName: v.string(),
+  initials: v.string(),
+  joinedDateFormatted: v.string(),
+  lastOnlineFormatted: v.string(),
+  lastOnlineRelative: v.string(),
+});
+
 // Helper function to transform member data for UI
 function transformMemberForUI(member: Doc<"members">) {
   return {
@@ -20,6 +53,15 @@ function transformMemberForUI(member: Doc<"members">) {
     linkX: member.linkX,
     linkYouTube: member.linkYouTube,
     location: member.location,
+    // New fields
+    avatarUrl: member.avatarUrl,
+    websiteUrl: member.websiteUrl,
+    linkedinUrl: member.linkedinUrl,
+    skills: member.skills || [],
+    // Cached stats (fallback to 0 if not computed yet)
+    postCount: member.postCount ?? 0,
+    commentCount: member.commentCount ?? 0,
+    netVoteCount: member.netVoteCount ?? 0,
     // Add computed fields for UI
     fullName: `${member.firstName} ${member.lastName}`,
     initials: `${member.firstName[0]}${member.lastName[0]}`.toUpperCase(),
@@ -33,6 +75,8 @@ function transformMemberForUI(member: Doc<"members">) {
       month: "short",
       day: "numeric",
     }),
+    // Relative time for "Last online • X ago" chip
+    lastOnlineRelative: getTimeAgo(member.lastOnline),
   };
 }
 
@@ -46,26 +90,7 @@ export const getMembers = query({
     status: v.optional(v.union(v.literal("active"), v.literal("churned"), v.literal("free"))),
   },
   returns: v.object({
-    page: v.array(v.object({
-      _id: v.id("members"),
-      firstName: v.string(),
-      lastName: v.string(),
-      email: v.string(),
-      status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
-      joinedDate: v.number(),
-      country: v.string(),
-      updatedAt: v.number(),
-      bio: v.string(),
-      lastOnline: v.number(),
-      linkGithub: v.optional(v.string()),
-      linkX: v.optional(v.string()),
-      linkYouTube: v.optional(v.string()),
-      location: v.optional(v.string()),
-      fullName: v.string(),
-      initials: v.string(),
-      joinedDateFormatted: v.string(),
-      lastOnlineFormatted: v.string(),
-    })),
+    page: v.array(MemberUIValidator),
     isDone: v.boolean(),
     continueCursor: v.union(v.string(), v.null()),
   }),
@@ -91,26 +116,7 @@ export const getMembers = query({
  */
 export const getAllMembers = query({
   args: {},
-  returns: v.array(v.object({
-    _id: v.id("members"),
-    firstName: v.string(),
-    lastName: v.string(),
-    email: v.string(),
-    status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
-    joinedDate: v.number(),
-    country: v.string(),
-    updatedAt: v.number(),
-    bio: v.string(),
-    lastOnline: v.number(),
-    linkGithub: v.optional(v.string()),
-    linkX: v.optional(v.string()),
-    linkYouTube: v.optional(v.string()),
-    location: v.optional(v.string()),
-    fullName: v.string(),
-    initials: v.string(),
-    joinedDateFormatted: v.string(),
-    lastOnlineFormatted: v.string(),
-  })),
+  returns: v.array(MemberUIValidator),
   handler: async (ctx) => {
     const members = await ctx.db
       .query("members")
@@ -127,29 +133,7 @@ export const getAllMembers = query({
  */
 export const getMemberById = query({
   args: { id: v.id("members") },
-  returns: v.union(
-    v.object({
-      _id: v.id("members"),
-      firstName: v.string(),
-      lastName: v.string(),
-      email: v.string(),
-      status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
-      joinedDate: v.number(),
-      country: v.string(),
-      updatedAt: v.number(),
-      bio: v.string(),
-      lastOnline: v.number(),
-      linkGithub: v.optional(v.string()),
-      linkX: v.optional(v.string()),
-      linkYouTube: v.optional(v.string()),
-      location: v.optional(v.string()),
-      fullName: v.string(),
-      initials: v.string(),
-      joinedDateFormatted: v.string(),
-      lastOnlineFormatted: v.string(),
-    }),
-    v.null()
-  ),
+  returns: v.union(MemberUIValidator, v.null()),
   handler: async (ctx, args) => {
     const member = await ctx.db.get(args.id);
     if (!member) {
@@ -224,7 +208,24 @@ export const getMemberPosts = query({
         const timeAgo = getTimeAgo(post.createdAt);
 
         return {
-          ...post,
+          _id: post._id,
+          title: post.title,
+          content: post.content,
+          slug: post.slug,
+          createdAt: post.createdAt,
+          updatedAt: post.updatedAt,
+          authorId: post.authorId,
+          categoryId: post.categoryId,
+          status: post.status,
+          upvotes: post.upvotes,
+          downvotes: post.downvotes,
+          netVotes: post.netVotes,
+          commentCount: post.commentCount,
+          viewCount: post.viewCount,
+          isPinned: post.isPinned,
+          isLocked: post.isLocked,
+          editedAt: post.editedAt,
+          editReason: post.editReason,
           timeAgo,
           author: author ? {
             _id: author._id,
@@ -322,26 +323,7 @@ export const searchMembers = query({
     searchTerm: v.string(),
     limit: v.optional(v.number()),
   },
-  returns: v.array(v.object({
-    _id: v.id("members"),
-    firstName: v.string(),
-    lastName: v.string(),
-    email: v.string(),
-    status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
-    joinedDate: v.number(),
-    country: v.string(),
-    updatedAt: v.number(),
-    bio: v.string(),
-    lastOnline: v.number(),
-    linkGithub: v.optional(v.string()),
-    linkX: v.optional(v.string()),
-    linkYouTube: v.optional(v.string()),
-    location: v.optional(v.string()),
-    fullName: v.string(),
-    initials: v.string(),
-    joinedDateFormatted: v.string(),
-    lastOnlineFormatted: v.string(),
-  })),
+  returns: v.array(MemberUIValidator),
   handler: async (ctx, args) => {
     const limit = args.limit || 100; // Increased from 20 to 100
     const searchTerm = args.searchTerm.toLowerCase().trim();
@@ -411,29 +393,7 @@ export const searchMembers = query({
  */
 export const getCurrentMember = query({
   args: {},
-  returns: v.union(
-    v.object({
-      _id: v.id("members"),
-      firstName: v.string(),
-      lastName: v.string(),
-      email: v.string(),
-      status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
-      joinedDate: v.number(),
-      country: v.string(),
-      updatedAt: v.number(),
-      bio: v.string(),
-      lastOnline: v.number(),
-      linkGithub: v.optional(v.string()),
-      linkX: v.optional(v.string()),
-      linkYouTube: v.optional(v.string()),
-      location: v.optional(v.string()),
-      fullName: v.string(),
-      initials: v.string(),
-      joinedDateFormatted: v.string(),
-      lastOnlineFormatted: v.string(),
-    }),
-    v.null()
-  ),
+  returns: v.union(MemberUIValidator, v.null()),
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
@@ -543,6 +503,191 @@ export const updateMemberStatus = mutation({
     });
 
     return null;
+  },
+});
+
+/**
+ * Get comments by a specific member (mirrors getMemberPosts)
+ */
+export const getMemberComments = query({
+  args: {
+    memberId: v.id("members"),
+    paginationOpts: paginationOptsValidator,
+  },
+  returns: v.object({
+    page: v.array(v.object({
+      _id: v.id("comments"),
+      content: v.string(),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+      authorId: v.id("members"),
+      postId: v.id("posts"),
+      parentCommentId: v.optional(v.id("comments")),
+      status: v.union(v.literal("active"), v.literal("deleted"), v.literal("hidden")),
+      upvotes: v.number(),
+      downvotes: v.number(),
+      netVotes: v.number(),
+      depth: v.number(),
+      childCount: v.number(),
+      editedAt: v.optional(v.number()),
+      editReason: v.optional(v.string()),
+      // Add computed fields
+      timeAgo: v.string(),
+      post: v.union(v.object({
+        _id: v.id("posts"),
+        title: v.string(),
+        slug: v.string(),
+        categoryId: v.id("categories"),
+      }), v.null()),
+    })),
+    isDone: v.boolean(),
+    continueCursor: v.union(v.string(), v.null()),
+  }),
+  handler: async (ctx, args) => {
+    const result = await ctx.db
+      .query("comments")
+      .withIndex("by_authorId", (q) => q.eq("authorId", args.memberId))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .order("desc")
+      .paginate(args.paginationOpts);
+
+    // Enrich comments with post information
+    const enrichedPage = await Promise.all(
+      result.page.map(async (comment) => {
+        const post = await ctx.db.get(comment.postId);
+        const timeAgo = getTimeAgo(comment.createdAt);
+
+        return {
+          _id: comment._id,
+          content: comment.content,
+          createdAt: comment.createdAt,
+          updatedAt: comment.updatedAt,
+          authorId: comment.authorId,
+          postId: comment.postId,
+          parentCommentId: comment.parentCommentId,
+          status: comment.status,
+          upvotes: comment.upvotes,
+          downvotes: comment.downvotes,
+          netVotes: comment.netVotes,
+          depth: comment.depth,
+          childCount: comment.childCount,
+          editedAt: comment.editedAt,
+          editReason: comment.editReason,
+          timeAgo,
+          post: post ? {
+            _id: post._id,
+            title: post.title,
+            slug: post.slug,
+            categoryId: post.categoryId,
+          } : null,
+        };
+      })
+    );
+
+    return {
+      page: enrichedPage,
+      isDone: result.isDone,
+      continueCursor: result.continueCursor,
+    };
+  },
+});
+
+/**
+ * Get member stats (cached or computed)
+ */
+export const getMemberStats = query({
+  args: { memberId: v.id("members") },
+  returns: v.object({
+    postCount: v.number(),
+    commentCount: v.number(),
+    netVoteCount: v.number(),
+  }),
+  handler: async (ctx, args) => {
+    const member = await ctx.db.get(args.memberId);
+    if (!member) {
+      return { postCount: 0, commentCount: 0, netVoteCount: 0 };
+    }
+
+    // Use cached values if available
+    if (member.postCount !== undefined && 
+        member.commentCount !== undefined && 
+        member.netVoteCount !== undefined) {
+      return {
+        postCount: member.postCount,
+        commentCount: member.commentCount,
+        netVoteCount: member.netVoteCount,
+      };
+    }
+
+    // Fallback to computed values (for backwards compatibility)
+    const [posts, comments, votes] = await Promise.all([
+      ctx.db
+        .query("posts")
+        .withIndex("by_authorId", (q) => q.eq("authorId", args.memberId))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .collect(),
+      ctx.db
+        .query("comments")
+        .withIndex("by_authorId", (q) => q.eq("authorId", args.memberId))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .collect(),
+      ctx.db
+        .query("votes")
+        .withIndex("by_userId", (q) => q.eq("userId", args.memberId))
+        .collect(),
+    ]);
+
+    const postCount = posts.length;
+    const commentCount = comments.length;
+    const netVoteCount = votes.filter(v => v.voteType === "upvote").length - 
+                        votes.filter(v => v.voteType === "downvote").length;
+
+    return { postCount, commentCount, netVoteCount };
+  },
+});
+
+/**
+ * Enhanced search members using search index and skills filter
+ */
+export const searchMembersEnhanced = query({
+  args: {
+    searchTerm: v.string(),
+    skillsFilter: v.optional(v.array(v.string())),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(MemberUIValidator),
+  handler: async (ctx, args) => {
+    const { searchTerm, skillsFilter, limit = 20 } = args;
+
+    let members: Doc<"members">[] = [];
+
+    if (searchTerm.trim()) {
+      // Use search index for text search
+      members = await ctx.db
+        .query("members")
+        .withSearchIndex("search_members", (q) => 
+          q.search("firstName", searchTerm).eq("status", "active")
+        )
+        .take(limit * 2); // Get more to filter by skills
+    } else {
+      // Get all active members if no search term
+      members = await ctx.db
+        .query("members")
+        .withIndex("by_status_and_joinedDate", (q) => q.eq("status", "active"))
+        .order("desc")
+        .take(limit * 2);
+    }
+
+    // Filter by skills if provided
+    if (skillsFilter && skillsFilter.length > 0) {
+      const skillsLower = skillsFilter.map(s => s.toLowerCase());
+      members = members.filter(member => {
+        const memberSkills = (member.skills || []).map(s => s.toLowerCase());
+        return skillsLower.some(skill => memberSkills.includes(skill));
+      });
+    }
+
+    return members.slice(0, limit).map(transformMemberForUI);
   },
 });
 
