@@ -1,7 +1,12 @@
 import Link from "next/link"
-import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark, Flag, MoreHorizontal } from "lucide-react"
+import Image from "next/image"
+import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark, Flag, MoreHorizontal, Play, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
 import { Id } from "@/convex/_generated/dataModel"
+import { useRef, useState } from "react"
+import { getMediaPlaceholder } from "@/lib/post-preview-utils"
+import { cn } from "@/lib/utils"
 
 interface Post {
   _id: Id<"posts">
@@ -10,6 +15,13 @@ interface Post {
   createdAt: number
   netVotes: number
   commentCount: number
+  type?: "text" | "image" | "video" | "link"
+  mediaUrl?: string
+  thumbnailUrl?: string
+  linkUrl?: string
+  linkTitle?: string
+  linkDescription?: string
+  linkImage?: string
   author?: {
     _id: Id<"members">
     firstName: string
@@ -40,6 +52,20 @@ function getTimeAgo(timestamp: number): string {
 }
 
 export default function PostDetail({ post }: PostDetailProps) {
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const postType = post.type || "text";
+
+  const handleVideoPlay = () => {
+    if (videoRef.current) {
+      if (isVideoPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Main Post */}
@@ -79,9 +105,85 @@ export default function PostDetail({ post }: PostDetailProps) {
 
             <h1 className="text-2xl font-bold text-foreground mb-6">{post.title}</h1>
 
+            {/* Media Content */}
+            {postType === "image" && post.mediaUrl && (
+              <div className="mb-6 rounded-lg overflow-hidden">
+                <Image
+                  src={post.mediaUrl}
+                  alt={post.title}
+                  width={800}
+                  height={600}
+                  className="w-full h-auto object-contain max-h-[600px]"
+                  placeholder="blur"
+                  blurDataURL={getMediaPlaceholder()}
+                />
+              </div>
+            )}
+
+            {postType === "video" && post.mediaUrl && (
+              <div className="mb-6 rounded-lg overflow-hidden relative bg-background">
+                <video
+                  ref={videoRef}
+                  src={post.mediaUrl}
+                  className="w-full h-auto max-h-[600px]"
+                  controls
+                  poster={post.thumbnailUrl}
+                  onPlay={() => setIsVideoPlaying(true)}
+                  onPause={() => setIsVideoPlaying(false)}
+                />
+                {!isVideoPlaying && post.thumbnailUrl && (
+                  <div 
+                    className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                    onClick={handleVideoPlay}
+                  >
+                    <div className="bg-background/80 rounded-full p-4 hover:bg-background/90 transition-colors">
+                      <Play className="h-12 w-12 text-primary-foreground fill-primary-foreground" />
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {postType === "link" && post.linkUrl && (
+              <Card className="mb-6 overflow-hidden hover:shadow-md transition-shadow">
+                <a 
+                  href={post.linkUrl} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="block"
+                >
+                  {post.linkImage && (
+                    <div className="relative h-48 bg-muted">
+                      <Image
+                        src={post.linkImage}
+                        alt={post.linkTitle || "Link preview"}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                  )}
+                  <CardContent className="p-4">
+                    <h3 className="font-semibold text-lg mb-2">
+                      {post.linkTitle || post.linkUrl}
+                    </h3>
+                    {post.linkDescription && (
+                      <p className="text-sm text-muted-foreground mb-2 line-clamp-3">
+                        {post.linkDescription}
+                      </p>
+                    )}
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <ExternalLink className="h-3 w-3" />
+                      <span>{new URL(post.linkUrl).hostname}</span>
+                    </div>
+                  </CardContent>
+                </a>
+              </Card>
+            )}
+
+            {/* Text Content */}
             <div className="prose prose-sm max-w-none text-foreground mb-6">
               {post.content.split("\n").map((paragraph, index) => (
-                <p key={index} className="mb-4 leading-relaxed">
+                <p key={index} className={cn("mb-4 leading-relaxed", paragraph.trim() === "" && "h-4")}>
                   {paragraph}
                 </p>
               ))}

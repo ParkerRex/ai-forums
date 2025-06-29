@@ -163,8 +163,15 @@ export const createPost = mutation({
     title: v.string(),
     content: v.string(),
     categoryId: v.id("categories"),
+    type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
+    mediaUrl: v.optional(v.string()),
+    thumbnailUrl: v.optional(v.string()),
+    linkUrl: v.optional(v.string()),
+    linkTitle: v.optional(v.string()),
+    linkDescription: v.optional(v.string()),
+    linkImage: v.optional(v.string()),
   },
-  handler: async (ctx, { title, content, categoryId }) => {
+  handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Authentication required");
@@ -181,13 +188,25 @@ export const createPost = mutation({
     }
 
     // Verify category exists and is active
-    const category = await ctx.db.get(categoryId);
+    const category = await ctx.db.get(args.categoryId);
     if (!category || category.status !== "active") {
       throw new Error("Invalid category");
     }
 
+    // Validate type-specific requirements
+    const postType = args.type || "text";
+    if (postType === "image" && !args.mediaUrl) {
+      throw new Error("Image posts require a media URL");
+    }
+    if (postType === "video" && !args.mediaUrl) {
+      throw new Error("Video posts require a media URL");
+    }
+    if (postType === "link" && !args.linkUrl) {
+      throw new Error("Link posts require a link URL");
+    }
+
     // Generate unique slug
-    const baseSlug = generateSlug(title);
+    const baseSlug = generateSlug(args.title);
     const posts = await ctx.db
       .query("posts")
       .withIndex("by_slug")
@@ -201,13 +220,13 @@ export const createPost = mutation({
 
     // Create the post
     const postId = await ctx.db.insert("posts", {
-      title: title.trim(),
-      content: content.trim(),
+      title: args.title.trim(),
+      content: args.content.trim(),
       slug,
       createdAt: now,
       updatedAt: now,
       authorId: member._id,
-      categoryId,
+      categoryId: args.categoryId,
       status: "active",
       upvotes: 0,
       downvotes: 0,
@@ -216,10 +235,18 @@ export const createPost = mutation({
       viewCount: 0,
       isPinned: false,
       isLocked: false,
+      // New media/link fields
+      type: postType,
+      mediaUrl: args.mediaUrl,
+      thumbnailUrl: args.thumbnailUrl,
+      linkUrl: args.linkUrl,
+      linkTitle: args.linkTitle,
+      linkDescription: args.linkDescription,
+      linkImage: args.linkImage,
     });
 
     // Update category post count
-    await ctx.db.patch(categoryId, {
+    await ctx.db.patch(args.categoryId, {
       postCount: (category.postCount || 0) + 1,
       updatedAt: now,
     });
@@ -235,14 +262,21 @@ export const updatePost = mutation({
     title: v.optional(v.string()),
     content: v.optional(v.string()),
     editReason: v.optional(v.string()),
+    type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
+    mediaUrl: v.optional(v.string()),
+    thumbnailUrl: v.optional(v.string()),
+    linkUrl: v.optional(v.string()),
+    linkTitle: v.optional(v.string()),
+    linkDescription: v.optional(v.string()),
+    linkImage: v.optional(v.string()),
   },
-  handler: async (ctx, { postId, title, content, editReason }) => {
+  handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
       throw new Error("Authentication required");
     }
 
-    const post = await ctx.db.get(postId);
+    const post = await ctx.db.get(args.postId);
     if (!post) {
       throw new Error("Post not found");
     }
@@ -262,6 +296,18 @@ export const updatePost = mutation({
       throw new Error("Only the author can edit this post");
     }
 
+    // Validate type-specific requirements
+    const postType = args.type || post.type || "text";
+    if (postType === "image" && args.mediaUrl === "") {
+      throw new Error("Image posts require a media URL");
+    }
+    if (postType === "video" && args.mediaUrl === "") {
+      throw new Error("Video posts require a media URL");
+    }
+    if (postType === "link" && args.linkUrl === "") {
+      throw new Error("Link posts require a link URL");
+    }
+
     const now = Date.now();
     const updates: {
       updatedAt: number;
@@ -270,21 +316,28 @@ export const updatePost = mutation({
       content?: string;
       slug?: string;
       editReason?: string;
+      type?: "text" | "image" | "video" | "link";
+      mediaUrl?: string;
+      thumbnailUrl?: string;
+      linkUrl?: string;
+      linkTitle?: string;
+      linkDescription?: string;
+      linkImage?: string;
     } = {
       updatedAt: now,
       editedAt: now,
     };
 
     // If title is being updated, regenerate slug
-    if (title !== undefined) {
-      updates.title = title.trim();
+    if (args.title !== undefined) {
+      updates.title = args.title.trim();
       
       // Generate new slug from updated title
-      const baseSlug = generateSlug(title);
+      const baseSlug = generateSlug(args.title);
       const posts = await ctx.db
         .query("posts")
         .withIndex("by_slug")
-        .filter((q) => q.neq(q.field("_id"), postId)) // Exclude current post
+        .filter((q) => q.neq(q.field("_id"), args.postId)) // Exclude current post
         .collect();
       const existingSlugs = posts
         .map(p => p.slug)
@@ -292,15 +345,38 @@ export const updatePost = mutation({
       updates.slug = ensureUniqueSlug(baseSlug, existingSlugs);
     }
     
-    if (content !== undefined) {
-      updates.content = content.trim();
+    if (args.content !== undefined) {
+      updates.content = args.content.trim();
     }
-    if (editReason !== undefined) {
-      updates.editReason = editReason.trim();
+    if (args.editReason !== undefined) {
+      updates.editReason = args.editReason.trim();
     }
 
-    await ctx.db.patch(postId, updates);
-    return postId;
+    // Handle media/link field updates
+    if (args.type !== undefined) {
+      updates.type = args.type;
+    }
+    if (args.mediaUrl !== undefined) {
+      updates.mediaUrl = args.mediaUrl;
+    }
+    if (args.thumbnailUrl !== undefined) {
+      updates.thumbnailUrl = args.thumbnailUrl;
+    }
+    if (args.linkUrl !== undefined) {
+      updates.linkUrl = args.linkUrl;
+    }
+    if (args.linkTitle !== undefined) {
+      updates.linkTitle = args.linkTitle;
+    }
+    if (args.linkDescription !== undefined) {
+      updates.linkDescription = args.linkDescription;
+    }
+    if (args.linkImage !== undefined) {
+      updates.linkImage = args.linkImage;
+    }
+
+    await ctx.db.patch(args.postId, updates);
+    return args.postId;
   },
 });
 
