@@ -1,6 +1,7 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, action } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { api } from "./_generated/api";
 import { generateMemberSlug } from "../lib/slug-utils";
 
 /**
@@ -1449,4 +1450,20 @@ export const validateDataIntegrity = query({
       isHealthy: issues.length === 0 && commentCountIssues.length === 0
     };
   }
+});
+
+export const runAddPostMediaFieldsMigration = action({
+  args: {},
+  handler: async (ctx): Promise<{ migratedCount: number }> => {
+    console.log("Running post media fields migration...");
+    
+    try {
+      const result = await ctx.runMutation(api.migrations.add_post_media_fields.addPostMediaFields, {});
+      console.log(`Migration completed successfully. Migrated ${result.migratedCount} posts.`);
+      return result;
+    } catch (error) {
+      console.error("Migration failed:", error);
+      throw error;
+    }
+  },
 }); 

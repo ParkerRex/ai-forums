@@ -14,6 +14,8 @@
     "test:visual": "playwright test"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.839.0",
+    "@aws-sdk/s3-request-presigner": "^3.839.0",
     "@clerk/clerk-react": "^5.25.0",
     "@clerk/nextjs": "^6.12.6",
     "@hookform/resolvers": "^5.1.1",

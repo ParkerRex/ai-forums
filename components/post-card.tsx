@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   ArrowUp,
   MessageSquare,
@@ -12,10 +12,11 @@ import { api } from "@/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { useState } from "react";
-import { memberProfileUrl } from "@/lib/utils";
+import PostPreview from "@/components/post-preview";
+import { PostData } from "@/lib/post-preview-utils";
 
 // Interface to match Convex post data structure
-interface Post {
+interface Post extends Omit<PostData, 'author' | 'category'> {
   _id: Id<"posts">;
   title: string;
   content: string;
@@ -50,28 +51,13 @@ interface Post {
   } | null;
 }
 
-// Helper function to format time ago
-function getTimeAgo(timestamp: number): string {
-  const now = Date.now();
-  const diff = now - timestamp;
-  const minutes = Math.floor(diff / (1000 * 60));
-  const hours = Math.floor(diff / (1000 * 60 * 60));
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (minutes < 60) {
-    return `${minutes}m`;
-  } else if (hours < 24) {
-    return `${hours}h`;
-  } else {
-    return `${days}d`;
-  }
-}
-
 interface PostCardProps {
   post: Post;
+  size?: "small" | "medium" | "large";
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, size = "medium" }: PostCardProps) {
+  const router = useRouter();
   const [isVoting, setIsVoting] = useState(false);
   const voteOnPost = useMutation(api.votes.voteOnPost);
   const userVote = useQuery(api.votes.getUserVote, {
@@ -79,11 +65,8 @@ export default function PostCard({ post }: PostCardProps) {
     targetType: "post",
   });
 
-  // New: handle author details safely
-  const authorName = post.author?.firstName || "Unknown";
-  const authorSlug = post.author?.slug;
-
-  const handleUpvote = async () => {
+  const handleUpvote = async (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (isVoting) return;
     setIsVoting(true);
 
@@ -100,10 +83,24 @@ export default function PostCard({ post }: PostCardProps) {
     }
   };
 
+  const handleClick = () => {
+    router.push(`/${post.category?.name || 'general'}/${post.slug}`);
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // TODO: Implement share functionality
+  };
+
+  const handleSave = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // TODO: Implement save functionality
+  };
+
   return (
     <div className="bg-card border border-border rounded-lg hover:border-muted-foreground/20 transition-colors">
       <div className="flex">
-        {/* Voting */}
+        {/* Voting panel */}
         <div className="flex flex-col items-center p-4 space-y-1">
           <Authenticated>
             <Button
@@ -114,10 +111,11 @@ export default function PostCard({ post }: PostCardProps) {
               disabled={isVoting}
             >
               <ArrowUp
-                className={`w-5 h-5 transition-colors ${userVote === "upvote"
-                  ? "text-primary"
-                  : "text-muted-foreground hover:text-primary"
-                  }`}
+                className={`w-5 h-5 transition-colors ${
+                  userVote === "upvote"
+                    ? "text-primary"
+                    : "text-muted-foreground hover:text-primary"
+                }`}
               />
             </Button>
           </Authenticated>
@@ -140,88 +138,69 @@ export default function PostCard({ post }: PostCardProps) {
           </span>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 p-4 pl-0">
-          <div className="flex items-center text-sm text-muted-foreground mb-2">
-            <Link
-              href={`/${post.category?.name || 'general'}`}
-              className="text-primary hover:underline"
-              prefetch={true}
-            >
-              /{post.category?.name || 'general'}
-            </Link>
-            <span className="mx-2">•</span>
-            <span>posted by</span>
+        {/* Main content using PostPreview */}
+        <div className="flex-1 cursor-pointer" onClick={handleClick}>
+          <PostPreview
+            post={post as PostData}
+            size={size}
+            showStats={false}
+            showCategory={true}
+            showAuthor={true}
+            className="border-0 shadow-none hover:shadow-none"
+          />
+        </div>
+      </div>
 
-            {authorSlug ? (
-              <Link
-                href={`/members/${authorSlug}`}
-                className="ml-1 text-primary hover:underline"
-                prefetch={true}
-              >
-                {authorName}
-              </Link>
-            ) : (
-              <span className="ml-1 text-foreground">{authorName}</span>
-            )}
-            <span className="mx-2">•</span>
-            <span>{getTimeAgo(post.createdAt)} ago</span>
-          </div>
-
-          <Link href={`/${post.category?.name || 'general'}/${post.slug}`} className="block group" prefetch={true}>
-            <h2 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors mb-2">
-              {post.title}
-            </h2>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-              {post.content}
-            </p>
-          </Link>
-
-          <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-            <Authenticated>
-              <Link href={`/${post.category?.name || 'general'}/${post.slug}`} prefetch={true}>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-2 h-auto hover:bg-muted"
-                >
-                  <MessageSquare className="w-4 h-4 mr-1" />
-                  {post.commentCount} comments
-                </Button>
-              </Link>
-            </Authenticated>
-            <Unauthenticated>
-              <MembershipCTAModal
-                title="Join the Conversation"
-                description="Sign up to read comments and share your thoughts with the VAI community"
-              >
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-2 h-auto hover:bg-muted"
-                >
-                  <MessageSquare className="w-4 h-4 mr-1" />
-                  {post.commentCount} comments
-                </Button>
-              </MembershipCTAModal>
-            </Unauthenticated>
+      {/* Actions bar */}
+      <div className="border-t border-border px-4 py-2">
+        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+          <Authenticated>
             <Button
               variant="ghost"
               size="sm"
               className="p-2 h-auto hover:bg-muted"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleClick();
+              }}
             >
-              <Share className="w-4 h-4 mr-1" />
-              share
+              <MessageSquare className="w-4 h-4 mr-1" />
+              {post.commentCount} comments
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2 h-auto hover:bg-muted"
+          </Authenticated>
+          <Unauthenticated>
+            <MembershipCTAModal
+              title="Join the Conversation"
+              description="Sign up to read comments and share your thoughts with the VAI community"
             >
-              <Bookmark className="w-4 h-4 mr-1" />
-              save
-            </Button>
-          </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-2 h-auto hover:bg-muted"
+              >
+                <MessageSquare className="w-4 h-4 mr-1" />
+                {post.commentCount} comments
+              </Button>
+            </MembershipCTAModal>
+          </Unauthenticated>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto hover:bg-muted"
+            onClick={handleShare}
+          >
+            <Share className="w-4 h-4 mr-1" />
+            share
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto hover:bg-muted"
+            onClick={handleSave}
+          >
+            <Bookmark className="w-4 h-4 mr-1" />
+            save
+          </Button>
         </div>
       </div>
     </div>
