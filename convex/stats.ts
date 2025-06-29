@@ -13,7 +13,7 @@ export const recalcMemberStats = internalMutation({
     
     for (const member of members) {
       // Calculate stats for this member
-      const [posts, comments, votes] = await Promise.all([
+      const [posts, comments] = await Promise.all([
         ctx.db
           .query("posts")
           .withIndex("by_authorId", (q) => q.eq("authorId", member._id))
@@ -24,16 +24,35 @@ export const recalcMemberStats = internalMutation({
           .withIndex("by_authorId", (q) => q.eq("authorId", member._id))
           .filter((q) => q.eq(q.field("status"), "active"))
           .collect(),
-        ctx.db
-          .query("votes")
-          .withIndex("by_userId", (q) => q.eq("userId", member._id))
-          .collect(),
       ]);
 
       const postCount = posts.length;
       const commentCount = comments.length;
-      const netVoteCount = votes.filter(v => v.voteType === "upvote").length - 
-                          votes.filter(v => v.voteType === "downvote").length;
+
+      // Calculate net votes received on member's content (posts + comments)
+      const postIds = posts.map(p => p._id);
+      const commentIds = comments.map(c => c._id);
+      
+      const [postVotes, commentVotes] = await Promise.all([
+        // Get votes on member's posts
+        postIds.length > 0 ? 
+          Promise.all(postIds.map(postId => 
+            ctx.db.query("votes")
+              .withIndex("by_postId", (q) => q.eq("postId", postId))
+              .collect()
+          )).then(results => results.flat()) : [],
+        // Get votes on member's comments  
+        commentIds.length > 0 ?
+          Promise.all(commentIds.map(commentId =>
+            ctx.db.query("votes")
+              .withIndex("by_commentId", (q) => q.eq("commentId", commentId))
+              .collect()
+          )).then(results => results.flat()) : [],
+      ]);
+
+      const allVotes = [...postVotes, ...commentVotes];
+      const netVoteCount = allVotes.filter(v => v.voteType === "upvote").length - 
+                          allVotes.filter(v => v.voteType === "downvote").length;
 
       // Update member with cached stats
       await ctx.db.patch(member._id, {
@@ -63,7 +82,7 @@ export const recalcSingleMemberStats = internalMutation({
     }
 
     // Calculate stats for this member
-    const [posts, comments, votes] = await Promise.all([
+    const [posts, comments] = await Promise.all([
       ctx.db
         .query("posts")
         .withIndex("by_authorId", (q) => q.eq("authorId", memberId))
@@ -74,16 +93,35 @@ export const recalcSingleMemberStats = internalMutation({
         .withIndex("by_authorId", (q) => q.eq("authorId", memberId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .collect(),
-      ctx.db
-        .query("votes")
-        .withIndex("by_userId", (q) => q.eq("userId", memberId))
-        .collect(),
     ]);
 
     const postCount = posts.length;
     const commentCount = comments.length;
-    const netVoteCount = votes.filter(v => v.voteType === "upvote").length - 
-                        votes.filter(v => v.voteType === "downvote").length;
+
+    // Calculate net votes received on member's content (posts + comments)
+    const postIds = posts.map(p => p._id);
+    const commentIds = comments.map(c => c._id);
+    
+    const [postVotes, commentVotes] = await Promise.all([
+      // Get votes on member's posts
+      postIds.length > 0 ? 
+        Promise.all(postIds.map(postId => 
+          ctx.db.query("votes")
+            .withIndex("by_postId", (q) => q.eq("postId", postId))
+            .collect()
+        )).then(results => results.flat()) : [],
+      // Get votes on member's comments  
+      commentIds.length > 0 ?
+        Promise.all(commentIds.map(commentId =>
+          ctx.db.query("votes")
+            .withIndex("by_commentId", (q) => q.eq("commentId", commentId))
+            .collect()
+        )).then(results => results.flat()) : [],
+    ]);
+
+    const allVotes = [...postVotes, ...commentVotes];
+    const netVoteCount = allVotes.filter(v => v.voteType === "upvote").length - 
+                        allVotes.filter(v => v.voteType === "downvote").length;
 
     // Update member with cached stats
     await ctx.db.patch(memberId, {
