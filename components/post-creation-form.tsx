@@ -493,25 +493,18 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                           title: formData.title || "Untitled Post",
                           content: formData.content || "No content yet...",
                           createdAt: Date.now(),
+                          upvotes: 0,
+                          downvotes: 0,
+                          commentCount: 0,
+                          viewCount: 0,
+                          type: "text",
                           author: {
-                            _id: "preview-author" as unknown as Id<"members">,
                             firstName: "You",
                             lastName: "",
-                            email: "you@example.com",
                             username: "you",
                             slug: "you",
                           },
-                          categoryId: "preview-cat" as unknown as Id<"categories">,
-                          authorId: "preview-author" as unknown as Id<"members">,
-                          status: "active",
-                          upvotes: 0,
-                          downvotes: 0,
-                          netVotes: 0,
-                          commentCount: 0,
-                          viewCount: 0,
-                          slug: "preview-post",
-                          type: "text",
-                        } as any}
+                        }}
                       />
                     </Suspense>
                   </TabsContent>

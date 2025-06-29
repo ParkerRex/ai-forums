@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Id } from "@/convex/_generated/dataModel"
 import { useRef, useState } from "react"
 import { getMediaPlaceholder } from "@/lib/post-preview-utils"
-import { cn } from "@/lib/utils"
 import { RenderTipTapContent } from "@/lib/render-post-content"
 import { memberProfileUrl } from "@/lib/utils"
 

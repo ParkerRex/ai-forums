@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   getPostPreviewAsset,
@@ -21,7 +20,6 @@ import {
 } from "@/lib/post-preview-utils";
 import { MessageSquare, Eye, ChevronUp, Play, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { RenderTipTapContent } from "@/lib/render-post-content";
 
 interface PostPreviewProps {
   post: PostData;
@@ -153,7 +151,7 @@ export default function PostPreview({
                   {!isVideoPlaying && (
                     <div className="absolute inset-0 flex items-center justify-center">
                       <div className="bg-black/50 rounded-full p-3">
-                        <Play className="h-6 w-6 text-white fill-white" />
+                        <Play className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
                       </div>
                     </div>
                   )}
