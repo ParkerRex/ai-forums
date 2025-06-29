@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, lazy, Suspense, useEffect } from "react";
-import { useMutation, useQuery, useConvex } from "convex/react";
+import { useMutation, useQuery, useConvex, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
@@ -153,7 +153,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
   // Queries and mutations
   const categories = useQuery(api.categories.getCategories);
   const createPost = useMutation(api.posts.createPost);
-  const fetchLinkPreview = useMutation(api.linkPreview.fetchLinkPreview);
+  const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
 
   // Character count helpers
   const titleInfo = getCharacterCountInfo(formData.title, 5, 200);
@@ -196,6 +196,9 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       mediaUrl: undefined,
       thumbnailUrl: undefined,
       linkUrl: undefined,
+      linkTitle: undefined,
+      linkDescription: undefined,
+      linkImage: undefined,
     }));
     // Clean up media preview
     if (mediaPreviewUrl) {
@@ -486,15 +489,29 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                     <Suspense fallback={<PostPreviewSkeleton />}>
                       <PostPreview
                         post={{
-                          _id: "preview",
+                          _id: "preview" as unknown as Id<"posts">,
                           title: formData.title || "Untitled Post",
                           content: formData.content || "No content yet...",
                           createdAt: Date.now(),
                           author: {
+                            _id: "preview-author" as unknown as Id<"members">,
                             firstName: "You",
                             lastName: "",
+                            email: "you@example.com",
+                            username: "you",
+                            slug: "you",
                           },
-                        }}
+                          categoryId: "preview-cat" as unknown as Id<"categories">,
+                          authorId: "preview-author" as unknown as Id<"members">,
+                          status: "active",
+                          upvotes: 0,
+                          downvotes: 0,
+                          netVotes: 0,
+                          commentCount: 0,
+                          viewCount: 0,
+                          slug: "preview-post",
+                          type: "text",
+                        } as any}
                       />
                     </Suspense>
                   </TabsContent>
