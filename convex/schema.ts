@@ -46,6 +46,8 @@ export default defineSchema({
     status: v.union(v.literal("active"), v.literal("churned"), v.literal("free"), v.literal("duplicate")),
     joinedDate: v.number(),
     country: v.optional(v.string()),
+    slug: v.string(),
+    mergedInto: v.optional(v.id("members")),
     updatedAt: v.number(),
     bio: v.optional(v.string()),
     lastOnline: v.number(),
