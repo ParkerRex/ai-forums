@@ -9,6 +9,13 @@ export const PostStatusValidator = v.union(
   v.literal("archived")
 );
 
+export const PostTypeValidator = v.union(
+  v.literal("text"),
+  v.literal("image"),
+  v.literal("video"),
+  v.literal("link")
+);
+
 export const CommentStatusValidator = v.union(
   v.literal("active"),
   v.literal("deleted"),
@@ -36,7 +43,7 @@ export default defineSchema({
     firstName: v.string(),
     lastName: v.string(),
     email: v.string(),
-    status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
+    status: v.union(v.literal("active"), v.literal("churned"), v.literal("free"), v.literal("duplicate")),
     joinedDate: v.number(),
     country: v.optional(v.string()),
     updatedAt: v.number(),
@@ -57,6 +64,8 @@ export default defineSchema({
     netVoteCount: v.optional(v.number()),
     // URL slug field  
     slug: v.optional(v.string()),
+    // For duplicate member tracking
+    mergedInto: v.optional(v.id("members")),
   })
     .index("by_status", ["status"])
     .index("by_joinedDate", ["joinedDate"])
@@ -106,6 +115,14 @@ export default defineSchema({
     isLocked: v.optional(v.boolean()),
     editedAt: v.optional(v.number()),
     editReason: v.optional(v.string()),
+    // New media and link fields
+    type: v.optional(PostTypeValidator),
+    mediaUrl: v.optional(v.string()),
+    thumbnailUrl: v.optional(v.string()),
+    linkUrl: v.optional(v.string()),
+    linkTitle: v.optional(v.string()),
+    linkDescription: v.optional(v.string()),
+    linkImage: v.optional(v.string()),
   })
     .index("by_categoryId", ["categoryId"])
     .index("by_authorId", ["authorId"])

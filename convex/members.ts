@@ -1,4 +1,4 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, type QueryCtx } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { Doc } from "./_generated/dataModel";
@@ -40,6 +40,57 @@ const MemberUIValidator = v.object({
   slug: v.string(),
 });
 
+// Helper to backfill missing cached stats for a member with background caching
+async function computeAndCacheMemberStats(ctx: QueryCtx, member: Doc<"members">): Promise<Doc<"members">> {
+  // If stats already exist, return early
+  if (
+    member.postCount !== undefined &&
+    member.commentCount !== undefined &&
+    member.netVoteCount !== undefined
+  ) {
+    return member;
+  }
+
+  // Compute posts and comments authored by the member
+  const [posts, comments] = await Promise.all([
+    ctx.db
+      .query("posts")
+      .withIndex("by_authorId", (q) => q.eq("authorId", member._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect(),
+    ctx.db
+      .query("comments")
+      .withIndex("by_authorId", (q) => q.eq("authorId", member._id))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect(),
+  ]);
+
+  const postCount = posts.length;
+  const commentCount = comments.length;
+
+  // Aggregate net votes from posts and comments (fallback to upvotes-downvotes if netVotes missing)
+  const postsNet = posts.reduce((sum, p) => {
+    const net = p.netVotes !== undefined ? p.netVotes : (p.upvotes ?? 0) - (p.downvotes ?? 0);
+    return sum + net;
+  }, 0);
+
+  const commentsNet = comments.reduce((sum, c) => {
+    const net = c.netVotes !== undefined ? c.netVotes : (c.upvotes ?? 0) - (c.downvotes ?? 0);
+    return sum + net;
+  }, 0);
+  const netVoteCount = postsNet + commentsNet;
+
+  // Note: Cannot schedule mutations from within a query context
+  // Background caching will be handled by the nightly cron job
+
+  return {
+    ...member,
+    postCount,
+    commentCount,
+    netVoteCount,
+  } as Doc<"members">;
+}
+
 // Helper function to transform member data for UI
 function transformMemberForUI(member: Doc<"members">) {
   return {
@@ -47,7 +98,7 @@ function transformMemberForUI(member: Doc<"members">) {
     firstName: member.firstName,
     lastName: member.lastName,
     email: member.email,
-    status: member.status,
+    status: member.status as "active" | "churned" | "free", // Cast to exclude "duplicate"
     joinedDate: member.joinedDate,
     country: member.country || "",
     updatedAt: member.updatedAt,
@@ -118,19 +169,46 @@ export const getMembers = query({
 });
 
 /**
+ * Get all members with guaranteed stats (computes if missing, uses cached otherwise)
+ * This is the reliable query that should be used by UI components
+ */
+export const getMembersWithStats = query({
+  args: {},
+  returns: v.array(MemberUIValidator),
+  handler: async (ctx) => {
+    // Get all members and filter by status in memory to include both active and churned
+    const allMembers = await ctx.db.query("members").collect();
+    const members = allMembers.filter(member => 
+      member.status === "active" || member.status === "churned"
+    );
+
+    const membersWithStats = await Promise.all(
+      members.map((member) => computeAndCacheMemberStats(ctx, member))
+    );
+
+    return membersWithStats.map(transformMemberForUI);
+  },
+});
+
+/**
  * Get all members without pagination (for simple directory view)
+ * @deprecated Use getMembersWithStats instead
  */
 export const getAllMembers = query({
   args: {},
   returns: v.array(MemberUIValidator),
   handler: async (ctx) => {
-    const members = await ctx.db
-      .query("members")
-      .withIndex("by_status_and_joinedDate", (q) => q.eq("status", "active"))
-      .order("desc")
-      .collect();
+    // Get all members and filter by status in memory to include both active and churned
+    const allMembers = await ctx.db.query("members").collect();
+    const members = allMembers.filter(member => 
+      member.status === "active" || member.status === "churned"
+    );
 
-    return members.map(transformMemberForUI);
+    const membersWithStats = await Promise.all(
+      members.map((member) => computeAndCacheMemberStats(ctx, member))
+    );
+
+    return membersWithStats.map(transformMemberForUI);
   },
 });
 
@@ -324,9 +402,9 @@ export const getMemberActivity = query({
 });
 
 /**
- * Search members by name, bio, or location
+ * Search members by name, bio, or location with guaranteed stats
  */
-export const searchMembers = query({
+export const searchMembersWithStats = query({
   args: {
     searchTerm: v.string(),
     limit: v.optional(v.number()),
@@ -341,7 +419,6 @@ export const searchMembers = query({
     }
 
     // Get all active members and filter in memory for multi-field search
-    // This is more flexible than search index limitations
     const allMembers = await ctx.db
       .query("members")
       .withIndex("by_status_and_joinedDate", (q) => q.eq("status", "active"))
@@ -375,15 +452,27 @@ export const searchMembers = query({
       const bFullName = `${bFirstName} ${bLastName}`;
 
       // Exact matches first
-      const aExactMatch = aFirstName === searchTerm || aLastName === searchTerm || aLocation === searchTerm;
-      const bExactMatch = bFirstName === searchTerm || bLastName === searchTerm || bLocation === searchTerm;
+      const aExactMatch =
+        aFirstName === searchTerm ||
+        aLastName === searchTerm ||
+        aLocation === searchTerm;
+      const bExactMatch =
+        bFirstName === searchTerm ||
+        bLastName === searchTerm ||
+        bLocation === searchTerm;
 
       if (aExactMatch && !bExactMatch) return -1;
       if (!aExactMatch && bExactMatch) return 1;
 
       // Then starts with matches
-      const aStartsWith = aFirstName.startsWith(searchTerm) || aLastName.startsWith(searchTerm) || aFullName.startsWith(searchTerm);
-      const bStartsWith = bFirstName.startsWith(searchTerm) || bLastName.startsWith(searchTerm) || bFullName.startsWith(searchTerm);
+      const aStartsWith =
+        aFirstName.startsWith(searchTerm) ||
+        aLastName.startsWith(searchTerm) ||
+        aFullName.startsWith(searchTerm);
+      const bStartsWith =
+        bFirstName.startsWith(searchTerm) ||
+        bLastName.startsWith(searchTerm) ||
+        bFullName.startsWith(searchTerm);
 
       if (aStartsWith && !bStartsWith) return -1;
       if (!aStartsWith && bStartsWith) return 1;
@@ -392,7 +481,103 @@ export const searchMembers = query({
       return b.joinedDate - a.joinedDate;
     });
 
-    return sortedMembers.slice(0, limit).map(transformMemberForUI);
+    // Ensure stats are present for the members we're about to return
+    const enrichedMembers = await Promise.all(
+      sortedMembers.slice(0, limit).map((m) => computeAndCacheMemberStats(ctx, m))
+    );
+
+    return enrichedMembers.map(transformMemberForUI);
+  },
+});
+
+/**
+ * Search members by name, bio, or location
+ * @deprecated Use searchMembersWithStats instead
+ */
+export const searchMembers = query({
+  args: {
+    searchTerm: v.string(),
+    limit: v.optional(v.number()),
+  },
+  returns: v.array(MemberUIValidator),
+  handler: async (ctx, args) => {
+    // Inline implementation for backward compatibility
+    const limit = args.limit || 100;
+    const searchTerm = args.searchTerm.toLowerCase().trim();
+
+    if (!searchTerm) {
+      return [];
+    }
+
+    // Get all active members and filter in memory for multi-field search
+    const allMembers = await ctx.db
+      .query("members")
+      .withIndex("by_status_and_joinedDate", (q) => q.eq("status", "active"))
+      .collect();
+
+    // Filter members based on search term matching firstName, lastName, or location
+    const filteredMembers = allMembers.filter((member) => {
+      const firstName = member.firstName.toLowerCase();
+      const lastName = member.lastName.toLowerCase();
+      const location = (member.location || "").toLowerCase();
+      const fullName = `${firstName} ${lastName}`;
+
+      return (
+        firstName.includes(searchTerm) ||
+        lastName.includes(searchTerm) ||
+        fullName.includes(searchTerm) ||
+        location.includes(searchTerm)
+      );
+    });
+
+    // Sort results by relevance (exact matches first, then partial matches)
+    const sortedMembers = filteredMembers.sort((a, b) => {
+      const aFirstName = a.firstName.toLowerCase();
+      const aLastName = a.lastName.toLowerCase();
+      const aLocation = (a.location || "").toLowerCase();
+      const aFullName = `${aFirstName} ${aLastName}`;
+
+      const bFirstName = b.firstName.toLowerCase();
+      const bLastName = b.lastName.toLowerCase();
+      const bLocation = (b.location || "").toLowerCase();
+      const bFullName = `${bFirstName} ${bLastName}`;
+
+      // Exact matches first
+      const aExactMatch =
+        aFirstName === searchTerm ||
+        aLastName === searchTerm ||
+        aLocation === searchTerm;
+      const bExactMatch =
+        bFirstName === searchTerm ||
+        bLastName === searchTerm ||
+        bLocation === searchTerm;
+
+      if (aExactMatch && !bExactMatch) return -1;
+      if (!aExactMatch && bExactMatch) return 1;
+
+      // Then starts with matches
+      const aStartsWith =
+        aFirstName.startsWith(searchTerm) ||
+        aLastName.startsWith(searchTerm) ||
+        aFullName.startsWith(searchTerm);
+      const bStartsWith =
+        bFirstName.startsWith(searchTerm) ||
+        bLastName.startsWith(searchTerm) ||
+        bFullName.startsWith(searchTerm);
+
+      if (aStartsWith && !bStartsWith) return -1;
+      if (!aStartsWith && bStartsWith) return 1;
+
+      // Finally, sort by join date (newest first)
+      return b.joinedDate - a.joinedDate;
+    });
+
+    // Ensure stats are present for the members we're about to return
+    const enrichedMembers = await Promise.all(
+      sortedMembers.slice(0, limit).map((m) => computeAndCacheMemberStats(ctx, m))
+    );
+
+    return enrichedMembers.map(transformMemberForUI);
   },
 });
 

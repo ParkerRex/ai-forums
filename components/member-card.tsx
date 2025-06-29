@@ -5,9 +5,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Github, Twitter, Youtube, MapPin, CalendarDays, Globe, Linkedin, FileText, MessageCircle, ThumbsUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useQuery } from "convex/react"
-import { api } from "@/convex/_generated/api"
-import { Id } from "@/convex/_generated/dataModel"
 
 interface Member {
   id: string
@@ -46,12 +43,18 @@ const statusVariants = {
 }
 
 // Stat component for contribution stats
-function Stat({ icon: Icon, value, label }: { icon: React.ComponentType<{ className?: string }>, value: number, label: string }) {
+function Stat({ icon: Icon, value, label, testId }: { 
+  icon: React.ComponentType<{ className?: string }>, 
+  value: number, 
+  label: string,
+  testId?: string 
+}) {
   return (
     <div className="flex items-center space-x-1">
       <Icon className="w-3 h-3 text-muted-foreground" />
-      <span className="text-xs font-medium">{value}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-xs font-medium" data-testid={testId}>
+        {value} {label}
+      </span>
     </div>
   );
 }
@@ -61,15 +64,19 @@ export default function MemberCard({ member }: MemberCardProps) {
   // Use the pre-formatted date from server (member.joinedDate is already formatted)
   const joinedDateFormatted = member.joinedDate
 
-  // Fetch stats for this member
-  const stats = useQuery(api.members.getMemberStats, { memberId: member.id as Id<"members"> });
+  // Stats are now included in the `member` prop directly (computed server-side)
+  const stats = {
+    postCount: member.postCount ?? 0,
+    commentCount: member.commentCount ?? 0,
+    netVoteCount: member.netVoteCount ?? 0,
+  };
 
   // Use slug for the link, fallback to id if slug not available
   const memberUrl = member.slug ? `/members/${member.slug}` : `/members/${member.id}`;
 
   return (
     <Link href={memberUrl} className="block group" prefetch={true}>
-      <div className="bg-card border rounded-lg p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
+      <div className="bg-card border rounded-lg p-6 hover:shadow-lg transition-shadow h-full flex flex-col" data-testid="member-card">
         <div className="flex items-start mb-4">
           <Avatar className="h-16 w-16 mr-4">
             <AvatarImage
@@ -78,7 +85,7 @@ export default function MemberCard({ member }: MemberCardProps) {
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-card-foreground group-hover:text-primary transition-colors">
+            <h2 className="text-xl font-semibold text-card-foreground group-hover:text-primary transition-colors" data-testid="member-name">
               {member.firstName} {member.lastName}
             </h2>
             <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -99,9 +106,9 @@ export default function MemberCard({ member }: MemberCardProps) {
         {/* Contribution Stats */}
         {stats && (
           <div className="flex flex-wrap gap-3 mb-4 text-xs">
-            <Stat icon={FileText} value={stats.postCount} label="Posts" />
-            <Stat icon={MessageCircle} value={stats.commentCount} label="Comments" />
-            <Stat icon={ThumbsUp} value={stats.netVoteCount} label="Votes" />
+            <Stat icon={FileText} value={stats.postCount} label="Posts" testId="post-count" />
+            <Stat icon={MessageCircle} value={stats.commentCount} label="Comments" testId="comment-count" />
+            <Stat icon={ThumbsUp} value={stats.netVoteCount} label="Votes" testId="vote-count" />
           </div>
         )}
 
