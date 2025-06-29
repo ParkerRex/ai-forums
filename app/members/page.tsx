@@ -25,12 +25,12 @@ function MembersPageContent() {
 
   // Conditional queries based on search state
   const allMembersData = useQuery(
-    api.members.getAllMembers,
+    api.members.getMembersWithStats,
     debouncedSearchTerm ? "skip" : {}
   );
 
   const searchResults = useQuery(
-    api.members.searchMembers,
+    api.members.searchMembersWithStats,
     debouncedSearchTerm ? { searchTerm: debouncedSearchTerm } : "skip"
   );
 
