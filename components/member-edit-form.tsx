@@ -151,7 +151,7 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
               <span className="text-red-600">{errors.bio.message}</span>
             )}
           </div>
-          <span className={`${bioLength > 450 ? 'text-red-600' : 'text-gray-500'}`}>
+          <span className={`${bioLength > 450 ? 'text-red-600' : 'text-muted-foreground'}`}>
             {bioLength}/500
           </span>
         </div>
@@ -183,7 +183,7 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
         <div className="space-y-2">
           <Label htmlFor="githubHandle">GitHub</Label>
           <div className="flex">
-            <span className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border border-r-0 border rounded-l-md">
               github.com/
             </span>
             <Input
@@ -205,7 +205,7 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
         <div className="space-y-2">
           <Label htmlFor="xHandle">X (Twitter)</Label>
           <div className="flex">
-            <span className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border border-r-0 border rounded-l-md">
               x.com/
             </span>
             <Input
@@ -227,7 +227,7 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
         <div className="space-y-2">
           <Label htmlFor="youtubeHandle">YouTube</Label>
           <div className="flex">
-            <span className="inline-flex items-center px-3 text-sm text-gray-500 bg-gray-50 border border-r-0 border-gray-300 rounded-l-md">
+            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border border-r-0 border rounded-l-md">
               youtube.com/@
             </span>
             <Input

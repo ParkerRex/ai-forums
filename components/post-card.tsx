@@ -39,6 +39,7 @@ interface Post {
     lastName: string;
     email: string;
     username: string;
+    slug?: string;
   } | null;
   category: {
     _id: Id<"categories">;
@@ -76,6 +77,10 @@ export default function PostCard({ post }: PostCardProps) {
     targetId: post._id,
     targetType: "post",
   });
+
+  // New: handle author details safely
+  const authorName = post.author?.firstName || "Unknown";
+  const authorSlug = post.author?.slug;
 
   const handleUpvote = async () => {
     if (isVoting) return;
@@ -140,22 +145,28 @@ export default function PostCard({ post }: PostCardProps) {
             <Link
               href={`/${post.category?.name || 'general'}`}
               className="text-primary hover:underline"
+              prefetch={true}
             >
               /{post.category?.name || 'general'}
             </Link>
             <span className="mx-2">•</span>
             <span>posted by</span>
-            <Link
-              href={`/members/${post.author?._id}`}
-              className="ml-1 text-primary hover:underline"
-            >
-              {post.author?.firstName || 'Unknown'}
-            </Link>
+            {authorSlug ? (
+              <Link
+                href={`/members/${authorSlug}`}
+                className="ml-1 text-primary hover:underline"
+                prefetch={true}
+              >
+                {authorName}
+              </Link>
+            ) : (
+              <span className="ml-1 text-foreground">{authorName}</span>
+            )}
             <span className="mx-2">•</span>
             <span>{getTimeAgo(post.createdAt)} ago</span>
           </div>
 
-          <Link href={`/${post.category?.name || 'general'}/${post.slug}`} className="block group">
+          <Link href={`/${post.category?.name || 'general'}/${post.slug}`} className="block group" prefetch={true}>
             <h2 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors mb-2">
               {post.title}
             </h2>
@@ -166,7 +177,7 @@ export default function PostCard({ post }: PostCardProps) {
 
           <div className="flex items-center space-x-4 text-sm text-muted-foreground">
             <Authenticated>
-              <Link href={`/${post.category?.name || 'general'}/${post.slug}`}>
+              <Link href={`/${post.category?.name || 'general'}/${post.slug}`} prefetch={true}>
                 <Button
                   variant="ghost"
                   size="sm"

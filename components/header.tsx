@@ -24,7 +24,7 @@ export default function Header() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
-                placeholder="search VAI"
+                placeholder="type / to search"
                 className="pl-10"
               />
             </div>

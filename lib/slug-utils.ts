@@ -3,6 +3,15 @@
  */
 
 /**
+ * Generate a URL-safe slug from a member's full name
+ * @param fullName - The member's full name (firstName + lastName)
+ * @returns SEO-friendly slug
+ */
+export function generateMemberSlug(fullName: string): string {
+  return generateSlug(fullName);
+}
+
+/**
  * Generate a URL-safe slug from a title
  * @param title - The post title
  * @returns SEO-friendly slug

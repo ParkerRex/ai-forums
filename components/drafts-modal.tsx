@@ -37,15 +37,15 @@ export function DraftsModal({ children }: DraftsModalProps) {
             <Clock className="w-8 h-8 text-green-600" />
           </div>
 
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className="text-lg font-semibold text-foreground mb-2">
             Drafts Coming Soon
           </h3>
 
-          <p className="text-gray-600 mb-6 max-w-sm mx-auto">
+          <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
             We&apos;re working on a draft system that will let you save your work and come back to it later.
           </p>
 
-          <div className="space-y-3 text-sm text-gray-500">
+          <div className="space-y-3 text-sm text-muted-foreground">
             <div className="flex items-center justify-center space-x-2">
               <Star className="w-4 h-4" />
               <span>Auto-save as you type</span>
@@ -62,7 +62,7 @@ export function DraftsModal({ children }: DraftsModalProps) {
         </div>
 
         <div className="text-center">
-          <p className="text-xs text-gray-400">
+          <p className="text-xs text-muted-foreground opacity-70">
             For now, your work is automatically saved in your browser while you write.
           </p>
         </div>

@@ -33,21 +33,21 @@ interface PostCreationFormProps {
 // Loading skeleton for the rich text editor
 function RichTextEditorSkeleton() {
   return (
-    <div className="border border-gray-300 rounded-lg">
-      <div className="border-b border-gray-200 p-2 bg-gray-50 rounded-t-lg">
+    <div className="border rounded-lg">
+      <div className="border-b p-2 bg-muted rounded-t-lg">
         <div className="flex flex-wrap gap-1">
-          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-gray-200 rounded animate-pulse" />
+          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
+          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
+          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
+          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
+          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
         </div>
       </div>
       <div className="min-h-[200px] p-4">
         <div className="animate-pulse space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-3/4" />
-          <div className="h-4 bg-gray-200 rounded w-1/2" />
-          <div className="h-4 bg-gray-200 rounded w-5/6" />
+          <div className="h-4 bg-muted opacity-50 rounded w-3/4" />
+          <div className="h-4 bg-muted opacity-50 rounded w-1/2" />
+          <div className="h-4 bg-muted opacity-50 rounded w-5/6" />
         </div>
       </div>
     </div>
@@ -61,30 +61,30 @@ function PostPreviewSkeleton() {
       <CardHeader className="pb-4">
         <div className="animate-pulse space-y-4">
           <div className="flex items-center justify-between">
-            <div className="h-6 bg-gray-200 rounded w-32" />
-            <div className="h-4 bg-gray-200 rounded w-24" />
+            <div className="h-6 bg-muted opacity-50 rounded w-32" />
+            <div className="h-4 bg-muted opacity-50 rounded w-24" />
           </div>
-          <div className="h-8 bg-gray-200 rounded w-3/4" />
+          <div className="h-8 bg-muted opacity-50 rounded w-3/4" />
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gray-200 rounded-full" />
+              <div className="w-8 h-8 bg-muted opacity-50 rounded-full" />
               <div className="space-y-1">
-                <div className="h-4 bg-gray-200 rounded w-16" />
-                <div className="h-3 bg-gray-200 rounded w-12" />
+                <div className="h-4 bg-muted opacity-50 rounded w-16" />
+                <div className="h-3 bg-muted opacity-50 rounded w-12" />
               </div>
             </div>
             <div className="flex space-x-4">
-              <div className="h-4 bg-gray-200 rounded w-8" />
-              <div className="h-4 bg-gray-200 rounded w-8" />
+              <div className="h-4 bg-muted opacity-50 rounded w-8" />
+              <div className="h-4 bg-muted opacity-50 rounded w-8" />
             </div>
           </div>
         </div>
       </CardHeader>
       <CardContent>
         <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-gray-200 rounded w-full" />
-          <div className="h-4 bg-gray-200 rounded w-5/6" />
-          <div className="h-4 bg-gray-200 rounded w-4/6" />
+          <div className="h-4 bg-muted opacity-50 rounded w-full" />
+          <div className="h-4 bg-muted opacity-50 rounded w-5/6" />
+          <div className="h-4 bg-muted opacity-50 rounded w-4/6" />
         </div>
       </CardContent>
     </Card>
@@ -196,11 +196,11 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
         <CardContent>
           <div className="space-y-6">
             <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-gray-200 rounded w-1/4" />
-              <div className="h-10 bg-gray-200 rounded" />
-              <div className="h-4 bg-gray-200 rounded w-1/4" />
-              <div className="h-10 bg-gray-200 rounded" />
-              <div className="h-32 bg-gray-200 rounded" />
+              <div className="h-4 bg-muted opacity-50 rounded w-1/4" />
+              <div className="h-10 bg-muted opacity-50 rounded" />
+              <div className="h-4 bg-muted opacity-50 rounded w-1/4" />
+              <div className="h-10 bg-muted opacity-50 rounded" />
+              <div className="h-32 bg-muted opacity-50 rounded" />
             </div>
           </div>
         </CardContent>
@@ -245,7 +245,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
               </div>
               <div className={`${titleInfo.status === 'error' ? 'text-red-500' :
                 titleInfo.status === 'warning' ? 'text-yellow-500' :
-                  'text-gray-500'
+                  'text-muted-foreground'
                 }`}>
                 {titleInfo.length}/200 characters
               </div>
@@ -326,7 +326,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
               </div>
               <div className={`${contentInfo.status === 'error' ? 'text-red-500' :
                 contentInfo.status === 'warning' ? 'text-yellow-500' :
-                  'text-gray-500'
+                  'text-muted-foreground'
                 }`}>
                 {contentInfo.length}/10,000 characters
               </div>

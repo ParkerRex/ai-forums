@@ -2,6 +2,8 @@ import { query, mutation } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { Doc } from "./_generated/dataModel";
+import { generateMemberSlug } from "../lib/slug-utils";
+import type { MutationCtx } from "./_generated/server";
 
 // Shared validator for transformed member data
 const MemberUIValidator = v.object({
@@ -34,6 +36,8 @@ const MemberUIValidator = v.object({
   joinedDateFormatted: v.string(),
   lastOnlineFormatted: v.string(),
   lastOnlineRelative: v.string(),
+  // URL slug
+  slug: v.string(),
 });
 
 // Helper function to transform member data for UI
@@ -77,6 +81,8 @@ function transformMemberForUI(member: Doc<"members">) {
     }),
     // Relative time for "Last online • X ago" chip
     lastOnlineRelative: getTimeAgo(member.lastOnline),
+    // URL slug
+    slug: member.slug || "",
   };
 }
 
@@ -179,6 +185,7 @@ export const getMemberPosts = query({
         lastName: v.string(),
         email: v.string(),
         username: v.string(),
+        slug: v.string(),
       }), v.null()),
       category: v.union(v.object({
         _id: v.id("categories"),
@@ -233,6 +240,7 @@ export const getMemberPosts = query({
             lastName: author.lastName,
             email: author.email,
             username: author.email, // Use email as username for now
+            slug: author.slug || "",
           } : null,
           category: category ? {
             _id: category._id,
@@ -419,6 +427,8 @@ export const getCurrentMember = query({
 export const updateMemberProfile = mutation({
   args: {
     id: v.id("members"),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
     bio: v.optional(v.string()),
     location: v.optional(v.string()),
     linkGithub: v.optional(v.string()),
@@ -466,22 +476,29 @@ export const updateMemberProfile = mutation({
       throw new ConvexError("Invalid YouTube URL format");
     }
 
-    const { id, ...updates } = args;
+    // Check if name is changing and regenerate slug if needed
+    let slugUpdate = {};
+    if (args.firstName || args.lastName) {
+      const newFirstName = args.firstName || member.firstName;
+      const newLastName = args.lastName || member.lastName;
+      const fullName = `${newFirstName} ${newLastName}`;
+      const baseSlug = generateMemberSlug(fullName);
+      const uniqueSlug = await ensureUniqueMemberSlug(ctx, baseSlug, args.id);
+      slugUpdate = { slug: uniqueSlug };
+    }
 
-    // Filter out undefined values
+    // Filter out undefined values (excluding id)
+    const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
     );
 
-    try {
-      await ctx.db.patch(id, {
-        ...filteredUpdates,
-        updatedAt: Date.now(),
-      });
-    } catch (error) {
-      console.error("Database error updating member profile:", error);
-      throw new ConvexError("Failed to save profile changes. Please try again.");
-    }
+    // Apply updates including slug if name changed
+    await ctx.db.patch(id, {
+      ...filteredUpdates,
+      ...slugUpdate,
+      updatedAt: Date.now(),
+    });
 
     return null;
   },
@@ -645,14 +662,14 @@ export const getMemberStats = query({
       postIds.length > 0 ? 
         Promise.all(postIds.map(postId => 
           ctx.db.query("votes")
-            .withIndex("by_postId", (q) => q.eq("postId", postId))
+            .withIndex("by_target_and_type", (q) => q.eq("targetId", postId.toString()).eq("targetType", "post"))
             .collect()
         )).then(results => results.flat()) : [],
       // Get votes on member's comments  
       commentIds.length > 0 ?
         Promise.all(commentIds.map(commentId =>
           ctx.db.query("votes")
-            .withIndex("by_commentId", (q) => q.eq("commentId", commentId))
+            .withIndex("by_target_and_type", (q) => q.eq("targetId", commentId.toString()).eq("targetType", "comment"))
             .collect()
         )).then(results => results.flat()) : [],
     ]);
@@ -707,6 +724,50 @@ export const searchMembersEnhanced = query({
     }
 
     return members.slice(0, limit).map(transformMemberForUI);
+  },
+});
+
+/**
+ * Helper function to ensure unique member slug
+ */
+async function ensureUniqueMemberSlug(ctx: MutationCtx, baseSlug: string, excludeMemberId?: string): Promise<string> {
+  let uniqueSlug = baseSlug;
+  let counter = 2;
+  
+  while (true) {
+    const existing = await ctx.db
+      .query("members")
+      .withIndex("by_slug", (q) => q.eq("slug", uniqueSlug))
+      .first();
+    
+    // If no existing member has this slug, or the existing member is the one we're updating
+    if (!existing || (excludeMemberId && existing._id === excludeMemberId)) {
+      break;
+    }
+    
+    uniqueSlug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+  
+  return uniqueSlug;
+}
+
+/**
+ * Get a single member by slug
+ */
+export const getMemberBySlug = query({
+  args: { slug: v.string() },
+  returns: v.union(MemberUIValidator, v.null()),
+  handler: async (ctx, args) => {
+    const member = await ctx.db
+      .query("members")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .first();
+    
+    if (!member) {
+      return null;
+    }
+    return transformMemberForUI(member);
   },
 });
 

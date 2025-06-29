@@ -1,5 +1,29 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { generateMemberSlug } from "../lib/slug-utils";
+import type { MutationCtx } from "./_generated/server";
+
+// Helper function to ensure unique member slug during import
+async function ensureUniqueMemberSlug(ctx: MutationCtx, baseSlug: string): Promise<string> {
+  let uniqueSlug = baseSlug;
+  let counter = 2;
+  
+  while (true) {
+    const existing = await ctx.db
+      .query("members")
+      .withIndex("by_slug", (q) => q.eq("slug", uniqueSlug))
+      .first();
+    
+    if (!existing) {
+      break;
+    }
+    
+    uniqueSlug = `${baseSlug}-${counter}`;
+    counter++;
+  }
+  
+  return uniqueSlug;
+}
 
 // Define the member data structure for validation
 const memberSchema = v.object({
@@ -32,8 +56,16 @@ export const importSingleMember = mutation({
       return { success: false, reason: "already_exists", email: member.email };
     }
 
-    // Insert the new member
-    const memberId = await ctx.db.insert("members", member);
+    // Generate unique slug
+    const fullName = `${member.firstName} ${member.lastName}`;
+    const baseSlug = generateMemberSlug(fullName);
+    const uniqueSlug = await ensureUniqueMemberSlug(ctx, baseSlug);
+
+    // Insert the new member with slug
+    const memberId = await ctx.db.insert("members", {
+      ...member,
+      slug: uniqueSlug,
+    });
     console.log(`Imported member: ${member.firstName} ${member.lastName} (${member.email})`);
     
     return { success: true, memberId, email: member.email };
@@ -70,8 +102,16 @@ export const importMultipleMembers = mutation({
           continue;
         }
 
-        // Insert the new member
-        const memberId = await ctx.db.insert("members", member);
+        // Generate unique slug
+        const fullName = `${member.firstName} ${member.lastName}`;
+        const baseSlug = generateMemberSlug(fullName);
+        const uniqueSlug = await ensureUniqueMemberSlug(ctx, baseSlug);
+
+        // Insert the new member with slug
+        const memberId = await ctx.db.insert("members", {
+          ...member,
+          slug: uniqueSlug,
+        });
         console.log(`Imported member: ${member.firstName} ${member.lastName} (${member.email})`);
         
         results.push({ 

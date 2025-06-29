@@ -7,46 +7,37 @@ import PostCard from "@/components/post-card";
 import { MemberProfileSkeleton, PostSkeletonList, ActivitySkeletonList } from "@/components/member-skeleton";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { use } from "react";
 import { PageErrorBoundary, QueryErrorBoundary } from "@/components/error-boundary";
 
 interface PageProps {
-  params: Promise<{ id: string }>;
+  params: Promise<{ slug: string }>;
 }
 
-function MemberDetailContent({ id }: { id: string }) {
-  // Validate that the ID looks like a Convex ID before making the query
-  const isValidId = id.length > 20 && id.match(/^[a-z0-9]+$/);
-
-  // Fetch member data from Convex (only if ID format is valid)
+function MemberDetailContent({ slug }: { slug: string }) {
+  // Fetch member data from Convex using slug
   const memberData = useQuery(
-    api.members.getMemberById,
-    isValidId ? { id: id as Id<"members"> } : "skip",
+    api.members.getMemberBySlug,
+    { slug }
   );
 
-  // Fetch member posts from Convex (only if ID format is valid)
+  // Fetch member posts from Convex (only if member data is loaded)
   const memberPostsData = useQuery(
     api.members.getMemberPosts,
-    isValidId ? {
-      memberId: id as Id<"members">,
+    memberData ? {
+      memberId: memberData._id,
       paginationOpts: { numItems: 10, cursor: null } // Get first 10 posts
     } : "skip",
   );
 
-  // Fetch member activity from Convex (only if ID format is valid)
+  // Fetch member activity from Convex (only if member data is loaded)
   const memberActivityData = useQuery(
     api.members.getMemberActivity,
-    isValidId ? {
-      memberId: id as Id<"members">,
+    memberData ? {
+      memberId: memberData._id,
       paginationOpts: { numItems: 10, cursor: null } // Get first 10 activities
     } : "skip",
   );
-
-  // Invalid ID format
-  if (!isValidId) {
-    notFound();
-  }
 
   // Member not found (only check this after data has loaded)
   if (memberData === null) {
@@ -76,6 +67,13 @@ function MemberDetailContent({ id }: { id: string }) {
       linkX: memberData.linkX,
       linkYouTube: memberData.linkYouTube,
       location: memberData.location,
+      // Add new member upgrade fields
+      avatarUrl: memberData.avatarUrl,
+      websiteUrl: memberData.websiteUrl,
+      linkedinUrl: memberData.linkedinUrl,
+      skills: memberData.skills || [],
+      // Include slug for future use
+      slug: memberData.slug,
     }
     : null;
 
@@ -94,7 +92,7 @@ function MemberDetailContent({ id }: { id: string }) {
   })) || [];
 
   return (
-    <div className="font-mono min-h-screen bg-white">
+    <div className="font-mono min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Member Profile Section - Progressive Loading */}
         {isMemberLoading ? (
@@ -105,7 +103,7 @@ function MemberDetailContent({ id }: { id: string }) {
 
         {/* Posts Section - Independent Loading */}
         <div className="mt-12">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+          <h2 className="text-2xl font-semibold text-foreground mb-6">
             {member ? `Posts by ${member.firstName}` : 'Posts by Member'}
           </h2>
 
@@ -120,8 +118,8 @@ function MemberDetailContent({ id }: { id: string }) {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-600">No posts yet.</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-muted-foreground">No posts yet.</p>
+                <p className="text-sm text-muted-foreground opacity-80 mt-2">
                   {member?.firstName || 'This member'} hasn&apos;t shared any posts with the community yet.
                 </p>
               </div>
@@ -131,7 +129,7 @@ function MemberDetailContent({ id }: { id: string }) {
 
         {/* Activity Section - Independent Loading */}
         <div className="mt-12">
-          <h2 className="text-2xl font-semibold text-gray-900 mb-6">
+          <h2 className="text-2xl font-semibold text-foreground mb-6">
             Recent Activity
           </h2>
 
@@ -143,10 +141,10 @@ function MemberDetailContent({ id }: { id: string }) {
                 {memberActivity.map((activity) => (
                   <div
                     key={activity.id}
-                    className="bg-gray-50 border border-gray-200 rounded-lg p-4"
+                    className="bg-muted border rounded-lg p-4"
                   >
-                    <p className="text-sm text-gray-700">{activity.content}</p>
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-sm text-foreground">{activity.content}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
                       {activity.timeAgo} on{" "}
                       <Link
                         href={`#`}
@@ -160,8 +158,8 @@ function MemberDetailContent({ id }: { id: string }) {
               </div>
             ) : (
               <div className="text-center py-8">
-                <p className="text-gray-600">No recent activity.</p>
-                <p className="text-sm text-gray-500 mt-2">
+                <p className="text-muted-foreground">No recent activity.</p>
+                <p className="text-sm text-muted-foreground opacity-80 mt-2">
                   {member?.firstName || 'This member'} hasn&apos;t commented on any posts recently.
                 </p>
               </div>
@@ -175,11 +173,11 @@ function MemberDetailContent({ id }: { id: string }) {
 
 export default function MemberDetailPage({ params }: PageProps) {
   // Unwrap the params Promise using React.use()
-  const { id } = use(params);
+  const { slug } = use(params);
 
   return (
     <PageErrorBoundary context="loading member profile">
-      <MemberDetailContent id={id} />
+      <MemberDetailContent slug={slug} />
     </PageErrorBoundary>
   );
 }
