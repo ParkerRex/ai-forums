@@ -196,6 +196,9 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       mediaUrl: undefined,
       thumbnailUrl: undefined,
       linkUrl: undefined,
+      linkTitle: undefined,
+      linkDescription: undefined,
+      linkImage: undefined,
     }));
     // Clean up media preview
     if (mediaPreviewUrl) {
