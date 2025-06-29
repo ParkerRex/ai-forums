@@ -3,8 +3,11 @@
 import Link from "next/link"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
-import { Github, Twitter, Youtube, MapPin, CalendarDays, Globe, Linkedin } from "lucide-react"
+import { Github, Twitter, Youtube, MapPin, CalendarDays, Globe, Linkedin, FileText, MessageCircle, ThumbsUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { Id } from "@/convex/_generated/dataModel"
 
 interface Member {
   id: string
@@ -20,6 +23,12 @@ interface Member {
   location?: string
   linkedinUrl?: string
   websiteUrl?: string
+  avatarUrl?: string
+  skills?: string[]
+  postCount?: number
+  commentCount?: number
+  netVoteCount?: number
+  lastOnlineRelative?: string
 }
 
 interface MemberCardProps {
@@ -35,10 +44,24 @@ const statusVariants = {
   free: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
 }
 
+// Stat component for contribution stats
+function Stat({ icon: Icon, value, label }: { icon: React.ComponentType<{ className?: string }>, value: number, label: string }) {
+  return (
+    <div className="flex items-center space-x-1">
+      <Icon className="w-3 h-3 text-muted-foreground" />
+      <span className="text-xs font-medium">{value}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
+    </div>
+  );
+}
+
 export default function MemberCard({ member }: MemberCardProps) {
   const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase()
   // Use the pre-formatted date from server (member.joinedDate is already formatted)
   const joinedDateFormatted = member.joinedDate
+
+  // Fetch stats for this member
+  const stats = useQuery(api.members.getMemberStats, { memberId: member.id as Id<"members"> });
 
   return (
     <Link href={`/members/${member.id}`} className="block group">
@@ -46,7 +69,7 @@ export default function MemberCard({ member }: MemberCardProps) {
         <div className="flex items-start mb-4">
           <Avatar className="h-16 w-16 mr-4">
             <AvatarImage
-              src=""
+              src={member.avatarUrl || ""}
             />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
@@ -54,13 +77,29 @@ export default function MemberCard({ member }: MemberCardProps) {
             <h2 className="text-xl font-semibold text-card-foreground group-hover:text-primary transition-colors">
               {member.firstName} {member.lastName}
             </h2>
-            <Badge variant="outline" className={`text-xs capitalize mt-1 ${statusVariants[member.status]}`}>
-              {member.status}
-            </Badge>
+            <div className="flex flex-wrap items-center gap-2 mt-1">
+              <Badge variant="outline" className={`text-xs capitalize ${statusVariants[member.status]}`}>
+                {member.status}
+              </Badge>
+              {member.lastOnlineRelative && (
+                <Badge variant="secondary" className="text-xs">
+                  Last online • {member.lastOnlineRelative} ago
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
         <p className="text-sm text-muted-foreground mb-4 line-clamp-3 flex-grow">{member.bio}</p>
+
+        {/* Contribution Stats */}
+        {stats && (
+          <div className="flex flex-wrap gap-3 mb-4 text-xs">
+            <Stat icon={FileText} value={stats.postCount} label="Posts" />
+            <Stat icon={MessageCircle} value={stats.commentCount} label="Comments" />
+            <Stat icon={ThumbsUp} value={stats.netVoteCount} label="Votes" />
+          </div>
+        )}
 
         <div className="text-xs text-muted-foreground space-y-2 mb-4">
           <div className="flex items-center">
@@ -79,7 +118,7 @@ export default function MemberCard({ member }: MemberCardProps) {
           </div>
         </div>
 
-        <div className="flex space-x-3 mt-auto pt-4 border-t border-gray-100">
+        <div className="flex space-x-3 mt-auto pt-4 border-t border-border">
           {member.linkGithub && (
             <Button
               variant="ghost"

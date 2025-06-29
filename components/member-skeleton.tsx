@@ -2,6 +2,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+// Export the header skeleton from the dedicated component
+export { default as MemberHeaderSkeleton } from "./member-header-skeleton";
+
 /**
  * Skeleton for Member Card component
  * Matches the layout in components/member-card.tsx
@@ -128,7 +131,7 @@ export function MemberProfileSkeleton() {
  */
 export function PostCardSkeleton() {
   return (
-    <div className="bg-white border border-gray-200 rounded-lg">
+    <div className="bg-card border border-border rounded-lg">
       <div className="flex">
         {/* Voting section skeleton */}
         <div className="flex flex-col items-center p-4 space-y-1">
@@ -186,7 +189,7 @@ export function PostCardSkeleton() {
  */
 export function ActivitySkeleton() {
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+    <div className="bg-muted/30 border border-border rounded-lg p-4">
       {/* Comment content skeleton */}
       <div className="mb-2">
         <Skeleton className="h-4 w-full mb-1" />

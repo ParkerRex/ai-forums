@@ -84,13 +84,21 @@ export const globalSearch = query({
     const linkRegex = /(https?:\/\/\S+)/gi;
     const linkResults = enrichedComments.flatMap((c: any) => {
       const links = c.content.match(linkRegex) ?? [];
-      return links.map((link: string) => ({ 
-        _id: `${c._id}:${link}`, 
-        type: "link" as const, 
-        link, 
-        postId: c.postId,
-        domain: new URL(link).hostname.replace('www.', '')
-      }));
+      return links.map((link: string) => {
+        try {
+          const url = new URL(link);
+          return { 
+            _id: `${c._id}:${link}`, 
+            type: "link" as const, 
+            link, 
+            postId: c.postId,
+            domain: url.hostname.replace('www.', '')
+          };
+        } catch {
+          // Skip malformed URLs
+          return null;
+        }
+      }).filter(Boolean); // Remove null entries
     });
 
     // Mark visibility for private-category content
