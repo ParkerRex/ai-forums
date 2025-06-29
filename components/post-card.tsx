@@ -79,6 +79,10 @@ export default function PostCard({ post }: PostCardProps) {
     targetType: "post",
   });
 
+  // New: handle author details safely
+  const authorName = post.author?.firstName || "Unknown";
+  const authorSlug = post.author?.slug;
+
   const handleUpvote = async () => {
     if (isVoting) return;
     setIsVoting(true);
@@ -148,14 +152,18 @@ export default function PostCard({ post }: PostCardProps) {
             </Link>
             <span className="mx-2">•</span>
             <span>posted by</span>
-            <Link
-              href={post.author ? memberProfileUrl({ slug: post.author.slug!, _id: post.author._id }) : "#"}
-              className="ml-1 text-primary hover:underline"
-              prefetch={true}
-              data-testid="author-link"
-            >
-              {post.author?.firstName || 'Unknown'}
-            </Link>
+
+            {authorSlug ? (
+              <Link
+                href={`/members/${authorSlug}`}
+                className="ml-1 text-primary hover:underline"
+                prefetch={true}
+              >
+                {authorName}
+              </Link>
+            ) : (
+              <span className="ml-1 text-foreground">{authorName}</span>
+            )}
             <span className="mx-2">•</span>
             <span>{getTimeAgo(post.createdAt)} ago</span>
           </div>
