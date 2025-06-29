@@ -55,12 +55,15 @@ export default defineSchema({
     postCount: v.optional(v.number()),
     commentCount: v.optional(v.number()),
     netVoteCount: v.optional(v.number()),
+    // URL slug field  
+    slug: v.optional(v.string()),
   })
     .index("by_status", ["status"])
     .index("by_joinedDate", ["joinedDate"])
     .index("by_lastOnline", ["lastOnline"])
     .index("by_status_and_joinedDate", ["status", "joinedDate"])
     .index("by_skills", ["skills"])
+    .index("by_slug", ["slug"])
     .searchIndex("search_members", {
       searchField: "firstName",
       filterFields: ["status"]

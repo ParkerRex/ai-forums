@@ -54,6 +54,7 @@ export const getPosts = query({
             lastName: author.lastName,
             email: author.email,
             username: author.email.split('@')[0], // Derive username from email
+            slug: author.slug || "",
           } : null,
           category: category ? {
             _id: category._id,
@@ -97,6 +98,7 @@ export const getPostById = query({
         linkGithub: author.linkGithub,
         linkX: author.linkX,
         linkYouTube: author.linkYouTube,
+        slug: author.slug || "",
       } : null,
       category: category ? {
         _id: category._id,
@@ -142,6 +144,7 @@ export const getPostBySlug = query({
         linkGithub: author.linkGithub,
         linkX: author.linkX,
         linkYouTube: author.linkYouTube,
+        slug: author.slug || "",
       } : null,
       category: category ? {
         _id: category._id,
@@ -482,6 +485,7 @@ export const searchPosts = query({
             firstName: author.firstName,
             lastName: author.lastName,
             username: author.email.split('@')[0],
+            slug: author.slug || "",
           } : null,
           category: category ? {
             _id: category._id,

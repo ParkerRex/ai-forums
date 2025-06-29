@@ -64,6 +64,8 @@ function MembersPageContent() {
       commentCount: member.commentCount,
       netVoteCount: member.netVoteCount,
       lastOnlineRelative: member.lastOnlineRelative,
+      // URL slug
+      slug: member.slug,
     })) || [];
 
   // Clear search function

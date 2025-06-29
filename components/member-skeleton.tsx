@@ -228,8 +228,8 @@ export function LoadingIndicator({
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
-      <Loader2 className={`animate-spin text-gray-500 ${sizeClasses[size]}`} />
-      {text && <span className="text-sm text-gray-500">{text}</span>}
+      <Loader2 className={`animate-spin text-muted-foreground ${sizeClasses[size]}`} />
+      {text && <span className="text-sm text-muted-foreground">{text}</span>}
     </div>
   );
 }

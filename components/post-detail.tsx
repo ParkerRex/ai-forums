@@ -15,6 +15,7 @@ interface Post {
     firstName: string
     lastName: string
     username: string
+    slug?: string
   } | null
   category?: {
     name: string
@@ -67,7 +68,7 @@ export default function PostDetail({ post }: PostDetailProps) {
               <span className="mx-2">•</span>
               <span>posted by</span>
               <Link 
-                href={post.author ? `/members/${post.author._id}` : "#"}
+                href={post.author?.slug ? `/members/${post.author.slug}` : (post.author ? `/members/${post.author._id}` : "#")}
                 className="ml-1 text-primary hover:underline"
               >
                 /u/{post.author?.username || "unknown"}

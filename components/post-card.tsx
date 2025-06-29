@@ -39,6 +39,7 @@ interface Post {
     lastName: string;
     email: string;
     username: string;
+    slug?: string;
   } | null;
   category: {
     _id: Id<"categories">;
@@ -147,7 +148,7 @@ export default function PostCard({ post }: PostCardProps) {
             <span className="mx-2">•</span>
             <span>posted by</span>
             <Link
-              href={`/members/${post.author?._id}`}
+              href={post.author?.slug ? `/members/${post.author.slug}` : `/members/${post.author?._id}`}
               className="ml-1 text-primary hover:underline"
               prefetch={true}
             >

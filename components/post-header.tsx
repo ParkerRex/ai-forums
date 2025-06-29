@@ -33,7 +33,7 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
         <div className="flex space-x-6 overflow-x-auto pb-2">
           {/* All Posts Tab */}
           {isOnCategoryPage ? (
-            <Link href="/" className="font-medium pb-1 whitespace-nowrap transition-colors border-b-2 text-gray-600 hover:text-green-700 border-transparent hover:border-gray-300" prefetch={true}>
+            <Link href="/" className="font-medium pb-1 whitespace-nowrap transition-colors border-b-2 text-muted-foreground hover:text-green-700 border-transparent hover:border" prefetch={true}>
               all posts
             </Link>
           ) : (
@@ -41,7 +41,7 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
               onClick={() => onCategorySelect?.(undefined)}
               className={`font-medium pb-1 whitespace-nowrap transition-colors border-b-2 ${!selectedCategoryId
                 ? "text-green-700 border-green-700"
-                : "text-gray-600 hover:text-green-700 border-transparent hover:border-gray-300"
+                : "text-muted-foreground hover:text-green-700 border-transparent hover:border"
                 }`}
             >
               all posts
@@ -55,7 +55,7 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
               <Skeleton key={i} className="h-6 w-20" />
             ))
           ) : categories?.length === 0 ? (
-            <span className="text-gray-500 text-sm">No categories available</span>
+            <span className="text-muted-foreground text-sm">No categories available</span>
           ) : (
             categories?.map((category) => {
               const isActive = isOnCategoryPage ? 

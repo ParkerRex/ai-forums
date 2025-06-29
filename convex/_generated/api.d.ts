@@ -23,6 +23,7 @@ import type * as importPostsComments from "../importPostsComments.js";
 import type * as members from "../members.js";
 import type * as migration from "../migration.js";
 import type * as migrations_add_member_fields from "../migrations/add_member_fields.js";
+import type * as migrations_add_member_slug from "../migrations/add_member_slug.js";
 import type * as migrations_deduplicateComments from "../migrations/deduplicateComments.js";
 import type * as posts from "../posts.js";
 import type * as search from "../search.js";
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   members: typeof members;
   migration: typeof migration;
   "migrations/add_member_fields": typeof migrations_add_member_fields;
+  "migrations/add_member_slug": typeof migrations_add_member_slug;
   "migrations/deduplicateComments": typeof migrations_deduplicateComments;
   posts: typeof posts;
   search: typeof search;

@@ -29,6 +29,7 @@ interface Member {
   commentCount?: number
   netVoteCount?: number
   lastOnlineRelative?: string
+  slug?: string
 }
 
 interface MemberCardProps {
@@ -63,8 +64,11 @@ export default function MemberCard({ member }: MemberCardProps) {
   // Fetch stats for this member
   const stats = useQuery(api.members.getMemberStats, { memberId: member.id as Id<"members"> });
 
+  // Use slug for the link, fallback to id if slug not available
+  const memberUrl = member.slug ? `/members/${member.slug}` : `/members/${member.id}`;
+
   return (
-    <Link href={`/members/${member.id}`} className="block group" prefetch={true}>
+    <Link href={memberUrl} className="block group" prefetch={true}>
       <div className="bg-card border rounded-lg p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
         <div className="flex items-start mb-4">
           <Avatar className="h-16 w-16 mr-4">

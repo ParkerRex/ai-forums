@@ -34,7 +34,7 @@ export default function PostSidebar() {
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
-          <p className="text-xs text-gray-500">Share your AI workflows, prompts, and insights with the community</p>
+          <p className="text-xs text-muted-foreground">Share your AI workflows, prompts, and insights with the community</p>
         </CardContent>
       </Card>
 
@@ -48,32 +48,32 @@ export default function PostSidebar() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            <div className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
-              <h4 className="text-sm font-medium text-gray-900 mb-1">
+            <div className="border-b border pb-3 last:border-b-0 last:pb-0">
+              <h4 className="text-sm font-medium text-foreground mb-1">
                 OpenAI Announces GPT-5 Development
               </h4>
-              <p className="text-xs text-gray-600 mb-2">
+              <p className="text-xs text-muted-foreground mb-2">
                 Next-generation model promises significant improvements in reasoning and multimodal capabilities.
               </p>
-              <span className="text-xs text-gray-400">2 hours ago</span>
+              <span className="text-xs text-muted-foreground opacity-70">2 hours ago</span>
             </div>
-            <div className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
-              <h4 className="text-sm font-medium text-gray-900 mb-1">
+            <div className="border-b border pb-3 last:border-b-0 last:pb-0">
+              <h4 className="text-sm font-medium text-foreground mb-1">
                 Google Releases Gemini 2.0 Flash
               </h4>
-              <p className="text-xs text-gray-600 mb-2">
+              <p className="text-xs text-muted-foreground mb-2">
                 New model features enhanced speed and efficiency for real-time AI applications.
               </p>
-              <span className="text-xs text-gray-400">4 hours ago</span>
+              <span className="text-xs text-muted-foreground opacity-70">4 hours ago</span>
             </div>
-            <div className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
-              <h4 className="text-sm font-medium text-gray-900 mb-1">
+            <div className="border-b border pb-3 last:border-b-0 last:pb-0">
+              <h4 className="text-sm font-medium text-foreground mb-1">
                 Meta AI Unveils Llama 3.3 70B
               </h4>
-              <p className="text-xs text-gray-600 mb-2">
+              <p className="text-xs text-muted-foreground mb-2">
                 Open-source model achieves performance comparable to larger proprietary models.
               </p>
-              <span className="text-xs text-gray-400">6 hours ago</span>
+              <span className="text-xs text-muted-foreground opacity-70">6 hours ago</span>
             </div>
           </div>
         </CardContent>
@@ -85,7 +85,7 @@ export default function PostSidebar() {
           <CardTitle className="text-lg">About VAI</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-gray-600 leading-relaxed">
+          <p className="text-sm text-muted-foreground leading-relaxed">
             A community platform for AI professionals to share workflows, prompts, insights, and connect with like-minded practitioners.
           </p>
         </CardContent>

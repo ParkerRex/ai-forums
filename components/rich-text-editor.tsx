@@ -18,17 +18,17 @@ interface RichTextEditorProps {
 // Loading skeleton for the full editor
 function RichEditorSkeleton() {
   return (
-    <div className="border border-gray-300 rounded-lg">
-      <div className="border-b border-gray-200 p-2 bg-gray-50 rounded-t-lg">
+    <div className="border border rounded-lg">
+      <div className="border-b border p-2 bg-muted rounded-t-lg">
         <div className="flex items-center justify-center">
           <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
-          <span className="text-sm text-gray-600">Loading rich editor...</span>
+          <span className="text-sm text-muted-foreground">Loading rich editor...</span>
         </div>
       </div>
       <div className="min-h-[200px] p-4">
         <div className="animate-pulse space-y-2">
-          <div className="h-4 bg-gray-200 rounded w-3/4" />
-          <div className="h-4 bg-gray-200 rounded w-1/2" />
+          <div className="h-4 bg-muted opacity-50 rounded w-3/4" />
+          <div className="h-4 bg-muted opacity-50 rounded w-1/2" />
         </div>
       </div>
     </div>
@@ -79,11 +79,11 @@ export function RichTextEditor({
 
   // Simple mode (fast loading)
   return (
-    <div className={`border border-gray-300 rounded-lg focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}>
+    <div className={`border border rounded-lg focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}>
       {/* Simple toolbar */}
-      <div className="border-b border-gray-200 p-2 bg-gray-50 rounded-t-lg">
+      <div className="border-b border p-2 bg-muted rounded-t-lg">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-600">
+          <div className="text-sm text-muted-foreground">
             Markdown supported
           </div>
           <Button

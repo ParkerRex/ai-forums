@@ -1,92 +1,44 @@
-**Open Questions**
-===================
-- Do we need to support user-selectable *"system"* theme detection or strictly light/dark toggle?
-- Do any third-party iframes/content (e.g. Stripe checkout) require bespoke dark-mode handling?
+Task Checklist
+==============
 
-.. task checklist (update as completed)
+Phase 1 – Theme audit foundations
+☑ Create `audit-theme.ts` script  
+☑ Wire `lint:theme` npm script  
+☑ Add Jest tests for audit script  
 
-Phase 1 – Global Theming Setup
---------------------------------
-☐ Create ``tailwind.config.ts`` with ``darkMode = "class"`` and color tokens
-☑ Define CSS variables for light & dark palettes in ``app/globals.css``
-☑ Wrap ``app/layout.tsx`` with ``<ThemeProvider>``
-☐ Remove redundant color utilities where shadcn vars suffice
+Phase 2 – Replace hard-coded colors
+☑ Update members page color classes  
+☑ Update components & skeleton placeholders to use `bg-muted` with appropriate opacity  
+☑ Run audit script until zero violations  
 
-Phase 2 – Component Adaptation
-------------------------------
-☐ Audit custom components for hard-coded colors
-☐ Replace with Tailwind utility variants *or* CSS variables (e.g. ``text-foreground``)
-☐ Export shared utility ``cnDark()`` (wrapper around ``clsx``) for conditional classes
-☐ Update Storybook/Chromatic snapshots (if present)
-
-Phase 3 – UI Controls & Persistence
------------------------------------
-☑ Integrate ``ThemeToggle`` into ``components/header.tsx``
-☐ Persist preference with *next-themes* (already in deps)
-☐ Implement SSR theme script to avoid flash of wrong theme (FART)
-☐ Add Cypress/Playwright test toggling themes across pages
+Phase 3 – Enforcement & visual verification
+☑ Implement ESLint `no-raw-colors` rule & update config  
+☑ Add Playwright dark-mode visual tests  
+☑ Ensure CI passes with new checks  
 
 
-Phase 1 – Global Theming Setup
-==============================
+Phase 1 – Theme audit foundations
+---------------------------------
+Affected files: *scripts/audit-theme.ts*, *package.json*, *scripts/__tests__/audit-theme.test.ts*
 
-Affected Files
-~~~~~~~~~~~~~~
-- ``tailwind.config.ts`` – enable ``darkMode: 'class'``; extend theme tokens via CSS vars
-- ``app/globals.css`` – define :root & *.dark* palettes (using shadcn token names)
-- ``components/theme-provider.tsx`` – ensure ``attribute="class"`` and ``defaultTheme="system"``
-- ``app/layout.tsx`` – wrap children in provider & pass ``className`` from *next-themes*
+* Create `audit-theme.ts` Node script to read project files using glob; use regex to detect banned Tailwind classes. Print list & non-zero exit code if any found.
+* Add Jest test file with mocked file contents.
+* Wire npm script.
 
-Summary of Changes
-~~~~~~~~~~~~~~~~~~
-1. *Already done*: **centralized CSS variable palette** is present in ``app/globals.css`` with light & dark values.
-2. *Already done*: Layout uses ``ThemeProvider`` to control ``class="dark"`` on <html>.
-3. Remaining: add **tailwind.config.ts** to enable ``darkMode: 'class'`` and map shadcn token utilities if missing.
-4. Remaining: remove component-level hard-coded colors once Tailwind mapping is finalized.
+Phase 2 – Replace hard-coded colors with theme tokens
+----------------------------------------------------
+Affected files: *app/members/[id]/page.tsx*, *components/post-creation-form.tsx*, *components/rich-text-editor*.tsx*, *components/member-edit-form.tsx*,
+ plus any additional files flagged by audit.
 
-Unit Tests
-~~~~~~~~~~
-- Jest + React Testing Library: assert that toggling context updates ``document.documentElement.classList``.
-- Snapshot test for ``app/layout`` renders expected HTML class.
+* Systematically replace banned classes with semantic tokens defined in *globals.css* (`bg-background`, `bg-muted`, `text-foreground`, etc.). Skeleton placeholders should use `bg-muted` with reduced opacity (e.g., `opacity-50`).
+* Fallback to `dark:` variants only when semantic token not expressive enough.
+* Run audit script until zero violations.
+* Add unit snapshots for modified components ensuring class names include semantic tokens.
 
+Phase 3 – Enforcement & visual verification
+-------------------------------------------
+Affected files: *.eslintrc*, *eslint-plugin/no-raw-colors.ts*, *playwright/theme-visual.spec.ts*
 
-Phase 2 – Component Adaptation
-==============================
-
-Affected Files
-~~~~~~~~~~~~~~
-- ``components/**/*`` (custom only)
-- ``lib/utils.ts`` – add ``cnDark()`` helper
-
-Summary of Changes
-~~~~~~~~~~~~~~~~~~
-1. Script (optional) to grep for hex colors and flag for review.
-2. Replace hard-coded colors with utility classes (`text-muted-foreground`, `bg-card`, etc.) already mapped to tokens.
-3. Where dynamic, use ``cnDark('text-gray-900', 'text-gray-100')`` helper.
-
-Unit Tests
-~~~~~~~~~~
-- RTL tests for representative components (e.g. ``post-card``) asserting correct classes in both themes via mocked context.
-
-
-Phase 3 – UI Controls & Persistence
-===================================
-
-Affected Files
-~~~~~~~~~~~~~~
-- ``components/theme-toggle.tsx`` – confirm logic & animations
-- ``components/header.tsx`` – inject toggle button
-- ``middleware.ts`` – add optional cookie read for initial theme (SSR)
-- ``e2e/`` tests (new)
-
-Summary of Changes
-~~~~~~~~~~~~~~~~~~
-1. Mount toggle in header; ensure mobile menu also contains toggle.
-2. Configure *next-themes* to store preference in cookie, enabling SSR detection.
-3. Inject small inline script in ``_document`` (optional) to set class early.
-4. End-to-end test verifies persistence across refresh and navigation.
-
-Unit / E2E Tests
-~~~~~~~~~~~~~~~~
-- Cypress test: toggle to dark, reload, assert dark persists.
-- Playwright visual diff across pages in both themes (if configured). 
+* Implement custom ESLint rule (can wrap script logic) and enable in config (error in CI).
+* Add Playwright test: visit **/**, **/members/[id]**, **/post/[id]**; toggle `prefers-color-scheme` and assert body background != white in dark mode.
+* Document CI step to run Playwright with `--update-snapshots` flag on demand.

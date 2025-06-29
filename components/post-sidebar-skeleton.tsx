@@ -26,7 +26,7 @@ export default function PostSidebarSkeleton() {
         <CardContent>
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="border-b border-gray-100 pb-3 last:border-b-0 last:pb-0">
+              <div key={i} className="border-b border pb-3 last:border-b-0 last:pb-0">
                 <Skeleton className="h-4 w-full mb-2" />
                 <Skeleton className="h-3 w-full mb-2" />
                 <Skeleton className="h-3 w-16" />
