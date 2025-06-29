@@ -7,20 +7,20 @@
 
 Phase 1 – Backend Search API
 ----------------------------
-☐ Add ``search_comments`` search index on ``comments.content`` in *convex/schema.ts*
-☐ Create ``convex/search.ts`` with a ``globalSearch`` query
+☑ Add ``search_comments`` search index on ``comments.content`` in *convex/schema.ts*
+☑ Create ``convex/search.ts`` with a ``globalSearch`` query
 
 Phase 2 – Front-End Search Dialog
 ---------------------------------
-☐ Add ``components/global-search.tsx`` implementing a 🏷️ *CommandDialog* (shadcn)
-☐ Create ``hooks/use-command-k.ts`` to open/close dialog on ⌘K / Ctrl K
-☐ Style results with a badge (Post | Comment | Link)
+☑ Add ``components/global-search.tsx`` implementing a 🏷️ *CommandDialog* (shadcn)
+☑ Create ``hooks/use-command-k.ts`` to open/close dialog on ⌘K / Ctrl K
+☑ Style results with a badge (Post | Comment | Link)
 
 Phase 3 – Integration & Routing
 -------------------------------
-☐ Inject *GlobalSearchProvider* in ``app/layout.tsx``
-☐ Navigate to ``/post/[id]`` (or ``/post/[id]?commentId=``) on select
-☐ Open external links in a new tab
+☑ Inject *GlobalSearch* in ``app/layout.tsx``
+☑ Navigate to ``/[category]/[slug]`` (or ``/[category]/[slug]?commentId=``) on select
+☑ Open external links in a new tab
 
 
 Phase 1 – Backend Search API
@@ -149,6 +149,8 @@ Phase 2 – Front-End Search Dialog
 - Highlight component wraps matching substring
 - Badges render per type
 - Restricted items open CTA modal not navigation
+- Selecting a Post navigates to slug URL (`/[category]/[slug]`)
+- Selecting Comment navigates with `commentId` param
 
 
 Phase 3 – Integration & Routing

@@ -24,6 +24,7 @@ import type * as members from "../members.js";
 import type * as migration from "../migration.js";
 import type * as migrations_deduplicateComments from "../migrations/deduplicateComments.js";
 import type * as posts from "../posts.js";
+import type * as search from "../search.js";
 import type * as votes from "../votes.js";
 
 /**
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   migration: typeof migration;
   "migrations/deduplicateComments": typeof migrations_deduplicateComments;
   posts: typeof posts;
+  search: typeof search;
   votes: typeof votes;
 }>;
 export declare const api: FilterApi<

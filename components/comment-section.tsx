@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -15,6 +15,7 @@ import { ChevronDown, ChevronRight, MessageSquare } from "lucide-react";
 
 interface CommentSectionProps {
   postId: Id<"posts">;
+  targetCommentId?: string;
 }
 
 type CommentWithReplies = {
@@ -60,7 +61,7 @@ function CommentItem({
 
   return (
     <div className="space-y-3" style={{ marginLeft: `${marginLeft}px` }}>
-      <div className="border border-border rounded-lg p-4 bg-card">
+      <div id={`comment-${comment._id}`} className="border border-border rounded-lg p-4 bg-card transition-all duration-300">
         <div className="flex items-start space-x-3">
           <Avatar className="w-8 h-8">
             <AvatarFallback className="bg-muted text-muted-foreground">
@@ -163,7 +164,7 @@ function CommentItem({
   );
 }
 
-export default function CommentSection({ postId }: CommentSectionProps) {
+export default function CommentSection({ postId, targetCommentId }: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Id<"comments"> | null>(null);
@@ -173,6 +174,24 @@ export default function CommentSection({ postId }: CommentSectionProps) {
   const comments = useQuery(api.comments.getCommentsByPost, { postId });
   const createComment = useMutation(api.comments.createComment);
   const { handleMutationError, handleMutationSuccess } = useMutationError();
+
+  useEffect(() => {
+    if (!targetCommentId || !comments) return;
+
+    // allow React to paint comment elements first
+    const raf = requestAnimationFrame(() => {
+      const el = document.getElementById(`comment-${targetCommentId}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.classList.add("ring-2", "ring-primary", "ring-offset-2");
+        setTimeout(() => {
+          el.classList.remove("ring-2", "ring-primary", "ring-offset-2");
+        }, 3000);
+      }
+    });
+
+    return () => cancelAnimationFrame(raf);
+  }, [targetCommentId, comments]);
 
   const handleSubmitComment = async () => {
     if (!newComment.trim()) return;

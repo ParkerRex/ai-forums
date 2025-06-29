@@ -7,6 +7,7 @@ import Header from "@/components/header";
 import { Toaster } from "@/components/ui/sonner";
 import { NetworkStatusIndicator } from "@/components/error-display";
 import { ThemeProvider } from "@/components/theme-provider";
+import { GlobalSearch } from "@/components/global-search";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,6 +47,7 @@ export default function RootLayout({
             <ConvexClientProvider>
               <Header />
               {children}
+              <GlobalSearch />
               <Toaster />
               <NetworkStatusIndicator />
             </ConvexClientProvider>

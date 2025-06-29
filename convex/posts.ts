@@ -421,23 +421,51 @@ export const searchPosts = query({
     searchTerm: v.string(),
     categoryId: v.optional(v.id("categories")),
     limit: v.optional(v.number()),
+    includeContent: v.optional(v.boolean()),
   },
-  handler: async (ctx, { searchTerm, categoryId, limit = 20 }) => {
+  handler: async (ctx, { searchTerm, categoryId, limit = 20, includeContent = false }) => {
     if (!searchTerm.trim()) {
       return [];
     }
 
-    const searchQuery = ctx.db
-      .query("posts")
-      .withSearchIndex("search_posts", (q) => {
-        let query = q.search("title", searchTerm).eq("status", "active");
-        if (categoryId) {
-          query = query.eq("categoryId", categoryId);
-        }
-        return query;
-      });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const baseSearch = (q: any) => {
+      let query = q.search("title", searchTerm).eq("status", "active");
+      if (categoryId) {
+        query = query.eq("categoryId", categoryId);
+      }
+      return query;
+    };
 
-    const posts = await searchQuery.take(limit);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const baseContentSearch = (q: any) => {
+      let query = q.search("content", searchTerm).eq("status", "active");
+      if (categoryId) {
+        query = query.eq("categoryId", categoryId);
+      }
+      return query;
+    };
+
+    // Search titles
+    const titleQuery = ctx.db
+      .query("posts")
+      .withSearchIndex("search_posts", baseSearch);
+
+    let posts = await titleQuery.take(limit);
+
+    // Also search content if requested
+    if (includeContent) {
+      const contentQuery = ctx.db
+        .query("posts")
+        .withSearchIndex("search_posts_content", baseContentSearch);
+      
+      const contentPosts = await contentQuery.take(limit);
+      
+      // Dedupe by ID, preferring title matches
+      const seenIds = new Set(posts.map(p => p._id));
+      const uniqueContentPosts = contentPosts.filter(p => !seenIds.has(p._id));
+      posts = [...posts, ...uniqueContentPosts].slice(0, limit);
+    }
 
     // Enrich with author and category data
     const enrichedPosts = await Promise.all(
