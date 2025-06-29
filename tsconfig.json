@@ -37,6 +37,9 @@
   ],
   "exclude": [
     "node_modules",
-    "components/ui/**"
+    "components/ui/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/__tests__/**"
   ]
 }

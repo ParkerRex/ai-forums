@@ -1,6 +1,15 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { RenderTipTapContent } from "@/lib/render-post-content";
+
+interface LinkPreview {
+  title?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+  url: string;
+}
 
 interface PostPreviewProps {
   post: {
@@ -8,6 +17,7 @@ interface PostPreviewProps {
     title: string;
     content: string;
     createdAt: number;
+    linkPreviews?: Record<string, LinkPreview>;
     author: {
       firstName: string;
       lastName: string;
@@ -56,7 +66,7 @@ export default function PostPreview({ post, isLoading }: PostPreviewProps) {
         <h2 className="text-xl font-bold text-foreground">{post.title}</h2>
         
         <div className="text-muted-foreground">
-          {post.content}
+          <RenderTipTapContent htmlContent={post.content} />
         </div>
         
         <div className="flex items-center justify-between pt-4 border-t border-border">

@@ -56,7 +56,7 @@ export default defineSchema({
     commentCount: v.optional(v.number()),
     netVoteCount: v.optional(v.number()),
     // URL slug field  
-    slug: v.optional(v.string()),
+    slug: v.string(),
   })
     .index("by_status", ["status"])
     .index("by_joinedDate", ["joinedDate"])
@@ -106,6 +106,13 @@ export default defineSchema({
     isLocked: v.optional(v.boolean()),
     editedAt: v.optional(v.number()),
     editReason: v.optional(v.string()),
+    linkPreviews: v.optional(v.record(v.string(), v.object({
+      title: v.optional(v.string()),
+      description: v.optional(v.string()),
+      image: v.optional(v.string()),
+      siteName: v.optional(v.string()),
+      url: v.string(),
+    }))),
   })
     .index("by_categoryId", ["categoryId"])
     .index("by_authorId", ["authorId"])

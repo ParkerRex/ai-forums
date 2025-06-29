@@ -125,4 +125,34 @@ test.describe('Dark Mode Theme Compliance', () => {
       expect(matches, `Found banned pattern ${index}: ${pattern}`).toBeNull();
     });
   });
+});
+
+test.describe('Member Profile Linking', () => {
+  test('should navigate to member profile when clicking author links', async ({ page }) => {
+    // Navigate to the home page
+    await page.goto('/');
+    
+    // Wait for posts to load
+    await page.waitForSelector('[data-testid="author-link"]', { timeout: 10000 });
+    
+    // Click on the first author link
+    const authorLink = page.locator('[data-testid="author-link"]').first();
+    await expect(authorLink).toBeVisible();
+    
+    // Get the href to verify it's a member profile URL
+    const href = await authorLink.getAttribute('href');
+    expect(href).toMatch(/^\/members\/[a-z0-9-]+$/);
+    
+    // Click the link
+    await authorLink.click();
+    
+    // Wait for navigation to complete
+    await page.waitForURL(/\/members\/[a-z0-9-]+$/);
+    
+    // Verify we're on a member profile page
+    expect(page.url()).toMatch(/\/members\/[a-z0-9-]+$/);
+    
+    // Verify profile content is visible
+    await expect(page.locator('h1')).toBeVisible();
+  });
 }); 

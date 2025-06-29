@@ -41,6 +41,7 @@ export const globalSearch = query({
             lastName: author.lastName,
             email: author.email,
             username: author.email.split('@')[0],
+            slug: author.slug,
           } : null,
         };
       })

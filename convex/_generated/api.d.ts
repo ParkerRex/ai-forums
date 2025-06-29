@@ -20,6 +20,7 @@ import type * as importCommentsFixed from "../importCommentsFixed.js";
 import type * as importData from "../importData.js";
 import type * as importMembers from "../importMembers.js";
 import type * as importPostsComments from "../importPostsComments.js";
+import type * as linkPreviews from "../linkPreviews.js";
 import type * as members from "../members.js";
 import type * as migration from "../migration.js";
 import type * as migrations_add_member_fields from "../migrations/add_member_fields.js";
@@ -46,6 +47,7 @@ declare const fullApi: ApiFromModules<{
   importData: typeof importData;
   importMembers: typeof importMembers;
   importPostsComments: typeof importPostsComments;
+  linkPreviews: typeof linkPreviews;
   members: typeof members;
   migration: typeof migration;
   "migrations/add_member_fields": typeof migrations_add_member_fields;
