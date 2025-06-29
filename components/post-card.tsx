@@ -12,6 +12,7 @@ import { api } from "@/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { useState } from "react";
+import { memberProfileUrl } from "@/lib/utils";
 
 // Interface to match Convex post data structure
 interface Post {
@@ -148,9 +149,10 @@ export default function PostCard({ post }: PostCardProps) {
             <span className="mx-2">•</span>
             <span>posted by</span>
             <Link
-              href={post.author?.slug ? `/members/${post.author.slug}` : `/members/${post.author?._id}`}
+              href={post.author ? memberProfileUrl({ slug: post.author.slug!, _id: post.author._id }) : "#"}
               className="ml-1 text-primary hover:underline"
               prefetch={true}
+              data-testid="author-link"
             >
               {post.author?.firstName || 'Unknown'}
             </Link>

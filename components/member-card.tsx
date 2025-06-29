@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { useQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { Id } from "@/convex/_generated/dataModel"
+import { memberProfileUrl } from "@/lib/utils"
 
 interface Member {
   id: string
@@ -64,8 +65,8 @@ export default function MemberCard({ member }: MemberCardProps) {
   // Fetch stats for this member
   const stats = useQuery(api.members.getMemberStats, { memberId: member.id as Id<"members"> });
 
-  // Use slug for the link, fallback to id if slug not available
-  const memberUrl = member.slug ? `/members/${member.slug}` : `/members/${member.id}`;
+  // Generate member profile URL using slug
+  const memberUrl = memberProfileUrl({ slug: member.slug!, _id: member.id as Id<"members"> });
 
   return (
     <Link href={memberUrl} className="block group" prefetch={true}>

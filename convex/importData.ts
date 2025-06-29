@@ -1,5 +1,6 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { generateMemberSlug } from "../lib/slug-utils";
 
 // Import posts in batches
 export const importPosts = mutation({
@@ -40,6 +41,21 @@ export const importPosts = mutation({
         const firstName = nameParts[0] || 'Unknown';
         const lastName = nameParts.slice(1, -1).join(' ') || 'User';
         
+        // Generate unique slug for the member
+        const fullName = `${firstName} ${lastName}`;
+        const baseSlug = generateMemberSlug(fullName);
+        
+        // Ensure uniqueness by checking existing slugs
+        let uniqueSlug = baseSlug;
+        let counter = 2;
+        const existingSlugs = await ctx.db.query("members").collect();
+        const usedSlugs = new Set(existingSlugs.map(m => m.slug));
+        
+        while (usedSlugs.has(uniqueSlug)) {
+          uniqueSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+        
         const memberId = await ctx.db.insert("members", {
           firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
           lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
@@ -49,6 +65,7 @@ export const importPosts = mutation({
           updatedAt: Date.now(),
           lastOnline: Date.now(),
           bio: "Imported from Skool (inactive member)",
+          slug: uniqueSlug,
         });
         
         emailToMemberId.set(email, memberId);
@@ -143,6 +160,21 @@ export const importComments = mutation({
         const firstName = nameParts[0] || 'Unknown';
         const lastName = nameParts.slice(1, -1).join(' ') || 'User';
         
+        // Generate unique slug for the member
+        const fullName = `${firstName} ${lastName}`;
+        const baseSlug = generateMemberSlug(fullName);
+        
+        // Ensure uniqueness by checking existing slugs
+        let uniqueSlug = baseSlug;
+        let counter = 2;
+        const existingSlugs = await ctx.db.query("members").collect();
+        const usedSlugs = new Set(existingSlugs.map(m => m.slug));
+        
+        while (usedSlugs.has(uniqueSlug)) {
+          uniqueSlug = `${baseSlug}-${counter}`;
+          counter++;
+        }
+        
         const memberId = await ctx.db.insert("members", {
           firstName: firstName.charAt(0).toUpperCase() + firstName.slice(1),
           lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
@@ -152,6 +184,7 @@ export const importComments = mutation({
           updatedAt: Date.now(),
           lastOnline: Date.now(),
           bio: "Imported from Skool (inactive member)",
+          slug: uniqueSlug,
         });
         
         emailToMemberId.set(email, memberId);
