@@ -106,6 +106,10 @@ export default defineSchema({
     .searchIndex("search_posts", {
       searchField: "title",
       filterFields: ["categoryId", "status", "authorId"]
+    })
+    .searchIndex("search_posts_content", {
+      searchField: "content",
+      filterFields: ["categoryId", "status", "authorId"]
     }),
   comments: defineTable({
     content: v.string(),
@@ -130,7 +134,11 @@ export default defineSchema({
     .index("by_post_and_netVotes", ["postId", "netVotes"])
     .index("by_parent_and_createdAt", ["parentCommentId", "createdAt"])
     .index("by_status", ["status"])
-    .index("by_post_author_createdAt", ["postId", "authorId", "createdAt"]),
+    .index("by_post_author_createdAt", ["postId", "authorId", "createdAt"])
+    .searchIndex("search_comments", {
+      searchField: "content",
+      filterFields: ["postId", "status", "authorId"]
+    }),
   votes: defineTable({
     userId: v.id("members"),
     targetId: v.string(),

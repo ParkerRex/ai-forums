@@ -10,7 +10,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import CommentSection from "@/components/comment-section";
 import { use } from "react";
-import { notFound } from "next/navigation";
+import { notFound, useSearchParams } from "next/navigation";
 
 interface PostPageClientProps {
   params: Promise<{
@@ -23,6 +23,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   // Unwrap the params promise (Next.js 15 behavior)
   const resolvedParams = use(params);
   const { category, slug } = resolvedParams;
+  const searchParams = useSearchParams();
+  const commentId = searchParams.get('commentId');
   
   // Check if we have valid parameters
   const hasValidParams = category && slug && 
@@ -68,7 +70,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
       <Authenticated>
         <PostDetail post={post} />
         <div className="mt-8">
-          <CommentSection postId={post._id as Id<"posts">} />
+          <CommentSection postId={post._id as Id<"posts">} targetCommentId={commentId ?? undefined} />
         </div>
       </Authenticated>
 
