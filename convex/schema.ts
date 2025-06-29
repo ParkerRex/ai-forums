@@ -62,10 +62,6 @@ export default defineSchema({
     postCount: v.optional(v.number()),
     commentCount: v.optional(v.number()),
     netVoteCount: v.optional(v.number()),
-    // URL slug field  
-    slug: v.optional(v.string()),
-    // For duplicate member tracking
-    mergedInto: v.optional(v.id("members")),
   })
     .index("by_status", ["status"])
     .index("by_joinedDate", ["joinedDate"])
@@ -115,6 +111,7 @@ export default defineSchema({
     isLocked: v.optional(v.boolean()),
     editedAt: v.optional(v.number()),
     editReason: v.optional(v.string()),
+
     // New media and link fields
     type: v.optional(PostTypeValidator),
     mediaUrl: v.optional(v.string()),
@@ -123,6 +120,15 @@ export default defineSchema({
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
+
+    linkPreviews: v.optional(v.record(v.string(), v.object({
+      title: v.optional(v.string()),
+      description: v.optional(v.string()),
+      image: v.optional(v.string()),
+      siteName: v.optional(v.string()),
+      url: v.string(),
+    }))),
+
   })
     .index("by_categoryId", ["categoryId"])
     .index("by_authorId", ["authorId"])
