@@ -5,6 +5,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Github, Twitter, Youtube, MapPin, CalendarDays, Globe, Linkedin, FileText, MessageCircle, ThumbsUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { memberProfileUrl } from "@/lib/slug-utils";
+import type { Id } from "@/convex/_generated/dataModel";
 
 
 interface Member {
