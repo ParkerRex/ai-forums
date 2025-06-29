@@ -76,6 +76,11 @@ function MemberDetailContent({ id }: { id: string }) {
       linkX: memberData.linkX,
       linkYouTube: memberData.linkYouTube,
       location: memberData.location,
+      // Add new member upgrade fields
+      avatarUrl: memberData.avatarUrl,
+      websiteUrl: memberData.websiteUrl,
+      linkedinUrl: memberData.linkedinUrl,
+      skills: memberData.skills || [],
     }
     : null;
 

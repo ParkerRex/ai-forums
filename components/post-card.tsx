@@ -140,6 +140,7 @@ export default function PostCard({ post }: PostCardProps) {
             <Link
               href={`/${post.category?.name || 'general'}`}
               className="text-primary hover:underline"
+              prefetch={true}
             >
               /{post.category?.name || 'general'}
             </Link>
@@ -148,6 +149,7 @@ export default function PostCard({ post }: PostCardProps) {
             <Link
               href={`/members/${post.author?._id}`}
               className="ml-1 text-primary hover:underline"
+              prefetch={true}
             >
               {post.author?.firstName || 'Unknown'}
             </Link>
@@ -155,7 +157,7 @@ export default function PostCard({ post }: PostCardProps) {
             <span>{getTimeAgo(post.createdAt)} ago</span>
           </div>
 
-          <Link href={`/${post.category?.name || 'general'}/${post.slug}`} className="block group">
+          <Link href={`/${post.category?.name || 'general'}/${post.slug}`} className="block group" prefetch={true}>
             <h2 className="text-lg font-medium text-foreground group-hover:text-primary transition-colors mb-2">
               {post.title}
             </h2>
@@ -166,7 +168,7 @@ export default function PostCard({ post }: PostCardProps) {
 
           <div className="flex items-center space-x-4 text-sm text-muted-foreground">
             <Authenticated>
-              <Link href={`/${post.category?.name || 'general'}/${post.slug}`}>
+              <Link href={`/${post.category?.name || 'general'}/${post.slug}`} prefetch={true}>
                 <Button
                   variant="ghost"
                   size="sm"

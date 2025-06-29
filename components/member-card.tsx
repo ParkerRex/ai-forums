@@ -64,7 +64,7 @@ export default function MemberCard({ member }: MemberCardProps) {
   const stats = useQuery(api.members.getMemberStats, { memberId: member.id as Id<"members"> });
 
   return (
-    <Link href={`/members/${member.id}`} className="block group">
+    <Link href={`/members/${member.id}`} className="block group" prefetch={true}>
       <div className="bg-card border rounded-lg p-6 hover:shadow-lg transition-shadow h-full flex flex-col">
         <div className="flex items-start mb-4">
           <Avatar className="h-16 w-16 mr-4">

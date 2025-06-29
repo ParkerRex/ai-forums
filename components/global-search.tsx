@@ -4,7 +4,7 @@ import { useState, useCallback, useMemo, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useCommandK } from "@/hooks/use-command-k";
+import { useSearchHotkey } from "@/hooks/use-search-hotkey";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import {
   CommandDialog,
@@ -197,7 +197,7 @@ function SearchResultItem({
 }
 
 export function GlobalSearch() {
-  const { isOpen, closeSearch, setIsOpen } = useCommandK();
+  const { isOpen, closeSearch, setIsOpen } = useSearchHotkey();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const router = useRouter();
@@ -236,6 +236,7 @@ export function GlobalSearch() {
         placeholder="Search posts, comments, and links..."
         value={searchTerm}
         onValueChange={setSearchTerm}
+        autoFocus
       />
       <CommandList>
         <CommandEmpty>

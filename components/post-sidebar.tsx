@@ -16,7 +16,7 @@ export default function PostSidebar() {
         </CardHeader>
         <CardContent className="space-y-3">
           <Authenticated>
-            <Link href="/create">
+            <Link href="/create" prefetch={true}>
               <Button className="w-full bg-green-700 hover:bg-green-800">
                 <Plus className="w-4 h-4 mr-2" />
                 Create Post

@@ -38,14 +38,14 @@ export const recalcMemberStats = internalMutation({
         postIds.length > 0 ? 
           Promise.all(postIds.map(postId => 
             ctx.db.query("votes")
-              .withIndex("by_postId", (q) => q.eq("postId", postId))
+              .withIndex("by_target_and_type", (q) => q.eq("targetId", postId.toString()).eq("targetType", "post"))
               .collect()
           )).then(results => results.flat()) : [],
         // Get votes on member's comments  
         commentIds.length > 0 ?
           Promise.all(commentIds.map(commentId =>
             ctx.db.query("votes")
-              .withIndex("by_commentId", (q) => q.eq("commentId", commentId))
+              .withIndex("by_target_and_type", (q) => q.eq("targetId", commentId.toString()).eq("targetType", "comment"))
               .collect()
           )).then(results => results.flat()) : [],
       ]);
@@ -107,14 +107,14 @@ export const recalcSingleMemberStats = internalMutation({
       postIds.length > 0 ? 
         Promise.all(postIds.map(postId => 
           ctx.db.query("votes")
-            .withIndex("by_postId", (q) => q.eq("postId", postId))
+            .withIndex("by_target_and_type", (q) => q.eq("targetId", postId.toString()).eq("targetType", "post"))
             .collect()
         )).then(results => results.flat()) : [],
       // Get votes on member's comments  
       commentIds.length > 0 ?
         Promise.all(commentIds.map(commentId =>
           ctx.db.query("votes")
-            .withIndex("by_commentId", (q) => q.eq("commentId", commentId))
+            .withIndex("by_target_and_type", (q) => q.eq("targetId", commentId.toString()).eq("targetType", "comment"))
             .collect()
         )).then(results => results.flat()) : [],
     ]);

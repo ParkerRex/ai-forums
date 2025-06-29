@@ -8,22 +8,22 @@
 
 Phase 1 – Simplify & Re-bind Global Search
 -----------------------------------------
-☐ Update `hooks/use-command-k.ts` → rename to `use-search-hotkey.ts` and listen for `/` *and* ⌘K (configurable)
-☐ Remove legacy per-page search triggers; ensure single provider controls dialog
-☐ Add focus trap for immediate typing on open
+☑ Update `hooks/use-command-k.ts` → rename to `use-search-hotkey.ts` and listen for `/` *and* ⌘K (configurable)
+☑ Remove legacy per-page search triggers; ensure single provider controls dialog
+☑ Add focus trap for immediate typing on open
 ☐ Unit tests: keydown `/` opens dialog; Escape closes; typing funnels to input
 
 Phase 2 – Add Sidebar & PostHeader Skeletons
 -------------------------------------------
-☐ Create `components/post-header-skeleton.tsx` (shadcn card shimmer)
-☐ Create `components/post-sidebar-skeleton.tsx`
-☐ Render skeletons while related queries are `undefined`
+☑ Create `components/post-header-skeleton.tsx` (shadcn card shimmer)
+☑ Create `components/post-sidebar-skeleton.tsx`
+☑ Render skeletons while related queries are `undefined`
 ☐ Unit tests: skeleton visible during loading, hidden once data arrives
 
 Phase 3 – Link Prefetching
 --------------------------
-☐ Wrap all `<Link>` in `PostCard`, `PostHeader`, `PostSidebar`, `MemberCard` with `prefetch={true}` (Next 15)
-☐ Add `useIntersectionPrefetch.ts` hook for non-visible links (e.g. infinite lists)
+☑ Wrap all `<Link>` in `PostCard`, `PostHeader`, `PostSidebar`, `MemberCard` with `prefetch={true}` (Next 15)
+☑ Add `useIntersectionPrefetch.ts` hook for non-visible links (e.g. infinite lists)
 ☐ Integrate hook in `PostList` to prefetch next page slugs
 ☐ Unit tests: mock router.prefetch called on intersection, debounce verified
 

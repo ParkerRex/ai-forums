@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePathname } from "next/navigation";
+import PostHeaderSkeleton from "@/components/post-header-skeleton";
 
 interface PostHeaderProps {
   selectedCategoryId?: Id<"categories">;
@@ -21,13 +22,18 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
   // Check if we're on a category page
   const isOnCategoryPage = pathname.startsWith('/') && pathname !== '/' && !pathname.startsWith('/members') && !pathname.startsWith('/create') && !pathname.startsWith('/post');
 
+  // Show skeleton while categories are loading
+  if (categories === undefined) {
+    return <PostHeaderSkeleton />;
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-6">
         <div className="flex space-x-6 overflow-x-auto pb-2">
           {/* All Posts Tab */}
           {isOnCategoryPage ? (
-            <Link href="/" className="font-medium pb-1 whitespace-nowrap transition-colors border-b-2 text-gray-600 hover:text-green-700 border-transparent hover:border-gray-300">
+            <Link href="/" className="font-medium pb-1 whitespace-nowrap transition-colors border-b-2 text-gray-600 hover:text-green-700 border-transparent hover:border-gray-300" prefetch={true}>
               all posts
             </Link>
           ) : (
@@ -65,6 +71,7 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
                       ? "text-primary border-primary"
                       : "text-muted-foreground hover:text-primary border-transparent hover:border-muted-foreground"
                   }`}
+                  prefetch={true}
                 >
                   {category.icon} /{category.name}
                 </Link>
