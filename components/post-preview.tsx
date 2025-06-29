@@ -21,6 +21,7 @@ import {
 } from "@/lib/post-preview-utils";
 import { MessageSquare, Eye, ChevronUp, Play, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { RenderTipTapContent } from "@/lib/render-post-content";
 
 interface PostPreviewProps {
   post: PostData;

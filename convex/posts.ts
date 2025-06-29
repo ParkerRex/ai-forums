@@ -3,6 +3,60 @@ import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 
+// Helper function to validate URLs in content
+function validateContentUrls(content: string): void {
+  // Match URLs and markdown links
+  const urlRegex = /https?:\/\/[^\s)]+/g;
+  const markdownRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
+  
+  const urls = new Set<string>();
+  
+  // Extract bare URLs
+  let match;
+  while ((match = urlRegex.exec(content)) !== null) {
+    urls.add(match[0]);
+  }
+  
+  // Extract URLs from markdown links
+  while ((match = markdownRegex.exec(content)) !== null) {
+    urls.add(match[2]);
+  }
+  
+  // Validate each URL
+  for (const url of urls) {
+    try {
+      const parsedUrl = new URL(url);
+      
+      // Only allow http and https
+      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+        throw new Error(`Invalid protocol in URL: ${url}`);
+      }
+      
+      // Block localhost and private IPs for security
+      const hostname = parsedUrl.hostname.toLowerCase();
+      if (
+        hostname === 'localhost' ||
+        hostname.startsWith('127.') ||
+        hostname.startsWith('192.168.') ||
+        hostname.startsWith('10.') ||
+        hostname.match(/^172\.(1[6-9]|2\d|3[01])\./)
+      ) {
+        throw new Error(`Private/localhost URLs not allowed: ${url}`);
+      }
+      
+      // Block javascript: and data: schemes
+      if (url.toLowerCase().startsWith('javascript:') || url.toLowerCase().startsWith('data:')) {
+        throw new Error(`Dangerous URL scheme not allowed: ${url}`);
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message.includes('Invalid URL')) {
+        throw new Error(`Invalid URL format: ${url}`);
+      }
+      throw error;
+    }
+  }
+}
+
 // Get all posts with pagination and filtering
 export const getPosts = query({
   args: {
@@ -192,6 +246,9 @@ export const createPost = mutation({
     if (!category || category.status !== "active") {
       throw new Error("Invalid category");
     }
+
+    // Validate URLs in content for security
+    validateContentUrls(args.content);
 
     // Validate type-specific requirements
     const postType = args.type || "text";

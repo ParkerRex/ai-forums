@@ -12,6 +12,8 @@ import { SignInButton } from "@clerk/nextjs";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronDown, ChevronRight, MessageSquare } from "lucide-react";
+import Link from "next/link";
+import { memberProfileUrl } from "@/lib/utils";
 
 interface CommentSectionProps {
   postId: Id<"posts">;
@@ -28,6 +30,7 @@ type CommentWithReplies = {
     lastName: string;
     email: string;
     username: string;
+    slug: string;
   } | null;
   depth: number;
   replies: CommentWithReplies[];
@@ -70,9 +73,19 @@ function CommentItem({
           </Avatar>
           <div className="flex-1 space-y-2">
             <div className="flex items-center space-x-2">
-              <span className="font-medium text-foreground">
-                {comment.author?.firstName || 'Unknown User'} {comment.author?.lastName || ''}
-              </span>
+              {comment.author ? (
+                <Link 
+                  href={memberProfileUrl({ slug: comment.author.slug, _id: comment.author._id })}
+                  className="font-medium text-foreground hover:text-primary transition-colors"
+                  data-testid="author-link"
+                >
+                  {comment.author.firstName} {comment.author.lastName}
+                </Link>
+              ) : (
+                <span className="font-medium text-foreground">
+                  Unknown User
+                </span>
+              )}
               <span className="text-sm text-muted-foreground">
                 {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
               </span>

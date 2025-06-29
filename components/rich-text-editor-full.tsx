@@ -2,21 +2,22 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Link from '@tiptap/extension-link';
 import { Markdown } from 'tiptap-markdown';
+import { LinkBadge } from '@/extensions/link-badge';
+import { useAction } from 'convex/react';
+import { api } from '@/convex/_generated/api';
 import { Button } from '@/components/ui/button';
 import {
   Bold,
   Italic,
   List,
   ListOrdered,
-  Link as LinkIcon,
   Quote,
   Code,
   Undo,
   Redo
 } from 'lucide-react';
-import { useCallback } from 'react';
+
 
 interface FullRichTextEditorProps {
   content?: string;
@@ -31,6 +32,7 @@ export function FullRichTextEditor({
   placeholder = 'Start writing your post...',
   className = ''
 }: FullRichTextEditorProps) {
+  const fetchLinkPreview = useAction(api.linkPreviews.fetchLinkPreview);
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -38,10 +40,17 @@ export function FullRichTextEditor({
           levels: [1, 2, 3],
         },
       }),
-      Link.configure({
-        openOnClick: false,
+      LinkBadge.configure({
+        openOnClick: true,
         HTMLAttributes: {
-          class: 'text-green-700 underline hover:text-green-800',
+          class: 'link-badge-mark',
+        },
+        fetchPreview: async (url: string) => {
+          try {
+            await fetchLinkPreview({ url });
+          } catch (error) {
+            console.warn('Failed to fetch link preview:', error);
+          }
         },
       }),
       Markdown.configure({
@@ -70,21 +79,7 @@ export function FullRichTextEditor({
     },
   });
 
-  const setLink = useCallback(() => {
-    if (!editor) return;
 
-    const previousUrl = editor.getAttributes('link').href;
-    const url = window.prompt('URL', previousUrl);
-
-    if (url === null) return;
-
-    if (url === '') {
-      editor.chain().focus().extendMarkRange('link').unsetLink().run();
-      return;
-    }
-
-    editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
-  }, [editor]);
 
   if (!editor) {
     return (
@@ -197,15 +192,7 @@ export function FullRichTextEditor({
           >
             <Quote className="h-4 w-4" />
           </Button>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={setLink}
-            className={`h-8 w-8 p-0 ${editor.isActive('link') ? 'bg-green-100 text-green-700' : ''}`}
-          >
-            <LinkIcon className="h-4 w-4" />
-          </Button>
+
         </div>
       </div>
 
@@ -221,6 +208,35 @@ export function FullRichTextEditor({
           </div>
         )}
       </div>
+
+      {/* Styles for LinkBadge marks */}
+      <style jsx>{`
+        :global(.link-badge-mark) {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.375rem;
+          padding: 0.25rem 0.5rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          background-color: hsl(var(--muted) / 0.5);
+          border: 1px solid hsl(var(--border) / 0.5);
+          border-radius: calc(var(--radius) - 2px);
+          color: hsl(var(--foreground));
+          text-decoration: none;
+          transition: all 0.2s ease;
+        }
+        
+        :global(.link-badge-mark:hover) {
+          background-color: hsl(var(--muted) / 0.8);
+          border-color: hsl(var(--border));
+        }
+        
+        :global(.link-badge-mark::before) {
+          content: "🔗";
+          font-size: 0.75rem;
+          opacity: 0.7;
+        }
+      `}</style>
     </div>
   );
 }

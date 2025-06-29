@@ -17,6 +17,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Search, FileText, MessageSquare, ExternalLink, Lock } from "lucide-react";
+import Link from "next/link";
+import { memberProfileUrl } from "@/lib/utils";
+import { Id } from "@/convex/_generated/dataModel";
 
 interface SearchResult {
   _id: string;
@@ -34,6 +37,7 @@ interface SearchResult {
     firstName: string;
     lastName: string;
     username: string;
+    slug: string;
   };
 }
 
@@ -129,9 +133,19 @@ function SearchResultItem({
                 </AvatarFallback>
               </Avatar>
             )}
-            <span className="text-sm font-medium">
-              {result.author?.username}
-            </span>
+            {result.author ? (
+              <Link 
+                href={memberProfileUrl({ slug: result.author.slug, _id: result.author._id as Id<"members"> })}
+                className="text-sm font-medium hover:text-primary transition-colors"
+                data-testid="author-link"
+              >
+                {result.author.username}
+              </Link>
+            ) : (
+              <span className="text-sm font-medium">
+                Unknown
+              </span>
+            )}
           </div>
           <div className="text-sm">
             {highlightMatch(preview || "", searchTerm)}

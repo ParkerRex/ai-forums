@@ -2,6 +2,7 @@ import { mutation, query, action } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { api } from "./_generated/api";
+import { generateMemberSlug } from "../lib/slug-utils";
 
 /**
  * Import a single post from Skool migration data
@@ -38,6 +39,21 @@ export const importSkoolPost = mutation({
 
     if (!member) {
       // Create the member if they don't exist
+      // Generate unique slug for the member
+      const fullName = `${args.authorFirstName} ${args.authorLastName}`;
+      const baseSlug = generateMemberSlug(fullName);
+      
+      // Ensure uniqueness by checking existing slugs
+      let uniqueSlug = baseSlug;
+      let counter = 2;
+      const existingSlugs = await ctx.db.query("members").collect();
+      const usedSlugs = new Set(existingSlugs.map(m => m.slug));
+      
+      while (usedSlugs.has(uniqueSlug)) {
+        uniqueSlug = `${baseSlug}-${counter}`;
+        counter++;
+      }
+      
       const memberId = await ctx.db.insert("members", {
         email: args.authorEmail,
         firstName: args.authorFirstName,
@@ -47,6 +63,7 @@ export const importSkoolPost = mutation({
         status: "active",
         updatedAt: args.createdAt,
         lastOnline: args.createdAt,
+        slug: uniqueSlug,
       });
 
       member = await ctx.db.get(memberId);

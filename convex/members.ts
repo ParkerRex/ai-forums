@@ -133,7 +133,7 @@ function transformMemberForUI(member: Doc<"members">) {
     // Relative time for "Last online • X ago" chip
     lastOnlineRelative: getTimeAgo(member.lastOnline),
     // URL slug
-    slug: member.slug || "",
+    slug: member.slug,
   };
 }
 
@@ -318,7 +318,7 @@ export const getMemberPosts = query({
             lastName: author.lastName,
             email: author.email,
             username: author.email, // Use email as username for now
-            slug: author.slug || "",
+            slug: author.slug,
           } : null,
           category: category ? {
             _id: category._id,

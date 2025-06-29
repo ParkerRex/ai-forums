@@ -7,6 +7,8 @@ import { Id } from "@/convex/_generated/dataModel"
 import { useRef, useState } from "react"
 import { getMediaPlaceholder } from "@/lib/post-preview-utils"
 import { cn } from "@/lib/utils"
+import { RenderTipTapContent } from "@/lib/render-post-content"
+import { memberProfileUrl } from "@/lib/utils"
 
 interface Post {
   _id: Id<"posts">
@@ -22,6 +24,13 @@ interface Post {
   linkTitle?: string
   linkDescription?: string
   linkImage?: string
+  linkPreviews?: Record<string, {
+    title?: string;
+    description?: string;
+    image?: string;
+    siteName?: string;
+    url: string;
+  }>
   author?: {
     _id: Id<"members">
     firstName: string
@@ -94,8 +103,9 @@ export default function PostDetail({ post }: PostDetailProps) {
               <span className="mx-2">•</span>
               <span>posted by</span>
               <Link 
-                href={post.author?.slug ? `/members/${post.author.slug}` : (post.author ? `/members/${post.author._id}` : "#")}
+                href={post.author ? memberProfileUrl({ slug: post.author.slug!, _id: post.author._id }) : "#"}
                 className="ml-1 text-primary hover:underline"
+                data-testid="author-link"
               >
                 /u/{post.author?.username || "unknown"}
               </Link>
@@ -180,13 +190,9 @@ export default function PostDetail({ post }: PostDetailProps) {
               </Card>
             )}
 
-            {/* Text Content */}
-            <div className="prose prose-sm max-w-none text-foreground mb-6">
-              {post.content.split("\n").map((paragraph, index) => (
-                <p key={index} className={cn("mb-4 leading-relaxed", paragraph.trim() === "" && "h-4")}>
-                  {paragraph}
-                </p>
-              ))}
+            {/* Rich Text Content */}
+            <div className="mb-6">
+              <RenderTipTapContent htmlContent={post.content} />
             </div>
 
             <div className="flex items-center space-x-4 text-sm text-muted-foreground border-t border-border pt-4">

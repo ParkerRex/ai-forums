@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Github, Twitter, Youtube, MapPin, CalendarDays, Globe, Linkedin, FileText, MessageCircle, ThumbsUp } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
+
 interface Member {
   id: string
   firstName: string
@@ -71,8 +72,8 @@ export default function MemberCard({ member }: MemberCardProps) {
     netVoteCount: member.netVoteCount ?? 0,
   };
 
-  // Use slug for the link, fallback to id if slug not available
-  const memberUrl = member.slug ? `/members/${member.slug}` : `/members/${member.id}`;
+  // Generate member profile URL using slug
+  const memberUrl = memberProfileUrl({ slug: member.slug!, _id: member.id as Id<"members"> });
 
   return (
     <Link href={memberUrl} className="block group" prefetch={true}>
