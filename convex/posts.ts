@@ -596,7 +596,22 @@ export const editPost = mutation({
     }
 
     await ctx.db.patch(args.postId, updates);
-    return args.postId;
+    
+    // Return the updated post data including the new slug
+    const updatedPost = await ctx.db.get(args.postId);
+    if (!updatedPost) {
+      throw new Error("Failed to retrieve updated post");
+    }
+    
+    // Get the category for the URL
+    const category = await ctx.db.get(post.categoryId);
+    
+    return {
+      _id: updatedPost._id,
+      slug: updatedPost.slug,
+      title: updatedPost.title,
+      categoryName: category?.name || "general"
+    };
   },
 });
 

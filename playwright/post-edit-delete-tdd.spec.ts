@@ -45,6 +45,8 @@ test.describe('Post Edit and Delete Flow - Expected Behavior', () => {
   });
 
   test('editing a post should update it successfully', async ({ page }) => {
+    const originalUrl = page.url();
+    
     // Open edit modal
     await page.locator('[data-testid="post-more-menu"]').click();
     await page.getByRole('menuitem', { name: 'Edit Post' }).click();
@@ -56,8 +58,8 @@ test.describe('Post Edit and Delete Flow - Expected Behavior', () => {
     const titleInput = page.locator('[data-testid="edit-post-title"]');
     const originalTitle = await titleInput.inputValue();
     
-    // Update the title
-    const newTitle = `${originalTitle} - Edited at ${new Date().toLocaleTimeString()}`;
+    // Update the title with timestamp to ensure slug changes
+    const newTitle = `${originalTitle} - Edited at ${Date.now()}`;
     await titleInput.clear();
     await titleInput.fill(newTitle);
     
@@ -70,10 +72,16 @@ test.describe('Post Edit and Delete Flow - Expected Behavior', () => {
     // Save the changes
     await page.locator('[data-testid="save-post-button"]').click();
     
-    // Modal should close
+    // Modal should close and page should redirect
     await expect(page.locator('[data-testid="post-edit-modal"]')).not.toBeVisible({ timeout: 5000 });
     
-    // The page should refresh or update
+    // Wait for redirect to new URL (slug changed)
+    await page.waitForURL(url => url !== originalUrl, { timeout: 10000 });
+    
+    // Verify we're on a new URL
+    const newUrl = page.url();
+    expect(newUrl).not.toBe(originalUrl);
+    
     // The new title should be visible
     await expect(page.locator('h1')).toContainText(newTitle);
     
@@ -82,6 +90,10 @@ test.describe('Post Edit and Delete Flow - Expected Behavior', () => {
     
     // There should be an "edited" indicator
     await expect(page.getByText(/edited/i)).toBeVisible();
+    
+    // Verify old URL shows 404
+    await page.goto(originalUrl);
+    await expect(page.getByText(/404|Not Found/i)).toBeVisible({ timeout: 5000 });
   });
 
   test('clicking Delete Post should open confirmation dialog', async ({ page }) => {
@@ -170,8 +182,9 @@ test.describe('Post Edit and Delete Flow - Expected Behavior', () => {
   });
 
   test('canceling edit should not modify the post', async ({ page }) => {
-    // Get original title
+    // Get original title and URL
     const originalTitle = await page.locator('h1').textContent();
+    const originalUrl = page.url();
     
     // Open edit modal
     await page.locator('[data-testid="post-more-menu"]').click();
@@ -190,6 +203,9 @@ test.describe('Post Edit and Delete Flow - Expected Behavior', () => {
     
     // Modal should close
     await expect(page.locator('[data-testid="post-edit-modal"]')).not.toBeVisible();
+    
+    // Should still be on the same URL (no redirect)
+    expect(page.url()).toBe(originalUrl);
     
     // Title should remain unchanged
     await expect(page.locator('h1')).toHaveText(originalTitle || '');

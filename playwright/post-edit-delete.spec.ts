@@ -71,6 +71,7 @@ test.describe('Post Edit and Delete Flow', () => {
   test('should allow member to edit their own post', async ({ page }) => {
     // Create a test post
     const postTitle = await createTestPost(page);
+    const originalUrl = page.url();
     
     // Click on the more options menu
     await page.waitForSelector('[data-testid="post-more-menu"]', { timeout: 10000 });
@@ -83,8 +84,8 @@ test.describe('Post Edit and Delete Flow', () => {
     // Wait for edit modal to appear
     await page.waitForSelector('[data-testid="post-edit-modal"]', { timeout: 5000 });
     
-    // Update the title
-    const updatedTitle = `${postTitle} - Edited`;
+    // Update the title with a timestamp to ensure slug changes
+    const updatedTitle = `${postTitle} - Edited ${Date.now()}`;
     await page.fill('[data-testid="edit-post-title"]', updatedTitle);
     
     // Update the content - find the textarea or contenteditable within the content area
@@ -95,8 +96,12 @@ test.describe('Post Edit and Delete Flow', () => {
     // Save the changes
     await page.click('[data-testid="save-post-button"]');
     
-    // Wait for modal to close and page to refresh
-    await page.waitForSelector('[data-testid="post-edit-modal"]', { state: 'hidden', timeout: 5000 });
+    // Wait for redirect to new URL (slug changed)
+    await page.waitForURL(url => url !== originalUrl, { timeout: 10000 });
+    
+    // Verify we're on a new URL
+    const newUrl = page.url();
+    expect(newUrl).not.toBe(originalUrl);
     
     // Verify the post was updated
     await expect(page.locator('h1')).toContainText(updatedTitle);
@@ -105,6 +110,10 @@ test.describe('Post Edit and Delete Flow', () => {
     // Check for edited indicator (may be in the post metadata)
     const editedIndicator = page.locator('text=edited').first();
     await expect(editedIndicator).toBeVisible({ timeout: 5000 });
+    
+    // Verify old URL shows 404
+    await page.goto(originalUrl);
+    await expect(page.getByText(/404|Not Found/i)).toBeVisible({ timeout: 5000 });
   });
 
   test('should allow member to delete their own post', async ({ page }) => {

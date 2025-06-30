@@ -45,6 +45,7 @@ test.describe('Post Edit and Delete Flow - Existing Posts', () => {
       console.log('Found own post - testing edit/delete functionality');
       
       // Test Edit functionality
+      const originalUrl = page.url();
       await editOption.click();
       
       // Wait for edit modal
@@ -54,18 +55,22 @@ test.describe('Post Edit and Delete Flow - Existing Posts', () => {
       const titleInput = page.locator('[data-testid="edit-post-title"]');
       const currentTitle = await titleInput.inputValue();
       
-      // Update title
-      const updatedTitle = currentTitle + ' (Edited)';
+      // Update title with timestamp to ensure slug changes
+      const updatedTitle = currentTitle + ` - Edited ${Date.now()}`;
       await titleInput.fill(updatedTitle);
       
       // Save changes
       await page.click('[data-testid="save-post-button"]');
       
-      // Wait for modal to close
-      await expect(page.locator('[data-testid="post-edit-modal"]')).not.toBeVisible();
+      // Wait for redirect to new URL
+      await page.waitForURL(url => url !== originalUrl, { timeout: 10000 });
+      
+      // Verify we're on a new URL
+      const newUrl = page.url();
+      expect(newUrl).not.toBe(originalUrl);
       
       // Verify title was updated
-      await expect(page.locator('h1')).toContainText('(Edited)');
+      await expect(page.locator('h1')).toContainText('Edited');
     } else {
       console.log('Not own post - verifying no edit/delete options');
       

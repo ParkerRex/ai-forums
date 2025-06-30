@@ -18,11 +18,13 @@ import { PostFormData, validatePostForm } from "@/lib/form-validation";
 import { uploadMedia } from "@/lib/upload-media";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface Post {
   _id: Id<"posts">;
   title: string;
   content: string;
+  slug: string;
   categoryId: Id<"categories">;
   type?: "text" | "image" | "video" | "link";
   mediaUrl?: string;
@@ -31,6 +33,9 @@ interface Post {
   linkTitle?: string;
   linkDescription?: string;
   linkImage?: string;
+  category?: {
+    name: string;
+  };
 }
 
 interface PostEditModalProps {
@@ -42,6 +47,7 @@ interface PostEditModalProps {
 
 export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModalProps) {
   const convex = useConvex();
+  const router = useRouter();
 
   // Form state
   const [formData, setFormData] = useState<ExtendedPostFormData>({
@@ -142,7 +148,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
         }
       }
 
-      await editPost({
+      const result = await editPost({
         postId: post._id,
         title: formData.title.trim(),
         content: formData.content.trim(),
@@ -157,10 +163,18 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
 
       toast.success("Post updated successfully!");
 
-      if (onSuccess) {
-        onSuccess();
+      // Check if slug changed and redirect to new URL
+      if (result.slug !== post.slug) {
+        const categoryName = post.category?.name || result.categoryName || "general";
+        const newUrl = `/${categoryName}/${result.slug}`;
+        onClose();
+        router.push(newUrl);
+      } else {
+        if (onSuccess) {
+          onSuccess();
+        }
+        onClose();
       }
-      onClose();
     } catch (error) {
       console.error("Failed to update post:", error);
       const errorMessage = error instanceof Error
