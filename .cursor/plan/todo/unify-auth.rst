@@ -16,9 +16,9 @@
 ☑ write unit tests in ``convex/test/auth.test.ts``
 
 *Phase 2 – Wire-up*
-☐ create ``auth.ensureMember`` internal mutation (``convex/auth.ts``)
-☐ replace redundant auth code in server modules (posts, comments, etc.)
-☐ (opt) add ``useCurrentMember`` hook
+☑ create ``auth.ensureMember`` internal mutation (``convex/auth.ts``)
+☑ replace redundant auth code in server modules (posts, comments, etc.)
+☑ (opt) add ``useCurrentMember`` hook
 
 *Phase 3 – Schema Evolution*
 ☐ add ``memberId`` to ``posts`` + ``comments`` with indexes

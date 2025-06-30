@@ -2,6 +2,7 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { getAuthenticatedMember } from "./auth";
 
 export const globalSearch = query({
   args: { 
@@ -13,13 +14,13 @@ export const globalSearch = query({
       return [];
     }
 
-    const identity = await ctx.auth.getUserIdentity();
-    const viewer = identity
-      ? await ctx.db
-          .query("members")
-          .filter(q => q.eq(q.field("email"), identity.email))
-          .first()
-      : undefined;
+    // Optional auth - get viewer if authenticated
+    let viewer;
+    try {
+      viewer = await getAuthenticatedMember(ctx);
+    } catch {
+      viewer = undefined;
+    }
 
     const [posts, comments] = await Promise.all([
       ctx.runQuery(api.posts.searchPosts, { searchTerm, limit, includeContent: true }),

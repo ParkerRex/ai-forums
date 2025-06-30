@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { getAuthenticatedMember } from "./auth";
 
 // Get comments for a post with nested structure
 export const getCommentsByPost = query({
@@ -95,20 +96,8 @@ export const createComment = mutation({
     parentCommentId: v.optional(v.id("comments")),
   },
   handler: async (ctx, { content, postId, parentCommentId }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     // Verify post exists and is active
     const post = await ctx.db.get(postId);
@@ -209,24 +198,12 @@ export const updateComment = mutation({
     editReason: v.optional(v.string()),
   },
   handler: async (ctx, { commentId, content, editReason }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     const comment = await ctx.db.get(commentId);
     if (!comment) {
       throw new Error("Comment not found");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
     }
 
     // Check if user is the author
@@ -259,24 +236,12 @@ export const updateComment = mutation({
 export const deleteComment = mutation({
   args: { commentId: v.id("comments") },
   handler: async (ctx, { commentId }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     const comment = await ctx.db.get(commentId);
     if (!comment) {
       throw new Error("Comment not found");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
     }
 
     // Check if user is the author

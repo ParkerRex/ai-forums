@@ -4,6 +4,7 @@ import { paginationOptsValidator } from "convex/server";
 import { Doc } from "./_generated/dataModel";
 import { generateMemberSlug } from "../lib/slug-utils";
 import type { MutationCtx } from "./_generated/server";
+import { getAuthenticatedMember } from "./auth";
 
 // Shared validator for transformed member data
 const MemberUIValidator = v.object({
@@ -588,17 +589,11 @@ export const getCurrentMember = query({
   args: {},
   returns: v.union(MemberUIValidator, v.null()),
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .unique();
-
-    if (!member) {
+    // Optional auth - return null if not authenticated
+    let member;
+    try {
+      member = await getAuthenticatedMember(ctx);
+    } catch {
       return null;
     }
 
@@ -622,11 +617,8 @@ export const updateMemberProfile = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    // Check authentication
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("You must be signed in to update your profile");
-    }
+    // Get authenticated member using unified helper
+    const authenticatedMember = await getAuthenticatedMember(ctx);
 
     // Get the member being updated
     const member = await ctx.db.get(args.id);
@@ -635,7 +627,7 @@ export const updateMemberProfile = mutation({
     }
 
     // Verify the authenticated user can edit this profile
-    if (member.email !== identity.email) {
+    if (member._id !== authenticatedMember._id) {
       throw new ConvexError("You can only edit your own profile");
     }
 

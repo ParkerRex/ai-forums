@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { getAuthenticatedMember } from "./auth";
 
 // Get all active categories
 export const getCategories = query({
@@ -87,20 +88,8 @@ export const getCategoryStats = query({
 export const initializeCategories = mutation({
   args: {},
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
-
-    // Find the authenticated user in members table
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     const defaultCategories = [
       {

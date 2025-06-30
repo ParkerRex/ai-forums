@@ -2,6 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
+import { getAuthenticatedMember } from "./auth";
 
 // Helper function to validate URLs in content
 function validateContentUrls(content: string): void {
@@ -226,20 +227,8 @@ export const createPost = mutation({
     linkImage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     // Verify category exists and is active
     const category = await ctx.db.get(args.categoryId);
@@ -328,24 +317,12 @@ export const updatePost = mutation({
     linkImage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     const post = await ctx.db.get(args.postId);
     if (!post) {
       throw new Error("Post not found");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
     }
 
     // Check if user is the author
@@ -453,24 +430,12 @@ export const editPost = mutation({
     linkImage: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     const post = await ctx.db.get(args.postId);
     if (!post) {
       throw new Error("Post not found");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
     }
 
     // Check if user is the author
@@ -593,24 +558,12 @@ export const editPost = mutation({
 export const deletePost = mutation({
   args: { postId: v.id("posts") },
   handler: async (ctx, { postId }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     const post = await ctx.db.get(postId);
     if (!post) {
       throw new Error("Post not found");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
     }
 
     // Check if user is the author
@@ -645,15 +598,15 @@ export const trackPostView = mutation({
     userAgent: v.optional(v.string()),
   },
   handler: async (ctx, { postId, ipAddress, userAgent }) => {
-    const identity = await ctx.auth.getUserIdentity();
     let userId: Id<"members"> | undefined;
 
-    if (identity) {
-      const member = await ctx.db
-        .query("members")
-        .filter((q) => q.eq(q.field("email"), identity.email))
-        .first();
-      userId = member?._id;
+    // Optional auth - get member if authenticated
+    try {
+      const member = await getAuthenticatedMember(ctx);
+      userId = member._id;
+    } catch {
+      // Not authenticated - that's fine for view tracking
+      userId = undefined;
     }
 
     // Check if this user/IP has already viewed this post recently (within 24 hours)
