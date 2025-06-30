@@ -21,8 +21,8 @@
 ☑ (opt) add ``useCurrentMember`` hook
 
 *Phase 3 – Schema Evolution*
-☐ add ``memberId`` to ``posts`` + ``comments`` with indexes
-☐ migration script ``convex/migrations/add_member_id_fields.ts``
+☑ add ``memberId`` to ``posts`` + ``comments`` with indexes
+☑ migration script ``convex/migrations/add_member_id_fields.ts``
 
 *Phase 4 – Backend Refactor*
 ☐ update Convex modules to use ``memberId`` + helper

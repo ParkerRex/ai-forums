@@ -24,6 +24,7 @@ import type * as linkPreviews from "../linkPreviews.js";
 import type * as members from "../members.js";
 import type * as migration from "../migration.js";
 import type * as migrations_add_member_fields from "../migrations/add_member_fields.js";
+import type * as migrations_add_member_id_fields from "../migrations/add_member_id_fields.js";
 import type * as migrations_add_member_slug from "../migrations/add_member_slug.js";
 import type * as migrations_add_post_media_fields from "../migrations/add_post_media_fields.js";
 import type * as migrations_deduplicateComments from "../migrations/deduplicateComments.js";
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   members: typeof members;
   migration: typeof migration;
   "migrations/add_member_fields": typeof migrations_add_member_fields;
+  "migrations/add_member_id_fields": typeof migrations_add_member_id_fields;
   "migrations/add_member_slug": typeof migrations_add_member_slug;
   "migrations/add_post_media_fields": typeof migrations_add_post_media_fields;
   "migrations/deduplicateComments": typeof migrations_deduplicateComments;
