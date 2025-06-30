@@ -636,7 +636,7 @@ export const editPost = mutation({
       _id: updatedPost._id,
       slug: updatedPost.slug,
       title: updatedPost.title,
-      categoryName: category?.name || "general"
+      categoryName: category?.name
     };
   },
 });

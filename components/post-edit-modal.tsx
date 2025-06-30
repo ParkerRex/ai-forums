@@ -169,12 +169,26 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
         onSuccess();
       }
 
-      // Check if slug changed and redirect to new URL
-      if (result.slug !== post.slug) {
-        const categoryName = post.category?.name || result.categoryName || "general";
-        const newUrl = `/${categoryName}/${result.slug}`;
-        onClose();
-        router.push(newUrl);
+      // Determine if either the slug or category changed
+      const slugChanged = result.slug !== post.slug;
+      const updatedCategoryName = result.categoryName;
+      const originalCategoryName = post.category?.name;
+      const categoryChanged =
+        updatedCategoryName !== undefined && updatedCategoryName !== originalCategoryName;
+
+      if (slugChanged || categoryChanged) {
+        // Prefer the updated category name when constructing the new URL
+        const categoryName = updatedCategoryName || originalCategoryName;
+
+        if (categoryName) {
+          const newUrl = `/${categoryName}/${result.slug}`;
+          onClose();
+          router.push(newUrl);
+        } else {
+          // If for some reason no category is available, just close the modal and refresh
+          onClose();
+          router.refresh();
+        }
       } else {
         onClose();
       }
