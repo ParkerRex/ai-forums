@@ -1,13 +1,13 @@
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { scanFile, BANNED_PATTERNS } from '../audit-theme';
 import * as fs from 'fs';
 
 // Mock fs for testing
-jest.mock('fs');
-const mockFs = fs as jest.Mocked<typeof fs>;
+vi.mock('fs');
 
 describe('audit-theme', () => {
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('BANNED_PATTERNS', () => {
@@ -58,7 +58,7 @@ export function Component() {
   );
 }
 `;
-      mockFs.readFileSync.mockReturnValue(cleanContent);
+      vi.mocked(fs.readFileSync).mockReturnValue(cleanContent);
 
       const violations = scanFile('test.tsx');
       expect(violations).toHaveLength(0);
@@ -76,7 +76,7 @@ export function Component() {
   );
 }
 `;
-      mockFs.readFileSync.mockReturnValue(violatingContent);
+      vi.mocked(fs.readFileSync).mockReturnValue(violatingContent);
 
       const violations = scanFile('test.tsx');
       expect(violations.length).toBeGreaterThan(0);
@@ -93,7 +93,7 @@ export function Component() {
       const violatingContent = `line 1
 <div className="bg-white">
 line 3`;
-      mockFs.readFileSync.mockReturnValue(violatingContent);
+      vi.mocked(fs.readFileSync).mockReturnValue(violatingContent);
 
       const violations = scanFile('test.tsx');
       expect(violations).toHaveLength(1);
@@ -103,11 +103,11 @@ line 3`;
     });
 
     it('should handle file read errors gracefully', () => {
-      mockFs.readFileSync.mockImplementation(() => {
+      vi.mocked(fs.readFileSync).mockImplementation(() => {
         throw new Error('File not found');
       });
 
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
       
       const violations = scanFile('nonexistent.tsx');
       expect(violations).toHaveLength(0);
@@ -118,7 +118,7 @@ line 3`;
 
     it('should detect multiple violations on same line', () => {
       const violatingContent = `<div className="bg-white text-gray-900 border-gray-200">content</div>`;
-      mockFs.readFileSync.mockReturnValue(violatingContent);
+      vi.mocked(fs.readFileSync).mockReturnValue(violatingContent);
 
       const violations = scanFile('test.tsx');
       expect(violations.length).toBe(3);
@@ -138,7 +138,7 @@ line 3`;
           </span>
         </div>
       `;
-      mockFs.readFileSync.mockReturnValue(content);
+      vi.mocked(fs.readFileSync).mockReturnValue(content);
 
       const violations = scanFile('test.tsx');
       expect(violations).toHaveLength(0);

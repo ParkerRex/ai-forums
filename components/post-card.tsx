@@ -16,14 +16,14 @@ import PostPreview from "@/components/post-preview";
 import { PostData } from "@/lib/post-preview-utils";
 
 // Interface to match Convex post data structure
-interface Post extends Omit<PostData, 'author' | 'category'> {
+interface Post extends Omit<PostData, 'member' | 'author' | 'category'> {
   _id: Id<"posts">;
   title: string;
   content: string;
   slug: string;
   createdAt: number;
   updatedAt: number;
-  authorId: Id<"members">;
+  memberId: Id<"members">;
   categoryId: Id<"categories">;
   status: "active" | "deleted" | "hidden" | "archived";
   upvotes: number;
@@ -35,7 +35,7 @@ interface Post extends Omit<PostData, 'author' | 'category'> {
   isLocked?: boolean;
   editedAt?: number;
   editReason?: string;
-  author: {
+  member: {
     _id: Id<"members">;
     firstName: string;
     lastName: string;
@@ -145,7 +145,7 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
             size={size}
             showStats={false}
             showCategory={true}
-            showAuthor={true}
+            showMember={true}
             className="border-0 shadow-none hover:shadow-none"
           />
         </div>

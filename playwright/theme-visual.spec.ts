@@ -128,23 +128,23 @@ test.describe('Dark Mode Theme Compliance', () => {
 });
 
 test.describe('Member Profile Linking', () => {
-  test('should navigate to member profile when clicking author links', async ({ page }) => {
+  test('should navigate to member profile when clicking member links', async ({ page }) => {
     // Navigate to the home page
     await page.goto('/');
     
     // Wait for posts to load
-    await page.waitForSelector('[data-testid="author-link"]', { timeout: 10000 });
+    await page.waitForSelector('[data-testid="member-link"]', { timeout: 10000 });
     
-    // Click on the first author link
-    const authorLink = page.locator('[data-testid="author-link"]').first();
-    await expect(authorLink).toBeVisible();
+    // Click on the first member link
+    const memberLink = page.locator('[data-testid="member-link"]').first();
+    await expect(memberLink).toBeVisible();
     
     // Get the href to verify it's a member profile URL
-    const href = await authorLink.getAttribute('href');
+    const href = await memberLink.getAttribute('href');
     expect(href).toMatch(/^\/members\/[a-z0-9-]+$/);
     
     // Click the link
-    await authorLink.click();
+    await memberLink.click();
     
     // Wait for navigation to complete
     await page.waitForURL(/\/members\/[a-z0-9-]+$/);

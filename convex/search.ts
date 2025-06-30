@@ -2,6 +2,7 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { getAuthenticatedMember } from "./auth";
 
 export const globalSearch = query({
   args: { 
@@ -13,13 +14,13 @@ export const globalSearch = query({
       return [];
     }
 
-    const identity = await ctx.auth.getUserIdentity();
-    const viewer = identity
-      ? await ctx.db
-          .query("members")
-          .filter(q => q.eq(q.field("email"), identity.email))
-          .first()
-      : undefined;
+    // Optional auth - get viewer if authenticated
+    let viewer;
+    try {
+      viewer = await getAuthenticatedMember(ctx);
+    } catch {
+      viewer = undefined;
+    }
 
     const [posts, comments] = await Promise.all([
       ctx.runQuery(api.posts.searchPosts, { searchTerm, limit, includeContent: true }),
@@ -29,19 +30,28 @@ export const globalSearch = query({
         .take(limit),
     ]);
 
-    // Enrich comments with author data
+    // Enrich comments with member data
     const enrichedComments = await Promise.all(
       comments.map(async (comment: any) => {
-        const author = await ctx.db.get(comment.authorId);
+        const member = await ctx.db.get(comment.memberId);
         return {
           ...comment,
-          author: author && 'firstName' in author ? {
-            _id: author._id,
-            firstName: author.firstName,
-            lastName: author.lastName,
-            email: author.email,
-            username: author.email.split('@')[0],
-            slug: author.slug,
+          member: member && 'firstName' in member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split('@')[0],
+            slug: member.slug,
+          } : null,
+          // Legacy field for backward compatibility - will be removed in Phase 6
+          author: member && 'firstName' in member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split('@')[0],
+            slug: member.slug,
           } : null,
         };
       })
@@ -125,8 +135,9 @@ export const globalSearch = query({
         _id: c._id, 
         type: "comment" as const, 
         content: restricted ? "Hidden content – join to view" : c.content, 
-        authorId: c.authorId,
-        author: c.author,
+        memberId: c.memberId,
+        member: c.member,
+        author: c.author, // Legacy field for backward compatibility
         postId: c.postId, 
         restricted,
         slug: parentPost?.slug,

@@ -1,6 +1,12 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { getAuthenticatedMember } from "./auth";
+
+// Helper function to check if a member is the author of a comment
+function isCommentAuthor(comment: { memberId: Id<"members"> }, memberId: Id<"members">): boolean {
+  return comment.memberId === memberId;
+}
 
 // Get comments for a post with nested structure
 export const getCommentsByPost = query({
@@ -16,19 +22,28 @@ export const getCommentsByPost = query({
       .order("asc")
       .take(limit);
 
-    // Enrich comments with author data
+    // Enrich comments with member data
     const enrichedComments = await Promise.all(
       comments.map(async (comment) => {
-        const author = await ctx.db.get(comment.authorId);
+        const member = await ctx.db.get(comment.memberId);
         return {
           ...comment,
-          author: author ? {
-            _id: author._id,
-            firstName: author.firstName,
-            lastName: author.lastName,
-            email: author.email,
-            username: author.email.split('@')[0],
-            slug: author.slug,
+          member: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split('@')[0],
+            slug: member.slug,
+          } : null,
+          // Legacy field for backward compatibility - will be removed in Phase 6
+          author: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split('@')[0],
+            slug: member.slug,
           } : null,
         };
       })
@@ -72,16 +87,25 @@ export const getCommentById = query({
       return null;
     }
 
-    const author = await ctx.db.get(comment.authorId);
+    const member = await ctx.db.get(comment.memberId);
     return {
       ...comment,
-      author: author ? {
-        _id: author._id,
-        firstName: author.firstName,
-        lastName: author.lastName,
-        email: author.email,
-        username: author.email.split('@')[0],
-        slug: author.slug,
+      member: member ? {
+        _id: member._id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        username: member.email.split('@')[0],
+        slug: member.slug,
+      } : null,
+      // Legacy field for backward compatibility - will be removed in Phase 6
+      author: member ? {
+        _id: member._id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        username: member.email.split('@')[0],
+        slug: member.slug,
       } : null,
     };
   },
@@ -95,20 +119,8 @@ export const createComment = mutation({
     parentCommentId: v.optional(v.id("comments")),
   },
   handler: async (ctx, { content, postId, parentCommentId }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     // Verify post exists and is active
     const post = await ctx.db.get(postId);
@@ -146,7 +158,7 @@ export const createComment = mutation({
       .withIndex("by_post_and_createdAt", (q) => q.eq("postId", postId))
       .filter((q) => 
         q.and(
-          q.eq(q.field("authorId"), member._id),
+          q.eq(q.field("memberId"), member._id),
           q.eq(q.field("status"), "active"),
           q.gte(q.field("createdAt"), oneMinuteAgo)
         )
@@ -169,7 +181,7 @@ export const createComment = mutation({
       content: trimmedContent,
       createdAt: now,
       updatedAt: now,
-      authorId: member._id,
+      memberId: member._id,
       postId,
       parentCommentId,
       status: "active",
@@ -209,28 +221,16 @@ export const updateComment = mutation({
     editReason: v.optional(v.string()),
   },
   handler: async (ctx, { commentId, content, editReason }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     const comment = await ctx.db.get(commentId);
     if (!comment) {
       throw new Error("Comment not found");
     }
 
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
-    }
-
     // Check if user is the author
-    if (comment.authorId !== member._id) {
+    if (!isCommentAuthor(comment, member._id)) {
       throw new Error("Only the author can edit this comment");
     }
 
@@ -259,28 +259,16 @@ export const updateComment = mutation({
 export const deleteComment = mutation({
   args: { commentId: v.id("comments") },
   handler: async (ctx, { commentId }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     const comment = await ctx.db.get(commentId);
     if (!comment) {
       throw new Error("Comment not found");
     }
 
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
-    }
-
     // Check if user is the author
-    if (comment.authorId !== member._id) {
+    if (!isCommentAuthor(comment, member._id)) {
       throw new Error("Only the author can delete this comment");
     }
 
@@ -314,16 +302,17 @@ export const deleteComment = mutation({
   },
 });
 
-// Get comments by author
-export const getCommentsByAuthor = query({
+// Get comments by member (new unified function)
+export const getCommentsByMember = query({
   args: {
-    authorId: v.id("members"),
+    memberId: v.id("members"),
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, { authorId, limit = 20 }) => {
+  handler: async (ctx, { memberId, limit = 20 }) => {
+    // Use new unified index
     const comments = await ctx.db
       .query("comments")
-      .withIndex("by_authorId", (q) => q.eq("authorId", authorId))
+      .withIndex("by_memberId", (q) => q.eq("memberId", memberId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .order("desc")
       .take(limit);
@@ -346,6 +335,7 @@ export const getCommentsByAuthor = query({
     return enrichedComments;
   },
 });
+
 
 // Get comment count for a post
 export const getCommentCount = query({

@@ -32,6 +32,14 @@ interface SearchResult {
   slug?: string;
   categoryName?: string;
   postId?: string;
+  member?: {
+    _id: string;
+    firstName: string;
+    lastName: string;
+    username: string;
+    slug: string;
+  };
+  // Legacy field for backward compatibility - will be removed in Phase 6
   author?: {
     _id: string;
     firstName: string;
@@ -126,20 +134,20 @@ function SearchResultItem({
       return (
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            {result.author && (
+            {(result.member || result.author) && (
               <Avatar className="w-5 h-5">
                 <AvatarFallback className="text-xs">
-                  {result.author.firstName[0]}{result.author.lastName[0]}
+                  {(result.member || result.author)!.firstName[0]}{(result.member || result.author)!.lastName[0]}
                 </AvatarFallback>
               </Avatar>
             )}
-            {result.author ? (
+            {(result.member || result.author) ? (
               <Link 
-                href={memberProfileUrl({ slug: result.author.slug, _id: result.author._id as Id<"members"> })}
+                href={memberProfileUrl({ slug: (result.member || result.author)!.slug, _id: (result.member || result.author)!._id as Id<"members"> })}
                 className="text-sm font-medium hover:text-primary transition-colors"
-                data-testid="author-link"
+                data-testid="member-link"
               >
-                {result.author.username}
+                {(result.member || result.author)!.username}
               </Link>
             ) : (
               <span className="text-sm font-medium">
@@ -211,10 +219,22 @@ function SearchResultItem({
 }
 
 export function GlobalSearch() {
-  const { isOpen, closeSearch, setIsOpen } = useSearchHotkey();
+  const { isOpen, closeSearch, setIsOpen, openSearch } = useSearchHotkey();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const router = useRouter();
+
+  // Listen for custom event to trigger search
+  useEffect(() => {
+    const handleTriggerSearch = () => {
+      openSearch();
+    };
+
+    window.addEventListener('trigger-global-search', handleTriggerSearch);
+    return () => {
+      window.removeEventListener('trigger-global-search', handleTriggerSearch);
+    };
+  }, [openSearch]);
 
   const results = useQuery(
     api.search.globalSearch,

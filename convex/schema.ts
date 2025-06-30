@@ -43,6 +43,7 @@ export default defineSchema({
     firstName: v.string(),
     lastName: v.string(),
     email: v.string(),
+    externalId: v.optional(v.string()), // Clerk user ID for new auth system
     status: v.union(v.literal("active"), v.literal("churned"), v.literal("free"), v.literal("duplicate")),
     joinedDate: v.number(),
     country: v.optional(v.string()),
@@ -71,6 +72,7 @@ export default defineSchema({
     .index("by_status_and_joinedDate", ["status", "joinedDate"])
     .index("by_skills", ["skills"])
     .index("by_slug", ["slug"])
+    .index("by_externalId", ["externalId"])
     .searchIndex("search_members", {
       searchField: "firstName",
       filterFields: ["status"]
@@ -101,7 +103,8 @@ export default defineSchema({
     slug: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
-    authorId: v.id("members"),
+    authorId: v.optional(v.id("members")), // Temporary for removal
+    memberId: v.id("members"),
     categoryId: v.id("categories"),
     status: PostStatusValidator,
     upvotes: v.number(),
@@ -133,27 +136,28 @@ export default defineSchema({
 
   })
     .index("by_categoryId", ["categoryId"])
-    .index("by_authorId", ["authorId"])
+    .index("by_memberId", ["memberId"])
     .index("by_status", ["status"])
     .index("by_createdAt", ["createdAt"])
     .index("by_netVotes", ["netVotes"])
     .index("by_slug", ["slug"])
     .index("by_category_and_createdAt", ["categoryId", "createdAt"])
     .index("by_category_and_netVotes", ["categoryId", "netVotes"])
-    .index("by_author_and_createdAt", ["authorId", "createdAt"])
+    .index("by_member_and_createdAt", ["memberId", "createdAt"])
     .searchIndex("search_posts", {
       searchField: "title",
-      filterFields: ["categoryId", "status", "authorId"]
+      filterFields: ["categoryId", "status", "memberId"]
     })
     .searchIndex("search_posts_content", {
       searchField: "content",
-      filterFields: ["categoryId", "status", "authorId"]
+      filterFields: ["categoryId", "status", "memberId"]
     }),
   comments: defineTable({
     content: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
-    authorId: v.id("members"),
+    authorId: v.optional(v.id("members")), // Temporary for removal
+    memberId: v.id("members"),
     postId: v.id("posts"),
     parentCommentId: v.optional(v.id("comments")),
     status: CommentStatusValidator,
@@ -166,16 +170,16 @@ export default defineSchema({
     editReason: v.optional(v.string()),
   })
     .index("by_postId", ["postId"])
-    .index("by_authorId", ["authorId"])
+    .index("by_memberId", ["memberId"])
     .index("by_parentCommentId", ["parentCommentId"])
     .index("by_post_and_createdAt", ["postId", "createdAt"])
     .index("by_post_and_netVotes", ["postId", "netVotes"])
     .index("by_parent_and_createdAt", ["parentCommentId", "createdAt"])
     .index("by_status", ["status"])
-    .index("by_post_author_createdAt", ["postId", "authorId", "createdAt"])
+    .index("by_post_member_createdAt", ["postId", "memberId", "createdAt"])
     .searchIndex("search_comments", {
       searchField: "content",
-      filterFields: ["postId", "status", "authorId"]
+      filterFields: ["postId", "status", "memberId"]
     }),
   votes: defineTable({
     userId: v.id("members"),
@@ -201,4 +205,26 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_post_and_user", ["postId", "userId"])
     .index("by_viewedAt", ["viewedAt"]),
+
+  post_versions: defineTable({
+    postId: v.id("posts"),
+    version: v.number(),
+    title: v.string(),
+    content: v.string(),
+    editorId: v.id("members"),
+    editedAt: v.number(),
+    editReason: v.optional(v.string()),
+    // Store the full post state at time of edit
+    type: v.optional(PostTypeValidator),
+    mediaUrl: v.optional(v.string()),
+    thumbnailUrl: v.optional(v.string()),
+    linkUrl: v.optional(v.string()),
+    linkTitle: v.optional(v.string()),
+    linkDescription: v.optional(v.string()),
+    linkImage: v.optional(v.string()),
+  })
+    .index("by_postId", ["postId"])
+    .index("by_post_and_version", ["postId", "version"])
+    .index("by_editorId", ["editorId"])
+    .index("by_editedAt", ["editedAt"]),
 });

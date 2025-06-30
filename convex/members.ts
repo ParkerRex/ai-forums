@@ -4,6 +4,7 @@ import { paginationOptsValidator } from "convex/server";
 import { Doc } from "./_generated/dataModel";
 import { generateMemberSlug } from "../lib/slug-utils";
 import type { MutationCtx } from "./_generated/server";
+import { getAuthenticatedMember } from "./auth";
 
 // Shared validator for transformed member data
 const MemberUIValidator = v.object({
@@ -55,12 +56,12 @@ async function computeAndCacheMemberStats(ctx: QueryCtx, member: Doc<"members">)
   const [posts, comments] = await Promise.all([
     ctx.db
       .query("posts")
-      .withIndex("by_authorId", (q) => q.eq("authorId", member._id))
+      .withIndex("by_memberId", (q) => q.eq("memberId", member._id))
       .filter((q) => q.eq(q.field("status"), "active"))
       .collect(),
     ctx.db
       .query("comments")
-      .withIndex("by_authorId", (q) => q.eq("authorId", member._id))
+      .withIndex("by_memberId", (q) => q.eq("memberId", member._id))
       .filter((q) => q.eq(q.field("status"), "active"))
       .collect(),
   ]);
@@ -243,7 +244,7 @@ export const getMemberPosts = query({
       slug: v.string(),
       createdAt: v.number(),
       updatedAt: v.number(),
-      authorId: v.id("members"),
+      memberId: v.id("members"),
       categoryId: v.id("categories"),
       status: v.union(v.literal("active"), v.literal("deleted"), v.literal("hidden"), v.literal("archived")),
       upvotes: v.number(),
@@ -257,7 +258,7 @@ export const getMemberPosts = query({
       editReason: v.optional(v.string()),
       // Add computed fields
       timeAgo: v.string(),
-      author: v.union(v.object({
+      member: v.union(v.object({
         _id: v.id("members"),
         firstName: v.string(),
         lastName: v.string(),
@@ -278,17 +279,17 @@ export const getMemberPosts = query({
   handler: async (ctx, args) => {
     const result = await ctx.db
       .query("posts")
-      .withIndex("by_authorId", (q) => q.eq("authorId", args.memberId))
+      .withIndex("by_memberId", (q) => q.eq("memberId", args.memberId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .order("desc")
       .paginate(args.paginationOpts);
 
-    // Enrich posts with category and author information
+    // Enrich posts with category and member information
     const enrichedPage = await Promise.all(
       result.page.map(async (post) => {
-        const [category, author] = await Promise.all([
+        const [category, member] = await Promise.all([
           ctx.db.get(post.categoryId),
-          ctx.db.get(post.authorId),
+          ctx.db.get(post.memberId),
         ]);
         const timeAgo = getTimeAgo(post.createdAt);
 
@@ -299,7 +300,7 @@ export const getMemberPosts = query({
           slug: post.slug,
           createdAt: post.createdAt,
           updatedAt: post.updatedAt,
-          authorId: post.authorId,
+          memberId: post.memberId,
           categoryId: post.categoryId,
           status: post.status,
           upvotes: post.upvotes,
@@ -312,13 +313,13 @@ export const getMemberPosts = query({
           editedAt: post.editedAt,
           editReason: post.editReason,
           timeAgo,
-          author: author ? {
-            _id: author._id,
-            firstName: author.firstName,
-            lastName: author.lastName,
-            email: author.email,
-            username: author.email, // Use email as username for now
-            slug: author.slug,
+          member: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email, // Use email as username for now
+            slug: member.slug,
           } : null,
           category: category ? {
             _id: category._id,
@@ -366,7 +367,7 @@ export const getMemberActivity = query({
   handler: async (ctx, args) => {
     const result = await ctx.db
       .query("comments")
-      .withIndex("by_authorId", (q) => q.eq("authorId", args.memberId))
+      .withIndex("by_memberId", (q) => q.eq("memberId", args.memberId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .order("desc")
       .paginate(args.paginationOpts);
@@ -588,17 +589,11 @@ export const getCurrentMember = query({
   args: {},
   returns: v.union(MemberUIValidator, v.null()),
   handler: async (ctx) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .unique();
-
-    if (!member) {
+    // Optional auth - return null if not authenticated
+    let member;
+    try {
+      member = await getAuthenticatedMember(ctx);
+    } catch {
       return null;
     }
 
@@ -622,11 +617,8 @@ export const updateMemberProfile = mutation({
   },
   returns: v.null(),
   handler: async (ctx, args) => {
-    // Check authentication
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new ConvexError("You must be signed in to update your profile");
-    }
+    // Get authenticated member using unified helper
+    const authenticatedMember = await getAuthenticatedMember(ctx);
 
     // Get the member being updated
     const member = await ctx.db.get(args.id);
@@ -635,7 +627,7 @@ export const updateMemberProfile = mutation({
     }
 
     // Verify the authenticated user can edit this profile
-    if (member.email !== identity.email) {
+    if (member._id !== authenticatedMember._id) {
       throw new ConvexError("You can only edit your own profile");
     }
 
@@ -722,7 +714,7 @@ export const getMemberComments = query({
       content: v.string(),
       createdAt: v.number(),
       updatedAt: v.number(),
-      authorId: v.id("members"),
+      memberId: v.id("members"),
       postId: v.id("posts"),
       parentCommentId: v.optional(v.id("comments")),
       status: v.union(v.literal("active"), v.literal("deleted"), v.literal("hidden")),
@@ -748,7 +740,7 @@ export const getMemberComments = query({
   handler: async (ctx, args) => {
     const result = await ctx.db
       .query("comments")
-      .withIndex("by_authorId", (q) => q.eq("authorId", args.memberId))
+      .withIndex("by_memberId", (q) => q.eq("memberId", args.memberId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .order("desc")
       .paginate(args.paginationOpts);
@@ -764,7 +756,7 @@ export const getMemberComments = query({
           content: comment.content,
           createdAt: comment.createdAt,
           updatedAt: comment.updatedAt,
-          authorId: comment.authorId,
+          memberId: comment.memberId,
           postId: comment.postId,
           parentCommentId: comment.parentCommentId,
           status: comment.status,
@@ -825,12 +817,12 @@ export const getMemberStats = query({
     const [posts, comments] = await Promise.all([
       ctx.db
         .query("posts")
-        .withIndex("by_authorId", (q) => q.eq("authorId", args.memberId))
+        .withIndex("by_memberId", (q) => q.eq("memberId", args.memberId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .collect(),
       ctx.db
         .query("comments")
-        .withIndex("by_authorId", (q) => q.eq("authorId", args.memberId))
+        .withIndex("by_memberId", (q) => q.eq("memberId", args.memberId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .collect(),
     ]);

@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { getAuthenticatedMember } from "./auth";
 
 // Check if user has voted on a target (post or comment)
 export const getUserVote = query({
@@ -9,18 +10,11 @@ export const getUserVote = query({
     targetType: v.union(v.literal("post"), v.literal("comment")),
   },
   handler: async (ctx, { targetId, targetType }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      return null;
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
+    // Optional auth - return null if not authenticated
+    let member;
+    try {
+      member = await getAuthenticatedMember(ctx);
+    } catch {
       return null;
     }
 
@@ -69,20 +63,8 @@ export const voteOnPost = mutation({
     voteType: v.union(v.literal("upvote"), v.literal("remove")),
   },
   handler: async (ctx, { postId, voteType }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     // Verify post exists and is active
     const post = await ctx.db.get(postId);
@@ -165,20 +147,8 @@ export const voteOnComment = mutation({
     voteType: v.union(v.literal("upvote"), v.literal("remove")),
   },
   handler: async (ctx, { commentId, voteType }) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Authentication required");
-    }
-
-    // Find the authenticated user
-    const member = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), identity.email))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
-    }
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
 
     // Verify comment exists and is active
     const comment = await ctx.db.get(commentId);

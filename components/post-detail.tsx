@@ -1,10 +1,13 @@
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark, Flag, MoreHorizontal, Play, ExternalLink } from "lucide-react"
+import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark, Flag, MoreHorizontal, Play, ExternalLink, Edit, Trash2, History } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Id } from "@/convex/_generated/dataModel"
 import { useRef, useState } from "react"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
 import { getMediaPlaceholder } from "@/lib/post-preview-utils"
 import { RenderTipTapContent } from "@/lib/render-post-content"
 import { memberProfileUrl } from "@/lib/utils"
@@ -14,6 +17,7 @@ interface Post {
   title: string
   content: string
   createdAt: number
+  editedAt?: number
   netVotes: number
   commentCount: number
   type?: "text" | "image" | "video" | "link"
@@ -30,6 +34,14 @@ interface Post {
     siteName?: string;
     url: string;
   }>
+  member?: {
+    _id: Id<"members">
+    firstName: string
+    lastName: string
+    username: string
+    slug?: string
+  } | null
+  // Legacy field for backward compatibility - will be removed in Phase 6
   author?: {
     _id: Id<"members">
     firstName: string
@@ -44,6 +56,9 @@ interface Post {
 
 interface PostDetailProps {
   post: Post
+  onEdit?: () => void
+  onDelete?: () => void
+  onViewHistory?: () => void
 }
 
 // Helper to compute human-readable time-ago string
@@ -59,10 +74,23 @@ function getTimeAgo(timestamp: number): string {
   return `${days}d`
 }
 
-export default function PostDetail({ post }: PostDetailProps) {
+export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: PostDetailProps) {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const postType = post.type || "text";
+
+  // Get current user to check if they can edit/delete this post
+  const currentMember = useQuery(api.members.getCurrentMember);
+
+  // Check if current user is the member who created this post
+  const isMemberPost = currentMember && (post.member || post.author) && currentMember._id === (post.member || post.author)?._id;
+  
+  // Debug logging
+  console.log('Debug member check:', {
+    currentMember: currentMember ? { _id: currentMember._id, email: currentMember.email } : null,
+    postMember: (post.member || post.author) ? { _id: (post.member || post.author)?._id, username: (post.member || post.author)?.username } : null,
+    isMemberPost
+  });
 
   const handleVideoPlay = () => {
     if (videoRef.current) {
@@ -102,11 +130,11 @@ export default function PostDetail({ post }: PostDetailProps) {
               <span className="mx-2">•</span>
               <span>posted by</span>
               <Link 
-                href={post.author ? memberProfileUrl({ slug: post.author.slug!, _id: post.author._id }) : "#"}
+                href={(post.member || post.author) ? memberProfileUrl({ slug: (post.member || post.author)!.slug!, _id: (post.member || post.author)!._id }) : "#"}
                 className="ml-1 text-primary hover:underline"
-                data-testid="author-link"
+                data-testid="member-link"
               >
-                /u/{post.author?.username || "unknown"}
+                /u/{(post.member || post.author)?.username || "unknown"}
               </Link>
               <span className="mx-2">•</span>
               <span>{getTimeAgo(post.createdAt)} ago</span>
@@ -190,7 +218,7 @@ export default function PostDetail({ post }: PostDetailProps) {
             )}
 
             {/* Rich Text Content */}
-            <div className="mb-6">
+            <div className="mb-6" data-testid="post-content">
               <RenderTipTapContent htmlContent={post.content} />
             </div>
 
@@ -211,9 +239,43 @@ export default function PostDetail({ post }: PostDetailProps) {
                 <Flag className="w-4 h-4 mr-1" />
                 report
               </Button>
-              <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted">
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted" data-testid="post-more-menu">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {/* Always show View History */}
+                  <DropdownMenuItem onClick={onViewHistory}>
+                    <History className="w-4 h-4 mr-2" />
+                    View History
+                  </DropdownMenuItem>
+                  {/* Only show Edit/Delete if user is the member who created this post */}
+                  {isMemberPost && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={onEdit}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Post
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Post
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {/* Debug item to see if dropdown is working */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem disabled>
+                        Debug: isMemberPost = {isMemberPost ? 'true' : 'false'}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

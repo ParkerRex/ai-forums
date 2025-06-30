@@ -16,6 +16,13 @@ export interface PostData {
   downvotes: number;
   commentCount: number;
   viewCount: number;
+  member?: {
+    firstName: string;
+    lastName: string;
+    username?: string;
+    slug?: string;
+  };
+  // Legacy field for backward compatibility - will be removed in Phase 6
   author?: {
     firstName: string;
     lastName: string;

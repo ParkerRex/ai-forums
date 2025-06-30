@@ -26,6 +26,8 @@ interface PostPreviewProps {
   size?: PreviewSize;
   showStats?: boolean;
   showCategory?: boolean;
+  showMember?: boolean;
+  // Legacy prop for backward compatibility - will be removed in Phase 6
   showAuthor?: boolean;
   className?: string;
   onClick?: () => void;
@@ -37,11 +39,14 @@ export default function PostPreview({
   size = "medium",
   showStats = true,
   showCategory = true,
-  showAuthor = true,
+  showMember = true,
+  showAuthor, // Legacy prop for backward compatibility
   className,
   onClick,
   isLoading
 }: PostPreviewProps) {
+  // Support both new showMember and legacy showAuthor props
+  const shouldShowMember = showMember || showAuthor;
   const [isHovering, setIsHovering] = useState(false);
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -238,15 +243,15 @@ export default function PostPreview({
             </div>
 
             {/* Author and excerpt */}
-            {showAuthor && post.author && (
+            {shouldShowMember && (post.member || post.author) && (
               <div className="text-xs text-muted-foreground mb-2">
                 by{" "}
                 <Link
-                  href={`/members/${post.author.slug || post.author.username}`}
+                  href={`/members/${(post.member || post.author)?.slug || (post.member || post.author)?.username}`}
                   className="hover:text-foreground transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {post.author.firstName} {post.author.lastName}
+                  {(post.member || post.author)?.firstName} {(post.member || post.author)?.lastName}
                 </Link>
                 {" • "}
                 {new Date(post.createdAt).toLocaleDateString()}
