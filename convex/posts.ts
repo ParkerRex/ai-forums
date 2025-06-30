@@ -467,6 +467,7 @@ export const editPost = mutation({
     title: v.optional(v.string()),
     content: v.optional(v.string()),
     editReason: v.optional(v.string()),
+    categoryId: v.optional(v.id("categories")),
     type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
@@ -543,6 +544,7 @@ export const editPost = mutation({
       linkTitle?: string;
       linkDescription?: string;
       linkImage?: string;
+      categoryId?: Id<"categories">;
     } = {
       updatedAt: now,
       editedAt: now,
@@ -595,6 +597,30 @@ export const editPost = mutation({
       updates.linkImage = args.linkImage;
     }
 
+    // Handle category change
+    if (args.categoryId !== undefined && args.categoryId !== post.categoryId) {
+      // Validate category
+      const newCategory = await ctx.db.get(args.categoryId);
+      if (!newCategory || newCategory.status !== "active") {
+        throw new Error("Invalid category");
+      }
+
+      // Update category post counts
+      const oldCategory = await ctx.db.get(post.categoryId);
+      if (oldCategory) {
+        await ctx.db.patch(oldCategory._id, {
+          postCount: Math.max(0, (oldCategory.postCount || 0) - 1),
+          updatedAt: now,
+        });
+      }
+      await ctx.db.patch(args.categoryId, {
+        postCount: (newCategory.postCount || 0) + 1,
+        updatedAt: now,
+      });
+
+      updates.categoryId = args.categoryId;
+    }
+
     await ctx.db.patch(args.postId, updates);
     
     // Return the updated post data including the new slug
@@ -603,8 +629,8 @@ export const editPost = mutation({
       throw new Error("Failed to retrieve updated post");
     }
     
-    // Get the category for the URL
-    const category = await ctx.db.get(post.categoryId);
+    // Get the category for the URL (use updated category if changed)
+    const category = await ctx.db.get(updatedPost.categoryId);
     
     return {
       _id: updatedPost._id,

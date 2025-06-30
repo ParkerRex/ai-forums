@@ -155,6 +155,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
         type: formData.type,
         mediaUrl,
         thumbnailUrl,
+        categoryId: formData.categoryId,
         linkUrl: formData.linkUrl,
         linkTitle: formData.linkTitle,
         linkDescription: formData.linkDescription,
@@ -163,6 +164,11 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
 
       toast.success("Post updated successfully!");
 
+      // Invoke success callback before handling navigation
+      if (onSuccess) {
+        onSuccess();
+      }
+
       // Check if slug changed and redirect to new URL
       if (result.slug !== post.slug) {
         const categoryName = post.category?.name || result.categoryName || "general";
@@ -170,9 +176,6 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
         onClose();
         router.push(newUrl);
       } else {
-        if (onSuccess) {
-          onSuccess();
-        }
         onClose();
       }
     } catch (error) {
