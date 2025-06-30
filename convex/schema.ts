@@ -43,6 +43,7 @@ export default defineSchema({
     firstName: v.string(),
     lastName: v.string(),
     email: v.string(),
+    externalId: v.optional(v.string()), // Clerk user ID for new auth system
     status: v.union(v.literal("active"), v.literal("churned"), v.literal("free"), v.literal("duplicate")),
     joinedDate: v.number(),
     country: v.optional(v.string()),
@@ -71,6 +72,7 @@ export default defineSchema({
     .index("by_status_and_joinedDate", ["status", "joinedDate"])
     .index("by_skills", ["skills"])
     .index("by_slug", ["slug"])
+    .index("by_externalId", ["externalId"])
     .searchIndex("search_members", {
       searchField: "firstName",
       filterFields: ["status"]
