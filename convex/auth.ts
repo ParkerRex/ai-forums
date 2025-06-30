@@ -1,4 +1,4 @@
-import { mutation, internalMutation, QueryCtx, MutationCtx } from "./_generated/server";
+import { query, internalMutation, QueryCtx, MutationCtx } from "./_generated/server";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 
 /**
@@ -6,12 +6,12 @@ import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
  * This handles the unified auth flow:
  * 1. Gets the user identity from Clerk
  * 2. Looks up member by externalId (preferred) or email (legacy)
- * 3. Creates new member if not found
- * 4. Updates lastOnline and externalId if needed
+ * 3. In mutation context: Creates new member if not found and updates lastOnline
+ * 4. In query context: Only performs lookups, no mutations
  * 
  * @param ctx - The Convex context with auth and database access
  * @returns The authenticated member document
- * @throws Error if no identity is found
+ * @throws Error if no identity is found or member not found in query context
  */
 export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
   // Get the user identity from Clerk
@@ -28,6 +28,9 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     throw new Error("User email not found in identity");
   }
 
+  // Check if we're in a mutation context (has patch/insert methods)
+  const isMutationContext = 'patch' in ctx.db;
+
   // First try to find by externalId (preferred for new auth system)
   let member = await ctx.db
     .query("members")
@@ -35,14 +38,20 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     .first();
 
   if (member) {
-    // Found by externalId - update lastOnline and return
-    await ctx.db.patch(member._id, {
-      lastOnline: now,
-      updatedAt: now,
-    });
-    // Return the updated member
-    const updatedMember = await ctx.db.get(member._id);
-    return updatedMember!;
+    // Found by externalId
+    if (isMutationContext) {
+      // Update lastOnline and return updated member in mutation context
+      const mutationCtx = ctx as MutationCtx;
+      await mutationCtx.db.patch(member._id, {
+        lastOnline: now,
+        updatedAt: now,
+      });
+      const updatedMember = await ctx.db.get(member._id);
+      return updatedMember!;
+    } else {
+      // In query context, just return the member as-is
+      return member;
+    }
   }
 
   // Fallback: try to find by email (legacy lookup)
@@ -52,20 +61,31 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     .first();
 
   if (member) {
-    // Found legacy member - patch with externalId and update timestamps
-    await ctx.db.patch(member._id, {
-      externalId,
-      lastOnline: now,
-      updatedAt: now,
-    });
-    // Return the updated member
-    const updatedMember = await ctx.db.get(member._id);
-    return updatedMember!;
+    if (isMutationContext) {
+      // Found legacy member - patch with externalId and update timestamps
+      const mutationCtx = ctx as MutationCtx;
+      await mutationCtx.db.patch(member._id, {
+        externalId,
+        lastOnline: now,
+        updatedAt: now,
+      });
+      const updatedMember = await ctx.db.get(member._id);
+      return updatedMember!;
+    } else {
+      // In query context, just return the member as-is
+      return member;
+    }
   }
 
-  // Member not found - create new member
-  const firstName = identity.given_name || identity.name?.split(" ")[0] || "User";
-  const lastName = identity.family_name || identity.name?.split(" ").slice(1).join(" ") || "";
+  // Member not found
+  if (!isMutationContext) {
+    // In query context, we can't create members, so throw error
+    throw new Error("Member not found - please sign in again to create your profile");
+  }
+
+  // Create new member (only in mutation context)
+  const firstName = (identity.given_name as string) || identity.name?.split(" ")[0] || "User";
+  const lastName = (identity.family_name as string) || identity.name?.split(" ").slice(1).join(" ") || "";
 
   // Generate unique slug from name or email
   const fullName = `${firstName} ${lastName}`.trim();
@@ -80,7 +100,8 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
   const slug = ensureUniqueSlug(baseSlug, existingSlugs);
 
   // Create new member
-  const memberId = await ctx.db.insert("members", {
+  const mutationCtx = ctx as MutationCtx;
+  const memberId = await mutationCtx.db.insert("members", {
     firstName,
     lastName,
     email,
@@ -116,8 +137,9 @@ export const ensureMember = internalMutation({
 /**
  * Query to get the current authenticated member.
  * This is useful for React components that need member data.
+ * Note: This only performs lookups and doesn't update lastOnline.
  */
-export const current = mutation({
+export const current = query({
   args: {},
   handler: async (ctx) => {
     return await getAuthenticatedMember(ctx);

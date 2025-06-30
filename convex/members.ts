@@ -244,7 +244,8 @@ export const getMemberPosts = query({
       slug: v.string(),
       createdAt: v.number(),
       updatedAt: v.number(),
-      authorId: v.id("members"),
+      authorId: v.id("members"), // Legacy field
+      memberId: v.optional(v.id("members")), // New unified field
       categoryId: v.id("categories"),
       status: v.union(v.literal("active"), v.literal("deleted"), v.literal("hidden"), v.literal("archived")),
       upvotes: v.number(),
@@ -258,6 +259,15 @@ export const getMemberPosts = query({
       editReason: v.optional(v.string()),
       // Add computed fields
       timeAgo: v.string(),
+      member: v.union(v.object({
+        _id: v.id("members"),
+        firstName: v.string(),
+        lastName: v.string(),
+        email: v.string(),
+        username: v.string(),
+        slug: v.string(),
+      }), v.null()),
+      // Legacy field for backward compatibility - will be removed in Phase 6
       author: v.union(v.object({
         _id: v.id("members"),
         firstName: v.string(),
@@ -284,12 +294,13 @@ export const getMemberPosts = query({
       .order("desc")
       .paginate(args.paginationOpts);
 
-    // Enrich posts with category and author information
+    // Enrich posts with category and member information
     const enrichedPage = await Promise.all(
       result.page.map(async (post) => {
-        const [category, author] = await Promise.all([
+        const [category, member] = await Promise.all([
           ctx.db.get(post.categoryId),
-          ctx.db.get(post.authorId),
+          // Use memberId if available, otherwise fall back to authorId for backward compatibility
+          ctx.db.get(post.memberId || post.authorId),
         ]);
         const timeAgo = getTimeAgo(post.createdAt);
 
@@ -300,7 +311,8 @@ export const getMemberPosts = query({
           slug: post.slug,
           createdAt: post.createdAt,
           updatedAt: post.updatedAt,
-          authorId: post.authorId,
+          authorId: post.authorId, // Legacy field
+          memberId: post.memberId, // New unified field
           categoryId: post.categoryId,
           status: post.status,
           upvotes: post.upvotes,
@@ -313,13 +325,22 @@ export const getMemberPosts = query({
           editedAt: post.editedAt,
           editReason: post.editReason,
           timeAgo,
-          author: author ? {
-            _id: author._id,
-            firstName: author.firstName,
-            lastName: author.lastName,
-            email: author.email,
-            username: author.email, // Use email as username for now
-            slug: author.slug,
+          member: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email, // Use email as username for now
+            slug: member.slug,
+          } : null,
+          // Legacy field for backward compatibility - will be removed in Phase 6
+          author: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email, // Use email as username for now
+            slug: member.slug,
           } : null,
           category: category ? {
             _id: category._id,

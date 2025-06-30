@@ -23,19 +23,29 @@ export const getCommentsByPost = query({
       .order("asc")
       .take(limit);
 
-    // Enrich comments with author data
+    // Enrich comments with member data
     const enrichedComments = await Promise.all(
       comments.map(async (comment) => {
-        const author = await ctx.db.get(comment.authorId);
+        // Use memberId if available, otherwise fall back to authorId for backward compatibility
+        const member = await ctx.db.get(comment.memberId || comment.authorId);
         return {
           ...comment,
-          author: author ? {
-            _id: author._id,
-            firstName: author.firstName,
-            lastName: author.lastName,
-            email: author.email,
-            username: author.email.split('@')[0],
-            slug: author.slug,
+          member: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split('@')[0],
+            slug: member.slug,
+          } : null,
+          // Legacy field for backward compatibility - will be removed in Phase 6
+          author: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split('@')[0],
+            slug: member.slug,
           } : null,
         };
       })
@@ -79,16 +89,26 @@ export const getCommentById = query({
       return null;
     }
 
-    const author = await ctx.db.get(comment.authorId);
+    // Use memberId if available, otherwise fall back to authorId for backward compatibility
+    const member = await ctx.db.get(comment.memberId || comment.authorId);
     return {
       ...comment,
-      author: author ? {
-        _id: author._id,
-        firstName: author.firstName,
-        lastName: author.lastName,
-        email: author.email,
-        username: author.email.split('@')[0],
-        slug: author.slug,
+      member: member ? {
+        _id: member._id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        username: member.email.split('@')[0],
+        slug: member.slug,
+      } : null,
+      // Legacy field for backward compatibility - will be removed in Phase 6
+      author: member ? {
+        _id: member._id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        username: member.email.split('@')[0],
+        slug: member.slug,
       } : null,
     };
   },

@@ -16,14 +16,15 @@ import PostPreview from "@/components/post-preview";
 import { PostData } from "@/lib/post-preview-utils";
 
 // Interface to match Convex post data structure
-interface Post extends Omit<PostData, 'author' | 'category'> {
+interface Post extends Omit<PostData, 'member' | 'author' | 'category'> {
   _id: Id<"posts">;
   title: string;
   content: string;
   slug: string;
   createdAt: number;
   updatedAt: number;
-  authorId: Id<"members">;
+  authorId: Id<"members">; // Legacy field - will be removed in Phase 6
+  memberId?: Id<"members">; // New unified field
   categoryId: Id<"categories">;
   status: "active" | "deleted" | "hidden" | "archived";
   upvotes: number;
@@ -35,6 +36,15 @@ interface Post extends Omit<PostData, 'author' | 'category'> {
   isLocked?: boolean;
   editedAt?: number;
   editReason?: string;
+  member: {
+    _id: Id<"members">;
+    firstName: string;
+    lastName: string;
+    email: string;
+    username: string;
+    slug?: string;
+  } | null;
+  // Legacy field for backward compatibility - will be removed in Phase 6
   author: {
     _id: Id<"members">;
     firstName: string;
@@ -145,7 +155,7 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
             size={size}
             showStats={false}
             showCategory={true}
-            showAuthor={true}
+            showMember={true}
             className="border-0 shadow-none hover:shadow-none"
           />
         </div>

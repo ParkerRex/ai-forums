@@ -34,6 +34,14 @@ interface Post {
     siteName?: string;
     url: string;
   }>
+  member?: {
+    _id: Id<"members">
+    firstName: string
+    lastName: string
+    username: string
+    slug?: string
+  } | null
+  // Legacy field for backward compatibility - will be removed in Phase 6
   author?: {
     _id: Id<"members">
     firstName: string
@@ -74,14 +82,14 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
   // Get current user to check if they can edit/delete this post
   const currentMember = useQuery(api.members.getCurrentMember);
 
-  // Check if current user is the author
-  const isAuthor = currentMember && post.author && currentMember._id === post.author._id;
+  // Check if current user is the member who created this post
+  const isMemberPost = currentMember && (post.member || post.author) && currentMember._id === (post.member || post.author)?._id;
   
   // Debug logging
-  console.log('Debug author check:', {
+  console.log('Debug member check:', {
     currentMember: currentMember ? { _id: currentMember._id, email: currentMember.email } : null,
-    postAuthor: post.author ? { _id: post.author._id, username: post.author.username } : null,
-    isAuthor
+    postMember: (post.member || post.author) ? { _id: (post.member || post.author)?._id, username: (post.member || post.author)?.username } : null,
+    isMemberPost
   });
 
   const handleVideoPlay = () => {
@@ -122,11 +130,11 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
               <span className="mx-2">•</span>
               <span>posted by</span>
               <Link 
-                href={post.author ? memberProfileUrl({ slug: post.author.slug!, _id: post.author._id }) : "#"}
+                href={(post.member || post.author) ? memberProfileUrl({ slug: (post.member || post.author)!.slug!, _id: (post.member || post.author)!._id }) : "#"}
                 className="ml-1 text-primary hover:underline"
-                data-testid="author-link"
+                data-testid="member-link"
               >
-                /u/{post.author?.username || "unknown"}
+                /u/{(post.member || post.author)?.username || "unknown"}
               </Link>
               <span className="mx-2">•</span>
               <span>{getTimeAgo(post.createdAt)} ago</span>
@@ -243,8 +251,8 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
                     <History className="w-4 h-4 mr-2" />
                     View History
                   </DropdownMenuItem>
-                  {/* Only show Edit/Delete if user is the author */}
-                  {isAuthor && (
+                  {/* Only show Edit/Delete if user is the member who created this post */}
+                  {isMemberPost && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={onEdit}>
@@ -262,7 +270,7 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem disabled>
-                        Debug: isAuthor = {isAuthor ? 'true' : 'false'}
+                        Debug: isMemberPost = {isMemberPost ? 'true' : 'false'}
                       </DropdownMenuItem>
                     </>
                   )}

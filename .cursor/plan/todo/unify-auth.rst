@@ -29,8 +29,8 @@
 ☑ update/extend unit tests
 
 *Phase 5 – Frontend Rename*
-☐ rename ``author``→``member`` props and logic
-☐ fix TS errors
+☑ rename ``author``→``member`` props and logic
+☑ fix TS errors
 
 *Phase 6 – Cleanup*
 ☐ remove ``authorId`` + old indexes via migration

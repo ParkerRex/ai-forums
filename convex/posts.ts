@@ -99,23 +99,33 @@ export const getPosts = query({
       .order(sortBy === "newest" ? "desc" : "desc")
       .take(limit);
 
-    // Enrich posts with author and category data
+    // Enrich posts with member and category data
     const enrichedPosts = await Promise.all(
       posts.map(async (post) => {
-        const [author, category] = await Promise.all([
-          ctx.db.get(post.authorId),
+        const [member, category] = await Promise.all([
+          // Use memberId if available, otherwise fall back to authorId for backward compatibility
+          ctx.db.get(post.memberId || post.authorId),
           ctx.db.get(post.categoryId),
         ]);
 
         return {
           ...post,
-          author: author ? {
-            _id: author._id,
-            firstName: author.firstName,
-            lastName: author.lastName,
-            email: author.email,
-            username: author.email.split('@')[0], // Derive username from email
-            slug: author.slug || "",
+          member: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split('@')[0], // Derive username from email
+            slug: member.slug || "",
+          } : null,
+          // Legacy field for backward compatibility - will be removed in Phase 6
+          author: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split('@')[0], // Derive username from email
+            slug: member.slug || "",
           } : null,
           category: category ? {
             _id: category._id,
@@ -140,26 +150,43 @@ export const getPostById = query({
       return null;
     }
 
-    // Get author and category data
-    const [author, category] = await Promise.all([
-      ctx.db.get(post.authorId),
+    // Get member and category data
+    const [member, category] = await Promise.all([
+      // Use memberId if available, otherwise fall back to authorId for backward compatibility
+      ctx.db.get(post.memberId || post.authorId),
       ctx.db.get(post.categoryId),
     ]);
 
     return {
       ...post,
-      author: author ? {
-        _id: author._id,
-        firstName: author.firstName,
-        lastName: author.lastName,
-        email: author.email,
-        username: author.email.split('@')[0],
-        bio: author.bio,
-        location: author.location,
-        linkGithub: author.linkGithub,
-        linkX: author.linkX,
-        linkYouTube: author.linkYouTube,
-        slug: author.slug || "",
+      member: member ? {
+        _id: member._id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        username: member.email.split('@')[0],
+        bio: member.bio,
+        location: member.location,
+        linkGithub: member.linkGithub,
+        linkX: member.linkX,
+        linkYouTube: member.linkYouTube,
+        slug: member.slug || "",
+        avatarUrl: member.avatarUrl,
+      } : null,
+      // Legacy field for backward compatibility - will be removed in Phase 6
+      author: member ? {
+        _id: member._id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        username: member.email.split('@')[0],
+        bio: member.bio,
+        location: member.location,
+        linkGithub: member.linkGithub,
+        linkX: member.linkX,
+        linkYouTube: member.linkYouTube,
+        slug: member.slug || "",
+        avatarUrl: member.avatarUrl,
       } : null,
       category: category ? {
         _id: category._id,
@@ -186,26 +213,43 @@ export const getPostBySlug = query({
       return null;
     }
 
-    // Get author and category data
-    const [author, category] = await Promise.all([
-      ctx.db.get(post.authorId),
+    // Get member and category data
+    const [member, category] = await Promise.all([
+      // Use memberId if available, otherwise fall back to authorId for backward compatibility
+      ctx.db.get(post.memberId || post.authorId),
       ctx.db.get(post.categoryId),
     ]);
 
     return {
       ...post,
-      author: author ? {
-        _id: author._id,
-        firstName: author.firstName,
-        lastName: author.lastName,
-        email: author.email,
-        username: author.email.split('@')[0],
-        bio: author.bio,
-        location: author.location,
-        linkGithub: author.linkGithub,
-        linkX: author.linkX,
-        linkYouTube: author.linkYouTube,
-        slug: author.slug || "",
+      member: member ? {
+        _id: member._id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        username: member.email.split('@')[0],
+        bio: member.bio,
+        location: member.location,
+        linkGithub: member.linkGithub,
+        linkX: member.linkX,
+        linkYouTube: member.linkYouTube,
+        slug: member.slug || "",
+        avatarUrl: member.avatarUrl,
+      } : null,
+      // Legacy field for backward compatibility - will be removed in Phase 6
+      author: member ? {
+        _id: member._id,
+        firstName: member.firstName,
+        lastName: member.lastName,
+        email: member.email,
+        username: member.email.split('@')[0],
+        bio: member.bio,
+        location: member.location,
+        linkGithub: member.linkGithub,
+        linkX: member.linkX,
+        linkYouTube: member.linkYouTube,
+        slug: member.slug || "",
+        avatarUrl: member.avatarUrl,
       } : null,
       category: category ? {
         _id: category._id,
@@ -715,22 +759,31 @@ export const searchPosts = query({
       posts = [...posts, ...uniqueContentPosts].slice(0, limit);
     }
 
-    // Enrich with author and category data
+    // Enrich with member and category data
     const enrichedPosts = await Promise.all(
       posts.map(async (post) => {
-        const [author, category] = await Promise.all([
-          ctx.db.get(post.authorId),
+        const [member, category] = await Promise.all([
+          // Use memberId if available, otherwise fall back to authorId for backward compatibility
+          ctx.db.get(post.memberId || post.authorId),
           ctx.db.get(post.categoryId),
         ]);
 
         return {
           ...post,
-          author: author ? {
-            _id: author._id,
-            firstName: author.firstName,
-            lastName: author.lastName,
-            username: author.email.split('@')[0],
-            slug: author.slug || "",
+          member: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            username: member.email.split('@')[0],
+            slug: member.slug || "",
+          } : null,
+          // Legacy field for backward compatibility - will be removed in Phase 6
+          author: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            username: member.email.split('@')[0],
+            slug: member.slug || "",
           } : null,
           category: category ? {
             _id: category._id,
