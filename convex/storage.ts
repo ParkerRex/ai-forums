@@ -67,14 +67,29 @@ export const generateUploadUrl = action({
       let publicBase: string;
       if (process.env.R2_PUBLIC_URL) {
         const trimmed = process.env.R2_PUBLIC_URL.replace(/\/$/, "");
-        publicBase = trimmed.endsWith(`/${bucket}`)
-          ? trimmed
-          : `${trimmed}/${bucket}`;
+
+        // If the host is the account endpoint (…cloudflarestorage.com), we still need the
+        // bucket path. For custom domains or the public-dev URL (pub-….r2.dev) the bucket
+        // is already implied by DNS, so we should NOT append it again.
+        const host = new URL(trimmed).hostname;
+        const needsBucketPath = host.endsWith("cloudflarestorage.com");
+
+        publicBase = needsBucketPath ? `${trimmed}/${bucket}` : trimmed;
       } else {
         publicBase = `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucket}`;
       }
 
       const publicUrl = `${publicBase}/${objectKey}`;
+
+      // DEBUG LOGS – remove once issue is resolved
+      console.log("[R2 DEBUG] generateUploadUrl", {
+        bucket,
+        R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
+        constructedPublicBase: publicBase,
+        objectKey,
+        publicUrl,
+        uploadUrlPreview: uploadUrl?.slice(0, 60) + "...", // shorten for log readability
+      });
 
       return {
         uploadUrl,
@@ -128,14 +143,28 @@ export const uploadFile = action({
       let publicBase: string;
       if (process.env.R2_PUBLIC_URL) {
         const trimmed = process.env.R2_PUBLIC_URL.replace(/\/$/, "");
-        publicBase = trimmed.endsWith(`/${bucket}`)
-          ? trimmed
-          : `${trimmed}/${bucket}`;
+
+        // If the host is the account endpoint (…cloudflarestorage.com), we still need the
+        // bucket path. For custom domains or the public-dev URL (pub-….r2.dev) the bucket
+        // is already implied by DNS, so we should NOT append it again.
+        const host = new URL(trimmed).hostname;
+        const needsBucketPath = host.endsWith("cloudflarestorage.com");
+
+        publicBase = needsBucketPath ? `${trimmed}/${bucket}` : trimmed;
       } else {
         publicBase = `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucket}`;
       }
 
       const publicUrl = `${publicBase}/${objectKey}`;
+
+      // DEBUG LOGS – remove once issue is resolved
+      console.log("[R2 DEBUG] uploadFile", {
+        bucket,
+        R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
+        constructedPublicBase: publicBase,
+        objectKey,
+        publicUrl,
+      });
 
       return {
         objectKey,
