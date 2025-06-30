@@ -23,8 +23,7 @@ interface Post extends Omit<PostData, 'member' | 'author' | 'category'> {
   slug: string;
   createdAt: number;
   updatedAt: number;
-  authorId: Id<"members">; // Legacy field - will be removed in Phase 6
-  memberId?: Id<"members">; // New unified field
+  memberId: Id<"members">;
   categoryId: Id<"categories">;
   status: "active" | "deleted" | "hidden" | "archived";
   upvotes: number;
@@ -37,15 +36,6 @@ interface Post extends Omit<PostData, 'member' | 'author' | 'category'> {
   editedAt?: number;
   editReason?: string;
   member: {
-    _id: Id<"members">;
-    firstName: string;
-    lastName: string;
-    email: string;
-    username: string;
-    slug?: string;
-  } | null;
-  // Legacy field for backward compatibility - will be removed in Phase 6
-  author: {
     _id: Id<"members">;
     firstName: string;
     lastName: string;

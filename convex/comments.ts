@@ -4,9 +4,8 @@ import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
 
 // Helper function to check if a member is the author of a comment
-// Supports both legacy authorId and new memberId fields for backward compatibility
-function isCommentAuthor(comment: { authorId: Id<"members">; memberId?: Id<"members"> }, memberId: Id<"members">): boolean {
-  return comment.memberId === memberId || comment.authorId === memberId;
+function isCommentAuthor(comment: { memberId: Id<"members"> }, memberId: Id<"members">): boolean {
+  return comment.memberId === memberId;
 }
 
 // Get comments for a post with nested structure
@@ -26,8 +25,7 @@ export const getCommentsByPost = query({
     // Enrich comments with member data
     const enrichedComments = await Promise.all(
       comments.map(async (comment) => {
-        // Use memberId if available, otherwise fall back to authorId for backward compatibility
-        const member = await ctx.db.get(comment.memberId || comment.authorId);
+        const member = await ctx.db.get(comment.memberId);
         return {
           ...comment,
           member: member ? {
@@ -89,8 +87,7 @@ export const getCommentById = query({
       return null;
     }
 
-    // Use memberId if available, otherwise fall back to authorId for backward compatibility
-    const member = await ctx.db.get(comment.memberId || comment.authorId);
+    const member = await ctx.db.get(comment.memberId);
     return {
       ...comment,
       member: member ? {
@@ -161,7 +158,7 @@ export const createComment = mutation({
       .withIndex("by_post_and_createdAt", (q) => q.eq("postId", postId))
       .filter((q) => 
         q.and(
-          q.eq(q.field("authorId"), member._id),
+          q.eq(q.field("memberId"), member._id),
           q.eq(q.field("status"), "active"),
           q.gte(q.field("createdAt"), oneMinuteAgo)
         )
@@ -184,8 +181,7 @@ export const createComment = mutation({
       content: trimmedContent,
       createdAt: now,
       updatedAt: now,
-      authorId: member._id, // Legacy field, will be removed in Phase 6
-      memberId: member._id, // New unified field
+      memberId: member._id,
       postId,
       parentCommentId,
       status: "active",
@@ -233,7 +229,7 @@ export const updateComment = mutation({
       throw new Error("Comment not found");
     }
 
-    // Check if user is the author (supports both legacy and new fields)
+    // Check if user is the author
     if (!isCommentAuthor(comment, member._id)) {
       throw new Error("Only the author can edit this comment");
     }
@@ -271,7 +267,7 @@ export const deleteComment = mutation({
       throw new Error("Comment not found");
     }
 
-    // Check if user is the author (supports both legacy and new fields)
+    // Check if user is the author
     if (!isCommentAuthor(comment, member._id)) {
       throw new Error("Only the author can delete this comment");
     }
@@ -340,58 +336,6 @@ export const getCommentsByMember = query({
   },
 });
 
-// Legacy function for backward compatibility - will be removed in Phase 6
-export const getCommentsByAuthor = query({
-  args: {
-    authorId: v.id("members"),
-    limit: v.optional(v.number()),
-  },
-  handler: async (ctx, { authorId, limit = 20 }) => {
-    // For backward compatibility, check both legacy and new fields
-    const [legacyComments, newComments] = await Promise.all([
-      ctx.db
-        .query("comments")
-        .withIndex("by_authorId", (q) => q.eq("authorId", authorId))
-        .filter((q) => q.eq(q.field("status"), "active"))
-        .order("desc")
-        .take(limit),
-      ctx.db
-        .query("comments")
-        .withIndex("by_memberId", (q) => q.eq("memberId", authorId))
-        .filter((q) => q.eq(q.field("status"), "active"))
-        .order("desc")
-        .take(limit)
-    ]);
-
-    // Combine and dedupe by ID
-    const allComments = [...legacyComments, ...newComments];
-    const uniqueComments = allComments.filter((comment, index, arr) => 
-      arr.findIndex(c => c._id === comment._id) === index
-    );
-
-    // Sort by creation date and limit
-    const sortedComments = uniqueComments
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, limit);
-
-    // Enrich with post data
-    const enrichedComments = await Promise.all(
-      sortedComments.map(async (comment) => {
-        const post = await ctx.db.get(comment.postId);
-        return {
-          ...comment,
-          post: post ? {
-            _id: post._id,
-            title: post.title,
-            categoryId: post.categoryId,
-          } : null,
-        };
-      })
-    );
-
-    return enrichedComments;
-  },
-});
 
 // Get comment count for a post
 export const getCommentCount = query({

@@ -64,8 +64,8 @@ export const getCategoryStats = query({
     // Get top contributors
     const authorCounts = new Map<Id<"members">, number>();
     posts.forEach(post => {
-      const count = authorCounts.get(post.authorId) || 0;
-      authorCounts.set(post.authorId, count + 1);
+      const count = authorCounts.get(post.memberId) || 0;
+      authorCounts.set(post.memberId, count + 1);
     });
 
     const topContributors = Array.from(authorCounts.entries())
@@ -76,8 +76,8 @@ export const getCategoryStats = query({
       totalPosts: posts.length,
       recentPosts: recentPosts.length,
       totalUpvotes: posts.reduce((sum, post) => sum + (post.upvotes || 0), 0),
-      topContributors: topContributors.map(([authorId, postCount]) => ({
-        authorId,
+      topContributors: topContributors.map(([memberId, postCount]) => ({
+        memberId,
         postCount,
       })),
     };

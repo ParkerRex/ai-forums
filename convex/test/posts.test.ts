@@ -46,7 +46,7 @@ test("editPost should create version history", async () => {
       slug: 'test-post',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      authorId: memberId,
+      memberId: memberId,
       categoryId: categoryId,
       status: 'active',
       upvotes: 0,
@@ -54,6 +54,9 @@ test("editPost should create version history", async () => {
       netVotes: 0,
       commentCount: 0,
       viewCount: 0,
+      isPinned: false,
+      isLocked: false,
+      type: 'text',
     });
   });
 
@@ -132,7 +135,7 @@ test("deletePost should soft delete posts", async () => {
       slug: 'delete-me',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      authorId: memberId,
+      memberId: memberId,
       categoryId: categoryId,
       status: 'active',
       upvotes: 0,
@@ -140,6 +143,9 @@ test("deletePost should soft delete posts", async () => {
       netVotes: 0,
       commentCount: 0,
       viewCount: 0,
+      isPinned: false,
+      isLocked: false,
+      type: 'text',
     });
   });
 
@@ -199,7 +205,7 @@ test("getPostHistory should return versions with editor info", async () => {
       slug: 'test-post',
       createdAt: Date.now(),
       updatedAt: Date.now(),
-      authorId: memberId,
+      memberId: memberId,
       categoryId: categoryId,
       status: 'active',
       upvotes: 0,
@@ -207,6 +213,9 @@ test("getPostHistory should return versions with editor info", async () => {
       netVotes: 0,
       commentCount: 0,
       viewCount: 0,
+      isPinned: false,
+      isLocked: false,
+      type: 'text',
     });
   });
 
@@ -284,8 +293,7 @@ describe("Phase 4 - Backend Refactor", () => {
         slug: "test-post",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: memberId, // Legacy field
-        memberId: memberId, // New unified field
+        memberId: memberId,
         categoryId,
         status: "active",
         upvotes: 0,
@@ -310,7 +318,7 @@ describe("Phase 4 - Backend Refactor", () => {
     expect(posts[0].title).toBe("Test Post");
   });
 
-  test("getPostsByAuthor maintains backward compatibility", async () => {
+  test("getPostsByMember works correctly", async () => {
     const t = convexTest(schema);
 
     // Create a test member directly
@@ -341,15 +349,15 @@ describe("Phase 4 - Backend Refactor", () => {
       });
     });
 
-    // Create posts with different field combinations
-    const legacyPostId = await t.run(async (ctx) => {
+    // Create posts with memberId field
+    const firstPostId = await t.run(async (ctx) => {
       return await ctx.db.insert("posts", {
-        title: "Legacy Post",
-        content: "Legacy content",
-        slug: "legacy-post",
+        title: "First Post",
+        content: "First content",
+        slug: "first-post",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: memberId, // Only legacy field
+        memberId: memberId,
         categoryId,
         status: "active",
         upvotes: 0,
@@ -363,15 +371,14 @@ describe("Phase 4 - Backend Refactor", () => {
       });
     });
 
-    const newPostId = await t.run(async (ctx) => {
+    const secondPostId = await t.run(async (ctx) => {
       return await ctx.db.insert("posts", {
-        title: "New Post",
-        content: "New content",
-        slug: "new-post",
+        title: "Second Post",
+        content: "Second content",
+        slug: "second-post",
         createdAt: Date.now() + 1000,
         updatedAt: Date.now() + 1000,
-        authorId: memberId, // Legacy field
-        memberId: memberId, // New unified field
+        memberId: memberId,
         categoryId,
         status: "active",
         upvotes: 0,
@@ -385,23 +392,23 @@ describe("Phase 4 - Backend Refactor", () => {
       });
     });
 
-    // Test legacy getPostsByAuthor function finds both posts
-    const posts = await t.query(api.posts.getPostsByAuthor, {
-      authorId: memberId,
+    // Test getPostsByMember function finds posts with memberId
+    const posts = await t.query(api.posts.getPostsByMember, {
+      memberId: memberId,
       limit: 10,
     });
 
     expect(posts).toHaveLength(2);
     const postIds = posts.map(p => p._id);
-    expect(postIds).toContain(legacyPostId);
-    expect(postIds).toContain(newPostId);
+    expect(postIds).toContain(firstPostId);
+    expect(postIds).toContain(secondPostId);
     
     // Should be ordered by creation date (newest first)
-    expect(posts[0]._id).toEqual(newPostId);
-    expect(posts[1]._id).toEqual(legacyPostId);
+    expect(posts[0]._id).toEqual(secondPostId);
+    expect(posts[1]._id).toEqual(firstPostId);
   });
 
-  test("post authorization works with both legacy and new fields", async () => {
+  test("post authorization works with memberId", async () => {
     const t = convexTest(schema);
 
     // Create test members directly
@@ -453,8 +460,7 @@ describe("Phase 4 - Backend Refactor", () => {
         slug: "test-post",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: authorId, // Legacy field
-        memberId: authorId, // New unified field
+        memberId: authorId,
         categoryId,
         status: "active",
         upvotes: 0,

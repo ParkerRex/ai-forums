@@ -16,12 +16,12 @@ export const recalcMemberStats = internalMutation({
       const [posts, comments] = await Promise.all([
         ctx.db
           .query("posts")
-          .withIndex("by_authorId", (q) => q.eq("authorId", member._id))
+          .withIndex("by_member_and_createdAt", (q) => q.eq("memberId", member._id))
           .filter((q) => q.eq(q.field("status"), "active"))
           .collect(),
         ctx.db
           .query("comments")
-          .withIndex("by_authorId", (q) => q.eq("authorId", member._id))
+          .withIndex("by_memberId", (q) => q.eq("memberId", member._id))
           .filter((q) => q.eq(q.field("status"), "active"))
           .collect(),
       ]);
@@ -85,12 +85,12 @@ export const recalcSingleMemberStats = internalMutation({
     const [posts, comments] = await Promise.all([
       ctx.db
         .query("posts")
-        .withIndex("by_authorId", (q) => q.eq("authorId", memberId))
+        .withIndex("by_member_and_createdAt", (q) => q.eq("memberId", memberId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .collect(),
       ctx.db
         .query("comments")
-        .withIndex("by_authorId", (q) => q.eq("authorId", memberId))
+        .withIndex("by_memberId", (q) => q.eq("memberId", memberId))
         .filter((q) => q.eq(q.field("status"), "active"))
         .collect(),
     ]);

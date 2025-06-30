@@ -33,8 +33,7 @@ export const globalSearch = query({
     // Enrich comments with member data
     const enrichedComments = await Promise.all(
       comments.map(async (comment: any) => {
-        // Use memberId if available, otherwise fall back to authorId for backward compatibility
-        const member = await ctx.db.get(comment.memberId || comment.authorId);
+        const member = await ctx.db.get(comment.memberId);
         return {
           ...comment,
           member: member && 'firstName' in member ? {
@@ -136,8 +135,7 @@ export const globalSearch = query({
         _id: c._id, 
         type: "comment" as const, 
         content: restricted ? "Hidden content – join to view" : c.content, 
-        authorId: c.authorId, // Legacy field
-        memberId: c.memberId, // New unified field
+        memberId: c.memberId,
         member: c.member,
         author: c.author, // Legacy field for backward compatibility
         postId: c.postId, 

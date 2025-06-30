@@ -4,7 +4,7 @@ import { api } from "../_generated/api";
 import schema from "../schema";
 
 describe("Comments - Phase 4 Backend Refactor", () => {
-  test("createComment sets both authorId and memberId", async () => {
+  test("createComment sets memberId correctly", async () => {
     const t = convexTest(schema);
 
     // Create a test member directly
@@ -44,7 +44,6 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         slug: "test-post",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: memberId,
         memberId: memberId,
         categoryId,
         status: "active",
@@ -74,7 +73,6 @@ describe("Comments - Phase 4 Backend Refactor", () => {
     });
 
     expect(comment).toBeTruthy();
-    expect(comment!.authorId).toEqual(memberId);
     expect(comment!.memberId).toEqual(memberId);
     expect(comment!.content).toBe("Test comment");
   });
@@ -118,7 +116,6 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         slug: "test-post",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: memberId,
         memberId: memberId,
         categoryId,
         status: "active",
@@ -139,7 +136,6 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         content: "Test comment",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: memberId, // Legacy field
         memberId: memberId, // New unified field
         postId,
         status: "active",
@@ -166,7 +162,7 @@ describe("Comments - Phase 4 Backend Refactor", () => {
     const t = convexTest(schema);
 
     // Create test members directly
-    const authorId = await t.run(async (ctx) => {
+    const memberId = await t.run(async (ctx) => {
       return await ctx.db.insert("members", {
         firstName: "Test",
         lastName: "Author",
@@ -204,7 +200,7 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         updatedAt: Date.now(),
         postCount: 0,
         status: "active",
-        creatorId: authorId,
+        creatorId: memberId,
       });
     });
 
@@ -216,8 +212,7 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         slug: "test-post",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: authorId,
-        memberId: authorId,
+        memberId: memberId,
         categoryId,
         status: "active",
         upvotes: 0,
@@ -237,8 +232,7 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         content: "Test comment",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: authorId, // Legacy field
-        memberId: authorId, // New unified field
+        memberId: memberId, // New unified field
         postId,
         status: "active",
         upvotes: 0,
@@ -252,7 +246,7 @@ describe("Comments - Phase 4 Backend Refactor", () => {
     // Author should be able to edit the comment
     await expect(
       t.withIdentity({ 
-        subject: `user_${authorId}`,
+        subject: `user_${memberId}`,
         email: "author@example.com"
       }).mutation(api.comments.updateComment, {
         commentId,
@@ -272,7 +266,7 @@ describe("Comments - Phase 4 Backend Refactor", () => {
     ).rejects.toThrow("Only the author can edit this comment");
   });
 
-  test("legacy comments without memberId still work", async () => {
+  test("comments with memberId work correctly", async () => {
     const t = convexTest(schema);
 
     // Create a test member directly
@@ -312,7 +306,7 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         slug: "test-post",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: memberId,
+        memberId: memberId,
         categoryId,
         status: "active",
         upvotes: 0,
@@ -326,13 +320,13 @@ describe("Comments - Phase 4 Backend Refactor", () => {
       });
     });
 
-    // Create a legacy comment (only authorId, no memberId)
+    // Create a legacy comment (only memberId, no memberId)
     const commentId = await t.run(async (ctx) => {
       return await ctx.db.insert("comments", {
         content: "Legacy comment",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        authorId: memberId, // Only legacy field
+        memberId: memberId,
         postId,
         status: "active",
         upvotes: 0,

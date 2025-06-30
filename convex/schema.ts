@@ -103,8 +103,7 @@ export default defineSchema({
     slug: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
-    authorId: v.id("members"), // Legacy field, will be removed in Phase 6
-    memberId: v.optional(v.id("members")), // New unified field
+    memberId: v.id("members"),
     categoryId: v.id("categories"),
     status: PostStatusValidator,
     upvotes: v.number(),
@@ -136,30 +135,27 @@ export default defineSchema({
 
   })
     .index("by_categoryId", ["categoryId"])
-    .index("by_authorId", ["authorId"]) // Legacy index, will be removed in Phase 6
-    .index("by_memberId", ["memberId"]) // New unified index
+    .index("by_memberId", ["memberId"])
     .index("by_status", ["status"])
     .index("by_createdAt", ["createdAt"])
     .index("by_netVotes", ["netVotes"])
     .index("by_slug", ["slug"])
     .index("by_category_and_createdAt", ["categoryId", "createdAt"])
     .index("by_category_and_netVotes", ["categoryId", "netVotes"])
-    .index("by_author_and_createdAt", ["authorId", "createdAt"]) // Legacy index
-    .index("by_member_and_createdAt", ["memberId", "createdAt"]) // New unified index
+    .index("by_member_and_createdAt", ["memberId", "createdAt"])
     .searchIndex("search_posts", {
       searchField: "title",
-      filterFields: ["categoryId", "status", "authorId", "memberId"]
+      filterFields: ["categoryId", "status", "memberId"]
     })
     .searchIndex("search_posts_content", {
       searchField: "content",
-      filterFields: ["categoryId", "status", "authorId", "memberId"]
+      filterFields: ["categoryId", "status", "memberId"]
     }),
   comments: defineTable({
     content: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
-    authorId: v.id("members"), // Legacy field, will be removed in Phase 6
-    memberId: v.optional(v.id("members")), // New unified field
+    memberId: v.id("members"),
     postId: v.id("posts"),
     parentCommentId: v.optional(v.id("comments")),
     status: CommentStatusValidator,
@@ -172,18 +168,16 @@ export default defineSchema({
     editReason: v.optional(v.string()),
   })
     .index("by_postId", ["postId"])
-    .index("by_authorId", ["authorId"]) // Legacy index, will be removed in Phase 6
-    .index("by_memberId", ["memberId"]) // New unified index
+    .index("by_memberId", ["memberId"])
     .index("by_parentCommentId", ["parentCommentId"])
     .index("by_post_and_createdAt", ["postId", "createdAt"])
     .index("by_post_and_netVotes", ["postId", "netVotes"])
     .index("by_parent_and_createdAt", ["parentCommentId", "createdAt"])
     .index("by_status", ["status"])
-    .index("by_post_author_createdAt", ["postId", "authorId", "createdAt"]) // Legacy index
-    .index("by_post_member_createdAt", ["postId", "memberId", "createdAt"]) // New unified index
+    .index("by_post_member_createdAt", ["postId", "memberId", "createdAt"])
     .searchIndex("search_comments", {
       searchField: "content",
-      filterFields: ["postId", "status", "authorId", "memberId"]
+      filterFields: ["postId", "status", "memberId"]
     }),
   votes: defineTable({
     userId: v.id("members"),

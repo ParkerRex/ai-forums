@@ -13,7 +13,10 @@
       "Bash(rm:*)",
       "Bash(npx convex:*)",
       "Bash(cp:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npm run tsc:*)",
+      "Bash(npx tsc:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": []
   }
