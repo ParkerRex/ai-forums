@@ -1,5 +1,5 @@
 import { convexTest } from "convex-test";
-import { expect, test } from "vitest";
+import { expect, test, describe } from "vitest";
 import { api } from "../_generated/api";
 import schema from "../schema";
 
@@ -285,7 +285,7 @@ describe("Phase 4 - Backend Refactor", () => {
       });
     });
 
-    // Create a post with both authorId and memberId (Phase 4 behavior)
+    // Create a post with memberId
     const postId = await t.run(async (ctx) => {
       return await ctx.db.insert("posts", {
         title: "Test Post",
@@ -412,7 +412,7 @@ describe("Phase 4 - Backend Refactor", () => {
     const t = convexTest(schema);
 
     // Create test members directly
-    const authorId = await t.run(async (ctx) => {
+    const authorMemberId = await t.run(async (ctx) => {
       return await ctx.db.insert("members", {
         firstName: "Test",
         lastName: "Author",
@@ -448,7 +448,7 @@ describe("Phase 4 - Backend Refactor", () => {
         updatedAt: Date.now(),
         postCount: 0,
         status: "active",
-        creatorId: authorId,
+        creatorId: authorMemberId,
       });
     });
 
@@ -460,7 +460,7 @@ describe("Phase 4 - Backend Refactor", () => {
         slug: "test-post",
         createdAt: Date.now(),
         updatedAt: Date.now(),
-        memberId: authorId,
+        memberId: authorMemberId,
         categoryId,
         status: "active",
         upvotes: 0,
@@ -477,7 +477,7 @@ describe("Phase 4 - Backend Refactor", () => {
     // Author should be able to edit the post
     await expect(
       t.withIdentity({ 
-        subject: `user_${authorId}`,
+        subject: `user_${authorMemberId}`,
         email: "author@example.com"
       }).mutation(api.posts.editPost, {
         postId,

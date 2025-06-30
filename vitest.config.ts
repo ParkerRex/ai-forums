@@ -7,6 +7,7 @@ export default defineConfig({
     environment: 'edge-runtime',
     setupFiles: ['./vitest.setup.ts'],
     server: { deps: { inline: ['convex-test'] } },
+    exclude: ['**/node_modules/**', '**/dist/**', '**/playwright/**', '**/*.spec.ts'],
   },
   resolve: {
     alias: {

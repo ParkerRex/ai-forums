@@ -6,31 +6,31 @@ import { glob } from 'glob';
 // Banned Tailwind color classes that should use semantic tokens instead
 const BANNED_PATTERNS = [
   // Background colors
-  /\bbg-white\b/g,
-  /\bbg-black(?!\/)/g, // Allow bg-black/opacity but not plain bg-black
-  /\bbg-gray-\d+\b/g,
-  /\bbg-slate-\d+\b/g,
-  /\bbg-zinc-\d+\b/g,
-  /\bbg-neutral-\d+\b/g,
-  /\bbg-stone-\d+\b/g,
+  /(?<![a-z-])bg-white(?![a-z-])/g,
+  /(?<![a-z-])bg-black(?!\/|[a-z-])/g, // Allow bg-black/opacity but not plain bg-black
+  /(?<![a-z-])bg-gray-\d+(?![a-z-])/g,
+  /(?<![a-z-])bg-slate-\d+(?![a-z-])/g,
+  /(?<![a-z-])bg-zinc-\d+(?![a-z-])/g,
+  /(?<![a-z-])bg-neutral-\d+(?![a-z-])/g,
+  /(?<![a-z-])bg-stone-\d+(?![a-z-])/g,
   
   // Text colors
-  /\btext-white(?!\s+shadow|\s+\[a&\])/g, // Allow text-white for destructive buttons with shadows/hover states
-  /\btext-black\b/g,
-  /\btext-gray-\d+\b/g,
-  /\btext-slate-\d+\b/g,
-  /\btext-zinc-\d+\b/g,
-  /\btext-neutral-\d+\b/g,
-  /\btext-stone-\d+\b/g,
+  /(?<![a-z-])text-white(?!\s+shadow|\s+\[a&\]|[a-z-])/g, // Allow text-white for destructive buttons with shadows/hover states
+  /(?<![a-z-])text-black(?![a-z-])/g,
+  /(?<![a-z-])text-gray-\d+(?![a-z-])/g,
+  /(?<![a-z-])text-slate-\d+(?![a-z-])/g,
+  /(?<![a-z-])text-zinc-\d+(?![a-z-])/g,
+  /(?<![a-z-])text-neutral-\d+(?![a-z-])/g,
+  /(?<![a-z-])text-stone-\d+(?![a-z-])/g,
   
   // Border colors
-  /\bborder-white\b/g,
-  /\bborder-black\b/g,
-  /\bborder-gray-\d+\b/g,
-  /\bborder-slate-\d+\b/g,
-  /\bborder-zinc-\d+\b/g,
-  /\bborder-neutral-\d+\b/g,
-  /\bborder-stone-\d+\b/g,
+  /(?<![a-z-])border-white(?![a-z-])/g,
+  /(?<![a-z-])border-black(?![a-z-])/g,
+  /(?<![a-z-])border-gray-\d+(?![a-z-])/g,
+  /(?<![a-z-])border-slate-\d+(?![a-z-])/g,
+  /(?<![a-z-])border-zinc-\d+(?![a-z-])/g,
+  /(?<![a-z-])border-neutral-\d+(?![a-z-])/g,
+  /(?<![a-z-])border-stone-\d+(?![a-z-])/g,
 ];
 
 interface Violation {

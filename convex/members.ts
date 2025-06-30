@@ -244,7 +244,7 @@ export const getMemberPosts = query({
       slug: v.string(),
       createdAt: v.number(),
       updatedAt: v.number(),
-      memberId: v.id("members")
+      memberId: v.id("members"),
       categoryId: v.id("categories"),
       status: v.union(v.literal("active"), v.literal("deleted"), v.literal("hidden"), v.literal("archived")),
       upvotes: v.number(),

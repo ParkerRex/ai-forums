@@ -103,6 +103,7 @@ export default defineSchema({
     slug: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
+    authorId: v.optional(v.id("members")), // Temporary for removal
     memberId: v.id("members"),
     categoryId: v.id("categories"),
     status: PostStatusValidator,
@@ -155,6 +156,7 @@ export default defineSchema({
     content: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
+    authorId: v.optional(v.id("members")), // Temporary for removal
     memberId: v.id("members"),
     postId: v.id("posts"),
     parentCommentId: v.optional(v.id("comments")),
