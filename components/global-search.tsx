@@ -219,10 +219,22 @@ function SearchResultItem({
 }
 
 export function GlobalSearch() {
-  const { isOpen, closeSearch, setIsOpen } = useSearchHotkey();
+  const { isOpen, closeSearch, setIsOpen, openSearch } = useSearchHotkey();
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const router = useRouter();
+
+  // Listen for custom event to trigger search
+  useEffect(() => {
+    const handleTriggerSearch = () => {
+      openSearch();
+    };
+
+    window.addEventListener('trigger-global-search', handleTriggerSearch);
+    return () => {
+      window.removeEventListener('trigger-global-search', handleTriggerSearch);
+    };
+  }, [openSearch]);
 
   const results = useQuery(
     api.search.globalSearch,

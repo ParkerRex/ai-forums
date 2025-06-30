@@ -18,11 +18,13 @@ import { PostFormData, validatePostForm } from "@/lib/form-validation";
 import { uploadMedia } from "@/lib/upload-media";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface Post {
   _id: Id<"posts">;
   title: string;
   content: string;
+  slug: string;
   categoryId: Id<"categories">;
   type?: "text" | "image" | "video" | "link";
   mediaUrl?: string;
@@ -31,6 +33,9 @@ interface Post {
   linkTitle?: string;
   linkDescription?: string;
   linkImage?: string;
+  category?: {
+    name: string;
+  };
 }
 
 interface PostEditModalProps {
@@ -42,6 +47,7 @@ interface PostEditModalProps {
 
 export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModalProps) {
   const convex = useConvex();
+  const router = useRouter();
 
   // Form state
   const [formData, setFormData] = useState<ExtendedPostFormData>({
@@ -142,13 +148,14 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
         }
       }
 
-      await editPost({
+      const result = await editPost({
         postId: post._id,
         title: formData.title.trim(),
         content: formData.content.trim(),
         type: formData.type,
         mediaUrl,
         thumbnailUrl,
+        categoryId: formData.categoryId,
         linkUrl: formData.linkUrl,
         linkTitle: formData.linkTitle,
         linkDescription: formData.linkDescription,
@@ -157,10 +164,34 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
 
       toast.success("Post updated successfully!");
 
+      // Invoke success callback before handling navigation
       if (onSuccess) {
         onSuccess();
       }
-      onClose();
+
+      // Determine if either the slug or category changed
+      const slugChanged = result.slug !== post.slug;
+      const updatedCategoryName = result.categoryName;
+      const originalCategoryName = post.category?.name;
+      const categoryChanged =
+        updatedCategoryName !== undefined && updatedCategoryName !== originalCategoryName;
+
+      if (slugChanged || categoryChanged) {
+        // Prefer the updated category name when constructing the new URL
+        const categoryName = updatedCategoryName || originalCategoryName;
+
+        if (categoryName) {
+          const newUrl = `/${categoryName}/${result.slug}`;
+          onClose();
+          router.push(newUrl);
+        } else {
+          // If for some reason no category is available, just close the modal and refresh
+          onClose();
+          router.refresh();
+        }
+      } else {
+        onClose();
+      }
     } catch (error) {
       console.error("Failed to update post:", error);
       const errorMessage = error instanceof Error
@@ -180,7 +211,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="post-edit-modal">
         <DialogHeader>
           <DialogTitle>Edit Post</DialogTitle>
         </DialogHeader>
@@ -222,6 +253,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
               type="submit" 
               disabled={!isFormComplete || isSubmitting}
               className="min-w-[100px]"
+              data-testid="save-post-button"
             >
               {isSubmitting ? (
                 <>

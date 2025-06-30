@@ -72,7 +72,7 @@ export function PostDeleteModal({
 
   return (
     <AlertDialog open={isOpen} onOpenChange={onClose}>
-      <AlertDialogContent>
+      <AlertDialogContent data-testid="delete-confirm-modal">
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-destructive" />
@@ -80,7 +80,7 @@ export function PostDeleteModal({
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
             <p>
-              Are you sure you want to delete <strong>&ldquo;{postTitle}&rdquo;</strong>?
+              Are you sure you want to delete <strong data-testid="delete-modal-title">&ldquo;{postTitle}&rdquo;</strong>?
             </p>
             <p className="text-sm text-muted-foreground">
               This action cannot be undone. The post will be permanently removed from the community.
@@ -96,13 +96,14 @@ export function PostDeleteModal({
         )}
 
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={handleCancel} disabled={isDeleting}>
+          <AlertDialogCancel onClick={handleCancel} disabled={isDeleting} data-testid="cancel-delete-button">
             Cancel
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={handleDelete}
             disabled={isDeleting}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            data-testid="confirm-delete-button"
           >
             {isDeleting ? (
               <>

@@ -269,6 +269,7 @@ export function PostFormFields({
               placeholder="Enter your post title..."
               className={`${errors.title && touchedFields.has('title') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-green-700 focus:ring-green-700'}`}
               disabled={isSubmitting}
+              data-testid="edit-post-title"
             />
             <div className="flex justify-between items-center text-sm">
               <div>
@@ -328,14 +329,16 @@ export function PostFormFields({
                   <TabsTrigger value="preview">Preview</TabsTrigger>
                 </TabsList>
                 <TabsContent value="edit" className="mt-4">
-                  <Suspense fallback={<RichTextEditorSkeleton />}>
-                    <RichTextEditor
-                      content={formData.content}
-                      onChange={handleContentChange}
-                      placeholder="Write your post content here..."
-                      className={errors.content && touchedFields.has('content') ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
-                    />
-                  </Suspense>
+                  <div data-testid="edit-post-content">
+                    <Suspense fallback={<RichTextEditorSkeleton />}>
+                      <RichTextEditor
+                        content={formData.content}
+                        onChange={handleContentChange}
+                        placeholder="Write your post content here..."
+                        className={errors.content && touchedFields.has('content') ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
+                      />
+                    </Suspense>
+                  </div>
                 </TabsContent>
                 <TabsContent value="preview" className="mt-4">
                   <Suspense fallback={<PostPreviewSkeleton />}>
