@@ -140,9 +140,9 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh]">
+      <DialogContent className="max-w-6xl max-h-[90vh]" data-testid="post-history-modal">
         <DialogHeader>
-          <DialogTitle>Post History</DialogTitle>
+          <DialogTitle data-testid="history-modal-title">Post History</DialogTitle>
         </DialogHeader>
         
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[70vh]">
@@ -160,6 +160,7 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                     selectedVersion === null ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
                   }`}
                   onClick={() => setSelectedVersion(null)}
+                  data-testid="history-version-card"
                 >
                   <CardContent className="p-3">
                     <div className="flex items-center justify-between mb-2">
@@ -186,6 +187,7 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                       selectedVersion?._id === version._id ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
                     }`}
                     onClick={() => setSelectedVersion(version)}
+                    data-testid="history-version-card"
                   >
                     <CardContent className="p-3">
                       <div className="flex items-center justify-between mb-2">
@@ -244,7 +246,7 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                         {new Date(selectedVersion.editedAt).toLocaleString()}
                       </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent data-testid="version-content">
                       <RenderTipTapContent htmlContent={selectedVersion.content} />
                     </CardContent>
                   </Card>
@@ -253,7 +255,7 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                     <CardHeader>
                       <CardTitle className="text-lg">Content Changes</CardTitle>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent data-testid="diff-view">
                       <div className="space-y-4">
                         <div>
                           <h4 className="text-sm font-medium mb-2">Title</h4>

@@ -11,10 +11,10 @@
   ☑ Vitest unit tests for mutations/history
 
 *Phase 2 – UI integration & forms*
-  ☐ extract ``post-form-fields.tsx``
-  ☐ add ellipsis menu (Edit/Delete/History)
-  ☐ implement edit modal and delete confirm
-  ☐ implement history modal skeleton
+  ☑ extract ``post-form-fields.tsx``
+  ☑ add ellipsis menu (Edit/Delete/History)
+  ☑ implement edit modal and delete confirm
+  ☑ implement history modal skeleton
   ☐ Playwright E2E for edit/delete flow
 
 *Phase 3 – Display edited/deleted state*
@@ -23,21 +23,30 @@
   ☐ Vitest React component test for header badge (Testing Library)
 
 *Phase 4 – Edit history viewer*
-  ☐ diff view for a selected version
-  ☐ tabbed layout "Rendered / Diff"
+  ☑ diff view for a selected version
+  ☑ tabbed layout "Rendered / Diff"
   ☐ Playwright E2E for history modal navigation
+
+*Phase 5 – Legacy cleanup*
+  ☐ Remove ``authorId`` optional fields from ``posts`` and ``comments`` tables via migration
+  ☐ Delete legacy ``author`` properties in API responses and UI components
+  ☐ Remove ``checkAuthorId.ts`` utility and related query/function
+  ☐ Update schema, unit tests, and regenerate Convex types
+  ☐ Playwright smoke test to ensure no regressions
 
 ====================================================================
 
-☐ **Phase 0 – Tooling setup**
+☑ **Phase 0 – Tooling setup**
 
-☐ **Phase 1 – Backend support**
+☑ **Phase 1 – Backend support**
 
 ☐ **Phase 2 – UI integration & forms**
 
 ☐ **Phase 3 – Display edited/deleted state**
 
 ☐ **Phase 4 – Edit history viewer**
+
+☐ **Phase 5 – Legacy cleanup**
 
 Affected files
 ``convex/posts.ts``  – new mutations ``editPost`` & ``deletePost`` (update to log history)
@@ -102,6 +111,24 @@ Changes
 * Vitest snapshots for modal rendering (Testing Library / @vitest/coverage).
   • `PostHistoryModal_showsVersionsList` – modal lists all versions with timestamps.
   • `PostHistoryModal_displaysDiffView` – diff tab renders content changes between versions.
+
+Phase 5 – Legacy cleanup
+------------------------
+
+Affected files
+* Remove ``authorId`` optional fields from ``posts`` and ``comments`` tables via migration
+* Delete legacy ``author`` properties in API responses and UI components
+* Remove ``checkAuthorId.ts`` utility and related query/function
+* Update schema, unit tests, and regenerate Convex types
+* Playwright smoke test to ensure no regressions
+
+Changes
+* Update schema to remove ``authorId`` and ``author`` fields from ``posts`` and ``comments`` tables
+* Delete legacy ``author`` properties in API responses and UI components
+* Remove ``checkAuthorId.ts`` utility and related query/function
+* Update unit tests to reflect changes in schema
+* Regenerate Convex types to reflect changes in schema
+* Playwright smoke test to ensure no regressions
 
 ====================================================================
 

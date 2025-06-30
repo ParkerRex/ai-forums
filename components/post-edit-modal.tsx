@@ -180,7 +180,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="post-edit-modal">
         <DialogHeader>
           <DialogTitle>Edit Post</DialogTitle>
         </DialogHeader>
@@ -222,6 +222,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
               type="submit" 
               disabled={!isFormComplete || isSubmitting}
               className="min-w-[100px]"
+              data-testid="save-post-button"
             >
               {isSubmitting ? (
                 <>

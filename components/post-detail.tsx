@@ -218,7 +218,7 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
             )}
 
             {/* Rich Text Content */}
-            <div className="mb-6">
+            <div className="mb-6" data-testid="post-content">
               <RenderTipTapContent htmlContent={post.content} />
             </div>
 
@@ -241,7 +241,7 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted">
+                  <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted" data-testid="post-more-menu">
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>

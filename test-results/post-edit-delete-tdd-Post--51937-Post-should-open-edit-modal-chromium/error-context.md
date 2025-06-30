@@ -1,0 +1,317 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "VAI":
+    - /url: /
+  - navigation
+  - textbox "type / to search"
+  - link "members":
+    - /url: /members
+  - link "settings":
+    - /url: /settings
+  - button "Toggle theme"
+  - button "create"
+  - button "Sign up"
+  - button "Sign in"
+- button "all posts"
+- button "📚 /skool"
+- button "🎥 /content"
+- button "🤝 /connect"
+- button "💭 /prompts"
+- button "⚡ /workflows"
+- button "📢 /announcements"
+- button
+- text: "0"
+- img "test test"
+- text: 🎥 Content Image
+- link "test test":
+  - /url: /post/jd77xsdv0e71gbtpq9bct9940h7jvmym
+  - heading "test test" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/30/2025
+- paragraph: test test test test
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: "0"
+- img "testeteatsat"
+- text: 🎥 Content Image
+- link "testeteatsat":
+  - /url: /post/jd7dxjj08hwrwvgdvv44j49etx7jt41g
+  - heading "testeteatsat" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/30/2025
+- paragraph: asdasdadasddadasdad asdadasda asdasd
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: "0"
+- img "asdadasdadasd"
+- text: 🎥 Content Image
+- link "asdadasdadasd":
+  - /url: /post/jd7bwpgw6hxsd9dn7fprz7ghyh7jv2m9
+  - heading "asdadasdadasd" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/30/2025
+- paragraph: adasdasdadasdadadas
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: "0"
+- img "testtesttets"
+- text: 🎥 Content Image
+- link "testtesttets":
+  - /url: /post/jd78s1ce3eg5rq0zmw11tvvfx97jt75s
+  - heading "testtesttets" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/30/2025
+- paragraph: asdadadasddasdadasd
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: "0"
+- img "anatomy of a prompt"
+- text: 🎥 Content Image
+- link "anatomy of a prompt":
+  - /url: /post/jd7fgcswqsyya0w86mrkpp96g57jt44c
+  - heading "anatomy of a prompt" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/30/2025
+- paragraph: this is a test for how it works.
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: "0"
+- img "testetsttest"
+- text: 🎥 Content Image
+- link "testetsttest":
+  - /url: /post/jd76tfak54asmvtp0rsf3pv3q57jr5kr
+  - heading "testetsttest" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/29/2025
+- paragraph: testtesttest
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: "0"
+- img "test test"
+- text: 🎥 Content Image
+- link "test test":
+  - /url: /post/jd7ej0xxvkwp5pvqjpmggb4cz17js14q
+  - heading "test test" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/29/2025
+- paragraph: testt etesta
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: "0"
+- img "This is an image uplaod test"
+- text: 🎥 Content Image
+- link "This is an image uplaod test":
+  - /url: /post/jd7d8kea3emvg7a6cq1czqpmc97jrc04
+  - heading "This is an image uplaod test" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/29/2025
+- paragraph: This is an image upload test :D
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: 5 📢 Announcements
+- 'link "🆕 VAI WORKSHOP: MCP Jedi Deep Dive ft. JD"':
+  - /url: /post/jd7e5zwgbep72qxaz2wy9nj2s97jngsj
+  - 'heading "🆕 VAI WORKSHOP: MCP Jedi Deep Dive ft. JD" [level=3]'
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/26/2025
+- paragraph: JD ( @Jd Fiscus ) did a fantastic job breaking down MCP 101, future of MCP, MCP for beginner to advanced... and crushed Q&A at the end. If you want...
+- button "5 comments"
+- button "share"
+- button "save"
+- button
+- text: 1 🤝 Connect
+- link "Auggie interview rocked, credits landed?":
+  - /url: /post/jd743fy63n7qsh8htcn0263cxx7jmkz6
+  - heading "Auggie interview rocked, credits landed?" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/25/2025
+- paragraph: The 60$ should’ve landed in everyone’s accounts. Learned a lot from the ceo about how to use it. Lots of community questions answered!! Thanks for...
+- button "6 comments"
+- button "share"
+- button "save"
+- button
+- text: 1 📢 Announcements
+- link "Google Released their CLI Coding tool (free)":
+  - /url: /post/jd7651dpyefjhxge97kgnvfc697jnym4
+  - heading "Google Released their CLI Coding tool (free)" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/25/2025
+- paragraph: “Introducing Gemini CLI, a light and powerful open-source AI agent that brings Gemini directly into your terminal. >_ Write code, debug, and...
+- button "2 comments"
+- button "share"
+- button "save"
+- button
+- text: 2 ⚡ Workflows
+- link "Do you believe in Magic?":
+  - /url: /post/jd74wbdj5904yhs8vnb19khadh7jmpqc
+  - heading "Do you believe in Magic?" [level=3]
+- text: by
+- link "Daniel Ngari":
+  - /url: /members/daniel-ngari
+- text: • 6/24/2025
+- paragraph: I have just discovered a tool that works like magic. Quicktype is an open-source tool that automatically generates type definitions and...
+- button "2 comments"
+- button "share"
+- button "save"
+- button
+- text: 0 💭 Prompts
+- link "Impromptu office hours in 8 minutes on discord if you want to chat":
+  - /url: /post/jd7ff2tg89naydb734325f88w57jm2qv
+  - heading "Impromptu office hours in 8 minutes on discord if you want to chat" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/24/2025
+- button "2 comments"
+- button "share"
+- button "save"
+- button
+- text: 5 🤝 Connect
+- link "Auggie Credits arrive tonight, everyone gets $60 instead of $50! :D":
+  - /url: /post/jd72e1kxx3c21fz07dpfq2nsw57jmjbh
+  - heading "Auggie Credits arrive tonight, everyone gets $60 instead of $50! :D" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/24/2025
+- button "3 comments"
+- button "share"
+- button "save"
+- button
+- text: 0 🤝 Connect
+- link "Reminder to get your questions in for Augment CEO/Founder. Doing VAI interview tomorrow! Drop them below!":
+  - /url: /post/jd72nxfq9vcscam4eyh0fnheed7jmwhm
+  - heading "Reminder to get your questions in for Augment CEO/Founder. Doing VAI interview tomorrow! Drop them below!" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/23/2025
+- button "5 comments"
+- button "share"
+- button "save"
+- button
+- text: 2 📢 Announcements
+- link "$50 for 30 Min Feedback Sesh w/ MIT Engineer Led WisprFlow Competitor":
+  - /url: /post/jd71j25yh7vykrabdyxf1x2d497jmjhx
+  - heading "$50 for 30 Min Feedback Sesh w/ MIT Engineer Led WisprFlow Competitor" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/23/2025
+- paragraph: Posted about this a month ago and just got word from the founder that they're prepping a release. Ito is voice control of your Mac - Open-source -...
+- button "4 comments"
+- button "share"
+- button "save"
+- button
+- text: 1 ⚡ Workflows
+- link "Excited to Join":
+  - /url: /post/jd778gcd4zdgagcnf8tdxd4gtx7jm807
+  - heading "Excited to Join" [level=3]
+- text: by
+- link "Crusoe Birkhead":
+  - /url: /members/crusoe-birkhead
+- text: • 6/22/2025
+- paragraph: Hey VAI!! I'm a junior full-stack dev based in Medford, OR. I've been using AI for a while with my work, but am looking to improve my workflows. I...
+- button "1 comments"
+- button "share"
+- button "save"
+- button
+- text: 5 💭 Prompts
+- 'link "[Event] VAI: MCP Deep Dive w/ JD this Thursday 1PM ET on Zoom"':
+  - /url: /post/jd76y7vr67g78981zn3k5vn5dn7jn0cq
+  - 'heading "[Event] VAI: MCP Deep Dive w/ JD this Thursday 1PM ET on Zoom" [level=3]'
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/21/2025
+- paragraph: "Topics covered: - MCP Basic, high level concepts - Resources, Prompts, Tools - Server vs Client (n8n, claude, cursor) - Limitations (scale) - Future..."
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: 1 ⚡ Workflows
+- link "Payment System Project":
+  - /url: /post/jd7c2yq7byf7vwvfqjp30pcx6d7jm6d1
+  - heading "Payment System Project" [level=3]
+- text: by
+- link "Riley Mahoney":
+  - /url: /members/riley-mahoney
+- text: • 6/20/2025
+- paragraph: "Right now I’m finalizing an internal payment system for my company (startup media company). I worked solo on this project with Cursor + Claude ##..."
+- button "0 comments"
+- button "share"
+- button "save"
+- button
+- text: 0 🤝 Connect
+- link "What’s up VAI!":
+  - /url: /post/jd78ec04s4p3r0r6e390kt32c97jmhmv
+  - heading "What’s up VAI!" [level=3]
+- text: by
+- link "Riley Mahoney":
+  - /url: /members/riley-mahoney
+- text: • 6/20/2025
+- paragraph: I’m a fullstack web developer in Fort Lauderdale, FL. Learning everyday how to better leverage AI for the products I’m building. Super excited to be...
+- button "3 comments"
+- button "share"
+- button "save"
+- text: Create Post
+- button "Create Post"
+- paragraph: Share your AI workflows, prompts, and insights with the community
+- text: Recent AI News
+- heading "OpenAI Announces GPT-5 Development" [level=4]
+- paragraph: Next-generation model promises significant improvements in reasoning and multimodal capabilities.
+- text: 2 hours ago
+- heading "Google Releases Gemini 2.0 Flash" [level=4]
+- paragraph: New model features enhanced speed and efficiency for real-time AI applications.
+- text: 4 hours ago
+- heading "Meta AI Unveils Llama 3.3 70B" [level=4]
+- paragraph: Open-source model achieves performance comparable to larger proprietary models.
+- text: 6 hours ago About VAI
+- paragraph: A community platform for AI professionals to share workflows, prompts, insights, and connect with like-minded practitioners.
+- heading "Command Palette" [level=2]
+- paragraph: Search for a command to run...
+- region "Notifications alt+T"
+- button "Open Next.js Dev Tools":
+  - img
+- alert
+```
