@@ -1,10 +1,13 @@
 import Link from "next/link"
 import Image from "next/image"
-import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark, Flag, MoreHorizontal, Play, ExternalLink } from "lucide-react"
+import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark, Flag, MoreHorizontal, Play, ExternalLink, Edit, Trash2, History } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { Id } from "@/convex/_generated/dataModel"
 import { useRef, useState } from "react"
+import { useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
 import { getMediaPlaceholder } from "@/lib/post-preview-utils"
 import { RenderTipTapContent } from "@/lib/render-post-content"
 import { memberProfileUrl } from "@/lib/utils"
@@ -14,6 +17,7 @@ interface Post {
   title: string
   content: string
   createdAt: number
+  editedAt?: number
   netVotes: number
   commentCount: number
   type?: "text" | "image" | "video" | "link"
@@ -44,6 +48,9 @@ interface Post {
 
 interface PostDetailProps {
   post: Post
+  onEdit?: () => void
+  onDelete?: () => void
+  onViewHistory?: () => void
 }
 
 // Helper to compute human-readable time-ago string
@@ -59,10 +66,23 @@ function getTimeAgo(timestamp: number): string {
   return `${days}d`
 }
 
-export default function PostDetail({ post }: PostDetailProps) {
+export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: PostDetailProps) {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const postType = post.type || "text";
+
+  // Get current user to check if they can edit/delete this post
+  const currentMember = useQuery(api.members.getCurrentMember);
+
+  // Check if current user is the author
+  const isAuthor = currentMember && post.author && currentMember._id === post.author._id;
+  
+  // Debug logging
+  console.log('Debug author check:', {
+    currentMember: currentMember ? { _id: currentMember._id, email: currentMember.email } : null,
+    postAuthor: post.author ? { _id: post.author._id, username: post.author.username } : null,
+    isAuthor
+  });
 
   const handleVideoPlay = () => {
     if (videoRef.current) {
@@ -211,9 +231,43 @@ export default function PostDetail({ post }: PostDetailProps) {
                 <Flag className="w-4 h-4 mr-1" />
                 report
               </Button>
-              <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted">
-                <MoreHorizontal className="w-4 h-4" />
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted">
+                    <MoreHorizontal className="w-4 h-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {/* Always show View History */}
+                  <DropdownMenuItem onClick={onViewHistory}>
+                    <History className="w-4 h-4 mr-2" />
+                    View History
+                  </DropdownMenuItem>
+                  {/* Only show Edit/Delete if user is the author */}
+                  {isAuthor && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={onEdit}>
+                        <Edit className="w-4 h-4 mr-2" />
+                        Edit Post
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
+                        <Trash2 className="w-4 h-4 mr-2" />
+                        Delete Post
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                  {/* Debug item to see if dropdown is working */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem disabled>
+                        Debug: isAuthor = {isAuthor ? 'true' : 'false'}
+                      </DropdownMenuItem>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </div>

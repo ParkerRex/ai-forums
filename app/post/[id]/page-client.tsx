@@ -3,13 +3,17 @@
 import { Authenticated, Unauthenticated } from "convex/react";
 import PostDetail from "@/components/post-detail";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
+import { PostEditModal } from "@/components/post-edit-modal";
+import { PostDeleteModal } from "@/components/post-delete-modal";
+import { PostHistoryModal } from "@/components/post-history-modal";
 import { Button } from "@/components/ui/button";
 import { Lock, Eye, MessageSquare } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import CommentSection from "@/components/comment-section";
-import { use } from "react";
+import { use, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface PageClientProps {
   params: Promise<{
@@ -18,8 +22,15 @@ interface PageClientProps {
 }
 
 export default function PostPageClient({ params }: PageClientProps) {
+  const router = useRouter();
+  
   // Unwrap the params promise (Next.js 15 behavior)
   const resolvedParams = use(params);
+  
+  // Modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
   
   // Check if we have a valid post ID
   const hasValidPostId = resolvedParams?.id && typeof resolvedParams.id === "string" && resolvedParams.id.trim() !== "";
@@ -30,6 +41,33 @@ export default function PostPageClient({ params }: PageClientProps) {
   const post = useQuery(api.posts.getPostById, queryArgs);
 
   console.log("PostPageClient - resolvedParams:", resolvedParams, "hasValidPostId:", hasValidPostId, "queryArgs:", queryArgs);
+
+  // Modal handlers
+  const handleEdit = () => {
+    setIsEditModalOpen(true);
+  };
+
+  const handleDelete = () => {
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleViewHistory = () => {
+    setIsHistoryModalOpen(true);
+  };
+
+  const handleEditSuccess = () => {
+    // Refresh the page or navigate to show updated post
+    window.location.reload();
+  };
+
+  const handleDeleteSuccess = () => {
+    // Navigate back to the category or home page
+    if (post?.category?.name) {
+      router.push(`/${post.category.name}`);
+    } else {
+      router.push('/');
+    }
+  };
 
   if (!hasValidPostId) {
     return (
@@ -69,10 +107,39 @@ export default function PostPageClient({ params }: PageClientProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Authenticated>
-        <PostDetail post={post} />
+        <PostDetail 
+          post={post} 
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onViewHistory={handleViewHistory}
+        />
         <div className="mt-8">
           <CommentSection postId={post._id} />
         </div>
+
+        {/* Modals */}
+        {post && (
+          <>
+            <PostEditModal
+              post={post}
+              isOpen={isEditModalOpen}
+              onClose={() => setIsEditModalOpen(false)}
+              onSuccess={handleEditSuccess}
+            />
+            <PostDeleteModal
+              postId={post._id}
+              postTitle={post.title}
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onSuccess={handleDeleteSuccess}
+            />
+            <PostHistoryModal
+              postId={post._id}
+              isOpen={isHistoryModalOpen}
+              onClose={() => setIsHistoryModalOpen(false)}
+            />
+          </>
+        )}
       </Authenticated>
 
       <Unauthenticated>
