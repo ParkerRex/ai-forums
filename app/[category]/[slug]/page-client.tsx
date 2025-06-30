@@ -60,8 +60,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   };
 
   const handleEditSuccess = () => {
-    // Refresh the page or navigate to show updated post
-    window.location.reload();
+    // Refresh data without full page reload
+    router.refresh();
   };
 
   const handleDeleteSuccess = () => {
