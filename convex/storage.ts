@@ -31,6 +31,57 @@ function createR2Client() {
   });
 }
 
+// NEW HELPER ──────────────────────────────────────────────────────────────
+/**
+ * Derive a public base URL for objects stored in the R2 bucket.
+ *
+ * 1. Accepts an optional `process.env.R2_PUBLIC_URL`.
+ * 2. Works for both `*.r2.dev` and `*.cloudflarestorage.com` hosts.
+ * 3. Never throws – if the supplied value is malformed it gracefully falls back
+ *    to the default Cloudflare R2 endpoint.
+ * 4. Ensures the bucket path is appended exactly once for
+ *    `cloudflarestorage.com` hosts (it is **not** required for `r2.dev`).
+ */
+function getPublicBase(bucket: string): string {
+  const provided = process.env.R2_PUBLIC_URL?.trim();
+
+  // Fallback to the standard Cloudflare URL if nothing was configured.
+  if (!provided) {
+    return `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucket}`;
+  }
+
+  // Ensure we have a protocol ‑ if not, prepend https so URL parsing works.
+  const withProtocol = /^(https?:)?\/\//.test(provided) ? provided : `https://${provided}`;
+
+  let host: string;
+  let path: string;
+
+  // Use try/catch so we never crash at runtime because of an invalid URL.
+  try {
+    const url = new URL(withProtocol);
+    host = url.host;
+    path = url.pathname.replace(/\/$/, ""); // strip trailing slash from pathname
+  } catch {
+    // Malformed URL – fall back to default endpoint instead of throwing.
+    return `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucket}`;
+  }
+
+  // For `cloudflarestorage.com` hosts we need a `/<bucket>` path segment.
+  if (host.endsWith("cloudflarestorage.com")) {
+    if (path === `/${bucket}`) {
+      // Correct path already present – return as-is (minus trailing slash).
+      return withProtocol.replace(/\/$/, "");
+    }
+    // Ensure we only append the bucket path once.
+    return `${withProtocol.replace(/\/$/, "")}/${bucket}`;
+  }
+
+  // For `r2.dev` and any other custom domains we just return the provided URL
+  // (without a trailing slash) since they already point at the bucket.
+  return withProtocol.replace(/\/$/, "");
+}
+// ──────────────────────────────────────────────────────────────────────────
+
 export const generateUploadUrl = action({
   args: {
     contentType: v.string(),
@@ -62,34 +113,8 @@ export const generateUploadUrl = action({
         expiresIn: 900 // 15 minutes
       });
 
-      // Build public base URL. If R2_PUBLIC_URL is provided, ensure the bucket path
-      // is present (Cloudflare `r2.dev` endpoints require `/<bucket>` after the host).
-      let publicBase: string;
-      if (process.env.R2_PUBLIC_URL) {
-        const trimmed = process.env.R2_PUBLIC_URL.replace(/\/$/, "");
-
-        // If the host is the account endpoint (…cloudflarestorage.com), we still need the
-        // bucket path. For custom domains or the public-dev URL (pub-….r2.dev) the bucket
-        // is already implied by DNS, so we should NOT append it again.
-        const host = new URL(trimmed).hostname;
-        const needsBucketPath = host.endsWith("cloudflarestorage.com");
-
-        publicBase = needsBucketPath ? `${trimmed}/${bucket}` : trimmed;
-      } else {
-        publicBase = `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucket}`;
-      }
-
-      const publicUrl = `${publicBase}/${objectKey}`;
-
-      // DEBUG LOGS – remove once issue is resolved
-      console.log("[R2 DEBUG] generateUploadUrl", {
-        bucket,
-        R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
-        constructedPublicBase: publicBase,
-        objectKey,
-        publicUrl,
-        uploadUrlPreview: uploadUrl?.slice(0, 60) + "...", // shorten for log readability
-      });
+      // Replace previous inline logic with helper to avoid duplication/bugs.
+      const publicUrl = `${getPublicBase(bucket)}/${objectKey}`;
 
       return {
         uploadUrl,
@@ -138,33 +163,9 @@ export const uploadFile = action({
 
       await s3Client.send(command);
 
-      // Build public base URL. If R2_PUBLIC_URL is provided, ensure the bucket path
-      // is present (Cloudflare `r2.dev` endpoints require `/<bucket>` after the host).
-      let publicBase: string;
-      if (process.env.R2_PUBLIC_URL) {
-        const trimmed = process.env.R2_PUBLIC_URL.replace(/\/$/, "");
+      // Use the same helper here too.
+      const publicUrl = `${getPublicBase(bucket)}/${objectKey}`;
 
-        // If the host is the account endpoint (…cloudflarestorage.com), we still need the
-        // bucket path. For custom domains or the public-dev URL (pub-….r2.dev) the bucket
-        // is already implied by DNS, so we should NOT append it again.
-        const host = new URL(trimmed).hostname;
-        const needsBucketPath = host.endsWith("cloudflarestorage.com");
-
-        publicBase = needsBucketPath ? `${trimmed}/${bucket}` : trimmed;
-      } else {
-        publicBase = `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com/${bucket}`;
-      }
-
-      const publicUrl = `${publicBase}/${objectKey}`;
-
-      // DEBUG LOGS – remove once issue is resolved
-      console.log("[R2 DEBUG] uploadFile", {
-        bucket,
-        R2_PUBLIC_URL: process.env.R2_PUBLIC_URL,
-        constructedPublicBase: publicBase,
-        objectKey,
-        publicUrl,
-      });
 
       return {
         objectKey,
