@@ -30,6 +30,7 @@ import type * as migrations_fix_member_status from "../migrations/fix_member_sta
 import type * as migrations_merge_duplicate_members from "../migrations/merge_duplicate_members.js";
 import type * as migrations_merge_name_duplicates from "../migrations/merge_name_duplicates.js";
 import type * as migrations_remove_imported_placeholders from "../migrations/remove_imported_placeholders.js";
+import type * as postVersions from "../postVersions.js";
 import type * as posts from "../posts.js";
 import type * as search from "../search.js";
 import type * as stats from "../stats.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/merge_duplicate_members": typeof migrations_merge_duplicate_members;
   "migrations/merge_name_duplicates": typeof migrations_merge_name_duplicates;
   "migrations/remove_imported_placeholders": typeof migrations_remove_imported_placeholders;
+  postVersions: typeof postVersions;
   posts: typeof posts;
   search: typeof search;
   stats: typeof stats;

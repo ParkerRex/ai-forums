@@ -312,7 +312,7 @@ export const createPost = mutation({
   },
 });
 
-// Update post (edit)
+// Update post (edit) - DEPRECATED, use editPost instead
 export const updatePost = mutation({
   args: {
     postId: v.id("posts"),
@@ -364,6 +364,158 @@ export const updatePost = mutation({
     if (postType === "link" && args.linkUrl === "") {
       throw new Error("Link posts require a link URL");
     }
+
+    const now = Date.now();
+    const updates: {
+      updatedAt: number;
+      editedAt: number;
+      title?: string;
+      content?: string;
+      slug?: string;
+      editReason?: string;
+      type?: "text" | "image" | "video" | "link";
+      mediaUrl?: string;
+      thumbnailUrl?: string;
+      linkUrl?: string;
+      linkTitle?: string;
+      linkDescription?: string;
+      linkImage?: string;
+    } = {
+      updatedAt: now,
+      editedAt: now,
+    };
+
+    // If title is being updated, regenerate slug
+    if (args.title !== undefined) {
+      updates.title = args.title.trim();
+      
+      // Generate new slug from updated title
+      const baseSlug = generateSlug(args.title);
+      const posts = await ctx.db
+        .query("posts")
+        .withIndex("by_slug")
+        .filter((q) => q.neq(q.field("_id"), args.postId)) // Exclude current post
+        .collect();
+      const existingSlugs = posts
+        .map(p => p.slug)
+        .filter((slug): slug is string => slug !== undefined);
+      updates.slug = ensureUniqueSlug(baseSlug, existingSlugs);
+    }
+    
+    if (args.content !== undefined) {
+      updates.content = args.content.trim();
+    }
+    if (args.editReason !== undefined) {
+      updates.editReason = args.editReason.trim();
+    }
+
+    // Handle media/link field updates
+    if (args.type !== undefined) {
+      updates.type = args.type;
+    }
+    if (args.mediaUrl !== undefined) {
+      updates.mediaUrl = args.mediaUrl;
+    }
+    if (args.thumbnailUrl !== undefined) {
+      updates.thumbnailUrl = args.thumbnailUrl;
+    }
+    if (args.linkUrl !== undefined) {
+      updates.linkUrl = args.linkUrl;
+    }
+    if (args.linkTitle !== undefined) {
+      updates.linkTitle = args.linkTitle;
+    }
+    if (args.linkDescription !== undefined) {
+      updates.linkDescription = args.linkDescription;
+    }
+    if (args.linkImage !== undefined) {
+      updates.linkImage = args.linkImage;
+    }
+
+    await ctx.db.patch(args.postId, updates);
+    return args.postId;
+  },
+});
+
+// Edit post mutation with version history
+export const editPost = mutation({
+  args: {
+    postId: v.id("posts"),
+    title: v.optional(v.string()),
+    content: v.optional(v.string()),
+    editReason: v.optional(v.string()),
+    type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
+    mediaUrl: v.optional(v.string()),
+    thumbnailUrl: v.optional(v.string()),
+    linkUrl: v.optional(v.string()),
+    linkTitle: v.optional(v.string()),
+    linkDescription: v.optional(v.string()),
+    linkImage: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Authentication required");
+    }
+
+    const post = await ctx.db.get(args.postId);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    // Find the authenticated user
+    const member = await ctx.db
+      .query("members")
+      .filter((q) => q.eq(q.field("email"), identity.email))
+      .first();
+
+    if (!member) {
+      throw new Error("Member not found");
+    }
+
+    // Check if user is the author
+    if (post.authorId !== member._id) {
+      throw new Error("Only the author can edit this post");
+    }
+
+    // Validate type-specific requirements
+    const postType = args.type || post.type || "text";
+    if (postType === "image" && args.mediaUrl === "") {
+      throw new Error("Image posts require a media URL");
+    }
+    if (postType === "video" && args.mediaUrl === "") {
+      throw new Error("Video posts require a media URL");
+    }
+    if (postType === "link" && args.linkUrl === "") {
+      throw new Error("Link posts require a link URL");
+    }
+
+    // Get the next version number
+    const versions = await ctx.db
+      .query("post_versions")
+      .withIndex("by_post_and_version", (q) => q.eq("postId", args.postId))
+      .order("desc")
+      .first();
+    const nextVersion = (versions?.version ?? 0) + 1;
+
+    // Save current state to version history
+    await ctx.db.insert("post_versions", {
+      postId: args.postId,
+      version: nextVersion,
+      title: post.title,
+      content: post.content,
+      editorId: member._id,
+      editedAt: Date.now(),
+      editReason: args.editReason,
+      // Preserve media/link fields
+      type: post.type,
+      mediaUrl: post.mediaUrl,
+      thumbnailUrl: post.thumbnailUrl,
+      linkUrl: post.linkUrl,
+      linkTitle: post.linkTitle,
+      linkDescription: post.linkDescription,
+      linkImage: post.linkImage,
+    });
 
     const now = Date.now();
     const updates: {

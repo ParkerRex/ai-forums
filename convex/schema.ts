@@ -201,4 +201,26 @@ export default defineSchema({
     .index("by_userId", ["userId"])
     .index("by_post_and_user", ["postId", "userId"])
     .index("by_viewedAt", ["viewedAt"]),
+
+  post_versions: defineTable({
+    postId: v.id("posts"),
+    version: v.number(),
+    title: v.string(),
+    content: v.string(),
+    editorId: v.id("members"),
+    editedAt: v.number(),
+    editReason: v.optional(v.string()),
+    // Store the full post state at time of edit
+    type: v.optional(PostTypeValidator),
+    mediaUrl: v.optional(v.string()),
+    thumbnailUrl: v.optional(v.string()),
+    linkUrl: v.optional(v.string()),
+    linkTitle: v.optional(v.string()),
+    linkDescription: v.optional(v.string()),
+    linkImage: v.optional(v.string()),
+  })
+    .index("by_postId", ["postId"])
+    .index("by_post_and_version", ["postId", "version"])
+    .index("by_editorId", ["editorId"])
+    .index("by_editedAt", ["editedAt"]),
 });
