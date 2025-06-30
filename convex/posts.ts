@@ -4,6 +4,12 @@ import { Id } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 import { getAuthenticatedMember } from "./auth";
 
+// Helper function to check if a member is the author of a post
+// Supports both legacy authorId and new memberId fields for backward compatibility
+function isPostAuthor(post: { authorId: Id<"members">; memberId?: Id<"members"> }, memberId: Id<"members">): boolean {
+  return post.memberId === memberId || post.authorId === memberId;
+}
+
 // Helper function to validate URLs in content
 function validateContentUrls(content: string): void {
   // Match URLs and markdown links
@@ -271,7 +277,8 @@ export const createPost = mutation({
       slug,
       createdAt: now,
       updatedAt: now,
-      authorId: member._id,
+      authorId: member._id, // Legacy field, will be removed in Phase 6
+      memberId: member._id, // New unified field
       categoryId: args.categoryId,
       status: "active",
       upvotes: 0,
@@ -325,8 +332,8 @@ export const updatePost = mutation({
       throw new Error("Post not found");
     }
 
-    // Check if user is the author
-    if (post.authorId !== member._id) {
+    // Check if user is the author (supports both legacy and new fields)
+    if (!isPostAuthor(post, member._id)) {
       throw new Error("Only the author can edit this post");
     }
 
@@ -438,8 +445,8 @@ export const editPost = mutation({
       throw new Error("Post not found");
     }
 
-    // Check if user is the author
-    if (post.authorId !== member._id) {
+    // Check if user is the author (supports both legacy and new fields)
+    if (!isPostAuthor(post, member._id)) {
       throw new Error("Only the author can edit this post");
     }
 
@@ -566,8 +573,8 @@ export const deletePost = mutation({
       throw new Error("Post not found");
     }
 
-    // Check if user is the author
-    if (post.authorId !== member._id) {
+    // Check if user is the author (supports both legacy and new fields)
+    if (!isPostAuthor(post, member._id)) {
       throw new Error("Only the author can delete this post");
     }
 
@@ -739,16 +746,17 @@ export const searchPosts = query({
   },
 });
 
-// Get posts by author
-export const getPostsByAuthor = query({
+// Get posts by author (renamed to getPostsByMember for consistency)
+export const getPostsByMember = query({
   args: {
-    authorId: v.id("members"),
+    memberId: v.id("members"),
     limit: v.optional(v.number()),
   },
-  handler: async (ctx, { authorId, limit = 10 }) => {
+  handler: async (ctx, { memberId, limit = 10 }) => {
+    // Use new unified index
     const posts = await ctx.db
       .query("posts")
-      .withIndex("by_author_and_createdAt", (q) => q.eq("authorId", authorId))
+      .withIndex("by_member_and_createdAt", (q) => q.eq("memberId", memberId))
       .filter((q) => q.eq(q.field("status"), "active"))
       .order("desc")
       .take(limit);
@@ -756,6 +764,60 @@ export const getPostsByAuthor = query({
     // Enrich with category data
     const enrichedPosts = await Promise.all(
       posts.map(async (post) => {
+        const category = await ctx.db.get(post.categoryId);
+        return {
+          ...post,
+          category: category ? {
+            _id: category._id,
+            name: category.name,
+            displayName: category.displayName,
+            icon: category.icon,
+          } : null,
+        };
+      })
+    );
+
+    return enrichedPosts;
+  },
+});
+
+// Legacy function for backward compatibility - will be removed in Phase 6
+export const getPostsByAuthor = query({
+  args: {
+    authorId: v.id("members"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { authorId, limit = 10 }) => {
+    // For backward compatibility, check both legacy and new fields
+    const [legacyPosts, newPosts] = await Promise.all([
+      ctx.db
+        .query("posts")
+        .withIndex("by_author_and_createdAt", (q) => q.eq("authorId", authorId))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .order("desc")
+        .take(limit),
+      ctx.db
+        .query("posts")
+        .withIndex("by_member_and_createdAt", (q) => q.eq("memberId", authorId))
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .order("desc")
+        .take(limit)
+    ]);
+
+    // Combine and dedupe by ID
+    const allPosts = [...legacyPosts, ...newPosts];
+    const uniquePosts = allPosts.filter((post, index, arr) => 
+      arr.findIndex(p => p._id === post._id) === index
+    );
+
+    // Sort by creation date and limit
+    const sortedPosts = uniquePosts
+      .sort((a, b) => b.createdAt - a.createdAt)
+      .slice(0, limit);
+
+    // Enrich with category data
+    const enrichedPosts = await Promise.all(
+      sortedPosts.map(async (post) => {
         const category = await ctx.db.get(post.categoryId);
         return {
           ...post,

@@ -25,8 +25,8 @@
 ☑ migration script ``convex/migrations/add_member_id_fields.ts``
 
 *Phase 4 – Backend Refactor*
-☐ update Convex modules to use ``memberId`` + helper
-☐ update/extend unit tests
+☑ update Convex modules to use ``memberId`` + helper
+☑ update/extend unit tests
 
 *Phase 5 – Frontend Rename*
 ☐ rename ``author``→``member`` props and logic

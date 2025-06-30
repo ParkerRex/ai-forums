@@ -241,4 +241,253 @@ test("getPostHistory should return versions with editor info", async () => {
   expect(history[1].version).toBe(1);
   expect(history[0].editor?.firstName).toBe('Editor');
   expect(history[0].editor?.avatarUrl).toBe('https://example.com/avatar.jpg');
+});
+
+// Test new unified functions from Phase 4
+describe("Phase 4 - Backend Refactor", () => {
+  test("getPostsByMember works with new memberId field", async () => {
+    const t = convexTest(schema);
+
+    // Create a test member directly
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert("members", {
+        firstName: "Test",
+        lastName: "Author",
+        email: "author@example.com",
+        status: "active",
+        joinedDate: Date.now(),
+        slug: "test-author",
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+      });
+    });
+
+    // Create a test category directly
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert("categories", {
+        name: "test-category",
+        displayName: "Test Category",
+        description: "Test category description",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        postCount: 0,
+        status: "active",
+        creatorId: memberId,
+      });
+    });
+
+    // Create a post with both authorId and memberId (Phase 4 behavior)
+    const postId = await t.run(async (ctx) => {
+      return await ctx.db.insert("posts", {
+        title: "Test Post",
+        content: "Test content",
+        slug: "test-post",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        authorId: memberId, // Legacy field
+        memberId: memberId, // New unified field
+        categoryId,
+        status: "active",
+        upvotes: 0,
+        downvotes: 0,
+        netVotes: 0,
+        commentCount: 0,
+        viewCount: 0,
+        isPinned: false,
+        isLocked: false,
+        type: "text",
+      });
+    });
+
+    // Test new getPostsByMember function
+    const posts = await t.query(api.posts.getPostsByMember, {
+      memberId,
+      limit: 10,
+    });
+
+    expect(posts).toHaveLength(1);
+    expect(posts[0]._id).toEqual(postId);
+    expect(posts[0].title).toBe("Test Post");
+  });
+
+  test("getPostsByAuthor maintains backward compatibility", async () => {
+    const t = convexTest(schema);
+
+    // Create a test member directly
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert("members", {
+        firstName: "Test",
+        lastName: "Author",
+        email: "author@example.com",
+        status: "active",
+        joinedDate: Date.now(),
+        slug: "test-author",
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+      });
+    });
+
+    // Create a test category directly
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert("categories", {
+        name: "test-category",
+        displayName: "Test Category",
+        description: "Test category description",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        postCount: 0,
+        status: "active",
+        creatorId: memberId,
+      });
+    });
+
+    // Create posts with different field combinations
+    const legacyPostId = await t.run(async (ctx) => {
+      return await ctx.db.insert("posts", {
+        title: "Legacy Post",
+        content: "Legacy content",
+        slug: "legacy-post",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        authorId: memberId, // Only legacy field
+        categoryId,
+        status: "active",
+        upvotes: 0,
+        downvotes: 0,
+        netVotes: 0,
+        commentCount: 0,
+        viewCount: 0,
+        isPinned: false,
+        isLocked: false,
+        type: "text",
+      });
+    });
+
+    const newPostId = await t.run(async (ctx) => {
+      return await ctx.db.insert("posts", {
+        title: "New Post",
+        content: "New content",
+        slug: "new-post",
+        createdAt: Date.now() + 1000,
+        updatedAt: Date.now() + 1000,
+        authorId: memberId, // Legacy field
+        memberId: memberId, // New unified field
+        categoryId,
+        status: "active",
+        upvotes: 0,
+        downvotes: 0,
+        netVotes: 0,
+        commentCount: 0,
+        viewCount: 0,
+        isPinned: false,
+        isLocked: false,
+        type: "text",
+      });
+    });
+
+    // Test legacy getPostsByAuthor function finds both posts
+    const posts = await t.query(api.posts.getPostsByAuthor, {
+      authorId: memberId,
+      limit: 10,
+    });
+
+    expect(posts).toHaveLength(2);
+    const postIds = posts.map(p => p._id);
+    expect(postIds).toContain(legacyPostId);
+    expect(postIds).toContain(newPostId);
+    
+    // Should be ordered by creation date (newest first)
+    expect(posts[0]._id).toEqual(newPostId);
+    expect(posts[1]._id).toEqual(legacyPostId);
+  });
+
+  test("post authorization works with both legacy and new fields", async () => {
+    const t = convexTest(schema);
+
+    // Create test members directly
+    const authorId = await t.run(async (ctx) => {
+      return await ctx.db.insert("members", {
+        firstName: "Test",
+        lastName: "Author",
+        email: "author@example.com",
+        status: "active",
+        joinedDate: Date.now(),
+        slug: "test-author",
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+      });
+    });
+
+    const otherId = await t.run(async (ctx) => {
+      return await ctx.db.insert("members", {
+        firstName: "Other",
+        lastName: "User",
+        email: "other@example.com",
+        status: "active",
+        joinedDate: Date.now(),
+        slug: "other-user",
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+      });
+    });
+
+    // Create a test category directly
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert("categories", {
+        name: "test-category",
+        displayName: "Test Category",
+        description: "Test category description",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        postCount: 0,
+        status: "active",
+        creatorId: authorId,
+      });
+    });
+
+    // Create a post with both fields
+    const postId = await t.run(async (ctx) => {
+      return await ctx.db.insert("posts", {
+        title: "Test Post",
+        content: "Test content",
+        slug: "test-post",
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        authorId: authorId, // Legacy field
+        memberId: authorId, // New unified field
+        categoryId,
+        status: "active",
+        upvotes: 0,
+        downvotes: 0,
+        netVotes: 0,
+        commentCount: 0,
+        viewCount: 0,
+        isPinned: false,
+        isLocked: false,
+        type: "text",
+      });
+    });
+
+    // Author should be able to edit the post
+    await expect(
+      t.withIdentity({ 
+        subject: `user_${authorId}`,
+        email: "author@example.com"
+      }).mutation(api.posts.editPost, {
+        postId,
+        title: "Updated Title",
+      })
+    ).resolves.toEqual(postId);
+
+    // Other user should not be able to edit the post
+    await expect(
+      t.withIdentity({ 
+        subject: `user_${otherId}`,
+        email: "other@example.com"
+      }).mutation(api.posts.editPost, {
+        postId,
+        title: "Unauthorized Update",
+      })
+    ).rejects.toThrow("Only the author can edit this post");
+  });
 }); 
