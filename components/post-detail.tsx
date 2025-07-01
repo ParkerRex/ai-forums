@@ -1,80 +1,99 @@
-import Link from "next/link"
-import Image from "next/image"
-import { ArrowUp, ArrowDown, MessageSquare, Share, Bookmark, Flag, MoreHorizontal, Play, ExternalLink, Edit, Trash2, History } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
-import { Id } from "@/convex/_generated/dataModel"
-import { useRef, useState } from "react"
-import { useQuery } from "convex/react"
-import { api } from "@/convex/_generated/api"
-import { getMediaPlaceholder } from "@/lib/post-preview-utils"
-import { RenderTipTapContent } from "@/lib/render-post-content"
-import { memberProfileUrl } from "@/lib/utils"
+import Link from "next/link";
+import Image from "next/image";
+import {
+  ArrowUp,
+  ArrowDown,
+  MessageSquare,
+  Share,
+  Bookmark,
+  Flag,
+  MoreHorizontal,
+  Play,
+  ExternalLink,
+  Edit,
+  Trash2,
+  History,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
+import { Id } from "@/convex/_generated/dataModel";
+import { useRef, useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { getMediaPlaceholder } from "@/lib/post-preview-utils";
+import { RenderTipTapContent } from "@/lib/render-post-content";
+import { memberProfileUrl } from "@/lib/utils";
 
 interface Post {
-  _id: Id<"posts">
-  title: string
-  content: string
-  createdAt: number
-  editedAt?: number
-  netVotes: number
-  commentCount: number
-  type?: "text" | "image" | "video" | "link"
-  mediaUrl?: string
-  thumbnailUrl?: string
-  linkUrl?: string
-  linkTitle?: string
-  linkDescription?: string
-  linkImage?: string
-  linkPreviews?: Record<string, {
-    title?: string;
-    description?: string;
-    image?: string;
-    siteName?: string;
-    url: string;
-  }>
+  _id: Id<"posts">;
+  title: string;
+  content: string;
+  createdAt: number;
+  editedAt?: number;
+  netVotes: number;
+  commentCount: number;
+  type?: "text" | "image" | "video" | "link";
+  mediaUrl?: string;
+  thumbnailUrl?: string;
+  linkUrl?: string;
+  linkTitle?: string;
+  linkDescription?: string;
+  linkImage?: string;
+  linkPreviews?: Record<
+    string,
+    {
+      title?: string;
+      description?: string;
+      image?: string;
+      siteName?: string;
+      url: string;
+    }
+  >;
   member?: {
-    _id: Id<"members">
-    firstName: string
-    lastName: string
-    username: string
-    slug?: string
-  } | null
-  // Legacy field for backward compatibility - will be removed in Phase 6
-  author?: {
-    _id: Id<"members">
-    firstName: string
-    lastName: string
-    username: string
-    slug?: string
-  } | null
+    _id: Id<"members">;
+    firstName: string;
+    lastName: string;
+    username: string;
+    slug?: string;
+  } | null;
   category?: {
-    name: string
-  } | null
+    name: string;
+  } | null;
 }
 
 interface PostDetailProps {
-  post: Post
-  onEdit?: () => void
-  onDelete?: () => void
-  onViewHistory?: () => void
+  post: Post;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  onViewHistory?: () => void;
 }
 
 // Helper to compute human-readable time-ago string
 function getTimeAgo(timestamp: number): string {
-  const now = Date.now()
-  const diff = now - timestamp
-  const minutes = Math.floor(diff / (1000 * 60))
-  const hours = Math.floor(diff / (1000 * 60 * 60))
-  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+  const now = Date.now();
+  const diff = now - timestamp;
+  const minutes = Math.floor(diff / (1000 * 60));
+  const hours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24));
 
-  if (minutes < 60) return `${minutes}m`
-  if (hours < 24) return `${hours}h`
-  return `${days}d`
+  if (minutes < 60) return `${minutes}m`;
+  if (hours < 24) return `${hours}h`;
+  return `${days}d`;
 }
 
-export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: PostDetailProps) {
+export default function PostDetail({
+  post,
+  onEdit,
+  onDelete,
+  onViewHistory,
+}: PostDetailProps) {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const postType = post.type || "text";
@@ -83,13 +102,18 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
   const currentMember = useQuery(api.members.getCurrentMember);
 
   // Check if current user is the member who created this post
-  const isMemberPost = currentMember && (post.member || post.author) && currentMember._id === (post.member || post.author)?._id;
-  
+  const isMemberPost =
+    currentMember && post.member && currentMember._id === post.member?._id;
+
   // Debug logging
-  console.log('Debug member check:', {
-    currentMember: currentMember ? { _id: currentMember._id, email: currentMember.email } : null,
-    postMember: (post.member || post.author) ? { _id: (post.member || post.author)?._id, username: (post.member || post.author)?.username } : null,
-    isMemberPost
+  console.log("Debug member check:", {
+    currentMember: currentMember
+      ? { _id: currentMember._id, email: currentMember.email }
+      : null,
+    postMember: post.member
+      ? { _id: post.member?._id, username: post.member?.username }
+      : null,
+    isMemberPost,
   });
 
   const handleVideoPlay = () => {
@@ -109,11 +133,21 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
         <div className="flex">
           {/* Voting */}
           <div className="flex flex-col items-center p-4 space-y-1 bg-muted/50 rounded-l-lg">
-            <Button variant="ghost" size="sm" className="p-1 h-auto hover:bg-muted">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 h-auto hover:bg-muted"
+            >
               <ArrowUp className="w-6 h-6 text-muted-foreground hover:text-primary" />
             </Button>
-            <span className="text-lg font-bold text-foreground">{post.netVotes}</span>
-            <Button variant="ghost" size="sm" className="p-1 h-auto hover:bg-muted">
+            <span className="text-lg font-bold text-foreground">
+              {post.netVotes}
+            </span>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-1 h-auto hover:bg-muted"
+            >
               <ArrowDown className="w-6 h-6 text-muted-foreground hover:text-destructive" />
             </Button>
           </div>
@@ -121,7 +155,7 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
           {/* Content */}
           <div className="flex-1 p-6">
             <div className="flex items-center text-sm text-muted-foreground mb-4">
-              <Link 
+              <Link
                 href={`/${post.category?.name || "general"}`}
                 className="text-primary hover:underline"
               >
@@ -129,18 +163,27 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
               </Link>
               <span className="mx-2">•</span>
               <span>posted by</span>
-              <Link 
-                href={(post.member || post.author) ? memberProfileUrl({ slug: (post.member || post.author)!.slug!, _id: (post.member || post.author)!._id }) : "#"}
+              <Link
+                href={
+                  post.member
+                    ? memberProfileUrl({
+                        slug: post.member!.slug!,
+                        _id: post.member!._id,
+                      })
+                    : "#"
+                }
                 className="ml-1 text-primary hover:underline"
                 data-testid="member-link"
               >
-                /u/{(post.member || post.author)?.username || "unknown"}
+                /u/{post.member?.username || "unknown"}
               </Link>
               <span className="mx-2">•</span>
               <span>{getTimeAgo(post.createdAt)} ago</span>
             </div>
 
-            <h1 className="text-2xl font-bold text-foreground mb-6">{post.title}</h1>
+            <h1 className="text-2xl font-bold text-foreground mb-6">
+              {post.title}
+            </h1>
 
             {/* Media Content */}
             {postType === "image" && post.mediaUrl && (
@@ -169,7 +212,7 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
                   onPause={() => setIsVideoPlaying(false)}
                 />
                 {!isVideoPlaying && post.thumbnailUrl && (
-                  <div 
+                  <div
                     className="absolute inset-0 flex items-center justify-center cursor-pointer"
                     onClick={handleVideoPlay}
                   >
@@ -183,9 +226,9 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
 
             {postType === "link" && post.linkUrl && (
               <Card className="mb-6 overflow-hidden hover:shadow-md transition-shadow">
-                <a 
-                  href={post.linkUrl} 
-                  target="_blank" 
+                <a
+                  href={post.linkUrl}
+                  target="_blank"
                   rel="noopener noreferrer"
                   className="block"
                 >
@@ -223,25 +266,46 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
             </div>
 
             <div className="flex items-center space-x-4 text-sm text-muted-foreground border-t border-border pt-4">
-              <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-2 h-auto hover:bg-muted"
+              >
                 <MessageSquare className="w-4 h-4 mr-1" />
                 {post.commentCount} comments
               </Button>
-              <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-2 h-auto hover:bg-muted"
+              >
                 <Share className="w-4 h-4 mr-1" />
                 share
               </Button>
-              <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-2 h-auto hover:bg-muted"
+              >
                 <Bookmark className="w-4 h-4 mr-1" />
                 save
               </Button>
-              <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-2 h-auto hover:bg-muted"
+              >
                 <Flag className="w-4 h-4 mr-1" />
                 report
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="p-2 h-auto hover:bg-muted" data-testid="post-more-menu">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-2 h-auto hover:bg-muted"
+                    data-testid="post-more-menu"
+                  >
                     <MoreHorizontal className="w-4 h-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -259,18 +323,21 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
                         <Edit className="w-4 h-4 mr-2" />
                         Edit Post
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={onDelete} className="text-destructive focus:text-destructive">
+                      <DropdownMenuItem
+                        onClick={onDelete}
+                        className="text-destructive focus:text-destructive"
+                      >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete Post
                       </DropdownMenuItem>
                     </>
                   )}
                   {/* Debug item to see if dropdown is working */}
-                  {process.env.NODE_ENV === 'development' && (
+                  {process.env.NODE_ENV === "development" && (
                     <>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem disabled>
-                        Debug: isMemberPost = {isMemberPost ? 'true' : 'false'}
+                        Debug: isMemberPost = {isMemberPost ? "true" : "false"}
                       </DropdownMenuItem>
                     </>
                   )}
@@ -283,5 +350,5 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
 
       {/* Comments removed – rendered by parent component */}
     </div>
-  )
+  );
 }

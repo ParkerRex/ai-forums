@@ -24,28 +24,42 @@ interface PostPageClientProps {
 
 export default function PostPageClient({ params }: PostPageClientProps) {
   const router = useRouter();
-  
+
   // Unwrap the params promise (Next.js 15 behavior)
   const resolvedParams = use(params);
   const { category, slug } = resolvedParams;
   const searchParams = useSearchParams();
-  const commentId = searchParams.get('commentId');
-  
+  const commentId = searchParams.get("commentId");
+
   // Modal states
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
-  
-  // Check if we have valid parameters
-  const hasValidParams = category && slug && 
-    typeof category === "string" && category.trim() !== "" &&
-    typeof slug === "string" && slug.trim() !== "";
-  
-  // Query for the post by slug
-  const post = useQuery(api.posts.getPostBySlug, hasValidParams ? { slug } : "skip");
 
-  console.log("PostPageClient - category:", category, "slug:", slug, "hasValidParams:", hasValidParams);
-  
+  // Check if we have valid parameters
+  const hasValidParams =
+    category &&
+    slug &&
+    typeof category === "string" &&
+    category.trim() !== "" &&
+    typeof slug === "string" &&
+    slug.trim() !== "";
+
+  // Query for the post by slug
+  const post = useQuery(
+    api.posts.getPostBySlug,
+    hasValidParams ? { slug } : "skip",
+  );
+
+  console.log(
+    "PostPageClient - category:",
+    category,
+    "slug:",
+    slug,
+    "hasValidParams:",
+    hasValidParams,
+  );
+
   // Modal handlers
   const handleEdit = () => {
     setIsEditModalOpen(true);
@@ -73,7 +87,9 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Invalid URL</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            Invalid URL
+          </h1>
           <p className="text-muted-foreground">The URL format is invalid.</p>
         </div>
       </div>
@@ -101,16 +117,19 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
       <Authenticated>
-        <PostDetail 
-          post={post} 
+        <PostDetail
+          post={post}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onViewHistory={handleViewHistory}
         />
         <div className="mt-8">
-          <CommentSection postId={post._id as Id<"posts">} targetCommentId={commentId ?? undefined} />
+          <CommentSection
+            postId={post._id as Id<"posts">}
+            targetCommentId={commentId ?? undefined}
+          />
         </div>
-        
+
         {/* Modals */}
         {post && (
           <>
@@ -148,9 +167,13 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 </span>
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-4">{post.title}</h1>
+            <h1 className="text-3xl font-bold text-foreground mb-4">
+              {post.title}
+            </h1>
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
-              <span>by {post.author?.firstName} {post.author?.lastName}</span>
+              <span>
+                by {post.member?.firstName} {post.member?.lastName}
+              </span>
               <span>•</span>
               <span>{new Date(post.createdAt).toLocaleDateString()}</span>
               <span>•</span>
@@ -193,9 +216,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
               title="Unlock Full Post Access"
               description="Join VAI to read complete posts and engage with the AI community"
             >
-              <Button className="px-8">
-                Join to Continue Reading
-              </Button>
+              <Button className="px-8">Join to Continue Reading</Button>
             </MembershipCTAModal>
           </div>
 
@@ -215,4 +236,4 @@ export default function PostPageClient({ params }: PostPageClientProps) {
       </Unauthenticated>
     </div>
   );
-} 
+}

@@ -32,15 +32,6 @@ type CommentWithReplies = {
     username: string;
     slug: string;
   } | null;
-  // Legacy field for backward compatibility - will be removed in Phase 6
-  author: {
-    _id: Id<"members">;
-    firstName: string;
-    lastName: string;
-    email: string;
-    username: string;
-    slug: string;
-  } | null;
   depth: number;
   replies: CommentWithReplies[];
 };
@@ -55,40 +46,46 @@ interface CommentItemProps {
   isSubmittingReply: boolean;
 }
 
-function CommentItem({ 
-  comment, 
-  onReply, 
-  replyingTo, 
-  newReply, 
-  setNewReply, 
+function CommentItem({
+  comment,
+  onReply,
+  replyingTo,
+  newReply,
+  setNewReply,
   onSubmitReply,
-  isSubmittingReply 
+  isSubmittingReply,
 }: CommentItemProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const hasReplies = comment.replies && comment.replies.length > 0;
-  
+
   // Calculate indentation based on depth (max 3 levels)
   const indentLevel = Math.min(comment.depth, 3);
   const marginLeft = indentLevel * 24; // 24px per level
 
   return (
     <div className="space-y-3" style={{ marginLeft: `${marginLeft}px` }}>
-      <div id={`comment-${comment._id}`} className="border border-border rounded-lg p-4 bg-card transition-all duration-300">
+      <div
+        id={`comment-${comment._id}`}
+        className="border border-border rounded-lg p-4 bg-card transition-all duration-300"
+      >
         <div className="flex items-start space-x-3">
           <Avatar className="w-8 h-8">
             <AvatarFallback className="bg-muted text-muted-foreground">
-              {(comment.member || comment.author)?.firstName?.[0] || 'U'}
+              pr {comment.member?.firstName?.[0] || "U"}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-2">
             <div className="flex items-center space-x-2">
-              {(comment.member || comment.author) ? (
-                <Link 
-                  href={memberProfileUrl({ slug: (comment.member || comment.author)!.slug, _id: (comment.member || comment.author)!._id })}
+              {comment.member ? (
+                <Link
+                  href={memberProfileUrl({
+                    slug: comment.member.slug,
+                    _id: comment.member._id,
+                  })}
                   className="font-medium text-foreground hover:text-primary transition-colors"
                   data-testid="member-link"
                 >
-                  {(comment.member || comment.author)!.firstName} {(comment.member || comment.author)!.lastName}
+                  {comment.member.firstName} {comment.member.lastName}
                 </Link>
               ) : (
                 <span className="font-medium text-foreground">
@@ -96,7 +93,9 @@ function CommentItem({
                 </span>
               )}
               <span className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true })}
+                {formatDistanceToNow(new Date(comment.createdAt), {
+                  addSuffix: true,
+                })}
               </span>
               {comment.depth > 0 && (
                 <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
@@ -104,7 +103,9 @@ function CommentItem({
                 </span>
               )}
             </div>
-            <p className="text-foreground whitespace-pre-wrap">{comment.content}</p>
+            <p className="text-foreground whitespace-pre-wrap">
+              {comment.content}
+            </p>
             <div className="flex items-center space-x-2">
               <Authenticated>
                 <Button
@@ -129,7 +130,8 @@ function CommentItem({
                   ) : (
                     <ChevronRight className="w-4 h-4 mr-1" />
                   )}
-                  {comment.replies.length} {comment.replies.length === 1 ? 'reply' : 'replies'}
+                  {comment.replies.length}{" "}
+                  {comment.replies.length === 1 ? "reply" : "replies"}
                 </Button>
               )}
             </div>
@@ -140,7 +142,7 @@ function CommentItem({
         {replyingTo === comment._id && (
           <div className="mt-4 ml-11 space-y-3">
             <Textarea
-                              placeholder={`Reply to ${(comment.member || comment.author)?.firstName || 'this comment'}...`}
+              placeholder={`Reply to ${comment.member?.firstName || "this comment"}...`}
               value={newReply}
               onChange={(e) => setNewReply(e.target.value)}
               className="min-h-[80px]"
@@ -153,11 +155,7 @@ function CommentItem({
               >
                 {isSubmittingReply ? "Posting..." : "Post Reply"}
               </Button>
-                             <Button
-                 size="sm"
-                 variant="outline"
-                 onClick={() => onReply(null)}
-               >
+              <Button size="sm" variant="outline" onClick={() => onReply(null)}>
                 Cancel
               </Button>
             </div>
@@ -186,13 +184,16 @@ function CommentItem({
   );
 }
 
-export default function CommentSection({ postId, targetCommentId }: CommentSectionProps) {
+export default function CommentSection({
+  postId,
+  targetCommentId,
+}: CommentSectionProps) {
   const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Id<"comments"> | null>(null);
   const [newReply, setNewReply] = useState("");
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
-  
+
   const comments = useQuery(api.comments.getCommentsByPost, { postId });
   const createComment = useMutation(api.comments.createComment);
   const { handleMutationError, handleMutationSuccess } = useMutationError();
@@ -275,7 +276,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
         <h3 className="text-lg font-semibold text-foreground mb-4">
           Comments ({totalComments})
         </h3>
-        
+
         <Authenticated>
           <div className="mb-6 space-y-4">
             <Textarea
@@ -284,7 +285,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
               onChange={(e) => setNewComment(e.target.value)}
               className="min-h-[100px]"
             />
-            <Button 
+            <Button
               onClick={handleSubmitComment}
               disabled={!newComment.trim() || isSubmitting}
               className="w-full sm:w-auto"
@@ -300,9 +301,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
               Join the conversation! Sign in to post comments.
             </p>
             <SignInButton mode="modal">
-              <Button variant="outline">
-                Sign In to Comment
-              </Button>
+              <Button variant="outline">Sign In to Comment</Button>
             </SignInButton>
           </div>
         </Unauthenticated>

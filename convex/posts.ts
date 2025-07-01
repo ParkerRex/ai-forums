@@ -116,15 +116,6 @@ export const getPosts = query({
             username: member.email.split('@')[0], // Derive username from email
             slug: member.slug || "",
           } : null,
-          // Legacy field for backward compatibility - will be removed in Phase 6
-          author: member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            email: member.email,
-            username: member.email.split('@')[0], // Derive username from email
-            slug: member.slug || "",
-          } : null,
           category: category ? {
             _id: category._id,
             name: category.name,
@@ -157,21 +148,6 @@ export const getPostById = query({
     return {
       ...post,
       member: member ? {
-        _id: member._id,
-        firstName: member.firstName,
-        lastName: member.lastName,
-        email: member.email,
-        username: member.email.split('@')[0],
-        bio: member.bio,
-        location: member.location,
-        linkGithub: member.linkGithub,
-        linkX: member.linkX,
-        linkYouTube: member.linkYouTube,
-        slug: member.slug || "",
-        avatarUrl: member.avatarUrl,
-      } : null,
-      // Legacy field for backward compatibility - will be removed in Phase 6
-      author: member ? {
         _id: member._id,
         firstName: member.firstName,
         lastName: member.lastName,
@@ -219,21 +195,6 @@ export const getPostBySlug = query({
     return {
       ...post,
       member: member ? {
-        _id: member._id,
-        firstName: member.firstName,
-        lastName: member.lastName,
-        email: member.email,
-        username: member.email.split('@')[0],
-        bio: member.bio,
-        location: member.location,
-        linkGithub: member.linkGithub,
-        linkX: member.linkX,
-        linkYouTube: member.linkYouTube,
-        slug: member.slug || "",
-        avatarUrl: member.avatarUrl,
-      } : null,
-      // Legacy field for backward compatibility - will be removed in Phase 6
-      author: member ? {
         _id: member._id,
         firstName: member.firstName,
         lastName: member.lastName,
@@ -812,14 +773,6 @@ export const searchPosts = query({
             username: member.email.split('@')[0],
             slug: member.slug || "",
           } : null,
-          // Legacy field for backward compatibility - will be removed in Phase 6
-          author: member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            username: member.email.split('@')[0],
-            slug: member.slug || "",
-          } : null,
           category: category ? {
             _id: category._id,
             name: category.name,
@@ -926,4 +879,4 @@ export const addSlugsToExistingPosts = mutation({
     console.log("Slug generation migration completed successfully!");
     return { processed: posts.length };
   },
-}); 
+});    

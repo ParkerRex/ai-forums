@@ -246,15 +246,15 @@ export default function PostPreview({
             </div>
 
             {/* Author and excerpt */}
-            {shouldShowMember && (post.member || post.author) && (
+            {shouldShowMember && post.member && (
               <div className="text-xs text-muted-foreground mb-2">
                 by{" "}
                 <Link
-                  href={`/members/${(post.member || post.author)?.slug || (post.member || post.author)?.username}`}
+                  href={`/members/${post.member?.slug || post.member?.username}`}
                   className="hover:text-foreground transition-colors"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  {(post.member || post.author)?.firstName} {(post.member || post.author)?.lastName}
+                  {post.member?.firstName} {post.member?.lastName}
                 </Link>
                 {" • "}
                 {new Date(post.createdAt).toLocaleDateString()}
@@ -289,4 +289,4 @@ export default function PostPreview({
       </CardContent>
     </Card>
   );
-} 
+}  

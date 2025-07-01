@@ -22,13 +22,6 @@ export interface PostData {
     username?: string;
     slug?: string;
   };
-  // Legacy field for backward compatibility - will be removed in Phase 6
-  author?: {
-    firstName: string;
-    lastName: string;
-    username?: string;
-    slug?: string;
-  };
   category?: {
     name: string;
     displayName: string;
@@ -280,4 +273,4 @@ export function getMediaPlaceholder(): string {
   // Return a base64 encoded 1x1 pixel placeholder
   // In production, this would return a properly sized blurred placeholder
   return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-} 
+}  

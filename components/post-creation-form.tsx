@@ -7,7 +7,13 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,15 +21,24 @@ import { DraftsModal } from "@/components/drafts-modal";
 import {
   PostFormData,
   validatePostForm,
-  getCharacterCountInfo
+  getCharacterCountInfo,
 } from "@/lib/form-validation";
-import { 
-  uploadMedia, 
-  validateMediaFile, 
-  getFilePreviewUrl, 
-  revokeFilePreviewUrl 
+import {
+  uploadMedia,
+  validateMediaFile,
+  getFilePreviewUrl,
+  revokeFilePreviewUrl,
 } from "@/lib/upload-media";
-import { AlertCircle, Loader2, Send, FileText, Image, Link, Upload, X } from "lucide-react";
+import {
+  AlertCircle,
+  Loader2,
+  Send,
+  FileText,
+  Image,
+  Link,
+  Upload,
+  X,
+} from "lucide-react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -109,7 +124,10 @@ function PostPreviewSkeleton() {
   );
 }
 
-export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps) {
+export function PostCreationForm({
+  onSuccess,
+  onCancel,
+}: PostCreationFormProps) {
   const router = useRouter();
   const convex = useConvex();
 
@@ -126,21 +144,25 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
   // Track which fields have been touched by the user
-  const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(new Set());
+  const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(
+    new Set(),
+  );
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Real-time validation (only for touched fields)
   const { errors } = validatePostForm(formData, touchedFields);
-  
+
   // Check overall form validity for submit button (regardless of touched state)
   const { isValid: formIsValid } = validatePostForm(formData);
 
   // Additional validation for media/link posts
   const isPostTypeValid = () => {
     if (formData.type === "image" || formData.type === "video") {
-      return formData.mediaFile !== undefined || formData.mediaUrl !== undefined;
+      return (
+        formData.mediaFile !== undefined || formData.mediaUrl !== undefined
+      );
     }
     if (formData.type === "link") {
       return formData.linkUrl !== undefined && formData.linkUrl.trim() !== "";
@@ -169,84 +191,93 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
   }, [mediaPreviewUrl]);
 
   // Form handlers
-  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({ ...prev, title: e.target.value }));
-    setTouchedFields(prev => new Set(prev).add('title'));
-    setSubmitError(null);
-  }, []);
+  const handleTitleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setFormData((prev) => ({ ...prev, title: e.target.value }));
+      setTouchedFields((prev) => new Set(prev).add("title"));
+      setSubmitError(null);
+    },
+    [],
+  );
 
   const handleContentChange = useCallback((content: string) => {
-    setFormData(prev => ({ ...prev, content }));
-    setTouchedFields(prev => new Set(prev).add('content'));
+    setFormData((prev) => ({ ...prev, content }));
+    setTouchedFields((prev) => new Set(prev).add("content"));
     setSubmitError(null);
   }, []);
 
   const handleCategoryChange = useCallback((categoryId: string) => {
-    setFormData(prev => ({ ...prev, categoryId }));
-    setTouchedFields(prev => new Set(prev).add('categoryId'));
+    setFormData((prev) => ({ ...prev, categoryId }));
+    setTouchedFields((prev) => new Set(prev).add("categoryId"));
     setSubmitError(null);
   }, []);
 
-  const handleTypeChange = useCallback((type: string) => {
-    setFormData(prev => ({ 
-      ...prev, 
-      type: type as ExtendedPostFormData["type"],
-      // Reset type-specific fields when switching
-      mediaFile: undefined,
-      mediaUrl: undefined,
-      thumbnailUrl: undefined,
-      linkUrl: undefined,
-      linkTitle: undefined,
-      linkDescription: undefined,
-      linkImage: undefined,
-    }));
-    // Clean up media preview
-    if (mediaPreviewUrl) {
-      revokeFilePreviewUrl(mediaPreviewUrl);
-      setMediaPreviewUrl(null);
-    }
-    setUploadProgress(null);
-  }, [mediaPreviewUrl]);
+  const handleTypeChange = useCallback(
+    (type: string) => {
+      setFormData((prev) => ({
+        ...prev,
+        type: type as ExtendedPostFormData["type"],
+        // Reset type-specific fields when switching
+        mediaFile: undefined,
+        mediaUrl: undefined,
+        thumbnailUrl: undefined,
+        linkUrl: undefined,
+        linkTitle: undefined,
+        linkDescription: undefined,
+        linkImage: undefined,
+      }));
+      // Clean up media preview
+      if (mediaPreviewUrl) {
+        revokeFilePreviewUrl(mediaPreviewUrl);
+        setMediaPreviewUrl(null);
+      }
+      setUploadProgress(null);
+    },
+    [mediaPreviewUrl],
+  );
 
-  const handleMediaFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleMediaFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-    // Validate file
-    const validation = validateMediaFile(file);
-    if (!validation.valid) {
-      toast.error(validation.error);
-      return;
-    }
+      // Validate file
+      const validation = validateMediaFile(file);
+      if (!validation.valid) {
+        toast.error(validation.error);
+        return;
+      }
 
-    // Set file and create preview
-    setFormData(prev => ({ ...prev, mediaFile: file }));
-    
-    // Clean up old preview
-    if (mediaPreviewUrl) {
-      revokeFilePreviewUrl(mediaPreviewUrl);
-    }
-    
-    // Create new preview
-    const previewUrl = getFilePreviewUrl(file);
-    setMediaPreviewUrl(previewUrl);
+      // Set file and create preview
+      setFormData((prev) => ({ ...prev, mediaFile: file }));
 
-    // Detect media type from file
-    if (file.type.startsWith("image/")) {
-      setFormData(prev => ({ ...prev, type: "image" }));
-    } else if (file.type.startsWith("video/")) {
-      setFormData(prev => ({ ...prev, type: "video" }));
-    }
-  }, [mediaPreviewUrl]);
+      // Clean up old preview
+      if (mediaPreviewUrl) {
+        revokeFilePreviewUrl(mediaPreviewUrl);
+      }
+
+      // Create new preview
+      const previewUrl = getFilePreviewUrl(file);
+      setMediaPreviewUrl(previewUrl);
+
+      // Detect media type from file
+      if (file.type.startsWith("image/")) {
+        setFormData((prev) => ({ ...prev, type: "image" }));
+      } else if (file.type.startsWith("video/")) {
+        setFormData((prev) => ({ ...prev, type: "video" }));
+      }
+    },
+    [mediaPreviewUrl],
+  );
 
   const handleRemoveMedia = useCallback(() => {
-    setFormData(prev => ({ 
-      ...prev, 
+    setFormData((prev) => ({
+      ...prev,
       mediaFile: undefined,
       mediaUrl: undefined,
       thumbnailUrl: undefined,
     }));
-    
+
     if (mediaPreviewUrl) {
       revokeFilePreviewUrl(mediaPreviewUrl);
       setMediaPreviewUrl(null);
@@ -254,34 +285,37 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
     setUploadProgress(null);
   }, [mediaPreviewUrl]);
 
-  const handleLinkUrlChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    setFormData(prev => ({ ...prev, linkUrl: url }));
-    
-    // Fetch link preview if valid URL
-    if (url && url.match(/^https?:\/\/.+/)) {
-      try {
-        const preview = await fetchLinkPreview({ url });
-        if (preview) {
-          setFormData(prev => ({
-            ...prev,
-            linkTitle: preview.title,
-            linkDescription: preview.description,
-            linkImage: preview.image,
-          }));
+  const handleLinkUrlChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const url = e.target.value;
+      setFormData((prev) => ({ ...prev, linkUrl: url }));
+
+      // Fetch link preview if valid URL
+      if (url && url.match(/^https?:\/\/.+/)) {
+        try {
+          const preview = await fetchLinkPreview({ url });
+          if (preview) {
+            setFormData((prev) => ({
+              ...prev,
+              linkTitle: preview.title,
+              linkDescription: preview.description,
+              linkImage: preview.image,
+            }));
+          }
+        } catch (error) {
+          console.error("Failed to fetch link preview:", error);
         }
-      } catch (error) {
-        console.error("Failed to fetch link preview:", error);
       }
-    }
-  }, [fetchLinkPreview]);
+    },
+    [fetchLinkPreview],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isFormComplete || isSubmitting) {
       // Mark all fields as touched to show validation errors
-      setTouchedFields(new Set(['title', 'content', 'categoryId']));
+      setTouchedFields(new Set(["title", "content", "categoryId"]));
       return;
     }
 
@@ -293,7 +327,10 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       let thumbnailUrl = formData.thumbnailUrl;
 
       // Upload media if needed
-      if (formData.mediaFile && (formData.type === "image" || formData.type === "video")) {
+      if (
+        formData.mediaFile &&
+        (formData.type === "image" || formData.type === "video")
+      ) {
         try {
           const uploadResult = await uploadMedia(convex, formData.mediaFile, {
             onProgress: (progress) => {
@@ -330,9 +367,10 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       }
     } catch (error) {
       console.error("Failed to create post:", error);
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Failed to create post. Please try again.";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to create post. Please try again.";
       setSubmitError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -387,7 +425,11 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
           )}
 
           {/* Post Type Tabs */}
-          <Tabs value={formData.type} onValueChange={handleTypeChange} className="w-full">
+          <Tabs
+            value={formData.type}
+            onValueChange={handleTypeChange}
+            className="w-full"
+          >
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="text" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
@@ -416,19 +458,24 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                   value={formData.title}
                   onChange={handleTitleChange}
                   placeholder="Enter your post title..."
-                  className={`${errors.title && touchedFields.has('title') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-green-700 focus:ring-green-700'}`}
+                  className={`${errors.title && touchedFields.has("title") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-green-700 focus:ring-green-700"}`}
                   disabled={isSubmitting}
                 />
                 <div className="flex justify-between items-center text-sm">
                   <div>
-                    {errors.title && touchedFields.has('title') && (
+                    {errors.title && touchedFields.has("title") && (
                       <span className="text-red-500">{errors.title}</span>
                     )}
                   </div>
-                  <div className={`${titleInfo.status === 'error' ? 'text-red-500' :
-                    titleInfo.status === 'warning' ? 'text-yellow-500' :
-                      'text-muted-foreground'
-                    }`}>
+                  <div
+                    className={`${
+                      titleInfo.status === "error"
+                        ? "text-red-500"
+                        : titleInfo.status === "warning"
+                          ? "text-yellow-500"
+                          : "text-muted-foreground"
+                    }`}
+                  >
                     {titleInfo.length}/200 characters
                   </div>
                 </div>
@@ -444,7 +491,9 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                   onValueChange={handleCategoryChange}
                   disabled={isSubmitting}
                 >
-                  <SelectTrigger className={`${errors.categoryId && touchedFields.has('categoryId') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-green-700 focus:ring-green-700'}`}>
+                  <SelectTrigger
+                    className={`${errors.categoryId && touchedFields.has("categoryId") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-green-700 focus:ring-green-700"}`}
+                  >
                     <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
@@ -458,8 +507,10 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                     ))}
                   </SelectContent>
                 </Select>
-                {errors.categoryId && touchedFields.has('categoryId') && (
-                  <span className="text-red-500 text-sm">{errors.categoryId}</span>
+                {errors.categoryId && touchedFields.has("categoryId") && (
+                  <span className="text-red-500 text-sm">
+                    {errors.categoryId}
+                  </span>
                 )}
               </div>
             </div>
@@ -481,7 +532,11 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                         content={formData.content}
                         onChange={handleContentChange}
                         placeholder="Write your post content here..."
-                        className={errors.content && touchedFields.has('content') ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
+                        className={
+                          errors.content && touchedFields.has("content")
+                            ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
+                            : ""
+                        }
                       />
                     </Suspense>
                   </TabsContent>
@@ -498,7 +553,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                           commentCount: 0,
                           viewCount: 0,
                           type: "text",
-                          author: {
+                          member: {
                             firstName: "You",
                             lastName: "",
                             username: "you",
@@ -511,14 +566,19 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                 </Tabs>
                 <div className="flex justify-between items-center text-sm">
                   <div>
-                    {errors.content && touchedFields.has('content') && (
+                    {errors.content && touchedFields.has("content") && (
                       <span className="text-red-500">{errors.content}</span>
                     )}
                   </div>
-                  <div className={`${contentInfo.status === 'error' ? 'text-red-500' :
-                    contentInfo.status === 'warning' ? 'text-yellow-500' :
-                      'text-muted-foreground'
-                    }`}>
+                  <div
+                    className={`${
+                      contentInfo.status === "error"
+                        ? "text-red-500"
+                        : contentInfo.status === "warning"
+                          ? "text-yellow-500"
+                          : "text-muted-foreground"
+                    }`}
+                  >
                     {contentInfo.length}/10,000 characters
                   </div>
                 </div>
@@ -528,7 +588,9 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
             <TabsContent value="image" className="mt-6 space-y-6">
               {/* Media Upload */}
               <div className="space-y-2">
-                <Label>Upload Image or Video <span className="text-red-500">*</span></Label>
+                <Label>
+                  Upload Image or Video <span className="text-red-500">*</span>
+                </Label>
                 <div className="border-2 border-dashed rounded-lg p-6 text-center">
                   {!formData.mediaFile && !mediaPreviewUrl ? (
                     <>
@@ -537,7 +599,10 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                         <span className="text-green-700 hover:text-green-800 font-medium">
                           Click to upload
                         </span>
-                        <span className="text-muted-foreground"> or drag and drop</span>
+                        <span className="text-muted-foreground">
+                          {" "}
+                          or drag and drop
+                        </span>
                       </Label>
                       <input
                         id="media-upload"
@@ -548,7 +613,8 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                         disabled={isSubmitting}
                       />
                       <p className="text-sm text-muted-foreground mt-2">
-                        Images: JPG, PNG, GIF, WebP (max 10MB)<br />
+                        Images: JPG, PNG, GIF, WebP (max 10MB)
+                        <br />
                         Videos: MP4, WebM, QuickTime (max 100MB)
                       </p>
                     </>
@@ -586,7 +652,9 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                               style={{ width: `${uploadProgress}%` }}
                             />
                           </div>
-                          <p className="text-sm text-center mt-1">{uploadProgress}%</p>
+                          <p className="text-sm text-center mt-1">
+                            {uploadProgress}%
+                          </p>
                         </div>
                       )}
                     </div>
@@ -597,7 +665,8 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
               {/* Description for media posts */}
               <div className="space-y-2">
                 <Label htmlFor="media-content">
-                  Description <span className="text-muted-foreground">(optional)</span>
+                  Description{" "}
+                  <span className="text-muted-foreground">(optional)</span>
                 </Label>
                 <Suspense fallback={<RichTextEditorSkeleton />}>
                   <RichTextEditor
@@ -666,19 +735,28 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                     content={formData.content}
                     onChange={handleContentChange}
                     placeholder="Share your thoughts about this link..."
-                    className={errors.content && touchedFields.has('content') ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
+                    className={
+                      errors.content && touchedFields.has("content")
+                        ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
+                        : ""
+                    }
                   />
                 </Suspense>
                 <div className="flex justify-between items-center text-sm">
                   <div>
-                    {errors.content && touchedFields.has('content') && (
+                    {errors.content && touchedFields.has("content") && (
                       <span className="text-red-500">{errors.content}</span>
                     )}
                   </div>
-                  <div className={`${contentInfo.status === 'error' ? 'text-red-500' :
-                    contentInfo.status === 'warning' ? 'text-yellow-500' :
-                      'text-muted-foreground'
-                    }`}>
+                  <div
+                    className={`${
+                      contentInfo.status === "error"
+                        ? "text-red-500"
+                        : contentInfo.status === "warning"
+                          ? "text-yellow-500"
+                          : "text-muted-foreground"
+                    }`}
+                  >
                     {contentInfo.length}/10,000 characters
                   </div>
                 </div>
@@ -689,7 +767,12 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
           {/* Form Actions */}
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pt-4 border-t space-y-4 sm:space-y-0">
             <DraftsModal>
-              <Button type="button" variant="ghost" disabled={isSubmitting} className="w-full sm:w-auto">
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={isSubmitting}
+                className="w-full sm:w-auto"
+              >
                 <FileText className="w-4 h-4 mr-2" />
                 Drafts
               </Button>
@@ -713,7 +796,9 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {uploadProgress !== null ? `Uploading... ${uploadProgress}%` : "Publishing..."}
+                    {uploadProgress !== null
+                      ? `Uploading... ${uploadProgress}%`
+                      : "Publishing..."}
                   </>
                 ) : (
                   <>
@@ -730,4 +815,4 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
   );
 }
 
-export default PostCreationForm; 
+export default PostCreationForm;
