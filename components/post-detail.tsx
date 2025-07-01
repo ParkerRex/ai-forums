@@ -5,7 +5,6 @@ import {
   ArrowDown,
   MessageSquare,
   Share,
-  Bookmark,
   Flag,
   MoreHorizontal,
   Play,
@@ -30,6 +29,7 @@ import { api } from "@/convex/_generated/api";
 import { getMediaPlaceholder } from "@/lib/post-preview-utils";
 import { RenderTipTapContent } from "@/lib/render-post-content";
 import { memberProfileUrl } from "@/lib/utils";
+import { BookmarkButton } from "@/components/bookmark-button";
 
 interface Post {
   _id: Id<"posts">;
@@ -282,14 +282,11 @@ export default function PostDetail({
                 <Share className="w-4 h-4 mr-1" />
                 share
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="p-2 h-auto hover:bg-muted"
-              >
-                <Bookmark className="w-4 h-4 mr-1" />
-                save
-              </Button>
+              <BookmarkButton
+                targetId={post._id}
+                targetType="post"
+                showCount={true}
+              />
               <Button
                 variant="ghost"
                 size="sm"

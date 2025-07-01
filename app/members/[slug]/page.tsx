@@ -43,6 +43,16 @@ function MemberDetailContent({ slug }: { slug: string }) {
     } : "skip",
   );
 
+  // Fetch member bookmarks (only if viewing own profile)
+  const currentMember = useQuery(api.members.getCurrentMember);
+  const isOwnProfile = currentMember && memberData && currentMember._id === memberData._id;
+  const memberBookmarksData = useQuery(
+    api.bookmarks.getUserBookmarks,
+    isOwnProfile ? {
+      paginationOpts: { numItems: 5, cursor: null }
+    } : "skip",
+  );
+
   // Member not found (only check this after data has loaded)
   if (memberData === null) {
     notFound();
@@ -181,6 +191,39 @@ function MemberDetailContent({ slug }: { slug: string }) {
             )}
           </QueryErrorBoundary>
         </div>
+
+        {/* Bookmarks Section - Only show for own profile */}
+        {isOwnProfile && (
+          <div className="mt-12">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-semibold text-foreground">
+                My Bookmarks
+              </h2>
+              <Button variant="outline" size="sm" asChild>
+                <Link href="/bookmarks">View All</Link>
+              </Button>
+            </div>
+
+            <QueryErrorBoundary context="loading member bookmarks">
+              {memberBookmarksData === undefined ? (
+                <PostSkeletonList count={3} />
+              ) : memberBookmarksData.page.length > 0 ? (
+                <div className="space-y-4">
+                  {memberBookmarksData.page.slice(0, 3).map((bookmark) => (
+                    <PostCard key={bookmark._id} post={bookmark.target} size="small" />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No bookmarks yet.</p>
+                  <p className="text-sm text-muted-foreground opacity-80 mt-2">
+                    Start bookmarking posts to see them here.
+                  </p>
+                </div>
+              )}
+            </QueryErrorBoundary>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -12,6 +12,7 @@ import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { useState } from "react";
 import PostPreview from "@/components/post-preview";
 import { PostData } from "@/lib/post-preview-utils";
+import { BookmarkButton } from "@/components/bookmark-button";
 
 // Interface to match Convex post data structure
 interface Post extends Omit<PostData, 'member' | 'author' | 'category'> {
@@ -172,6 +173,11 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
+          <BookmarkButton
+            targetId={post._id}
+            targetType="post"
+            size="sm"
+          />
         </div>
       </div>
     </div>

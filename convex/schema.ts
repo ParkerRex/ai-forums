@@ -224,4 +224,18 @@ export default defineSchema({
     .index("by_post_and_version", ["postId", "version"])
     .index("by_editorId", ["editorId"])
     .index("by_editedAt", ["editedAt"]),
+
+  bookmarks: defineTable({
+    memberId: v.id("members"),
+    targetId: v.string(),
+    targetType: v.union(v.literal("post"), v.literal("resource")),
+    createdAt: v.number(),
+    notes: v.optional(v.string()),
+    tags: v.optional(v.array(v.string())),
+  })
+    .index("by_memberId", ["memberId"])
+    .index("by_member_and_target", ["memberId", "targetId", "targetType"])
+    .index("by_member_and_type", ["memberId", "targetType"])
+    .index("by_member_and_createdAt", ["memberId", "createdAt"])
+    .index("by_targetId", ["targetId"]),
 });
