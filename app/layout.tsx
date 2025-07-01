@@ -8,6 +8,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { NetworkStatusIndicator } from "@/components/error-display";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GlobalSearch } from "@/components/global-search";
+import { Footer } from "@/components/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -46,7 +47,10 @@ export default function RootLayout({
           <ClerkProvider dynamic>
             <ConvexClientProvider>
               <Header />
-              {children}
+              <div className="pb-[24px]">
+                {children}
+              </div>
+              <Footer />
               <GlobalSearch />
               <Toaster />
               <NetworkStatusIndicator />
