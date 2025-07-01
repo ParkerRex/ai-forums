@@ -36,15 +36,6 @@ export const getCommentsByPost = query({
             username: member.email.split('@')[0],
             slug: member.slug,
           } : null,
-          // Legacy field for backward compatibility - will be removed in Phase 6
-          author: member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            email: member.email,
-            username: member.email.split('@')[0],
-            slug: member.slug,
-          } : null,
         };
       })
     );
@@ -91,15 +82,6 @@ export const getCommentById = query({
     return {
       ...comment,
       member: member ? {
-        _id: member._id,
-        firstName: member.firstName,
-        lastName: member.lastName,
-        email: member.email,
-        username: member.email.split('@')[0],
-        slug: member.slug,
-      } : null,
-      // Legacy field for backward compatibility - will be removed in Phase 6
-      author: member ? {
         _id: member._id,
         firstName: member.firstName,
         lastName: member.lastName,

@@ -115,7 +115,6 @@ export default defineSchema({
     isLocked: v.optional(v.boolean()),
     editedAt: v.optional(v.number()),
     editReason: v.optional(v.string()),
-
     // New media and link fields
     type: v.optional(PostTypeValidator),
     mediaUrl: v.optional(v.string()),
