@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus } from "lucide-react";
 import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
-import { SignUpButton, UserButton, SignInButton } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
+import { AuthButton } from "@/components/auth-button";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import React from "react";
@@ -76,8 +77,7 @@ export default function Header() {
               <UserButton />
             </Authenticated>
             <Unauthenticated>
-              <SignUpButton />
-              <SignInButton />
+              <AuthButton />
             </Unauthenticated>
           </div>
         </div>
