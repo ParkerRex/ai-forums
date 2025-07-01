@@ -7,21 +7,28 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   PostFormData,
   validatePostForm,
-  getCharacterCountInfo
+  getCharacterCountInfo,
 } from "@/lib/form-validation";
-import { 
-  // uploadMedia, 
-  validateMediaFile, 
-  getFilePreviewUrl, 
-  revokeFilePreviewUrl 
+import {
+  // uploadMedia,
+  validateMediaFile,
+  getFilePreviewUrl,
+  revokeFilePreviewUrl,
 } from "@/lib/upload-media";
-import { FileText, Image, Link, Upload, X } from "lucide-react";
+import { FileText, Image as ImageIcon, Link, Upload, X } from "lucide-react";
+import Image from "next/image";
 import { toast } from "sonner";
 
 // Lazy load heavy components
@@ -121,104 +128,122 @@ export function PostFormFields({
   }, [mediaPreviewUrl]);
 
   // Form handlers
-  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    onFormDataChange({ title: e.target.value });
-    onTouchedFieldsChange(new Set(touchedFields).add('title'));
-  }, [onFormDataChange, onTouchedFieldsChange, touchedFields]);
+  const handleTitleChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      onFormDataChange({ title: e.target.value });
+      onTouchedFieldsChange(new Set(touchedFields).add("title"));
+    },
+    [onFormDataChange, onTouchedFieldsChange, touchedFields],
+  );
 
-  const handleContentChange = useCallback((content: string) => {
-    onFormDataChange({ content });
-    onTouchedFieldsChange(new Set(touchedFields).add('content'));
-  }, [onFormDataChange, onTouchedFieldsChange, touchedFields]);
+  const handleContentChange = useCallback(
+    (content: string) => {
+      onFormDataChange({ content });
+      onTouchedFieldsChange(new Set(touchedFields).add("content"));
+    },
+    [onFormDataChange, onTouchedFieldsChange, touchedFields],
+  );
 
-  const handleCategoryChange = useCallback((categoryId: string) => {
-    onFormDataChange({ categoryId });
-    onTouchedFieldsChange(new Set(touchedFields).add('categoryId'));
-  }, [onFormDataChange, onTouchedFieldsChange, touchedFields]);
+  const handleCategoryChange = useCallback(
+    (categoryId: string) => {
+      onFormDataChange({ categoryId });
+      onTouchedFieldsChange(new Set(touchedFields).add("categoryId"));
+    },
+    [onFormDataChange, onTouchedFieldsChange, touchedFields],
+  );
 
-  const handleTypeChange = useCallback((type: string) => {
-    onFormDataChange({ 
-      type: type as ExtendedPostFormData["type"],
-      // Reset type-specific fields when switching
-      mediaFile: undefined,
-      mediaUrl: undefined,
-      thumbnailUrl: undefined,
-      linkUrl: undefined,
-      linkTitle: undefined,
-      linkDescription: undefined,
-      linkImage: undefined,
-    });
-    // Clean up media preview
-    if (mediaPreviewUrl) {
-      revokeFilePreviewUrl(mediaPreviewUrl);
-      setMediaPreviewUrl(null);
-    }
-  }, [onFormDataChange, mediaPreviewUrl]);
+  const handleTypeChange = useCallback(
+    (type: string) => {
+      onFormDataChange({
+        type: type as ExtendedPostFormData["type"],
+        // Reset type-specific fields when switching
+        mediaFile: undefined,
+        mediaUrl: undefined,
+        thumbnailUrl: undefined,
+        linkUrl: undefined,
+        linkTitle: undefined,
+        linkDescription: undefined,
+        linkImage: undefined,
+      });
+      // Clean up media preview
+      if (mediaPreviewUrl) {
+        revokeFilePreviewUrl(mediaPreviewUrl);
+        setMediaPreviewUrl(null);
+      }
+    },
+    [onFormDataChange, mediaPreviewUrl],
+  );
 
-  const handleMediaFileChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const handleMediaFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-    // Validate file
-    const validation = validateMediaFile(file);
-    if (!validation.valid) {
-      toast.error(validation.error);
-      return;
-    }
+      // Validate file
+      const validation = validateMediaFile(file);
+      if (!validation.valid) {
+        toast.error(validation.error);
+        return;
+      }
 
-    // Set file and create preview
-    onFormDataChange({ mediaFile: file });
-    
-    // Clean up old preview
-    if (mediaPreviewUrl) {
-      revokeFilePreviewUrl(mediaPreviewUrl);
-    }
-    
-    // Create new preview
-    const previewUrl = getFilePreviewUrl(file);
-    setMediaPreviewUrl(previewUrl);
+      // Set file and create preview
+      onFormDataChange({ mediaFile: file });
 
-    // Detect media type from file
-    if (file.type.startsWith("image/")) {
-      onFormDataChange({ type: "image" });
-    } else if (file.type.startsWith("video/")) {
-      onFormDataChange({ type: "video" });
-    }
-  }, [onFormDataChange, mediaPreviewUrl]);
+      // Clean up old preview
+      if (mediaPreviewUrl) {
+        revokeFilePreviewUrl(mediaPreviewUrl);
+      }
+
+      // Create new preview
+      const previewUrl = getFilePreviewUrl(file);
+      setMediaPreviewUrl(previewUrl);
+
+      // Detect media type from file
+      if (file.type.startsWith("image/")) {
+        onFormDataChange({ type: "image" });
+      } else if (file.type.startsWith("video/")) {
+        onFormDataChange({ type: "video" });
+      }
+    },
+    [onFormDataChange, mediaPreviewUrl],
+  );
 
   const handleRemoveMedia = useCallback(() => {
-    onFormDataChange({ 
+    onFormDataChange({
       mediaFile: undefined,
       mediaUrl: undefined,
       thumbnailUrl: undefined,
     });
-    
+
     if (mediaPreviewUrl) {
       revokeFilePreviewUrl(mediaPreviewUrl);
       setMediaPreviewUrl(null);
     }
   }, [onFormDataChange, mediaPreviewUrl]);
 
-  const handleLinkUrlChange = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const url = e.target.value;
-    onFormDataChange({ linkUrl: url });
-    
-    // Fetch link preview if valid URL
-    if (url && url.match(/^https?:\/\/.+/)) {
-      try {
-        const preview = await fetchLinkPreview({ url });
-        if (preview) {
-          onFormDataChange({
-            linkTitle: preview.title,
-            linkDescription: preview.description,
-            linkImage: preview.image,
-          });
+  const handleLinkUrlChange = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const url = e.target.value;
+      onFormDataChange({ linkUrl: url });
+
+      // Fetch link preview if valid URL
+      if (url && url.match(/^https?:\/\/.+/)) {
+        try {
+          const preview = await fetchLinkPreview({ url });
+          if (preview) {
+            onFormDataChange({
+              linkTitle: preview.title,
+              linkDescription: preview.description,
+              linkImage: preview.image,
+            });
+          }
+        } catch (error) {
+          console.error("Failed to fetch link preview:", error);
         }
-      } catch (error) {
-        console.error("Failed to fetch link preview:", error);
       }
-    }
-  }, [onFormDataChange, fetchLinkPreview]);
+    },
+    [onFormDataChange, fetchLinkPreview],
+  );
 
   // Loading state for categories
   if (categories === undefined) {
@@ -238,14 +263,18 @@ export function PostFormFields({
   return (
     <div className="space-y-6">
       {/* Post Type Tabs */}
-      <Tabs value={formData.type} onValueChange={handleTypeChange} className="w-full">
+      <Tabs
+        value={formData.type}
+        onValueChange={handleTypeChange}
+        className="w-full"
+      >
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="text" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Text
           </TabsTrigger>
           <TabsTrigger value="image" className="flex items-center gap-2">
-            <Image className="h-4 w-4" />
+            <ImageIcon className="h-4 w-4" />
             Image/Video
           </TabsTrigger>
           <TabsTrigger value="link" className="flex items-center gap-2">
@@ -267,20 +296,25 @@ export function PostFormFields({
               value={formData.title}
               onChange={handleTitleChange}
               placeholder="Enter your post title..."
-              className={`${errors.title && touchedFields.has('title') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-green-700 focus:ring-green-700'}`}
+              className={`${errors.title && touchedFields.has("title") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-green-700 focus:ring-green-700"}`}
               disabled={isSubmitting}
               data-testid="edit-post-title"
             />
             <div className="flex justify-between items-center text-sm">
               <div>
-                {errors.title && touchedFields.has('title') && (
+                {errors.title && touchedFields.has("title") && (
                   <span className="text-red-500">{errors.title}</span>
                 )}
               </div>
-              <div className={`${titleInfo.status === 'error' ? 'text-red-500' :
-                titleInfo.status === 'warning' ? 'text-yellow-500' :
-                  'text-muted-foreground'
-                }`}>
+              <div
+                className={`${
+                  titleInfo.status === "error"
+                    ? "text-red-500"
+                    : titleInfo.status === "warning"
+                      ? "text-yellow-500"
+                      : "text-muted-foreground"
+                }`}
+              >
                 {titleInfo.length}/200 characters
               </div>
             </div>
@@ -296,7 +330,9 @@ export function PostFormFields({
               onValueChange={handleCategoryChange}
               disabled={isSubmitting}
             >
-              <SelectTrigger className={`${errors.categoryId && touchedFields.has('categoryId') ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'focus:border-green-700 focus:ring-green-700'}`}>
+              <SelectTrigger
+                className={`${errors.categoryId && touchedFields.has("categoryId") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-green-700 focus:ring-green-700"}`}
+              >
                 <SelectValue placeholder="Select a category" />
               </SelectTrigger>
               <SelectContent>
@@ -310,7 +346,7 @@ export function PostFormFields({
                 ))}
               </SelectContent>
             </Select>
-            {errors.categoryId && touchedFields.has('categoryId') && (
+            {errors.categoryId && touchedFields.has("categoryId") && (
               <span className="text-red-500 text-sm">{errors.categoryId}</span>
             )}
           </div>
@@ -335,7 +371,11 @@ export function PostFormFields({
                         content={formData.content}
                         onChange={handleContentChange}
                         placeholder="Write your post content here..."
-                        className={errors.content && touchedFields.has('content') ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
+                        className={
+                          errors.content && touchedFields.has("content")
+                            ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
+                            : ""
+                        }
                       />
                     </Suspense>
                   </div>
@@ -364,20 +404,29 @@ export function PostFormFields({
                   content={formData.content}
                   onChange={handleContentChange}
                   placeholder="Write your post content here..."
-                  className={errors.content && touchedFields.has('content') ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
+                  className={
+                    errors.content && touchedFields.has("content")
+                      ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
+                      : ""
+                  }
                 />
               </Suspense>
             )}
             <div className="flex justify-between items-center text-sm">
               <div>
-                {errors.content && touchedFields.has('content') && (
+                {errors.content && touchedFields.has("content") && (
                   <span className="text-red-500">{errors.content}</span>
                 )}
               </div>
-              <div className={`${contentInfo.status === 'error' ? 'text-red-500' :
-                contentInfo.status === 'warning' ? 'text-yellow-500' :
-                  'text-muted-foreground'
-                }`}>
+              <div
+                className={`${
+                  contentInfo.status === "error"
+                    ? "text-red-500"
+                    : contentInfo.status === "warning"
+                      ? "text-yellow-500"
+                      : "text-muted-foreground"
+                }`}
+              >
                 {contentInfo.length}/10,000 characters
               </div>
             </div>
@@ -396,10 +445,13 @@ export function PostFormFields({
                     {(mediaPreviewUrl || formData.mediaUrl) && (
                       <div className="relative">
                         {formData.type === "image" ? (
-                          <img
+                          <Image
                             src={mediaPreviewUrl || formData.mediaUrl}
-                            alt="Preview"
-                            className="max-w-full h-auto max-h-64 rounded-lg"
+                            alt="Media preview"
+                            width={400}
+                            height={256}
+                            className="max-w-full h-auto max-h-64 rounded-lg object-contain"
+                            unoptimized={true}
                           />
                         ) : (
                           <video
@@ -456,19 +508,28 @@ export function PostFormFields({
                   content={formData.content}
                   onChange={handleContentChange}
                   placeholder="Describe your image/video..."
-                  className={errors.content && touchedFields.has('content') ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
+                  className={
+                    errors.content && touchedFields.has("content")
+                      ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
+                      : ""
+                  }
                 />
               </Suspense>
               <div className="flex justify-between items-center text-sm">
                 <div>
-                  {errors.content && touchedFields.has('content') && (
+                  {errors.content && touchedFields.has("content") && (
                     <span className="text-red-500">{errors.content}</span>
                   )}
                 </div>
-                <div className={`${contentInfo.status === 'error' ? 'text-red-500' :
-                  contentInfo.status === 'warning' ? 'text-yellow-500' :
-                    'text-muted-foreground'
-                  }`}>
+                <div
+                  className={`${
+                    contentInfo.status === "error"
+                      ? "text-red-500"
+                      : contentInfo.status === "warning"
+                        ? "text-yellow-500"
+                        : "text-muted-foreground"
+                  }`}
+                >
                   {contentInfo.length}/10,000 characters
                 </div>
               </div>
@@ -504,10 +565,13 @@ export function PostFormFields({
                     </p>
                   )}
                   {formData.linkImage && (
-                    <img
+                    <Image
                       src={formData.linkImage}
-                      alt="Link preview"
-                      className="mt-2 max-w-full h-auto max-h-32 rounded"
+                      alt="Link preview image"
+                      width={200}
+                      height={128}
+                      className="mt-2 max-w-full h-auto max-h-32 rounded object-cover"
+                      unoptimized={true}
                     />
                   )}
                 </CardContent>
@@ -524,19 +588,28 @@ export function PostFormFields({
                   content={formData.content}
                   onChange={handleContentChange}
                   placeholder="What do you think about this link? Start a discussion..."
-                  className={errors.content && touchedFields.has('content') ? 'border-red-500 focus-within:border-red-500 focus-within:ring-red-500' : ''}
+                  className={
+                    errors.content && touchedFields.has("content")
+                      ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
+                      : ""
+                  }
                 />
               </Suspense>
               <div className="flex justify-between items-center text-sm">
                 <div>
-                  {errors.content && touchedFields.has('content') && (
+                  {errors.content && touchedFields.has("content") && (
                     <span className="text-red-500">{errors.content}</span>
                   )}
                 </div>
-                <div className={`${contentInfo.status === 'error' ? 'text-red-500' :
-                  contentInfo.status === 'warning' ? 'text-yellow-500' :
-                    'text-muted-foreground'
-                  }`}>
+                <div
+                  className={`${
+                    contentInfo.status === "error"
+                      ? "text-red-500"
+                      : contentInfo.status === "warning"
+                        ? "text-yellow-500"
+                        : "text-muted-foreground"
+                  }`}
+                >
                   {contentInfo.length}/10,000 characters
                 </div>
               </div>
@@ -546,4 +619,4 @@ export function PostFormFields({
       </Tabs>
     </div>
   );
-} 
+}
