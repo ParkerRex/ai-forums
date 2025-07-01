@@ -7,7 +7,7 @@ import { PostEditModal } from "@/components/post-edit-modal";
 import { PostDeleteModal } from "@/components/post-delete-modal";
 import { PostHistoryModal } from "@/components/post-history-modal";
 import { Button } from "@/components/ui/button";
-import { Lock, Eye, MessageSquare } from "lucide-react";
+import { Lock, Eye, MessageSquare, ArrowLeft } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -116,6 +116,17 @@ export default function PostPageClient({ params }: PostPageClientProps) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
+      {/* Back Navigation */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => router.back()}
+        className="mb-6"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back
+      </Button>
+
       <Authenticated>
         <PostDetail
           post={post}
@@ -156,6 +167,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
       </Authenticated>
 
       <Unauthenticated>
+        {/* Unauthenticated preview section */}
+
         {/* Show preview for unauthenticated users */}
         <div className="space-y-6">
           {/* Post Header */}
