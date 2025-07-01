@@ -6,14 +6,33 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInButton } from "@clerk/nextjs";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { formatDistanceToNow } from "date-fns";
-import { ChevronDown, ChevronRight, MessageSquare } from "lucide-react";
+import { ChevronDown, ChevronRight, MessageSquare, Paperclip } from "lucide-react";
 import Link from "next/link";
 import { memberProfileUrl } from "@/lib/utils";
+import { EnhancedCommentInput } from "./enhanced-comment-input";
+
+type AttachmentType = {
+  id: string;
+  type: "image" | "document" | "gif";
+  url: string;
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  width?: number;
+  height?: number;
+};
+
+type LinkPreviewType = {
+  title?: string;
+  description?: string;
+  image?: string;
+  siteName?: string;
+  url: string;
+};
 
 interface CommentSectionProps {
   postId: Id<"posts">;
@@ -34,15 +53,30 @@ type CommentWithReplies = {
   } | null;
   depth: number;
   replies: CommentWithReplies[];
+  attachments?: Array<{
+    id: string;
+    type: "image" | "document" | "gif";
+    url: string;
+    fileName: string;
+    fileSize: number;
+    mimeType: string;
+    width?: number;
+    height?: number;
+  }>;
+  linkPreviews?: Record<string, {
+    title?: string;
+    description?: string;
+    image?: string;
+    siteName?: string;
+    url: string;
+  }>;
 };
 
 interface CommentItemProps {
   comment: CommentWithReplies;
   onReply: (parentId: Id<"comments"> | null) => void;
   replyingTo: Id<"comments"> | null;
-  newReply: string;
-  setNewReply: (content: string) => void;
-  onSubmitReply: (parentId: Id<"comments">) => void;
+  onSubmitReply: (parentId: Id<"comments">, content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => void;
   isSubmittingReply: boolean;
 }
 
@@ -50,8 +84,6 @@ function CommentItem({
   comment,
   onReply,
   replyingTo,
-  newReply,
-  setNewReply,
   onSubmitReply,
   isSubmittingReply,
 }: CommentItemProps) {
@@ -106,6 +138,47 @@ function CommentItem({
             <p className="text-foreground whitespace-pre-wrap">
               {comment.content}
             </p>
+            
+            {comment.attachments && comment.attachments.length > 0 && (
+              <div className="mt-3 space-y-2">
+                {comment.attachments.map((attachment) => (
+                  <div key={attachment.id} className="border rounded p-2">
+                    {attachment.type === "image" ? (
+                      <img
+                        src={attachment.url}
+                        alt={attachment.fileName}
+                        className="max-w-full h-auto max-h-64 rounded"
+                      />
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <Paperclip className="w-4 h-4" />
+                        <a
+                          href={attachment.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-600 hover:underline"
+                        >
+                          {attachment.fileName}
+                        </a>
+                        <span className="text-xs text-muted-foreground">
+                          ({Math.round(attachment.fileSize / 1024)}KB)
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            
+            {comment.linkPreviews && Object.entries(comment.linkPreviews).map(([url, preview]) => (
+              <div key={url} className="mt-3 border rounded p-3 bg-muted/50">
+                <div className="text-sm font-medium">{preview.title}</div>
+                <div className="text-xs text-muted-foreground">{preview.description}</div>
+                <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
+                  {url}
+                </a>
+              </div>
+            ))}
             <div className="flex items-center space-x-2">
               <Authenticated>
                 <Button
@@ -141,24 +214,15 @@ function CommentItem({
         {/* Reply form */}
         {replyingTo === comment._id && (
           <div className="mt-4 ml-11 space-y-3">
-            <Textarea
+            <EnhancedCommentInput
               placeholder={`Reply to ${comment.member?.firstName || "this comment"}...`}
-              value={newReply}
-              onChange={(e) => setNewReply(e.target.value)}
-              className="min-h-[80px]"
+              onSubmit={(content, attachments, linkPreviews) => onSubmitReply(comment._id, content, attachments, linkPreviews)}
+              isSubmitting={isSubmittingReply}
+              className="mb-3"
             />
-            <div className="flex space-x-2">
-              <Button
-                size="sm"
-                onClick={() => onSubmitReply(comment._id)}
-                disabled={!newReply.trim() || isSubmittingReply}
-              >
-                {isSubmittingReply ? "Posting..." : "Post Reply"}
-              </Button>
-              <Button size="sm" variant="outline" onClick={() => onReply(null)}>
-                Cancel
-              </Button>
-            </div>
+            <Button size="sm" variant="outline" onClick={() => onReply(null)}>
+              Cancel
+            </Button>
           </div>
         )}
       </div>
@@ -172,8 +236,6 @@ function CommentItem({
               comment={reply}
               onReply={onReply}
               replyingTo={replyingTo}
-              newReply={newReply}
-              setNewReply={setNewReply}
               onSubmitReply={onSubmitReply}
               isSubmittingReply={isSubmittingReply}
             />
@@ -188,10 +250,8 @@ export default function CommentSection({
   postId,
   targetCommentId,
 }: CommentSectionProps) {
-  const [newComment, setNewComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Id<"comments"> | null>(null);
-  const [newReply, setNewReply] = useState("");
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
 
   const comments = useQuery(api.comments.getCommentsByPost, { postId });
@@ -216,41 +276,43 @@ export default function CommentSection({
     return () => cancelAnimationFrame(raf);
   }, [targetCommentId, comments]);
 
-  const handleSubmitComment = async () => {
-    if (!newComment.trim()) return;
+  const handleSubmitComment = async (content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => {
+    if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     setIsSubmitting(true);
 
     try {
       await createComment({
         postId,
-        content: newComment.trim(),
+        content: content.trim(),
+        attachments,
+        linkPreviews,
       });
-      setNewComment("");
       handleMutationSuccess("Comment posted successfully!");
     } catch (error) {
-      handleMutationError(error, () => handleSubmitComment());
+      handleMutationError(error, () => handleSubmitComment(content, attachments, linkPreviews));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleSubmitReply = async (parentId: Id<"comments">) => {
-    if (!newReply.trim()) return;
+  const handleSubmitReply = async (parentId: Id<"comments">, content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => {
+    if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     setIsSubmittingReply(true);
 
     try {
       await createComment({
         postId,
-        content: newReply.trim(),
+        content: content.trim(),
         parentCommentId: parentId,
+        attachments,
+        linkPreviews,
       });
-      setNewReply("");
       setReplyingTo(null);
       handleMutationSuccess("Reply posted successfully!");
     } catch (error) {
-      handleMutationError(error, () => handleSubmitReply(parentId));
+      handleMutationError(error, () => handleSubmitReply(parentId, content, attachments, linkPreviews));
     } finally {
       setIsSubmittingReply(false);
     }
@@ -258,7 +320,6 @@ export default function CommentSection({
 
   const handleReply = (parentId: Id<"comments"> | null) => {
     setReplyingTo(parentId);
-    setNewReply("");
   };
 
   // Count total comments including replies
@@ -278,20 +339,12 @@ export default function CommentSection({
         </h3>
 
         <Authenticated>
-          <div className="mb-6 space-y-4">
-            <Textarea
+          <div className="mb-6">
+            <EnhancedCommentInput
               placeholder="Share your thoughts..."
-              value={newComment}
-              onChange={(e) => setNewComment(e.target.value)}
-              className="min-h-[100px]"
+              onSubmit={handleSubmitComment}
+              isSubmitting={isSubmitting}
             />
-            <Button
-              onClick={handleSubmitComment}
-              disabled={!newComment.trim() || isSubmitting}
-              className="w-full sm:w-auto"
-            >
-              {isSubmitting ? "Posting..." : "Post Comment"}
-            </Button>
           </div>
         </Authenticated>
 
@@ -338,8 +391,6 @@ export default function CommentSection({
                   comment={comment}
                   onReply={handleReply}
                   replyingTo={replyingTo}
-                  newReply={newReply}
-                  setNewReply={setNewReply}
                   onSubmitReply={handleSubmitReply}
                   isSubmittingReply={isSubmittingReply}
                 />
