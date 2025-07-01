@@ -1,43 +1,10 @@
 "use client";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, TrendingUp } from "lucide-react";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { MembershipCTAModal } from "@/components/membership-cta-modal";
+import { TrendingUp } from "lucide-react";
 
 export default function PostSidebar() {
   return (
     <div className="space-y-6">
-      {/* Create Post Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Create Post</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          <Authenticated>
-            <Link href="/create" prefetch={true}>
-              <Button className="w-full bg-green-700 hover:bg-green-800">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Post
-              </Button>
-            </Link>
-          </Authenticated>
-          <Unauthenticated>
-            <MembershipCTAModal
-              title="Share Your Ideas"
-              description="Join VAI to create posts and share your AI insights with the community"
-            >
-              <Button className="w-full bg-green-700 hover:bg-green-800">
-                <Plus className="w-4 h-4 mr-2" />
-                Create Post
-              </Button>
-            </MembershipCTAModal>
-          </Unauthenticated>
-          <p className="text-xs text-muted-foreground">Share your AI workflows, prompts, and insights with the community</p>
-        </CardContent>
-      </Card>
-
       {/* Recent AI News Card */}
       <Card>
         <CardHeader>

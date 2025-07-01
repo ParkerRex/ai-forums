@@ -7,7 +7,9 @@ import { PostEditModal } from "@/components/post-edit-modal";
 import { PostDeleteModal } from "@/components/post-delete-modal";
 import { PostHistoryModal } from "@/components/post-history-modal";
 import { Button } from "@/components/ui/button";
-import { Lock, Eye, MessageSquare, ArrowLeft } from "lucide-react";
+import { Lock, Eye, MessageSquare } from "lucide-react";
+import { ArrowLeftIcon } from "@/components/ui/arrow-left";
+import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -24,6 +26,10 @@ interface PostPageClientProps {
 
 export default function PostPageClient({ params }: PostPageClientProps) {
   const router = useRouter();
+  const backIconRef = React.useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
 
   // Unwrap the params promise (Next.js 15 behavior)
   const resolvedParams = use(params);
@@ -122,8 +128,10 @@ export default function PostPageClient({ params }: PostPageClientProps) {
         size="sm"
         onClick={() => router.back()}
         className="mb-6"
+        onMouseEnter={() => backIconRef.current?.startAnimation()}
+        onMouseLeave={() => backIconRef.current?.stopAnimation()}
       >
-        <ArrowLeft className="h-4 w-4 mr-2" />
+        <ArrowLeftIcon ref={backIconRef} size={16} className="mr-2" />
         Back
       </Button>
 

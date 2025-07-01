@@ -1,10 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowUp,
-  ArrowDown,
-  MessageSquare,
-  Share,
   Bookmark,
   Flag,
   MoreHorizontal,
@@ -15,6 +11,9 @@ import {
   History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
+import { MessageSquareIcon } from "@/components/ui/message-square";
+import { RabbitIcon } from "@/components/ui/rabbit";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -25,6 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Id } from "@/convex/_generated/dataModel";
 import { useRef, useState } from "react";
+import React from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { getMediaPlaceholder } from "@/lib/post-preview-utils";
@@ -99,23 +99,40 @@ export default function PostDetail({
 }: PostDetailProps) {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const [isVoting, setIsVoting] = useState(false);
-  
+
   const [optimisticNetVotes, setOptimisticNetVotes] = useState(post.netVotes);
-  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
-  
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
+    null,
+  );
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const postType = post.type || "text";
 
+  // Refs for animated icons
+  const upvoteIconRef = React.useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+  const commentIconRef = React.useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+  const shareIconRef = React.useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+
   const currentMember = useQuery(api.members.getCurrentMember);
-  
+
   const voteOnPost = useMutation(api.votes.voteOnPost);
   const userVote = useQuery(api.votes.getUserVote, {
     targetId: post._id,
     targetType: "post",
   });
   const { handleMutationError } = useMutationError();
-  
-  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote;
+
+  const currentUserVote =
+    optimisticUserVote !== null ? optimisticUserVote : userVote;
 
   const isMemberPost =
     currentMember && post.member && currentMember._id === post.member?._id;
@@ -136,10 +153,10 @@ export default function PostDetail({
     setIsVoting(true);
 
     const voteType = currentUserVote === "upvote" ? "remove" : "upvote";
-    
+
     let newNetVotes = optimisticNetVotes;
     let newUserVote: string | null = null;
-    
+
     if (voteType === "upvote") {
       newNetVotes = optimisticNetVotes + (currentUserVote === null ? 1 : 1);
       newUserVote = "upvote";
@@ -147,7 +164,7 @@ export default function PostDetail({
       newNetVotes = optimisticNetVotes - 1;
       newUserVote = null;
     }
-    
+
     setOptimisticNetVotes(newNetVotes);
     setOptimisticUserVote(newUserVote);
 
@@ -156,14 +173,14 @@ export default function PostDetail({
         postId: post._id,
         voteType,
       });
-      
+
       setOptimisticNetVotes(result.netVotes);
       setOptimisticUserVote(result.newVoteType);
     } catch (error) {
       setOptimisticNetVotes(post.netVotes);
       setOptimisticUserVote(userVote || null);
       handleMutationError(error, () => handleUpvote(e), {
-        context: "voting on post"
+        context: "voting on post",
       });
     } finally {
       setIsVoting(false);
@@ -185,7 +202,7 @@ export default function PostDetail({
       {/* Main Post */}
       <div className="bg-card border border-border rounded-lg">
         <div className="flex">
-          {/* Voting */}
+          {/* Voting panel back on the left */}
           <div className="flex flex-col items-center p-4 space-y-1 bg-muted/50 rounded-l-lg">
             <Authenticated>
               <Button
@@ -194,12 +211,18 @@ export default function PostDetail({
                 className="p-1 h-auto hover:bg-muted"
                 onClick={handleUpvote}
                 disabled={isVoting}
+                onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+                onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
               >
-                <ArrowUp className={`w-6 h-6 transition-colors ${
-                  currentUserVote === "upvote"
-                    ? "text-orange-500"
-                    : "text-muted-foreground hover:text-primary"
-                }`} />
+                <ArrowBigUpIcon
+                  ref={upvoteIconRef}
+                  size={24}
+                  className={`transition-colors ${
+                    currentUserVote === "upvote"
+                      ? "text-orange-500"
+                      : "text-muted-foreground hover:text-orange-500"
+                  }`}
+                />
               </Button>
             </Authenticated>
             <Unauthenticated>
@@ -211,22 +234,20 @@ export default function PostDetail({
                   variant="ghost"
                   size="sm"
                   className="p-1 h-auto hover:bg-muted"
+                  onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+                  onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
                 >
-                  <ArrowUp className="w-6 h-6 text-muted-foreground hover:text-primary" />
+                  <ArrowBigUpIcon
+                    ref={upvoteIconRef}
+                    size={24}
+                    className="text-muted-foreground hover:text-orange-500"
+                  />
                 </Button>
               </MembershipCTAModal>
             </Unauthenticated>
             <span className="text-lg font-bold text-foreground">
               {optimisticNetVotes}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-1 h-auto hover:bg-muted"
-              disabled
-            >
-              <ArrowDown className="w-6 h-6 text-muted-foreground" />
-            </Button>
           </div>
 
           {/* Content */}
@@ -347,16 +368,24 @@ export default function PostDetail({
                 variant="ghost"
                 size="sm"
                 className="p-2 h-auto hover:bg-muted"
+                onMouseEnter={() => commentIconRef.current?.startAnimation()}
+                onMouseLeave={() => commentIconRef.current?.stopAnimation()}
               >
-                <MessageSquare className="w-4 h-4 mr-1" />
+                <MessageSquareIcon
+                  ref={commentIconRef}
+                  size={16}
+                  className="mr-1"
+                />
                 {post.commentCount} comments
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 className="p-2 h-auto hover:bg-muted"
+                onMouseEnter={() => shareIconRef.current?.startAnimation()}
+                onMouseLeave={() => shareIconRef.current?.stopAnimation()}
               >
-                <Share className="w-4 h-4 mr-1" />
+                <RabbitIcon ref={shareIconRef} size={16} className="mr-1" />
                 share
               </Button>
               <Button

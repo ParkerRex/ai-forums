@@ -47,9 +47,11 @@ export function FullRichTextEditor({
         },
         fetchPreview: async (url: string) => {
           try {
-            await fetchLinkPreview({ url });
+            const preview = await fetchLinkPreview({ url });
+            return preview;
           } catch (error) {
             console.warn('Failed to fetch link preview:', error);
+            return null;
           }
         },
       }),
@@ -229,6 +231,8 @@ export function FullRichTextEditor({
         :global(.link-badge-mark:hover) {
           background-color: hsl(var(--muted) / 0.8);
           border-color: hsl(var(--border));
+          transform: translateY(-1px);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
         
         :global(.link-badge-mark::before) {
@@ -241,4 +245,4 @@ export function FullRichTextEditor({
   );
 }
 
-export default FullRichTextEditor; 
+export default FullRichTextEditor;  

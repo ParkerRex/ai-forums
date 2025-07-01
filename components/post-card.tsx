@@ -1,21 +1,20 @@
 import { useRouter } from "next/navigation";
-import {
-  MessageSquare,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
+import { MessageSquareIcon } from "@/components/ui/message-square";
+import { RabbitIcon } from "@/components/ui/rabbit";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import PostPreview from "@/components/post-preview";
 import { PostData } from "@/lib/post-preview-utils";
 import { useMutationError } from "@/hooks/use-mutation-error";
 
 // Interface to match Convex post data structure
-interface Post extends Omit<PostData, 'member' | 'author' | 'category'> {
+interface Post extends Omit<PostData, "member" | "author" | "category"> {
   _id: Id<"posts">;
   title: string;
   content: string;
@@ -58,10 +57,26 @@ interface PostCardProps {
 export default function PostCard({ post, size = "medium" }: PostCardProps) {
   const router = useRouter();
   const [isVoting, setIsVoting] = useState(false);
-  
+
   const [optimisticNetVotes, setOptimisticNetVotes] = useState(post.netVotes);
-  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
-  
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
+    null,
+  );
+
+  // Refs for animated icons
+  const upvoteIconRef = useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+  const commentIconRef = useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+  const shareIconRef = useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+
   const voteOnPost = useMutation(api.votes.voteOnPost);
   const userVote = useQuery(api.votes.getUserVote, {
     targetId: post._id,
@@ -69,7 +84,8 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
   });
   const { handleMutationError } = useMutationError();
 
-  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote;
+  const currentUserVote =
+    optimisticUserVote !== null ? optimisticUserVote : userVote;
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -77,10 +93,10 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
     setIsVoting(true);
 
     const voteType = currentUserVote === "upvote" ? "remove" : "upvote";
-    
+
     let newNetVotes = optimisticNetVotes;
     let newUserVote: string | null = null;
-    
+
     if (voteType === "upvote") {
       newNetVotes = optimisticNetVotes + (currentUserVote === null ? 1 : 1);
       newUserVote = "upvote";
@@ -88,7 +104,7 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
       newNetVotes = optimisticNetVotes - 1;
       newUserVote = null;
     }
-    
+
     setOptimisticNetVotes(newNetVotes);
     setOptimisticUserVote(newUserVote);
 
@@ -97,14 +113,14 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
         postId: post._id,
         voteType,
       });
-      
+
       setOptimisticNetVotes(result.netVotes);
       setOptimisticUserVote(result.newVoteType);
     } catch (error) {
       setOptimisticNetVotes(post.netVotes);
       setOptimisticUserVote(userVote || null);
       handleMutationError(error, () => handleUpvote(e), {
-        context: "voting on post"
+        context: "voting on post",
       });
     } finally {
       setIsVoting(false);
@@ -112,13 +128,13 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
   };
 
   const handleClick = () => {
-    router.push(`/${post.category?.name || 'general'}/${post.slug}`);
+    router.push(`/${post.category?.name || "general"}/${post.slug}`);
   };
 
   return (
     <div className="bg-card border border-border/50 rounded-md hover:border-border transition-colors">
       <div className="flex">
-        {/* Voting panel */}
+        {/* Voting panel back on the left */}
         <div className="flex flex-col items-center p-2 space-y-0.5 bg-muted/30">
           <Authenticated>
             <Button
@@ -127,8 +143,11 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
               className="p-1 h-auto hover:bg-muted"
               onClick={handleUpvote}
               disabled={isVoting}
+              onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+              onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
             >
               <ArrowBigUpIcon
+                ref={upvoteIconRef}
                 size={16}
                 className={`transition-colors ${
                   currentUserVote === "upvote"
@@ -147,8 +166,14 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
                 variant="ghost"
                 size="sm"
                 className="p-1 h-auto hover:bg-muted"
+                onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+                onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
               >
-                <ArrowBigUpIcon size={16} className="text-muted-foreground hover:text-orange-500" />
+                <ArrowBigUpIcon
+                  ref={upvoteIconRef}
+                  size={16}
+                  className="text-muted-foreground hover:text-orange-500"
+                />
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
@@ -182,8 +207,14 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
                 e.stopPropagation();
                 handleClick();
               }}
+              onMouseEnter={() => commentIconRef.current?.startAnimation()}
+              onMouseLeave={() => commentIconRef.current?.stopAnimation()}
             >
-              <MessageSquare className="w-3 h-3 mr-1" />
+              <MessageSquareIcon
+                ref={commentIconRef}
+                size={12}
+                className="mr-1"
+              />
               {post.commentCount} comments
             </Button>
           </Authenticated>
@@ -196,12 +227,29 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
                 variant="ghost"
                 size="sm"
                 className="p-2 h-auto hover:bg-muted"
+                onMouseEnter={() => commentIconRef.current?.startAnimation()}
+                onMouseLeave={() => commentIconRef.current?.stopAnimation()}
               >
-                <MessageSquare className="w-4 h-4 mr-1" />
+                <MessageSquareIcon
+                  ref={commentIconRef}
+                  size={12}
+                  className="mr-1"
+                />
                 {post.commentCount} comments
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-2 h-auto hover:bg-muted"
+            onMouseEnter={() => shareIconRef.current?.startAnimation()}
+            onMouseLeave={() => shareIconRef.current?.stopAnimation()}
+          >
+            <RabbitIcon ref={shareIconRef} size={12} className="mr-1" />
+            share
+          </Button>
         </div>
       </div>
     </div>
