@@ -1,13 +1,11 @@
 import { query } from "./_generated/server";
 
-export const checkAuthorIdFields = query({
+export const verifyAuthorIdRemoval = query({
   args: {},
   handler: async (ctx) => {
-    // Check a few posts
     const posts = await ctx.db.query("posts").take(3);
     const postsWithAuthorId = posts.filter(p => 'authorId' in p);
     
-    // Check a few comments
     const comments = await ctx.db.query("comments").take(3);
     const commentsWithAuthorId = comments.filter(c => 'authorId' in c);
     
@@ -17,6 +15,7 @@ export const checkAuthorIdFields = query({
       postsWithAuthorId: postsWithAuthorId.length,
       commentsChecked: comments.length,
       commentsWithAuthorId: commentsWithAuthorId.length,
+      schemaCleanupComplete: postsWithAuthorId.length === 0 && commentsWithAuthorId.length === 0,
     };
   },
 });
