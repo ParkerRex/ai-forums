@@ -12,6 +12,7 @@ import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { useState } from "react";
 import PostPreview from "@/components/post-preview";
 import { PostData } from "@/lib/post-preview-utils";
+import { useMutationError } from "@/hooks/use-mutation-error";
 
 // Interface to match Convex post data structure
 interface Post extends Omit<PostData, 'member' | 'author' | 'category'> {
@@ -57,25 +58,54 @@ interface PostCardProps {
 export default function PostCard({ post, size = "medium" }: PostCardProps) {
   const router = useRouter();
   const [isVoting, setIsVoting] = useState(false);
+  
+  const [optimisticNetVotes, setOptimisticNetVotes] = useState(post.netVotes);
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
+  
   const voteOnPost = useMutation(api.votes.voteOnPost);
   const userVote = useQuery(api.votes.getUserVote, {
     targetId: post._id,
     targetType: "post",
   });
+  const { handleMutationError } = useMutationError();
+
+  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote;
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isVoting) return;
     setIsVoting(true);
 
+    const voteType = currentUserVote === "upvote" ? "remove" : "upvote";
+    
+    let newNetVotes = optimisticNetVotes;
+    let newUserVote: string | null = null;
+    
+    if (voteType === "upvote") {
+      newNetVotes = optimisticNetVotes + (currentUserVote === null ? 1 : 1);
+      newUserVote = "upvote";
+    } else {
+      newNetVotes = optimisticNetVotes - 1;
+      newUserVote = null;
+    }
+    
+    setOptimisticNetVotes(newNetVotes);
+    setOptimisticUserVote(newUserVote);
+
     try {
-      const voteType = userVote === "upvote" ? "remove" : "upvote";
-      await voteOnPost({
+      const result = await voteOnPost({
         postId: post._id,
         voteType,
       });
+      
+      setOptimisticNetVotes(result.netVotes);
+      setOptimisticUserVote(result.newVoteType);
     } catch (error) {
-      console.error("Error voting:", error);
+      setOptimisticNetVotes(post.netVotes);
+      setOptimisticUserVote(userVote || null);
+      handleMutationError(error, () => handleUpvote(e), {
+        context: "voting on post"
+      });
     } finally {
       setIsVoting(false);
     }
@@ -101,7 +131,7 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
               <ArrowBigUpIcon
                 size={16}
                 className={`transition-colors ${
-                  userVote === "upvote"
+                  currentUserVote === "upvote"
                     ? "text-orange-500"
                     : "text-muted-foreground hover:text-orange-500"
                 }`}
@@ -123,7 +153,7 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
             </MembershipCTAModal>
           </Unauthenticated>
           <span className="text-xs font-medium text-foreground">
-            {post.netVotes}
+            {optimisticNetVotes}
           </span>
         </div>
 
