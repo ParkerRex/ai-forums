@@ -26,8 +26,7 @@ export async function GET() {
     )
 
     if (!response.ok) {
-      const errorText = await response.text()
-      console.error(`GitHub API error ${response.status}: ${errorText}`)
+      // Reading error response is skipped to avoid noisy logs.
       
       // For development, return mock data if the API fails
       // In production, you would want to handle this differently
