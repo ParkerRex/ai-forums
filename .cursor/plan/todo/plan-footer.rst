@@ -1,4 +1,6 @@
-we need to make an incredibly helpful footer for the site, that acts more as a set of utilities you'd expect in an IDE. 
+we need to make an incredibly helpful footer for the site, that acts more as a set of utilities you'd expect in an IDE.
+
+**STATUS: ✅ COMPLETED** - All three phases implemented successfully! 
 
 EG. It's only 24px tall. It has a slim 1px top border that is slighlty darker than the bg, and it has a few components within it. 
 
@@ -42,14 +44,14 @@ Phase 2 – Discord presence indicator
 
 Phase 3 – Git + countdown utilities
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-☐ **app/api/last-commit/route.ts** – fetch latest commit via GitHub API using ``GITHUB_TOKEN`` env; return commit timestamp  
-☐ **lib/github.ts** – ``useLastCommit()`` SWR hook (60 s refresh; returns Date)  
-☐ **components/last-push-tag.tsx** – shows "Updated X h ago" (updates every minute) using hook  
-☐ **lib/time-utils.ts** – ``formatDurationAgo(ts)`` helper with tests  
-☐ **components/weekly-countdown.tsx** – countdown to next Friday 12 PM ET; updates every 60 s  
-☐ **lib/week-utils.ts** – ``minutesUntilNextFridayNoon(now)`` helper with edge-case tests  
-☐ **footer.tsx** – add ``<LastPushTag />`` + ``<WeeklyCountdown />``
-☐ **deps** – ensure ``date-fns`` + ``date-fns-tz`` typings available
+☑ **app/api/last-commit/route.ts** – fetch latest commit via GitHub API using ``GITHUB_TOKEN`` env; return commit timestamp  
+☑ **lib/github.ts** – ``useLastCommit()`` SWR hook (60 s refresh; returns Date)  
+☑ **components/last-push-tag.tsx** – shows "Updated X h ago" (updates every minute) using hook  
+☑ **lib/time-utils.ts** – ``formatDurationAgo(ts)`` helper with tests  
+☑ **components/weekly-countdown.tsx** – countdown to next Friday 12 PM ET; updates every 60 s  
+☑ **lib/week-utils.ts** – ``minutesUntilNextFridayNoon(now)`` helper with edge-case tests  
+☑ **footer.tsx** – add ``<LastPushTag />`` + ``<WeeklyCountdown />``
+☑ **deps** – ensure ``date-fns`` + ``date-fns-tz`` typings available
 
 Implementation Phases
 =====================

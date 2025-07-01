@@ -10,6 +10,21 @@ export async function GET() {
     })
 
     if (!response.ok) {
+      const errorText = await response.text()
+      console.error(`Discord API returned ${response.status}: ${errorText}`)
+      
+      // If widget is not enabled (403), return 0 instead of erroring
+      if (response.status === 403) {
+        return NextResponse.json(
+          { presence_count: 0, error: 'Widget not enabled' },
+          {
+            headers: {
+              'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+            },
+          }
+        )
+      }
+      
       throw new Error(`Discord API returned ${response.status}`)
     }
 
@@ -26,8 +41,13 @@ export async function GET() {
   } catch (error) {
     console.error('Discord API error:', error)
     return NextResponse.json(
-      { presence_count: 0 },
-      { status: 500 }
+      { presence_count: 0, error: error.message },
+      { 
+        status: 200, // Return 200 even on error so the UI doesn't break
+        headers: {
+          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        },
+      }
     )
   }
 }
