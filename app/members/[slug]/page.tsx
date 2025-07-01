@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useRouter } from "next/navigation";
+import { ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import MemberProfile from "@/components/member-profile";
 import PostCard from "@/components/post-card";
 import { MemberProfileSkeleton, PostSkeletonList, ActivitySkeletonList } from "@/components/member-skeleton";
@@ -15,6 +17,8 @@ interface PageProps {
 }
 
 function MemberDetailContent({ slug }: { slug: string }) {
+  const router = useRouter();
+  
   // Fetch member data from Convex using slug
   const memberData = useQuery(
     api.members.getMemberBySlug,
@@ -94,6 +98,17 @@ function MemberDetailContent({ slug }: { slug: string }) {
   return (
     <div className="font-mono min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-10">
+        {/* Back Navigation */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.back()}
+          className="mb-6"
+        >
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
+        
         {/* Member Profile Section - Progressive Loading */}
         {isMemberLoading ? (
           <MemberProfileSkeleton />
