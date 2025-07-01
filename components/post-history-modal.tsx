@@ -174,7 +174,7 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                     </h4>
                     <div className="flex items-center text-xs text-muted-foreground">
                       <User className="h-3 w-3 mr-1" />
-                      {(currentPost.member || currentPost.author)?.firstName} {(currentPost.member || currentPost.author)?.lastName}
+                      {currentPost.member?.firstName} {currentPost.member?.lastName}
                     </div>
                   </CardContent>
                 </Card>
@@ -281,12 +281,12 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                     <CardTitle className="text-lg">{currentPost.title}</CardTitle>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Avatar className="h-6 w-6 mr-2">
-                                        <AvatarImage src={(currentPost.member || currentPost.author)?.avatarUrl} />
+                                        <AvatarImage src={currentPost.member?.avatarUrl} />
                 <AvatarFallback>
-                  {(currentPost.member || currentPost.author)?.firstName?.[0]}{(currentPost.member || currentPost.author)?.lastName?.[0]}
+                  {currentPost.member?.firstName?.[0]}{currentPost.member?.lastName?.[0]}
                 </AvatarFallback>
                       </Avatar>
-                                              {currentPost.editedAt ? 'Last edited' : 'Created'} by {(currentPost.member || currentPost.author)?.firstName} {(currentPost.member || currentPost.author)?.lastName}
+                                              {currentPost.editedAt ? 'Last edited' : 'Created'} by {currentPost.member?.firstName} {currentPost.member?.lastName}
                       <Separator orientation="vertical" className="mx-2 h-4" />
                       {new Date(currentPost.editedAt || currentPost.createdAt).toLocaleString()}
                     </div>
@@ -302,4 +302,4 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
       </DialogContent>
     </Dialog>
   );
-} 
+}  

@@ -44,15 +44,6 @@ export const globalSearch = query({
             username: member.email.split('@')[0],
             slug: member.slug,
           } : null,
-          // Legacy field for backward compatibility - will be removed in Phase 6
-          author: member && 'firstName' in member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            email: member.email,
-            username: member.email.split('@')[0],
-            slug: member.slug,
-          } : null,
         };
       })
     );
@@ -137,7 +128,6 @@ export const globalSearch = query({
         content: restricted ? "Hidden content – join to view" : c.content, 
         memberId: c.memberId,
         member: c.member,
-        author: c.author, // Legacy field for backward compatibility
         postId: c.postId, 
         restricted,
         slug: parentPost?.slug,
@@ -156,4 +146,4 @@ export const globalSearch = query({
       ...uniqueLinks,
     ].slice(0, limit);
   },
-}); 
+});  

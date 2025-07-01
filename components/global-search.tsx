@@ -134,20 +134,20 @@ function SearchResultItem({
       return (
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
-            {(result.member || result.author) && (
+            {result.member && (
               <Avatar className="w-5 h-5">
                 <AvatarFallback className="text-xs">
-                  {(result.member || result.author)!.firstName[0]}{(result.member || result.author)!.lastName[0]}
+                  {result.member.firstName[0]}{result.member.lastName[0]}
                 </AvatarFallback>
               </Avatar>
             )}
-            {(result.member || result.author) ? (
+            {result.member ? (
               <Link 
-                href={memberProfileUrl({ slug: (result.member || result.author)!.slug, _id: (result.member || result.author)!._id as Id<"members"> })}
+                href={memberProfileUrl({ slug: result.member.slug, _id: result.member._id as Id<"members"> })}
                 className="text-sm font-medium hover:text-primary transition-colors"
                 data-testid="member-link"
               >
-                {(result.member || result.author)!.username}
+                {result.member.username}
               </Link>
             ) : (
               <span className="text-sm font-medium">
@@ -318,4 +318,4 @@ export function GlobalSearch() {
       </CommandList>
     </CommandDialog>
   );
-} 
+}  

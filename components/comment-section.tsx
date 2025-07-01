@@ -77,18 +77,18 @@ function CommentItem({
         <div className="flex items-start space-x-3">
           <Avatar className="w-8 h-8">
             <AvatarFallback className="bg-muted text-muted-foreground">
-              {(comment.member || comment.author)?.firstName?.[0] || 'U'}
+              {comment.member?.firstName?.[0] || 'U'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-2">
             <div className="flex items-center space-x-2">
-              {(comment.member || comment.author) ? (
+              {comment.member ? (
                 <Link 
-                  href={memberProfileUrl({ slug: (comment.member || comment.author)!.slug, _id: (comment.member || comment.author)!._id })}
+                  href={memberProfileUrl({ slug: comment.member.slug, _id: comment.member._id })}
                   className="font-medium text-foreground hover:text-primary transition-colors"
                   data-testid="member-link"
                 >
-                  {(comment.member || comment.author)!.firstName} {(comment.member || comment.author)!.lastName}
+                  {comment.member.firstName} {comment.member.lastName}
                 </Link>
               ) : (
                 <span className="font-medium text-foreground">
@@ -140,7 +140,7 @@ function CommentItem({
         {replyingTo === comment._id && (
           <div className="mt-4 ml-11 space-y-3">
             <Textarea
-                              placeholder={`Reply to ${(comment.member || comment.author)?.firstName || 'this comment'}...`}
+                              placeholder={`Reply to ${comment.member?.firstName || 'this comment'}...`}
               value={newReply}
               onChange={(e) => setNewReply(e.target.value)}
               className="min-h-[80px]"

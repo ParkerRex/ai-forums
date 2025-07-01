@@ -83,12 +83,12 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
   const currentMember = useQuery(api.members.getCurrentMember);
 
   // Check if current user is the member who created this post
-  const isMemberPost = currentMember && (post.member || post.author) && currentMember._id === (post.member || post.author)?._id;
+  const isMemberPost = currentMember && post.member && currentMember._id === post.member?._id;
   
   // Debug logging
   console.log('Debug member check:', {
     currentMember: currentMember ? { _id: currentMember._id, email: currentMember.email } : null,
-    postMember: (post.member || post.author) ? { _id: (post.member || post.author)?._id, username: (post.member || post.author)?.username } : null,
+    postMember: post.member ? { _id: post.member?._id, username: post.member?.username } : null,
     isMemberPost
   });
 
@@ -130,11 +130,11 @@ export default function PostDetail({ post, onEdit, onDelete, onViewHistory }: Po
               <span className="mx-2">•</span>
               <span>posted by</span>
               <Link 
-                href={(post.member || post.author) ? memberProfileUrl({ slug: (post.member || post.author)!.slug!, _id: (post.member || post.author)!._id }) : "#"}
+                href={post.member ? memberProfileUrl({ slug: post.member!.slug!, _id: post.member!._id }) : "#"}
                 className="ml-1 text-primary hover:underline"
                 data-testid="member-link"
               >
-                /u/{(post.member || post.author)?.username || "unknown"}
+                /u/{post.member?.username || "unknown"}
               </Link>
               <span className="mx-2">•</span>
               <span>{getTimeAgo(post.createdAt)} ago</span>
