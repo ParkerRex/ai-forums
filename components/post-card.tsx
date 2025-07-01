@@ -1,11 +1,11 @@
 import { useRouter } from "next/navigation";
 import {
-  ArrowUp,
   MessageSquare,
   Share,
   Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -110,8 +110,9 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
               onClick={handleUpvote}
               disabled={isVoting}
             >
-              <ArrowUp
-                className={`w-5 h-5 transition-colors ${
+              <ArrowBigUpIcon
+                size={20}
+                className={`transition-colors ${
                   userVote === "upvote"
                     ? "text-primary"
                     : "text-muted-foreground hover:text-primary"
@@ -129,7 +130,7 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
                 size="sm"
                 className="p-1 h-auto hover:bg-muted"
               >
-                <ArrowUp className="w-5 h-5 text-muted-foreground hover:text-primary" />
+                <ArrowBigUpIcon size={20} className="text-muted-foreground hover:text-primary" />
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>

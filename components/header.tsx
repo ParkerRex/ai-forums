@@ -3,12 +3,16 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus } from "lucide-react";
+import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
 import { SignUpButton, UserButton, SignInButton } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { ThemeToggle } from "@/components/theme-toggle";
+import React from "react";
 
 export default function Header() {
+  const iconRef = React.useRef<UsersIconHandle>(null);
+
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4">
@@ -31,18 +35,19 @@ export default function Header() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Link
-              href="/members"
-              className="text-muted-foreground hover:text-foreground transition-colors"
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2 text-muted-foreground hover:text-foreground"
+              onMouseEnter={() => iconRef.current?.startAnimation()}
+              onMouseLeave={() => iconRef.current?.stopAnimation()}
+              asChild
             >
-              members
-            </Link>
-            <Link
-              href="/settings"
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              settings
-            </Link>
+              <Link href="/members" className="flex items-center gap-1">
+                <UsersIcon ref={iconRef} size={18} />
+                <span>members</span>
+              </Link>
+            </Button>
             <ThemeToggle />
             <Authenticated>
               <Link href="/create">

@@ -78,13 +78,15 @@ export function PostDeleteModal({
             <AlertTriangle className="h-5 w-5 text-destructive" />
             Delete Post
           </AlertDialogTitle>
-          <AlertDialogDescription className="space-y-3">
-            <p>
-              Are you sure you want to delete <strong data-testid="delete-modal-title">&ldquo;{postTitle}&rdquo;</strong>?
-            </p>
-            <p className="text-sm text-muted-foreground">
-              This action cannot be undone. The post will be permanently removed from the community.
-            </p>
+          <AlertDialogDescription asChild>
+            <div className="space-y-3">
+              <p>
+                Are you sure you want to delete <strong data-testid="delete-modal-title">&ldquo;{postTitle}&rdquo;</strong>?
+              </p>
+              <p className="text-sm text-muted-foreground">
+                This action cannot be undone. The post will be permanently removed from the community.
+              </p>
+            </div>
           </AlertDialogDescription>
         </AlertDialogHeader>
 

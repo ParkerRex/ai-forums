@@ -13,7 +13,10 @@ export const getCategories = query({
       .order("desc")
       .collect();
 
-    return categories.map((category) => ({
+    // Exclude the legacy "skool" import category from the list
+    const filtered = categories.filter((cat) => cat.name !== "skool");
+
+    return filtered.map((category) => ({
       ...category,
       postCount: category.postCount || 0,
     }));
@@ -36,6 +39,11 @@ export const getCategoryById = query({
 export const getCategoryByName = query({
   args: { name: v.string() },
   handler: async (ctx, { name }) => {
+    if (name === "skool") {
+      // Treat the removed category as non-existent
+      return null;
+    }
+
     const category = await ctx.db
       .query("categories")
       .withIndex("by_name", (q) => q.eq("name", name))
@@ -323,6 +331,46 @@ export const seedCategories = mutation({
       message: `Seeded ${createdCategories.length} categories`,
       categoryIds: createdCategories,
       totalCategories: await ctx.db.query("categories").collect().then(cats => cats.length),
+    };
+  },
+});
+
+// Delete a category and all its posts (irreversible)
+export const deleteCategoryByName = mutation({
+  args: { name: v.string() },
+  handler: async (ctx, { name }) => {
+    // Only allow deletion of the "skool" category for safety (extend as needed)
+    if (name !== "skool") {
+      throw new Error("This mutation currently only supports deleting the 'skool' category.");
+    }
+
+    // Find the category
+    const category = await ctx.db
+      .query("categories")
+      .withIndex("by_name", (q) => q.eq("name", name))
+      .first();
+
+    if (!category) {
+      return { message: `Category '${name}' not found`, deleted: false };
+    }
+
+    // Delete all posts in this category (hard delete)
+    const posts = await ctx.db
+      .query("posts")
+      .withIndex("by_categoryId", (q) => q.eq("categoryId", category._id))
+      .collect();
+
+    for (const post of posts) {
+      await ctx.db.delete(post._id);
+    }
+
+    // Finally delete the category itself
+    await ctx.db.delete(category._id);
+
+    return {
+      message: `Deleted category '${name}' and ${posts.length} posts`,
+      deletedPosts: posts.length,
+      deletedCategoryId: category._id,
     };
   },
 }); 

@@ -65,8 +65,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   };
 
   const handleDeleteSuccess = () => {
-    // Navigate back to the category page
-    router.push(`/${category}`);
+    // Navigate back to the home page after successful deletion
+    router.push("/");
   };
 
   if (!hasValidParams) {

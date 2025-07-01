@@ -7,6 +7,13 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePathname } from "next/navigation";
 import PostHeaderSkeleton from "@/components/post-header-skeleton";
+import { HomeIcon, HomeIconHandle } from "@/components/ui/home";
+import { Button } from "@/components/ui/button";
+import { ClapIcon } from "@/components/ui/clap";
+import { SquareStackIcon } from "@/components/ui/square-stack";
+import { FlaskIcon } from "@/components/ui/flask";
+import { FlameIcon } from "@/components/ui/flame";
+import { PartyPopperIcon } from "@/components/ui/party-popper";
 
 interface PostHeaderProps {
   selectedCategoryId?: Id<"categories">;
@@ -15,7 +22,15 @@ interface PostHeaderProps {
   onSortChange?: (sort: "newest" | "popular" | "trending") => void;
 }
 
+// Type for category icon refs
+type CategoryIconRef = {
+  startAnimation: () => void;
+  stopAnimation: () => void;
+};
+
 export default function PostHeader({ selectedCategoryId, onCategorySelect, sortBy = "newest", onSortChange }: PostHeaderProps) {
+  const homeIconRef = React.useRef<HomeIconHandle>(null);
+  const categoryIconRefs = React.useRef<{[key: string]: CategoryIconRef | null}>({});
   const categories = useQuery(api.categories.getCategories);
   const pathname = usePathname();
 
@@ -27,32 +42,79 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
     return <PostHeaderSkeleton />;
   }
 
+  // Icon mapping for categories
+  const getCategoryIcon = (categoryName: string, isActive: boolean, categoryId: string) => {
+    const iconProps = {
+      size: 16,
+      ref: (ref: CategoryIconRef | null) => { categoryIconRefs.current[categoryId] = ref; }
+    };
+
+    switch (categoryName) {
+      case 'content':
+        return <ClapIcon {...iconProps} />;
+      case 'connect':
+        return <SquareStackIcon {...iconProps} />;
+      case 'prompts':
+        return <FlaskIcon {...iconProps} />;
+      case 'workflows':
+        return <FlameIcon {...iconProps} />;
+      case 'announcements':
+        return <PartyPopperIcon {...iconProps} />;
+      default:
+        return null;
+    }
+  };
+
+  // Handle category icon animation
+  const handleCategoryIconAnimation = (categoryId: string, start: boolean) => {
+    const iconRef = categoryIconRefs.current[categoryId];
+    if (iconRef) {
+      if (start) {
+        iconRef.startAnimation();
+      } else {
+        iconRef.stopAnimation();
+      }
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-6">
         <div className="flex space-x-6 overflow-x-auto pb-2">
           {/* All Posts Tab */}
           {isOnCategoryPage ? (
-            <Link href="/" className="font-medium pb-1 whitespace-nowrap transition-colors border-b-2 text-muted-foreground hover:text-green-700 border-transparent hover:border" prefetch={true}>
-              all posts
-            </Link>
-          ) : (
-            <button
-              onClick={() => onCategorySelect?.(undefined)}
-              className={`font-medium pb-1 whitespace-nowrap transition-colors border-b-2 ${!selectedCategoryId
-                ? "text-green-700 border-green-700"
-                : "text-muted-foreground hover:text-green-700 border-transparent hover:border"
-                }`}
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`px-2 ${!selectedCategoryId ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              onMouseEnter={() => homeIconRef.current?.startAnimation()}
+              onMouseLeave={() => homeIconRef.current?.stopAnimation()}
+              asChild
             >
-              all posts
-            </button>
+              <Link href="/" className="flex items-center gap-1" prefetch={true}>
+                <HomeIcon ref={homeIconRef} size={16} />
+                <span>all posts</span>
+              </Link>
+            </Button>
+          ) : (
+            <Button
+              variant="ghost"
+              size="sm"
+              className={`px-2 ${!selectedCategoryId ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              onClick={() => onCategorySelect?.(undefined)}
+              onMouseEnter={() => homeIconRef.current?.startAnimation()}
+              onMouseLeave={() => homeIconRef.current?.stopAnimation()}
+            >
+              <HomeIcon ref={homeIconRef} size={16} />
+              <span>all posts</span>
+            </Button>
           )}
 
           {/* Category Tabs */}
           {categories === undefined ? (
             // Loading state
             [...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-6 w-20" />
+              <Skeleton key={i} className="h-8 w-20" />
             ))
           ) : categories?.length === 0 ? (
             <span className="text-muted-foreground text-sm">No categories available</span>
@@ -63,30 +125,37 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
                 selectedCategoryId === category._id;
 
               return isOnCategoryPage ? (
-                <Link
+                <Button
                   key={category._id}
-                  href={`/${category.name}`}
-                  className={`px-3 py-1 text-sm border-b-2 transition-colors ${
-                    isActive
-                      ? "text-primary border-primary"
-                      : "text-muted-foreground hover:text-primary border-transparent hover:border-muted-foreground"
-                  }`}
-                  prefetch={true}
+                  variant="ghost"
+                  size="sm"
+                  className={`px-2 ${isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  asChild
                 >
-                  {category.icon} /{category.name}
-                </Link>
+                  <Link 
+                    href={`/${category.name}`} 
+                    className="flex items-center gap-1" 
+                    prefetch={true}
+                    onMouseEnter={() => handleCategoryIconAnimation(category._id, true)}
+                    onMouseLeave={() => handleCategoryIconAnimation(category._id, false)}
+                  >
+                    {getCategoryIcon(category.name, isActive, category._id)}
+                    <span>/{category.name}</span>
+                  </Link>
+                </Button>
               ) : (
-                <button
+                <Button
                   key={category._id}
+                  variant="ghost"
+                  size="sm"
+                  className={`px-2 ${isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
                   onClick={() => onCategorySelect?.(category._id)}
-                  className={`px-3 py-1 text-sm border-b-2 transition-colors ${
-                    isActive
-                      ? "text-primary border-primary"
-                      : "text-muted-foreground hover:text-primary border-transparent hover:border-muted-foreground"
-                  }`}
+                  onMouseEnter={() => handleCategoryIconAnimation(category._id, true)}
+                  onMouseLeave={() => handleCategoryIconAnimation(category._id, false)}
                 >
-                  {category.icon} /{category.name}
-                </button>
+                  {getCategoryIcon(category.name, isActive, category._id)}
+                  <span>/{category.name}</span>
+                </Button>
               );
             })
           )}

@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Home, Search, ArrowLeft } from "lucide-react";
-import { useEffect } from "react";
 
 export default function NotFound() {
   const triggerGlobalSearch = () => {
@@ -22,16 +21,16 @@ export default function NotFound() {
             Page Not Found
           </h2>
           <p className="text-muted-foreground">
-            Sorry, we couldn't find the page you're looking for. 
+            Sorry, we couldn&apos;t find the page you&apos;re looking for. 
             It may have been moved, deleted, or the URL might be incorrect.
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
-          <Button asChild>
-            <Link href="/">
+          <Button >
+            <Link className="flex items-center" href="/">
               <Home className="w-4 h-4 mr-2" />
-              Go Home
+              <p>Go Home</p>
             </Link>
           </Button>
           
