@@ -55,18 +55,18 @@ interface CommentItemProps {
   isSubmittingReply: boolean;
 }
 
-function CommentItem({ 
-  comment, 
-  onReply, 
-  replyingTo, 
-  newReply, 
-  setNewReply, 
+function CommentItem({
+  comment,
+  onReply,
+  replyingTo,
+  newReply,
+  setNewReply,
   onSubmitReply,
-  isSubmittingReply 
+  isSubmittingReply
 }: CommentItemProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const hasReplies = comment.replies && comment.replies.length > 0;
-  
+
   // Calculate indentation based on depth (max 3 levels)
   const indentLevel = Math.min(comment.depth, 3);
   const marginLeft = indentLevel * 24; // 24px per level
@@ -77,13 +77,13 @@ function CommentItem({
         <div className="flex items-start space-x-3">
           <Avatar className="w-8 h-8">
             <AvatarFallback className="bg-muted text-muted-foreground">
-              {comment.member?.firstName?.[0] || 'U'}
+pr              {comment.member?.firstName?.[0] || 'U'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-2">
             <div className="flex items-center space-x-2">
               {comment.member ? (
-                <Link 
+                <Link
                   href={memberProfileUrl({ slug: comment.member.slug, _id: comment.member._id })}
                   className="font-medium text-foreground hover:text-primary transition-colors"
                   data-testid="member-link"
@@ -192,7 +192,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
   const [replyingTo, setReplyingTo] = useState<Id<"comments"> | null>(null);
   const [newReply, setNewReply] = useState("");
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
-  
+
   const comments = useQuery(api.comments.getCommentsByPost, { postId });
   const createComment = useMutation(api.comments.createComment);
   const { handleMutationError, handleMutationSuccess } = useMutationError();
@@ -275,7 +275,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
         <h3 className="text-lg font-semibold text-foreground mb-4">
           Comments ({totalComments})
         </h3>
-        
+
         <Authenticated>
           <div className="mb-6 space-y-4">
             <Textarea
@@ -284,7 +284,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
               onChange={(e) => setNewComment(e.target.value)}
               className="min-h-[100px]"
             />
-            <Button 
+            <Button
               onClick={handleSubmitComment}
               disabled={!newComment.trim() || isSubmitting}
               className="w-full sm:w-auto"
