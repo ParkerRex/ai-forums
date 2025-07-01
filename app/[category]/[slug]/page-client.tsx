@@ -126,7 +126,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
         <ArrowLeft className="h-4 w-4 mr-2" />
         Back
       </Button>
-      
+
       <Authenticated>
         <PostDetail
           post={post}
@@ -167,17 +167,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
       </Authenticated>
 
       <Unauthenticated>
-        {/* Back Navigation */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()}
-          className="mb-6"
-        >
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
-        
+        {/* Unauthenticated preview section */}
+
         {/* Show preview for unauthenticated users */}
         <div className="space-y-6">
           {/* Post Header */}
