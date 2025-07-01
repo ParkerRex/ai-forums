@@ -3,9 +3,9 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 
 export default function PostSidebarSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-3">
       {/* Create Post Card Skeleton */}
-      <Card>
+      <Card size="compact">
         <CardHeader>
           <Skeleton className="h-6 w-24" />
         </CardHeader>
@@ -16,7 +16,7 @@ export default function PostSidebarSkeleton() {
       </Card>
 
       {/* Recent AI News Card Skeleton */}
-      <Card>
+      <Card size="compact">
         <CardHeader>
           <div className="flex items-center">
             <Skeleton className="h-5 w-5 mr-2" />
@@ -37,7 +37,7 @@ export default function PostSidebarSkeleton() {
       </Card>
 
       {/* About VAI Card Skeleton */}
-      <Card>
+      <Card size="compact">
         <CardHeader>
           <Skeleton className="h-6 w-20" />
         </CardHeader>

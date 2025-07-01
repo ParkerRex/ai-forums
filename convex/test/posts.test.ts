@@ -483,7 +483,7 @@ describe("Phase 4 - Backend Refactor", () => {
         postId,
         title: "Updated Title",
       })
-    ).resolves.toEqual(postId);
+    ).resolves.toMatchObject({ _id: postId });
 
     // Other user should not be able to edit the post
     await expect(

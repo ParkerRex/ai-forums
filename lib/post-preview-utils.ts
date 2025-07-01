@@ -136,8 +136,68 @@ function formatCount(count: number): string {
   return count.toString();
 }
 
+export interface AssetInfo {
+  width?: number;
+  height?: number;
+  naturalWidth?: number;
+  naturalHeight?: number;
+}
+
+/**
+ * Determine asset orientation based on dimensions
+ */
+export function getAssetOrientation(asset?: AssetInfo): "portrait" | "landscape" | "square" {
+  if (!asset) return "landscape";
+  
+  const width = asset.naturalWidth || asset.width || 16;
+  const height = asset.naturalHeight || asset.height || 9;
+  const ratio = width / height;
+  
+  if (ratio > 1.2) return "landscape";
+  if (ratio < 0.8) return "portrait";
+  return "square";
+}
+
+/**
+ * Get preview classes for responsive media
+ */
+export function getPreviewClasses(
+  size: PreviewSize,
+  asset?: AssetInfo
+): {
+  wrapper: string;
+  media: string;
+  aspectRatio: string;
+} {
+  const orientation = getAssetOrientation(asset);
+  
+  switch (size) {
+    case "small":
+      return {
+        wrapper: "w-20 h-20",
+        media: orientation === "portrait" ? "object-contain" : "object-cover",
+        aspectRatio: "aspect-square",
+      };
+    
+    case "medium":
+      return {
+        wrapper: "w-32",
+        media: orientation === "portrait" ? "object-contain" : "object-cover",
+        aspectRatio: orientation === "portrait" ? "aspect-[3/4] max-h-40" : "aspect-[16/9] max-h-24",
+      };
+    
+    case "large":
+      return {
+        wrapper: "w-full",
+        media: "object-cover",
+        aspectRatio: orientation === "portrait" ? "aspect-[3/4] max-h-80" : "aspect-[16/9] max-h-60",
+      };
+  }
+}
+
 /**
  * Get dimensions for preview based on size
+ * @deprecated Use getPreviewClasses instead
  */
 export function getPreviewDimensions(size: PreviewSize): {
   maxWidth: string;

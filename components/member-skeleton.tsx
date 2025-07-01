@@ -11,11 +11,11 @@ export { default as MemberHeaderSkeleton } from "./member-header-skeleton";
  */
 export function MemberCardSkeleton() {
   return (
-    <div className="bg-card border border-border rounded-lg p-6 h-full flex flex-col">
+    <div className="bg-card border border-border/50 rounded-md p-3 h-full flex flex-col">
       <div className="animate-pulse space-y-4">
         {/* Avatar and basic info */}
-        <div className="flex items-center space-x-4">
-          <div className="w-16 h-16 bg-muted rounded-full"></div>
+        <div className="flex items-center space-x-3">
+          <div className="w-12 h-12 bg-muted rounded-full"></div>
           <div className="flex-1 space-y-2">
             <div className="h-4 bg-muted rounded w-3/4"></div>
             <div className="h-3 bg-muted rounded w-1/2"></div>
@@ -23,7 +23,7 @@ export function MemberCardSkeleton() {
         </div>
 
         {/* Status badge */}
-        <div className="h-6 bg-muted rounded w-20"></div>
+        <div className="h-5 bg-muted rounded w-16"></div>
 
         {/* Bio */}
         <div className="space-y-2">
@@ -44,9 +44,9 @@ export function MemberCardSkeleton() {
 
         {/* Social links */}
         <div className="flex space-x-2">
-          <div className="w-8 h-8 bg-muted rounded"></div>
-          <div className="w-8 h-8 bg-muted rounded"></div>
-          <div className="w-8 h-8 bg-muted rounded"></div>
+          <div className="w-6 h-6 bg-muted rounded"></div>
+          <div className="w-6 h-6 bg-muted rounded"></div>
+          <div className="w-6 h-6 bg-muted rounded"></div>
         </div>
 
         {/* Member since */}
@@ -131,17 +131,16 @@ export function MemberProfileSkeleton() {
  */
 export function PostCardSkeleton() {
   return (
-    <div className="bg-card border border-border rounded-lg">
+    <div className="bg-card border border-border/50 rounded-md">
       <div className="flex">
         {/* Voting section skeleton */}
-        <div className="flex flex-col items-center p-4 space-y-1">
-          <Skeleton className="h-6 w-6" />
-          <Skeleton className="h-5 w-8" />
-          <Skeleton className="h-6 w-6" />
+        <div className="flex flex-col items-center p-2 space-y-0.5 bg-muted/30">
+          <Skeleton className="h-4 w-4" />
+          <Skeleton className="h-4 w-6" />
         </div>
 
         {/* Content section skeleton */}
-        <div className="flex-1 p-4 pl-0">
+        <div className="flex-1 p-3">
           {/* Metadata line skeleton */}
           <div className="flex items-center mb-2">
             <Skeleton className="h-3 w-16" />
@@ -162,20 +161,22 @@ export function PostCardSkeleton() {
             <Skeleton className="h-4 w-1/2" />
           </div>
 
-          {/* Action buttons skeleton */}
-          <div className="flex items-center space-x-4">
-            <div className="flex items-center">
-              <Skeleton className="h-4 w-4 mr-1" />
-              <Skeleton className="h-4 w-16" />
-            </div>
-            <div className="flex items-center">
-              <Skeleton className="h-4 w-4 mr-1" />
-              <Skeleton className="h-4 w-10" />
-            </div>
-            <div className="flex items-center">
-              <Skeleton className="h-4 w-4 mr-1" />
-              <Skeleton className="h-4 w-8" />
-            </div>
+        </div>
+      </div>
+      {/* Action bar skeleton */}
+      <div className="border-t border-border/50 px-3 py-1.5">
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center">
+            <Skeleton className="h-3 w-3 mr-1" />
+            <Skeleton className="h-3 w-16" />
+          </div>
+          <div className="flex items-center">
+            <Skeleton className="h-3 w-3 mr-1" />
+            <Skeleton className="h-3 w-10" />
+          </div>
+          <div className="flex items-center">
+            <Skeleton className="h-3 w-3 mr-1" />
+            <Skeleton className="h-3 w-8" />
           </div>
         </div>
       </div>
@@ -189,18 +190,18 @@ export function PostCardSkeleton() {
  */
 export function ActivitySkeleton() {
   return (
-    <div className="bg-muted/30 border border-border rounded-lg p-4">
+    <div className="bg-muted/30 border border-border/50 rounded-md p-3">
       {/* Comment content skeleton */}
       <div className="mb-2">
-        <Skeleton className="h-4 w-full mb-1" />
-        <Skeleton className="h-4 w-3/4" />
+        <Skeleton className="h-3 w-full mb-1" />
+        <Skeleton className="h-3 w-3/4" />
       </div>
 
       {/* Metadata skeleton */}
       <div className="flex items-center">
-        <Skeleton className="h-3 w-8" />
-        <Skeleton className="h-3 w-6 mx-1" />
-        <Skeleton className="h-3 w-24" />
+        <Skeleton className="h-3 w-6" />
+        <Skeleton className="h-3 w-4 mx-1" />
+        <Skeleton className="h-3 w-20" />
       </div>
     </div>
   );
@@ -295,7 +296,7 @@ export function SectionLoader({
  */
 export function MemberCardSkeletonGrid({ count = 6 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {Array.from({ length: count }, (_, i) => (
         <MemberCardSkeleton key={i} />
       ))}
@@ -308,7 +309,7 @@ export function MemberCardSkeletonGrid({ count = 6 }: { count?: number }) {
  */
 export function PostSkeletonList({ count = 3 }: { count?: number }) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-2">
       {Array.from({ length: count }, (_, i) => (
         <PostCardSkeleton key={i} />
       ))}
@@ -321,7 +322,7 @@ export function PostSkeletonList({ count = 3 }: { count?: number }) {
  */
 export function ActivitySkeletonList({ count = 4 }: { count?: number }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {Array.from({ length: count }, (_, i) => (
         <ActivitySkeleton key={i} />
       ))}
@@ -369,11 +370,11 @@ export function EmptyState({
 
 export function MemberEditFormSkeleton() {
   return (
-    <div className="bg-card border border-border rounded-lg">
-      <div className="p-6 border-b border-border">
-        <div className="h-6 bg-muted rounded w-32"></div>
+    <div className="bg-card border border-border/50 rounded-md">
+      <div className="p-4 border-b border-border/50">
+        <div className="h-5 bg-muted rounded w-32"></div>
       </div>
-      <div className="p-6 space-y-6">
+      <div className="p-4 space-y-4">
         {/* Basic Info */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
@@ -420,7 +421,7 @@ export function MemberEditFormSkeleton() {
 
 export function MemberListSkeleton() {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       {[...Array(6)].map((_, i) => (
         <MemberCardSkeleton key={i} />
       ))}
@@ -430,11 +431,11 @@ export function MemberListSkeleton() {
 
 export function MemberStatsCardSkeleton() {
   return (
-    <div className="bg-muted/50 border border-border rounded-lg p-4">
-      <div className="animate-pulse space-y-3">
-        <div className="h-4 bg-muted rounded w-24"></div>
-        <div className="h-8 bg-muted rounded w-16"></div>
-        <div className="h-3 bg-muted rounded w-32"></div>
+    <div className="bg-muted/50 border border-border/50 rounded-md p-3">
+      <div className="animate-pulse space-y-2">
+        <div className="h-3 bg-muted rounded w-20"></div>
+        <div className="h-6 bg-muted rounded w-14"></div>
+        <div className="h-3 bg-muted rounded w-28"></div>
       </div>
     </div>
   );
