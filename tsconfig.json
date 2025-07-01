@@ -40,6 +40,9 @@
     "components/ui/**",
     "**/*.test.ts",
     "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "playwright/**",
     "**/__tests__/**"
   ]
 }

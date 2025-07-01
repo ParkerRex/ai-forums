@@ -3,8 +3,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function PostHeaderSkeleton() {
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-6 overflow-x-auto pb-2">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex space-x-4 overflow-x-auto pb-2">
           {/* All Posts Tab Skeleton */}
           <Skeleton className="h-6 w-20" />
           

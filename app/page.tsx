@@ -14,7 +14,7 @@ export default function Home() {
         selectedCategoryId={selectedCategoryId}
         onCategorySelect={setSelectedCategoryId}
       />
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         <div className="lg:col-span-3">
           <PostList categoryId={selectedCategoryId} />
         </div>

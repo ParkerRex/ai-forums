@@ -79,16 +79,16 @@ export default function MemberCard({ member }: MemberCardProps) {
 
   return (
     <Link href={memberUrl} className="block group" prefetch={true}>
-      <div className="bg-card border rounded-lg p-6 hover:shadow-lg transition-shadow h-full flex flex-col" data-testid="member-card">
-        <div className="flex items-start mb-4">
-          <Avatar className="h-16 w-16 mr-4">
+      <div className="bg-card border border-border/50 rounded-md p-3 hover:shadow-md transition-shadow h-full flex flex-col" data-testid="member-card">
+        <div className="flex items-start mb-3">
+          <Avatar className="h-12 w-12 mr-3">
             <AvatarImage
               src={member.avatarUrl || ""}
             />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h2 className="text-xl font-semibold text-card-foreground group-hover:text-primary transition-colors" data-testid="member-name">
+            <h2 className="text-lg font-semibold text-card-foreground group-hover:text-primary transition-colors" data-testid="member-name">
               {member.firstName} {member.lastName}
             </h2>
             <div className="flex flex-wrap items-center gap-2 mt-1">
@@ -104,18 +104,18 @@ export default function MemberCard({ member }: MemberCardProps) {
           </div>
         </div>
 
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-3 flex-grow">{member.bio}</p>
+        <p className="text-sm text-muted-foreground mb-3 line-clamp-2 flex-grow">{member.bio}</p>
 
         {/* Contribution Stats */}
         {stats && (
-          <div className="flex flex-wrap gap-3 mb-4 text-xs">
+          <div className="flex flex-wrap gap-2 mb-3 text-[10px]">
             <Stat icon={FileText} value={stats.postCount} label="Posts" testId="post-count" />
             <Stat icon={MessageCircle} value={stats.commentCount} label="Comments" testId="comment-count" />
             <Stat icon={ThumbsUp} value={stats.netVoteCount} label="Votes" testId="vote-count" />
           </div>
         )}
 
-        <div className="text-xs text-muted-foreground space-y-2 mb-4">
+        <div className="text-xs text-muted-foreground space-y-1 mb-3">
           <div className="flex items-center">
             <CalendarDays className="w-3.5 h-3.5 mr-2" />
             Joined: {joinedDateFormatted}
@@ -132,7 +132,7 @@ export default function MemberCard({ member }: MemberCardProps) {
           </div>
         </div>
 
-        <div className="flex space-x-3 mt-auto pt-4 border-t border-border">
+        <div className="flex space-x-2 mt-auto pt-3 border-t border-border/50">
           {member.linkGithub && (
             <Button
               variant="ghost"

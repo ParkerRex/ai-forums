@@ -1,8 +1,6 @@
 import { useRouter } from "next/navigation";
 import {
   MessageSquare,
-  Share,
-  Bookmark,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
@@ -87,21 +85,11 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
     router.push(`/${post.category?.name || 'general'}/${post.slug}`);
   };
 
-  const handleShare = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // TODO: Implement share functionality
-  };
-
-  const handleSave = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // TODO: Implement save functionality
-  };
-
   return (
-    <div className="bg-card border border-border rounded-lg hover:border-muted-foreground/20 transition-colors">
+    <div className="bg-card border border-border/50 rounded-md hover:border-border transition-colors">
       <div className="flex">
         {/* Voting panel */}
-        <div className="flex flex-col items-center p-4 space-y-1">
+        <div className="flex flex-col items-center p-2 space-y-0.5 bg-muted/30">
           <Authenticated>
             <Button
               variant="ghost"
@@ -111,11 +99,11 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
               disabled={isVoting}
             >
               <ArrowBigUpIcon
-                size={20}
+                size={16}
                 className={`transition-colors ${
                   userVote === "upvote"
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-primary"
+                    ? "text-orange-500"
+                    : "text-muted-foreground hover:text-orange-500"
                 }`}
               />
             </Button>
@@ -130,11 +118,11 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
                 size="sm"
                 className="p-1 h-auto hover:bg-muted"
               >
-                <ArrowBigUpIcon size={20} className="text-muted-foreground hover:text-primary" />
+                <ArrowBigUpIcon size={16} className="text-muted-foreground hover:text-orange-500" />
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-xs font-medium text-foreground">
             {post.netVotes}
           </span>
         </div>
@@ -153,8 +141,8 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
       </div>
 
       {/* Actions bar */}
-      <div className="border-t border-border px-4 py-2">
-        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+      <div className="border-t border-border/50 px-3 py-1.5">
+        <div className="flex items-center space-x-3 text-xs text-muted-foreground">
           <Authenticated>
             <Button
               variant="ghost"
@@ -165,7 +153,7 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
                 handleClick();
               }}
             >
-              <MessageSquare className="w-4 h-4 mr-1" />
+              <MessageSquare className="w-3 h-3 mr-1" />
               {post.commentCount} comments
             </Button>
           </Authenticated>
@@ -184,24 +172,6 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-2 h-auto hover:bg-muted"
-            onClick={handleShare}
-          >
-            <Share className="w-4 h-4 mr-1" />
-            share
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-2 h-auto hover:bg-muted"
-            onClick={handleSave}
-          >
-            <Bookmark className="w-4 h-4 mr-1" />
-            save
-          </Button>
         </div>
       </div>
     </div>

@@ -19,9 +19,9 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   // Loading state
   if (posts === undefined) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-card border border-border rounded-lg p-4">
+          <div key={i} className="bg-card border border-border/50 rounded-md p-3">
             <div className="animate-pulse">
               <div className="flex space-x-4">
                 <div className="rounded-full bg-muted h-10 w-10"></div>
@@ -43,8 +43,8 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   // Error state
   if (posts === null) {
     return (
-      <div className="space-y-4">
-        <div className="bg-card border border-border rounded-lg p-8 text-center">
+      <div className="space-y-2">
+        <div className="bg-card border border-border/50 rounded-md p-6 text-center">
           <p className="text-muted-foreground">Unable to load posts. Please try again later.</p>
         </div>
       </div>
@@ -54,8 +54,8 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   // Empty state
   if (posts.length === 0) {
     return (
-      <div className="space-y-4">
-        <div className="bg-card border border-border rounded-lg p-8 text-center">
+      <div className="space-y-2">
+        <div className="bg-card border border-border/50 rounded-md p-6 text-center">
           <p className="text-muted-foreground">No posts found. Be the first to create one!</p>
         </div>
       </div>
@@ -65,7 +65,7 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   return (
     <div className="space-y-4">
       {posts.map((post) => (
-        <PostCard key={post._id} post={post} />
+        <PostCard key={post._id} post={post} size="small" />
       ))}
     </div>
   );

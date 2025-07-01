@@ -39,9 +39,10 @@ export async function GET() {
       }
     )
   } catch (error) {
-    console.error('Discord API error:', error)
+    const err = error as Error;
+    console.error('Discord API error:', err);
     return NextResponse.json(
-      { presence_count: 0, error: error.message },
+      { presence_count: 0, error: err.message },
       { 
         status: 200, // Return 200 even on error so the UI doesn't break
         headers: {

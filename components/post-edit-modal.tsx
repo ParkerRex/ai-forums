@@ -35,7 +35,7 @@ interface Post {
   linkImage?: string;
   category?: {
     name: string;
-  };
+  } | null;
 }
 
 interface PostEditModalProps {
@@ -155,7 +155,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
         type: formData.type,
         mediaUrl,
         thumbnailUrl,
-        categoryId: formData.categoryId,
+        categoryId: formData.categoryId as Id<"categories">,
         linkUrl: formData.linkUrl,
         linkTitle: formData.linkTitle,
         linkDescription: formData.linkDescription,

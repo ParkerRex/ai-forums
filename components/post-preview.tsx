@@ -9,7 +9,7 @@ import {
   getPostPreviewAsset,
   getContentExcerpt,
   formatPostStats,
-  getPreviewDimensions,
+  getPreviewClasses,
   hasMedia,
   isLinkPost,
   getPostTypeLabel,
@@ -51,8 +51,8 @@ export default function PostPreview({
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
-  const dimensions = getPreviewDimensions(size);
   const previewAsset = getPostPreviewAsset(post);
+  const previewClasses = getPreviewClasses(size);
   const stats = formatPostStats(post);
   const excerpt = getContentExcerpt(post.content, size === "small" ? 80 : 150);
 
@@ -107,21 +107,22 @@ export default function PostPreview({
       onClick={handleClick}
     >
       <CardContent className="p-0">
-        <div className={cn("flex", size === "large" ? "flex-col" : "gap-4 p-4")}>
+        <div className={cn("flex", size === "large" ? "flex-col" : "gap-3 p-3")}>
           {/* Media/Link Preview */}
           {(hasMedia(post) || isLinkPost(post)) && (
             <div className={cn(
               "relative overflow-hidden bg-muted",
-              size === "large" ? "w-full" : dimensions.thumbnailSize,
+              previewClasses.wrapper,
+              previewClasses.aspectRatio,
               size !== "large" && "flex-shrink-0 rounded"
             )}>
               {post.type === "image" && previewAsset.url && (
                 <Image
                   src={previewAsset.thumbnailUrl || previewAsset.url}
                   alt={post.title}
-                  width={size === "large" ? 800 : 200}
-                  height={size === "large" ? 400 : 150}
-                  className="object-cover w-full h-full"
+                  fill
+                  sizes={size === "large" ? "100vw" : "(max-width: 768px) 100px, 200px"}
+                  className={cn("w-full h-full", previewClasses.media)}
                   placeholder="blur"
                   blurDataURL={getMediaPlaceholder()}
                 />
@@ -133,9 +134,9 @@ export default function PostPreview({
                     <Image
                       src={previewAsset.thumbnailUrl}
                       alt={post.title}
-                      width={size === "large" ? 800 : 200}
-                      height={size === "large" ? 400 : 150}
-                      className="object-cover w-full h-full"
+                      fill
+                      sizes={size === "large" ? "100vw" : "(max-width: 768px) 100px, 200px"}
+                      className={cn("w-full h-full", previewClasses.media)}
                       placeholder="blur"
                       blurDataURL={getMediaPlaceholder()}
                     />
@@ -144,12 +145,14 @@ export default function PostPreview({
                     ref={videoRef}
                     src={previewAsset.url}
                     className={cn(
-                      "absolute inset-0 w-full h-full object-cover",
+                      "absolute inset-0 w-full h-full",
+                      previewClasses.media,
                       !isVideoPlaying && "opacity-0"
                     )}
                     muted
                     loop
                     playsInline
+                    preload="metadata"
                     onPlay={() => setIsVideoPlaying(true)}
                     onPause={() => setIsVideoPlaying(false)}
                   />
