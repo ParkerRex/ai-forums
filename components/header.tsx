@@ -7,7 +7,6 @@ import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
 import { SignUpButton, UserButton, SignInButton } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
-import { ThemeToggle } from "@/components/theme-toggle";
 import React from "react";
 
 export default function Header() {
@@ -48,7 +47,6 @@ export default function Header() {
                 <span>members</span>
               </Link>
             </Button>
-            <ThemeToggle />
             <Authenticated>
               <Link href="/create">
                 <Button
