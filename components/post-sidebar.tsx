@@ -1,10 +1,6 @@
 "use client";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, TrendingUp } from "lucide-react";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { MembershipCTAModal } from "@/components/membership-cta-modal";
+import { TrendingUp } from "lucide-react";
 
 export default function PostSidebar() {
   return (

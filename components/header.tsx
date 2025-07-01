@@ -7,7 +7,6 @@ import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
 import { UserButton, SignUpButton } from "@clerk/nextjs";
 import { AuthButton } from "@/components/auth-button";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import React from "react";
 
 export default function Header() {
