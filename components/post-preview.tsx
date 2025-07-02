@@ -60,6 +60,7 @@ export default function PostPreview({
     naturalHeight: post.mediaHeight,
   } : undefined;
   const previewClasses = getPreviewClasses(size, assetInfo);
+
   const stats = formatPostStats(post);
   const excerpt = getContentExcerpt(post.content, size === "small" ? 80 : 150);
 
@@ -318,4 +319,4 @@ export default function PostPreview({
       </CardContent>
     </Card>
   );
-}        
+}                        
