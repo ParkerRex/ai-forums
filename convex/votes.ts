@@ -266,4 +266,54 @@ export const getUserVotingActivity = query({
 
     return enrichedVotes.filter(vote => vote.target !== null);
   },
-}); 
+});
+
+export const getPostVoters = query({
+  args: {
+    postId: v.id("posts"),
+    limit: v.optional(v.number()),
+  },
+  returns: v.object({
+    voters: v.array(v.object({
+      _id: v.id("members"),
+      firstName: v.string(),
+      lastName: v.string(),
+      avatarUrl: v.optional(v.string()),
+      slug: v.string(),
+    })),
+    hasMore: v.boolean(),
+    total: v.number(),
+  }),
+  handler: async (ctx, { postId, limit = 10 }) => {
+    const votes = await ctx.db
+      .query("votes")
+      .withIndex("by_target_and_type", (q) =>
+        q.eq("targetId", postId).eq("targetType", "post")
+      )
+      .filter((q) => q.eq(q.field("voteType"), "upvote"))
+      .order("desc")
+      .take(limit + 1);
+    
+    const hasMore = votes.length > limit;
+    const voters = await Promise.all(
+      votes.slice(0, limit).map(async (vote) => {
+        const member = await ctx.db.get(vote.userId);
+        return member ? {
+          _id: member._id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          avatarUrl: member.avatarUrl,
+          slug: member.slug,
+        } : null;
+      })
+    );
+    
+    const validVoters = voters.filter((voter): voter is NonNullable<typeof voter> => voter !== null);
+    
+    return {
+      voters: validVoters,
+      hasMore,
+      total: votes.length,
+    };
+  },
+});       
