@@ -111,6 +111,16 @@ export default function PostDetail({
   const videoRef = useRef<HTMLVideoElement>(null);
   const postType = post.type || "text";
 
+  // Safely extract YouTube video IDs in case the URL is malformed
+  const mediaYouTubeId =
+    post.mediaUrl && isYouTubeUrl(post.mediaUrl)
+      ? getYouTubeVideoId(post.mediaUrl)
+      : null;
+  const linkYouTubeId =
+    post.linkUrl && isYouTubeUrl(post.linkUrl)
+      ? getYouTubeVideoId(post.linkUrl)
+      : null;
+
   // Refs for animated icons
   const upvoteIconRef = React.useRef<{
     startAnimation: () => void;
@@ -305,11 +315,17 @@ export default function PostDetail({
 
             {postType === "video" && post.mediaUrl && (
               <>
-                {isYouTubeUrl(post.mediaUrl) ? (
-                  <YouTubeEmbed 
-                    videoId={getYouTubeVideoId(post.mediaUrl)!} 
-                    title={post.title}
-                  />
+                {mediaYouTubeId ? (
+                  <YouTubeEmbed videoId={mediaYouTubeId} title={post.title} />
+                ) : isYouTubeUrl(post.mediaUrl) ? (
+                  <a
+                    href={post.mediaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-6 block text-primary underline"
+                  >
+                    View on YouTube
+                  </a>
                 ) : (
                   <div className="mb-6 rounded-lg overflow-hidden relative bg-background">
                     <video
@@ -338,9 +354,9 @@ export default function PostDetail({
 
             {postType === "link" && post.linkUrl && (
               <>
-                {isYouTubeUrl(post.linkUrl) ? (
-                  <YouTubeEmbed 
-                    videoId={getYouTubeVideoId(post.linkUrl)!} 
+                {linkYouTubeId ? (
+                  <YouTubeEmbed
+                    videoId={linkYouTubeId}
                     title={post.linkTitle || post.title}
                   />
                 ) : (

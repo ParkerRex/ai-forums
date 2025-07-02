@@ -285,6 +285,9 @@ export const getPostVoters = query({
     total: v.number(),
   }),
   handler: async (ctx, { postId, limit = 10 }) => {
+    // Fetch the post first so we can use the authoritative upvote count
+    const post = await ctx.db.get(postId);
+
     const votes = await ctx.db
       .query("votes")
       .withIndex("by_target_and_type", (q) =>
@@ -310,10 +313,13 @@ export const getPostVoters = query({
     
     const validVoters = voters.filter((voter): voter is NonNullable<typeof voter> => voter !== null);
     
+    // Use the post's upvotes field as the total count if available, otherwise fall back to the fetched length.
+    const totalUpvotes = post?.upvotes ?? votes.length;
+    
     return {
       voters: validVoters,
       hasMore,
-      total: votes.length,
+      total: totalUpvotes,
     };
   },
 });

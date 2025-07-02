@@ -72,7 +72,7 @@ export const VoteHoverCard: React.FC<VoteHoverCardProps> = ({
               })}
               {voters.hasMore && (
                 <p className="text-xs text-muted-foreground">
-                  and {voteCount - voters.voters.length} more...
+                  and {voters.total - voters.voters.length} more...
                 </p>
               )}
             </div>
