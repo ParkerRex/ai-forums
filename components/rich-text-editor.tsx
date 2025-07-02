@@ -107,11 +107,10 @@ export function RichTextEditor({
           onChange={handleTextareaChange}
           placeholder={placeholder}
           className="min-h-[200px] border-0 focus-visible:ring-0 resize-none rounded-t-none"
-          onFocus={handleUpgrade} // Auto-upgrade when user starts typing
         />
       </div>
     </div>
   );
 }
 
-export default RichTextEditor; 
+export default RichTextEditor;  

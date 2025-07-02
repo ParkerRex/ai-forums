@@ -65,13 +65,7 @@ export function FullRichTextEditor({
     ],
     content,
     onUpdate: ({ editor }) => {
-      try {
-        const markdown = editor.storage.markdown?.getMarkdown?.() || editor.getHTML();
-        onChange?.(markdown);
-      } catch {
-        // Fallback to HTML if markdown extension isn't ready
-        onChange?.(editor.getHTML());
-      }
+      onChange?.(editor.getHTML());
     },
     editorProps: {
       attributes: {
@@ -245,4 +239,4 @@ export function FullRichTextEditor({
   );
 }
 
-export default FullRichTextEditor;  
+export default FullRichTextEditor;    
