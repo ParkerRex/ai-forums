@@ -132,6 +132,7 @@ export default defineSchema({
       siteName: v.optional(v.string()),
       url: v.string(),
     }))),
+    mentions: v.optional(v.array(v.id("members"))),
 
   })
     .index("by_categoryId", ["categoryId"])
@@ -185,6 +186,7 @@ export default defineSchema({
       siteName: v.optional(v.string()),
       url: v.string(),
     }))),
+    mentions: v.optional(v.array(v.id("members"))),
   })
     .index("by_postId", ["postId"])
     .index("by_memberId", ["memberId"])
@@ -258,4 +260,26 @@ export default defineSchema({
     .index("by_member_and_type", ["memberId", "targetType"])
     .index("by_member_and_createdAt", ["memberId", "createdAt"])
     .index("by_targetId", ["targetId"]),
+
+  notifications: defineTable({
+    recipientId: v.id("members"),
+    type: v.union(
+      v.literal("mention"),
+      v.literal("reply"),
+      v.literal("upvote"),
+      v.literal("follow")
+    ),
+    entityType: v.union(
+      v.literal("post"),
+      v.literal("comment")
+    ),
+    entityId: v.string(),
+    actorId: v.id("members"),
+    message: v.string(),
+    read: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_recipient", ["recipientId"])
+    .index("by_recipient_and_read", ["recipientId", "read"])
+    .index("by_createdAt", ["createdAt"]),
 });

@@ -82,7 +82,7 @@ interface CommentItemProps {
   comment: CommentWithReplies;
   onReply: (parentId: Id<"comments"> | null) => void;
   replyingTo: Id<"comments"> | null;
-  onSubmitReply: (parentId: Id<"comments">, content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => void;
+  onSubmitReply: (parentId: Id<"comments">, content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>, mentions?: Id<"members">[]) => void;
   isSubmittingReply: boolean;
 }
 
@@ -363,7 +363,7 @@ function CommentItem({
           <div className="mt-4 ml-11 space-y-3">
             <EnhancedCommentInput
               placeholder={`Reply to ${comment.member?.firstName || "this comment"}...`}
-              onSubmit={(content, attachments, linkPreviews) => onSubmitReply(comment._id, content, attachments, linkPreviews)}
+              onSubmit={(content, attachments, linkPreviews, mentions) => onSubmitReply(comment._id, content, attachments, linkPreviews, mentions)}
               isSubmitting={isSubmittingReply}
               className="mb-3"
             />
@@ -423,7 +423,7 @@ export default function CommentSection({
     return () => cancelAnimationFrame(raf);
   }, [targetCommentId, comments]);
 
-  const handleSubmitComment = async (content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => {
+  const handleSubmitComment = async (content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>, mentions?: Id<"members">[]) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     setIsSubmitting(true);
@@ -434,16 +434,17 @@ export default function CommentSection({
         content: content.trim(),
         attachments,
         linkPreviews,
+        mentions,
       });
       handleMutationSuccess("Comment posted successfully!");
     } catch (error) {
-      handleMutationError(error, () => handleSubmitComment(content, attachments, linkPreviews));
+      handleMutationError(error, () => handleSubmitComment(content, attachments, linkPreviews, mentions));
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleSubmitReply = async (parentId: Id<"comments">, content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => {
+  const handleSubmitReply = async (parentId: Id<"comments">, content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>, mentions?: Id<"members">[]) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     setIsSubmittingReply(true);
@@ -455,11 +456,12 @@ export default function CommentSection({
         parentCommentId: parentId,
         attachments,
         linkPreviews,
+        mentions,
       });
       setReplyingTo(null);
       handleMutationSuccess("Reply posted successfully!");
     } catch (error) {
-      handleMutationError(error, () => handleSubmitReply(parentId, content, attachments, linkPreviews));
+      handleMutationError(error, () => handleSubmitReply(parentId, content, attachments, linkPreviews, mentions));
     } finally {
       setIsSubmittingReply(false);
     }

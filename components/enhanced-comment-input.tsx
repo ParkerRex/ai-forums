@@ -12,6 +12,8 @@ import EmojiPicker from "emoji-picker-react";
 import Image from "next/image";
 import { uploadMedia, validateMediaFile, getFilePreviewUrl, revokeFilePreviewUrl } from "@/lib/upload-media";
 import { GifPicker } from "./gif-picker";
+import { MentionAutocomplete } from "./mention-autocomplete";
+import { Id } from "@/convex/_generated/dataModel";
 
 type AttachmentType = {
   id: string;
@@ -34,7 +36,7 @@ type LinkPreviewType = {
 
 interface EnhancedCommentInputProps {
   placeholder: string;
-  onSubmit: (content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => void;
+  onSubmit: (content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>, mentions?: Id<"members">[]) => void;
   isSubmitting: boolean;
   className?: string;
 }
@@ -52,6 +54,11 @@ export function EnhancedCommentInput({
   const [linkPreviews, setLinkPreviews] = useState<Record<string, LinkPreviewType>>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
+  const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
+  const [mentionSearchTerm, setMentionSearchTerm] = useState("");
+  const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
+  const [mentionStartIndex, setMentionStartIndex] = useState(-1);
+  const [mentions, setMentions] = useState<Id<"members">[]>([]);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
   const convex = useConvex();
@@ -96,7 +103,7 @@ export function EnhancedCommentInput({
     setShowEmojiPicker(false);
   }, []);
 
-  const handleContentChange = useCallback(async (newContent: string) => {
+  const handleContentChange = useCallback(async (newContent: string, cursorPosition?: number) => {
     setContent(newContent);
     
     const urlRegex = /https?:\/\/[^\s]+/g;
@@ -114,7 +121,59 @@ export function EnhancedCommentInput({
         }
       }
     }
+
+    if (cursorPosition !== undefined) {
+      const textBeforeCursor = newContent.slice(0, cursorPosition);
+      const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+      
+      if (lastAtIndex !== -1) {
+        const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
+        const hasSpaceAfterAt = textAfterAt.includes(' ') || textAfterAt.includes('\n');
+        
+        if (!hasSpaceAfterAt && textAfterAt.length <= 20) {
+          setMentionSearchTerm(textAfterAt);
+          setMentionStartIndex(lastAtIndex);
+          setShowMentionAutocomplete(true);
+          
+          const textarea = document.querySelector('textarea');
+          if (textarea) {
+            const rect = textarea.getBoundingClientRect();
+            setMentionPosition({
+              top: rect.bottom + 5,
+              left: rect.left,
+            });
+          }
+        } else {
+          setShowMentionAutocomplete(false);
+        }
+      } else {
+        setShowMentionAutocomplete(false);
+      }
+    }
   }, [fetchLinkPreview, linkPreviews]);
+
+  const handleMentionSelect = useCallback((member: {
+    _id: Id<"members">;
+    firstName: string;
+    lastName: string;
+    slug: string;
+  }) => {
+    const beforeMention = content.slice(0, mentionStartIndex);
+    const afterMention = content.slice(mentionStartIndex + mentionSearchTerm.length + 1);
+    const newContent = `${beforeMention}@${member.slug} ${afterMention}`;
+    
+    setContent(newContent);
+    setMentions(prev => [...prev, member._id]);
+    setShowMentionAutocomplete(false);
+    setMentionSearchTerm("");
+    setMentionStartIndex(-1);
+  }, [content, mentionStartIndex, mentionSearchTerm]);
+
+  const handleMentionClose = useCallback(() => {
+    setShowMentionAutocomplete(false);
+    setMentionSearchTerm("");
+    setMentionStartIndex(-1);
+  }, []);
 
   const handleSubmit = useCallback(async () => {
     if (!content.trim() && attachments.length === 0 && gifAttachments.length === 0) return;
@@ -138,11 +197,12 @@ export function EnhancedCommentInput({
       
       uploadedAttachments.push(...gifAttachments);
       
-      onSubmit(content, uploadedAttachments.length > 0 ? uploadedAttachments : undefined, Object.keys(linkPreviews).length > 0 ? linkPreviews : undefined);
+      onSubmit(content, uploadedAttachments.length > 0 ? uploadedAttachments : undefined, Object.keys(linkPreviews).length > 0 ? linkPreviews : undefined, mentions.length > 0 ? mentions : undefined);
       
       setContent("");
       setAttachments([]);
       setGifAttachments([]);
+      setMentions([]);
       attachmentPreviews.forEach(url => revokeFilePreviewUrl(url));
       setAttachmentPreviews([]);
       setLinkPreviews({});
@@ -150,16 +210,29 @@ export function EnhancedCommentInput({
       console.error("Failed to upload attachments:", error);
       toast.error("Failed to upload attachments. Please try again.");
     }
-  }, [content, attachments, gifAttachments, linkPreviews, onSubmit, attachmentPreviews, convex]);
+  }, [content, attachments, gifAttachments, linkPreviews, mentions, onSubmit, attachmentPreviews, convex]);
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <Textarea
-        placeholder={placeholder}
-        value={content}
-        onChange={(e) => handleContentChange(e.target.value)}
-        className="min-h-[80px]"
-      />
+      <div className="relative">
+        <Textarea
+          placeholder={placeholder}
+          value={content}
+          onChange={(e) => {
+            const target = e.target as HTMLTextAreaElement;
+            handleContentChange(e.target.value, target.selectionStart);
+          }}
+          className="min-h-[80px]"
+        />
+        {showMentionAutocomplete && (
+          <MentionAutocomplete
+            searchTerm={mentionSearchTerm}
+            onSelect={handleMentionSelect}
+            onClose={handleMentionClose}
+            position={mentionPosition}
+          />
+        )}
+      </div>
       
       {(attachments.length > 0 || gifAttachments.length > 0) && (
         <div className="flex flex-wrap gap-2">

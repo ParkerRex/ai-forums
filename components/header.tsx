@@ -6,6 +6,7 @@ import { Search, Plus, Bookmark } from "lucide-react";
 import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
 import { UserButton, SignUpButton } from "@clerk/nextjs";
 import { AuthButton } from "@/components/auth-button";
+import { NotificationDropdown } from "@/components/notification-dropdown";
 import { Authenticated, Unauthenticated } from "convex/react";
 import React from "react";
 
@@ -81,6 +82,7 @@ export default function Header() {
               </SignUpButton>
             </Unauthenticated>
             <Authenticated>
+              {/* <NotificationDropdown /> */}
               <UserButton />
             </Authenticated>
             <Unauthenticated>

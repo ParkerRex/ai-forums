@@ -232,6 +232,7 @@ export const createPost = mutation({
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
+    mentions: v.optional(v.array(v.id("members"))),
   },
   handler: async (ctx, args) => {
     // Get authenticated member using unified helper
@@ -296,6 +297,7 @@ export const createPost = mutation({
       linkTitle: args.linkTitle,
       linkDescription: args.linkDescription,
       linkImage: args.linkImage,
+      mentions: args.mentions,
     });
 
     // Update category post count
@@ -879,4 +881,4 @@ export const addSlugsToExistingPosts = mutation({
     console.log("Slug generation migration completed successfully!");
     return { processed: posts.length };
   },
-});    
+});        

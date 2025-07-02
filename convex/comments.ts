@@ -116,8 +116,9 @@ export const createComment = mutation({
       siteName: v.optional(v.string()),
       url: v.string(),
     }))),
+    mentions: v.optional(v.array(v.id("members"))),
   },
-  handler: async (ctx, { content, postId, parentCommentId, attachments, linkPreviews }) => {
+  handler: async (ctx, { content, postId, parentCommentId, attachments, linkPreviews, mentions }) => {
     // Get authenticated member using unified helper
     const member = await getAuthenticatedMember(ctx);
 
@@ -191,6 +192,7 @@ export const createComment = mutation({
       childCount: 0,
       attachments,
       linkPreviews,
+      mentions,
     });
 
     // Update post comment count
@@ -350,4 +352,4 @@ export const getCommentCount = query({
 
     return comments.length;
   },
-});    
+});        

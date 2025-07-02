@@ -1,10 +1,23 @@
 "use client";
 
-import { useEditor, EditorContent } from '@tiptap/react';
+import { useEditor, EditorContent, Editor } from '@tiptap/react';
+import { EditorState } from '@tiptap/pm/state';
+
+interface Range {
+  from: number;
+  to: number;
+}
+
+interface MentionNodeAttrs {
+  id: string;
+  label: string;
+  slug: string;
+}
 import StarterKit from '@tiptap/starter-kit';
 import { Markdown } from 'tiptap-markdown';
 import { LinkBadge } from '@/extensions/link-badge';
-import { useAction } from 'convex/react';
+import { Mention, createMentionSuggestion } from '@/extensions/mention';
+import { useAction, useConvex } from 'convex/react';
 import { api } from '@/convex/_generated/api';
 import { Button } from '@/components/ui/button';
 import {
@@ -33,6 +46,23 @@ export function FullRichTextEditor({
   className = ''
 }: FullRichTextEditorProps) {
   const fetchLinkPreview = useAction(api.linkPreviews.fetchLinkPreview);
+  const convex = useConvex();
+  
+  const searchMembers = async (term: string) => {
+    if (!term || term.length < 1) return [];
+    
+    try {
+      const members = await convex.query(api.members.searchMembers, { 
+        searchTerm: term,
+        limit: 10 
+      });
+      return members || [];
+    } catch (error) {
+      console.error('Error searching members:', error);
+      return [];
+    }
+  };
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -62,8 +92,15 @@ export function FullRichTextEditor({
         linkify: true,
         breaks: false,
       }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: 'mention',
+        },
+        suggestion: createMentionSuggestion(searchMembers),
+      }),
     ],
     content,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
       try {
         const markdown = editor.storage.markdown?.getMarkdown?.() || editor.getHTML();
@@ -240,9 +277,22 @@ export function FullRichTextEditor({
           font-size: 0.75rem;
           opacity: 0.7;
         }
+        
+        :global(.mention) {
+          background-color: hsl(var(--primary) / 0.1);
+          color: hsl(var(--primary));
+          padding: 0.125rem 0.25rem;
+          border-radius: 0.25rem;
+          font-weight: 500;
+          text-decoration: none;
+        }
+        
+        :global(.mention:hover) {
+          background-color: hsl(var(--primary) / 0.2);
+        }
       `}</style>
     </div>
   );
 }
 
-export default FullRichTextEditor;  
+export default FullRichTextEditor;                                            
