@@ -29,7 +29,8 @@ export const VoteTypeValidator = v.union(
 
 export const TargetTypeValidator = v.union(
   v.literal("post"),
-  v.literal("comment")
+  v.literal("comment"),
+  v.literal("resource")
 );
 
 export const CategoryStatusValidator = v.union(
@@ -165,6 +166,25 @@ export default defineSchema({
     childCount: v.number(),
     editedAt: v.optional(v.number()),
     editReason: v.optional(v.string()),
+    
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      type: v.union(v.literal("image"), v.literal("document"), v.literal("gif")),
+      url: v.string(),
+      fileName: v.string(),
+      fileSize: v.number(),
+      mimeType: v.string(),
+      width: v.optional(v.number()),
+      height: v.optional(v.number()),
+    }))),
+    
+    linkPreviews: v.optional(v.record(v.string(), v.object({
+      title: v.optional(v.string()),
+      description: v.optional(v.string()),
+      image: v.optional(v.string()),
+      siteName: v.optional(v.string()),
+      url: v.string(),
+    }))),
   })
     .index("by_postId", ["postId"])
     .index("by_memberId", ["memberId"])
