@@ -36,6 +36,8 @@ import { BookmarkButton } from "@/components/bookmark-button";
 import { isYouTubeUrl, getYouTubeVideoId } from "@/lib/youtube-utils";
 import { YouTubeEmbed } from "@/components/youtube-embed";
 import { VoteHoverCard } from "@/components/vote-hover-card";
+import { PollDisplay } from "@/components/poll-display";
+import { AttachmentGrid } from "@/components/attachment-grid";
 
 interface Post {
   _id: Id<"posts">;
@@ -45,7 +47,7 @@ interface Post {
   editedAt?: number;
   netVotes: number;
   commentCount: number;
-  type?: "text" | "image" | "video" | "link";
+  type?: "text" | "image" | "video" | "link" | "poll";
   mediaUrl?: string;
   thumbnailUrl?: string;
   linkUrl?: string;
@@ -62,6 +64,13 @@ interface Post {
       url: string;
     }
   >;
+  pollOptions?: Array<{
+    id: string;
+    text: string;
+    voteCount: number;
+  }>;
+  pollEndsAt?: number;
+  totalPollVotes?: number;
   member?: {
     _id: Id<"members">;
     firstName: string;
@@ -72,6 +81,26 @@ interface Post {
   category?: {
     name: string;
   } | null;
+  attachments?: Array<{
+    id: string;
+    type: "image" | "video" | "pdf" | "youtube";
+    url: string;
+    thumbnailUrl?: string;
+    width?: number;
+    height?: number;
+    aspectRatio?: number;
+    order: number;
+    pageCount?: number;
+    fileSize?: number;
+    videoId?: string;
+    title?: string;
+    duration?: string;
+    channelName?: string;
+    videoDuration?: string;
+    format?: string;
+    resolution?: string;
+    codec?: string;
+  }>;
 }
 
 interface PostDetailProps {
@@ -397,10 +426,29 @@ export default function PostDetail({
               </>
             )}
 
+            {postType === "poll" && post.pollOptions && (
+              <div className="mb-6">
+                <PollDisplay
+                  pollId={post._id}
+                  pollOptions={post.pollOptions}
+                  pollEndsAt={post.pollEndsAt}
+                  totalVotes={post.totalPollVotes}
+                  currentUserId={currentMember?._id}
+                />
+              </div>
+            )}
+
             {/* Rich Text Content */}
             <div className="mb-6" data-testid="post-content">
               <RenderTipTapContent content={post.content} />
             </div>
+
+            {/* Additional Attachments Grid */}
+            {post.attachments && post.attachments.length > 1 && (
+              <div className="mb-6">
+                <AttachmentGrid attachments={post.attachments.slice(1)} />
+              </div>
+            )}
 
             <div className="flex items-center space-x-4 text-sm text-muted-foreground border-t border-border pt-4">
               <Button
@@ -471,15 +519,6 @@ export default function PostDetail({
                       >
                         <Trash2 className="w-4 h-4 mr-2" />
                         Delete Post
-                      </DropdownMenuItem>
-                    </>
-                  )}
-                  {/* Debug item to see if dropdown is working */}
-                  {process.env.NODE_ENV === "development" && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem disabled>
-                        Debug: isMemberPost = {isMemberPost ? "true" : "false"}
                       </DropdownMenuItem>
                     </>
                   )}

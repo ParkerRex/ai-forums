@@ -39,6 +39,8 @@ const MemberUIValidator = v.object({
   lastOnlineRelative: v.string(),
   // URL slug
   slug: v.string(),
+  // Role
+  role: v.optional(v.union(v.literal("user"), v.literal("admin"))),
 });
 
 // Helper to backfill missing cached stats for a member with background caching
@@ -121,6 +123,8 @@ function transformMemberForUI(member: Doc<"members">) {
     // Add computed fields for UI
     fullName: `${member.firstName} ${member.lastName}`,
     initials: `${member.firstName[0]}${member.lastName[0]}`.toUpperCase(),
+    // Role
+    role: member.role,
     joinedDateFormatted: new Date(member.joinedDate).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",

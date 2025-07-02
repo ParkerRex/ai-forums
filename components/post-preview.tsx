@@ -12,6 +12,7 @@ import {
   getPreviewClasses,
   hasMedia,
   isLinkPost,
+  isPollPost,
   getPostTypeLabel,
   shouldAutoplay,
   getMediaPlaceholder,
@@ -19,7 +20,7 @@ import {
   type PostData,
   type PreviewSize
 } from "@/lib/post-preview-utils";
-import { MessageSquare, Eye, ChevronUp, Play, ExternalLink } from "lucide-react";
+import { MessageSquare, Eye, ChevronUp, Play, ExternalLink, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PostPreviewProps {
@@ -116,8 +117,8 @@ export default function PostPreview({
     >
       <CardContent className="p-0">
         <div className={cn("flex", size === "large" ? "flex-col" : "gap-3 p-3")}>
-          {/* Media/Link Preview */}
-          {(hasMedia(post) || isLinkPost(post)) && (
+          {/* Media/Link/Poll Preview */}
+          {(hasMedia(post) || isLinkPost(post) || isPollPost(post)) && (
             <div className={cn(
               "relative overflow-hidden bg-muted",
               previewClasses.wrapper,
@@ -223,6 +224,28 @@ export default function PostPreview({
                       </div>
                     </>
                   )}
+                </div>
+              )}
+
+              {post.type === "poll" && post.pollOptions && (
+                <div className="p-4 h-full flex flex-col justify-center">
+                  <div className="flex items-center gap-2 text-primary mb-2">
+                    <BarChart3 className="h-5 w-5" />
+                    <span className="text-sm font-medium">Poll</span>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      {post.pollOptions.length} options
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {post.totalPollVotes || 0} votes
+                    </p>
+                    {post.pollEndsAt && (
+                      <p className="text-xs text-muted-foreground">
+                        {post.pollEndsAt < Date.now() ? 'Ended' : 'Active'}
+                      </p>
+                    )}
+                  </div>
                 </div>
               )}
             </div>

@@ -4,7 +4,7 @@ export interface PostData {
   _id: Id<"posts">;
   title: string;
   content: string;
-  type?: "text" | "image" | "video" | "link";
+  type?: "text" | "image" | "video" | "link" | "poll";
   mediaUrl?: string;
   thumbnailUrl?: string;
   aspectRatio?: number;
@@ -14,6 +14,13 @@ export interface PostData {
   linkTitle?: string;
   linkDescription?: string;
   linkImage?: string;
+  pollOptions?: Array<{
+    id: string;
+    text: string;
+    voteCount: number;
+  }>;
+  pollEndsAt?: number;
+  totalPollVotes?: number;
   createdAt: number;
   upvotes: number;
   downvotes: number;
@@ -38,13 +45,24 @@ export type PreviewSize = "small" | "medium" | "large";
  * Get the appropriate preview asset for a post
  */
 export function getPostPreviewAsset(post: PostData): {
-  type: "image" | "video" | "link" | "text";
+  type: "image" | "video" | "link" | "text" | "poll";
   url?: string;
   thumbnailUrl?: string;
   title?: string;
   description?: string;
 } {
-  const postType = post.type || "text";
+  // Normalize post type. If type is mistakenly set to "image" but the URL points
+  // to a video file, treat it as a video. This makes the UI resilient to any
+  // historic data issues before we fixed the post creation form.
+  let postType: PostData["type"] = post.type || "text";
+
+  if (
+    postType === "image" &&
+    typeof post.mediaUrl === "string" &&
+    /\.(mp4|webm|mov)(\?.*)?$/i.test(post.mediaUrl)
+  ) {
+    postType = "video";
+  }
 
   switch (postType) {
     case "image":
@@ -68,6 +86,11 @@ export function getPostPreviewAsset(post: PostData): {
         thumbnailUrl: post.linkImage,
         title: post.linkTitle,
         description: post.linkDescription,
+      };
+    
+    case "poll":
+      return {
+        type: "poll",
       };
     
     default:
@@ -239,6 +262,13 @@ export function isLinkPost(post: PostData): boolean {
 }
 
 /**
+ * Check if post is a poll
+ */
+export function isPollPost(post: PostData): boolean {
+  return post.type === "poll";
+}
+
+/**
  * Get post type display name
  */
 export function getPostTypeLabel(post: PostData): string {
@@ -249,6 +279,8 @@ export function getPostTypeLabel(post: PostData): string {
       return "Video";
     case "link":
       return "Link";
+    case "poll":
+      return "Poll";
     default:
       return "Text";
   }

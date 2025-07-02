@@ -14,7 +14,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import CommentSection from "@/components/comment-section";
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import { notFound, useSearchParams, useRouter } from "next/navigation";
 
 interface PostPageClientProps {
@@ -89,6 +89,16 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     router.push("/");
   };
 
+  // If the post no longer exists (e.g., it was just deleted), redirect the
+  // user to the home page instead of showing a 404. We still show a 404 for
+  // mismatched categories (malformed URL).
+  useEffect(() => {
+    if (post === null) {
+      router.replace("/");
+    }
+  }, [post, router]);
+
+  // If the URL parameters are invalid, show a friendly message.
   if (!hasValidParams) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -102,6 +112,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     );
   }
 
+  // While loading the post, render a skeleton.
   if (post === undefined) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -115,8 +126,17 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     );
   }
 
-  // If post not found or category doesn't match, show 404
-  if (post === null || post.category?.name !== category) {
+  // If the post no longer exists (e.g., it was just deleted), redirect the
+  // user to the home page instead of showing a 404. We still show a 404 for
+  // mismatched categories (malformed URL).
+  if (post === null) {
+    // The redirection will run in the effect; render nothing meanwhile.
+    return null;
+  }
+
+  // Show 404 for a category/slug mismatch where the post exists but the
+  // category in the URL is wrong.
+  if (post.category?.name !== category) {
     notFound();
   }
 

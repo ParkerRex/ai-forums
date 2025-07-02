@@ -34,6 +34,13 @@ interface Post extends Omit<PostData, "member" | "author" | "category"> {
   isLocked?: boolean;
   editedAt?: number;
   editReason?: string;
+  pollOptions?: Array<{
+    id: string;
+    text: string;
+    voteCount: number;
+  }>;
+  pollEndsAt?: number;
+  totalPollVotes?: number;
   member: {
     _id: Id<"members">;
     firstName: string;
