@@ -234,20 +234,9 @@ export const setInitialAdmin = mutation({
       throw new Error("Admin already exists");
     }
 
-    // Find member with email me@Parkerrex.com
-    const adminEmail = "me@parkerrex.com";
-    
-    const members = await ctx.db
-      .query("members")
-      .filter((q) => q.eq(q.field("email"), adminEmail.toLowerCase()))
-      .collect();
+    // Promote the currently authenticated member to admin
+    const member = await getAuthenticatedMember(ctx);
 
-    if (members.length === 0) {
-      throw new Error(`No member found with email: ${adminEmail}`);
-    }
-
-    // Update the first matching member to admin role
-    const member = members[0];
     await ctx.db.patch(member._id, {
       role: "admin",
       updatedAt: Date.now(),
