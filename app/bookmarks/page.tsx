@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PostCard from "@/components/post-card";
@@ -33,7 +34,7 @@ function BookmarksContent() {
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="mb-8">
+        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | "posts" | "resources")} className="mb-8">
           <TabsList>
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="posts">Posts</TabsTrigger>
@@ -64,7 +65,7 @@ function BookmarksContent() {
                     Start bookmarking posts and resources to see them here
                   </p>
                   <Button asChild>
-                    <a href="/">Browse Posts</a>
+                    <Link href="/">Browse Posts</Link>
                   </Button>
                 </div>
               )}
