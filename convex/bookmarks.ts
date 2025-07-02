@@ -107,6 +107,7 @@ export const getUserBookmarks = query({
                   _id: postMember._id,
                   firstName: postMember.firstName,
                   lastName: postMember.lastName,
+                  email: postMember.email,
                   username: `${postMember.firstName.toLowerCase()}-${postMember.lastName.toLowerCase()}`,
                   slug: postMember.slug,
                 } : null,

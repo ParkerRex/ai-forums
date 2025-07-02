@@ -39,13 +39,31 @@ describe('Post Creation', () => {
       expect(result.error).toBe('Video file must be less than 100MB');
     });
 
+    it('should accept valid pdf files', () => {
+      const validPdfFile = new File([''], 'test.pdf', { type: 'application/pdf' });
+      Object.defineProperty(validPdfFile, 'size', { value: 5 * 1024 * 1024 }); // 5MB
+      
+      const result = validateMediaFile(validPdfFile);
+      expect(result.valid).toBe(true);
+      expect(result.error).toBeUndefined();
+    });
+
+    it('should reject oversized pdf files', () => {
+      const oversizedPdfFile = new File([''], 'test.pdf', { type: 'application/pdf' });
+      Object.defineProperty(oversizedPdfFile, 'size', { value: 25 * 1024 * 1024 }); // 25MB
+      
+      const result = validateMediaFile(oversizedPdfFile);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe('PDF file must be less than 20MB');
+    });
+
     it('should reject unsupported file types', () => {
-      const unsupportedFile = new File([''], 'test.pdf', { type: 'application/pdf' });
+      const unsupportedFile = new File([''], 'test.zip', { type: 'application/zip' });
       Object.defineProperty(unsupportedFile, 'size', { value: 1 * 1024 * 1024 }); // 1MB
       
       const result = validateMediaFile(unsupportedFile);
       expect(result.valid).toBe(false);
-      expect(result.error).toBe('File type not supported. Please upload an image or video.');
+      expect(result.error).toBe('File type not supported. Please upload an image, video, or PDF.');
     });
 
     it('should accept all supported image types', () => {
@@ -175,6 +193,167 @@ describe('Post Creation', () => {
       };
 
       expect(() => validatePostData(linkPostWithUrl)).not.toThrow();
+    });
+  });
+
+  describe('Multi-attachment Support', () => {
+    interface AttachmentData {
+      id: string;
+      type: 'image' | 'video' | 'pdf' | 'youtube';
+      url: string;
+      thumbnailUrl?: string;
+      order: number;
+    }
+
+    interface PostWithAttachments extends PostData {
+      attachments?: AttachmentData[];
+    }
+
+    const validateAttachments = (data: PostWithAttachments) => {
+      const { attachments } = data;
+      
+      if (!attachments || attachments.length === 0) {
+        return true;
+      }
+
+      // Validate each attachment has required fields
+      attachments.forEach((attachment, index) => {
+        if (!attachment.id) {
+          throw new Error(`Attachment at index ${index} missing id`);
+        }
+        if (!attachment.type) {
+          throw new Error(`Attachment at index ${index} missing type`);
+        }
+        if (!attachment.url) {
+          throw new Error(`Attachment at index ${index} missing url`);
+        }
+        if (typeof attachment.order !== 'number') {
+          throw new Error(`Attachment at index ${index} missing order`);
+        }
+      });
+
+      // Validate order sequence
+      const orders = attachments.map(a => a.order).sort((a, b) => a - b);
+      orders.forEach((order, index) => {
+        if (order !== index) {
+          throw new Error('Attachment order must be sequential starting from 0');
+        }
+      });
+
+      return true;
+    };
+
+    it('should accept posts with multiple attachments', () => {
+      const postWithAttachments: PostWithAttachments = {
+        type: 'image',
+        title: 'Multi-media Post',
+        content: 'Post with multiple attachments',
+        categoryId: 'category123',
+        mediaUrl: 'https://example.com/image1.jpg',
+        attachments: [
+          {
+            id: 'att1',
+            type: 'image',
+            url: 'https://example.com/image1.jpg',
+            thumbnailUrl: 'https://example.com/thumb1.jpg',
+            order: 0,
+          },
+          {
+            id: 'att2',
+            type: 'pdf',
+            url: 'https://example.com/document.pdf',
+            order: 1,
+          },
+          {
+            id: 'att3',
+            type: 'video',
+            url: 'https://example.com/video.mp4',
+            thumbnailUrl: 'https://example.com/video-thumb.jpg',
+            order: 2,
+          },
+        ],
+      };
+
+      expect(() => validateAttachments(postWithAttachments)).not.toThrow();
+    });
+
+    it('should validate attachment required fields', () => {
+      const invalidAttachments: PostWithAttachments = {
+        type: 'image',
+        title: 'Invalid Attachments',
+        content: 'Testing invalid attachments',
+        categoryId: 'category123',
+        attachments: [
+          {
+            id: '',
+            type: 'image',
+            url: 'https://example.com/image.jpg',
+            order: 0,
+          },
+        ],
+      };
+
+      expect(() => validateAttachments(invalidAttachments))
+        .toThrow('Attachment at index 0 missing id');
+    });
+
+    it('should validate attachment order sequence', () => {
+      const badOrderAttachments: PostWithAttachments = {
+        type: 'image',
+        title: 'Bad Order Attachments',
+        content: 'Testing attachment order',
+        categoryId: 'category123',
+        attachments: [
+          {
+            id: 'att1',
+            type: 'image',
+            url: 'https://example.com/image1.jpg',
+            order: 0,
+          },
+          {
+            id: 'att2',
+            type: 'pdf',
+            url: 'https://example.com/document.pdf',
+            order: 2, // Should be 1
+          },
+        ],
+      };
+
+      expect(() => validateAttachments(badOrderAttachments))
+        .toThrow('Attachment order must be sequential starting from 0');
+    });
+
+    it('should accept YouTube attachments', () => {
+      const youtubeAttachment: PostWithAttachments = {
+        type: 'video',
+        title: 'YouTube Video Post',
+        content: 'Post with YouTube video',
+        categoryId: 'category123',
+        mediaUrl: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+        attachments: [
+          {
+            id: 'yt1',
+            type: 'youtube',
+            url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+            order: 0,
+          },
+        ],
+      };
+
+      expect(() => validateAttachments(youtubeAttachment)).not.toThrow();
+    });
+
+    it('should handle empty attachments array', () => {
+      const noAttachments: PostWithAttachments = {
+        type: 'text',
+        title: 'No Attachments',
+        content: 'Post without attachments',
+        categoryId: 'category123',
+        attachments: [],
+      };
+
+      expect(() => validateAttachments(noAttachments)).not.toThrow();
     });
   });
 }); 

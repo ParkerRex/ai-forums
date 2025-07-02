@@ -1,0 +1,425 @@
+# Page snapshot
+
+```yaml
+- banner:
+  - link "VAI":
+    - /url: /
+  - navigation
+  - textbox "type / to search"
+  - link "members":
+    - /url: /members
+    - img
+    - text: members
+  - link "educate":
+    - /url: /educate
+  - button "create"
+  - button "Sign In / Sign Up":
+    - img
+    - text: Sign In / Sign Up
+- button "all posts":
+  - img
+  - text: all posts
+- button "/content":
+  - img
+  - text: /content
+- button "/connect":
+  - img
+  - text: /connect
+- button "/prompts":
+  - img
+  - text: /prompts
+- button "/workflows":
+  - img
+  - text: /workflows
+- button "/announcements":
+  - img
+  - text: /announcements
+- button:
+  - img
+- text: 0 💭 Prompts
+- link "Test ataeada da":
+  - /url: /post/jd791prjarap15azkbs2ssvahn7jyc8d
+  - heading "Test ataeada da" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 7/2/2025
+- paragraph: "**asdada**"
+- button "0 comments":
+  - img
+  - text: 0 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 0 🎥 Content Video
+- link "test test test":
+  - /url: /post/jd79s5rfkcan412dnf5881fn8s7jybdf
+  - heading "test test test" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 7/2/2025
+- button "0 comments":
+  - img
+  - text: 0 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: "0"
+- img "asdadasdadasd"
+- text: 🎥 Content Image
+- link "asdadasdadasd":
+  - /url: /post/jd7bwpgw6hxsd9dn7fprz7ghyh7jv2m9
+  - heading "asdadasdadasd" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/30/2025
+- button "5 comments":
+  - img
+  - text: 5 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 5 📢 Announcements
+- 'link "🆕 VAI WORKSHOP: MCP Jedi Deep Dive ft. JD"':
+  - /url: /post/jd7e5zwgbep72qxaz2wy9nj2s97jngsj
+  - 'heading "🆕 VAI WORKSHOP: MCP Jedi Deep Dive ft. JD" [level=3]'
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/26/2025
+- paragraph: JD ( @Jd Fiscus ) did a fantastic job breaking down MCP 101, future of MCP, MCP...
+- button "5 comments":
+  - img
+  - text: 5 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 2 🤝 Connect
+- link "Auggie interview rocked, credits landed?":
+  - /url: /post/jd743fy63n7qsh8htcn0263cxx7jmkz6
+  - heading "Auggie interview rocked, credits landed?" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/25/2025
+- paragraph: The 60$ should’ve landed in everyone’s accounts. Learned a lot from the ceo...
+- button "6 comments":
+  - img
+  - text: 6 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 1 📢 Announcements
+- link "Google Released their CLI Coding tool (free)":
+  - /url: /post/jd7651dpyefjhxge97kgnvfc697jnym4
+  - heading "Google Released their CLI Coding tool (free)" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/25/2025
+- paragraph: “Introducing Gemini CLI, a light and powerful open-source AI agent that brings...
+- button "2 comments":
+  - img
+  - text: 2 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 2 ⚡ Workflows
+- link "Do you believe in Magic?":
+  - /url: /post/jd74wbdj5904yhs8vnb19khadh7jmpqc
+  - heading "Do you believe in Magic?" [level=3]
+- text: by
+- link "Daniel Ngari":
+  - /url: /members/daniel-ngari
+- text: • 6/24/2025
+- paragraph: I have just discovered a tool that works like magic. Quicktype is an...
+- button "2 comments":
+  - img
+  - text: 2 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 1 💭 Prompts
+- link "Impromptu office hours in 8 minutes on discord if you want to chat":
+  - /url: /post/jd7ff2tg89naydb734325f88w57jm2qv
+  - heading "Impromptu office hours in 8 minutes on discord if you want to chat" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/24/2025
+- button "2 comments":
+  - img
+  - text: 2 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 5 🤝 Connect
+- link "Auggie Credits arrive tonight, everyone gets $60 instead of $50! :D":
+  - /url: /post/jd72e1kxx3c21fz07dpfq2nsw57jmjbh
+  - heading "Auggie Credits arrive tonight, everyone gets $60 instead of $50! :D" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/24/2025
+- button "3 comments":
+  - img
+  - text: 3 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 0 🤝 Connect
+- link "Reminder to get your questions in for Augment CEO/Founder. Doing VAI interview tomorrow! Drop them below!":
+  - /url: /post/jd72nxfq9vcscam4eyh0fnheed7jmwhm
+  - heading "Reminder to get your questions in for Augment CEO/Founder. Doing VAI interview tomorrow! Drop them below!" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/23/2025
+- button "5 comments":
+  - img
+  - text: 5 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 2 📢 Announcements
+- link "$50 for 30 Min Feedback Sesh w/ MIT Engineer Led WisprFlow Competitor":
+  - /url: /post/jd71j25yh7vykrabdyxf1x2d497jmjhx
+  - heading "$50 for 30 Min Feedback Sesh w/ MIT Engineer Led WisprFlow Competitor" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/23/2025
+- paragraph: Posted about this a month ago and just got word from the founder that they're...
+- button "4 comments":
+  - img
+  - text: 4 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 1 ⚡ Workflows
+- link "Excited to Join":
+  - /url: /post/jd778gcd4zdgagcnf8tdxd4gtx7jm807
+  - heading "Excited to Join" [level=3]
+- text: by
+- link "Crusoe Birkhead":
+  - /url: /members/crusoe-birkhead
+- text: • 6/22/2025
+- paragraph: Hey VAI!! I'm a junior full-stack dev based in Medford, OR. I've been using AI...
+- button "1 comments":
+  - img
+  - text: 1 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 5 💭 Prompts
+- 'link "[Event] VAI: MCP Deep Dive w/ JD this Thursday 1PM ET on Zoom"':
+  - /url: /post/jd76y7vr67g78981zn3k5vn5dn7jn0cq
+  - 'heading "[Event] VAI: MCP Deep Dive w/ JD this Thursday 1PM ET on Zoom" [level=3]'
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/21/2025
+- paragraph: "Topics covered: - MCP Basic, high level concepts - Resources, Prompts, Tools -..."
+- button "0 comments":
+  - img
+  - text: 0 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 1 ⚡ Workflows
+- link "Payment System Project":
+  - /url: /post/jd7c2yq7byf7vwvfqjp30pcx6d7jm6d1
+  - heading "Payment System Project" [level=3]
+- text: by
+- link "Riley Mahoney":
+  - /url: /members/riley-mahoney
+- text: • 6/20/2025
+- paragraph: Right now I’m finalizing an internal payment system for my company (startup...
+- button "0 comments":
+  - img
+  - text: 0 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 0 🤝 Connect
+- link "What’s up VAI!":
+  - /url: /post/jd78ec04s4p3r0r6e390kt32c97jmhmv
+  - heading "What’s up VAI!" [level=3]
+- text: by
+- link "Riley Mahoney":
+  - /url: /members/riley-mahoney
+- text: • 6/20/2025
+- paragraph: I’m a fullstack web developer in Fort Lauderdale, FL. Learning everyday how to...
+- button "3 comments":
+  - img
+  - text: 3 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 3 ⚡ Workflows
+- 'link "VAI EP3: Agent Frameworks, Claude Code, AI Workplace Use Cases (Encrypted Hong Kong CEO Surprise)"':
+  - /url: /post/jd76mxvgm7e9nc3tfs7ra96bjx7jnh16
+  - 'heading "VAI EP3: Agent Frameworks, Claude Code, AI Workplace Use Cases (Encrypted Hong Kong CEO Surprise)" [level=3]'
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/20/2025
+- paragraph: Chapter markers in description. Zoom summary below. Thx everyone that was...
+- button "5 comments":
+  - img
+  - text: 5 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 0 ⚡ Workflows
+- link "intro":
+  - /url: /post/jd7e3jv0tgantwsnd4ztc5923h7jnxe5
+  - heading "intro" [level=3]
+- text: by
+- link "Scott Dellinger":
+  - /url: /members/scott-dellinger
+- text: • 6/18/2025
+- paragraph: hey folks, i'm scott. just a dude making some stuff. non-tech background. some...
+- button "0 comments":
+  - img
+  - text: 0 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 3 🎥 Content
+- link "Discord Update 👀 Tutorial Requests & Great Tutorials":
+  - /url: /post/jd7871eaffft3zyre7t2z3k8v57jmrdy
+  - heading "Discord Update 👀 Tutorial Requests & Great Tutorials" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/18/2025
+- paragraph: Added...
+- button "0 comments":
+  - img
+  - text: 0 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 3 📢 Announcements
+- link "$50 Auggie Credits LAST Call!!! (wow!)":
+  - /url: /post/jd72mtde2vpg810p36zv9w2v9n7jnr17
+  - heading "$50 Auggie Credits LAST Call!!! (wow!)" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 6/18/2025
+- paragraph: Just in time for the new tasks release (its bananas) I have a spreadsheet of...
+- button "21 comments":
+  - img
+  - text: 21 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 1 ⚡ Workflows
+- link "Intro - Rento":
+  - /url: /post/jd70t0vwe0n07z444epx9fx9m17jnbv0
+  - heading "Intro - Rento" [level=3]
+- text: by
+- link "Rento Rinalds":
+  - /url: /members/rento-rinalds
+- text: • 6/17/2025
+- paragraph: Hi, I'm Rento, I am a Senior Full-Stack JavaScript Developer with over 16...
+- button "2 comments":
+  - img
+  - text: 2 comments
+- button
+- button "share":
+  - img
+  - text: share
+- text: Recent AI News
+- heading "OpenAI Announces GPT-5 Development" [level=4]
+- paragraph: Next-generation model promises significant improvements in reasoning and multimodal capabilities.
+- text: 2 hours ago
+- heading "Google Releases Gemini 2.0 Flash" [level=4]
+- paragraph: New model features enhanced speed and efficiency for real-time AI applications.
+- text: 4 hours ago
+- heading "Meta AI Unveils Llama 3.3 70B" [level=4]
+- paragraph: Open-source model achieves performance comparable to larger proprietary models.
+- text: 6 hours ago Online Now (1)
+- link "PR Parker Rex Online":
+  - /url: /members/parker-rex
+  - text: PR
+  - paragraph: Parker Rex
+  - text: Online
+- text: About VAI
+- paragraph: A community platform for AI professionals to share workflows, prompts, insights, and connect with like-minded practitioners.
+- contentinfo:
+  - button "Toggle theme":
+    - img
+    - img
+    - text: Toggle theme
+  - text: ⏱ 1d 22h to Community Call
+  - img
+  - text: 3 hrs ago Discord
+- heading "Command Palette" [level=2]
+- paragraph: Search for a command to run...
+- region "Notifications alt+T"
+- button "Open Next.js Dev Tools":
+  - img
+- alert
+```

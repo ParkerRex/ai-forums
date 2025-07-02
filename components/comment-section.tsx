@@ -18,6 +18,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { memberProfileUrl } from "@/lib/utils";
 import { EnhancedCommentInput } from "./enhanced-comment-input";
+import { motion } from "framer-motion";
+import { CommentActionsMenu } from "./comment-actions-menu";
+import { useParams } from "next/navigation";
 
 type AttachmentType = {
   id: string;
@@ -69,21 +72,35 @@ type CommentWithReplies = {
     width?: number;
     height?: number;
   }>;
-  linkPreviews?: Record<string, {
-    title?: string;
-    description?: string;
-    image?: string;
-    siteName?: string;
-    url: string;
-  }>;
+  linkPreviews?: Record<
+    string,
+    {
+      title?: string;
+      description?: string;
+      image?: string;
+      siteName?: string;
+      url: string;
+    }
+  >;
+  editedAt?: number;
 };
 
 interface CommentItemProps {
   comment: CommentWithReplies;
   onReply: (parentId: Id<"comments"> | null) => void;
   replyingTo: Id<"comments"> | null;
-  onSubmitReply: (parentId: Id<"comments">, content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => void;
+  onSubmitReply: (
+    parentId: Id<"comments">,
+    content: string,
+    attachments?: AttachmentType[],
+    linkPreviews?: Record<string, LinkPreviewType>,
+  ) => void;
   isSubmittingReply: boolean;
+  isNewlyCreated?: boolean;
+  newlyCreatedCommentIds?: Set<string>;
+  postSlug: string;
+  categoryName: string;
+  isAdmin: boolean;
 }
 
 function CommentItem({
@@ -92,9 +109,15 @@ function CommentItem({
   replyingTo,
   onSubmitReply,
   isSubmittingReply,
+  isNewlyCreated = false,
+  newlyCreatedCommentIds,
+  postSlug,
+  categoryName,
+  isAdmin,
 }: CommentItemProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVoting, setIsVoting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [optimisticNetVotes, setOptimisticNetVotes] = useState(
     comment.netVotes,
   );
@@ -115,11 +138,12 @@ function CommentItem({
   const hasReplies = comment.replies && comment.replies.length > 0;
 
   const voteOnComment = useMutation(api.votes.voteOnComment);
+  const editComment = useMutation(api.comments.editComment);
   const userVote = useQuery(api.votes.getUserVote, {
     targetId: comment._id,
     targetType: "comment",
   });
-  const { handleMutationError } = useMutationError();
+  const { handleMutationError, handleMutationSuccess } = useMutationError();
 
   const currentUserVote =
     optimisticUserVote !== null ? optimisticUserVote : userVote;
@@ -168,11 +192,37 @@ function CommentItem({
     }
   };
 
+  const shouldReduceMotion =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  const highlightVariants = {
+    initial: {
+      backgroundColor: shouldReduceMotion
+        ? "var(--comment-highlight)"
+        : "var(--comment-highlight)",
+    },
+    animate: {
+      backgroundColor: shouldReduceMotion
+        ? "var(--comment-highlight)"
+        : "transparent",
+    },
+    exit: { backgroundColor: "transparent" },
+  };
+
   return (
     <div className="space-y-3" style={{ marginLeft: `${marginLeft}px` }}>
-      <div
+      <motion.div
         id={`comment-${comment._id}`}
         className="border border-border rounded-lg p-4 bg-card transition-all duration-300"
+        variants={highlightVariants}
+        initial={isNewlyCreated ? "initial" : false}
+        animate={isNewlyCreated ? "animate" : false}
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { duration: 1, ease: "easeOut" }
+        }
       >
         <div className="flex items-start space-x-3">
           <Avatar className="w-8 h-8">
@@ -181,43 +231,89 @@ function CommentItem({
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 space-y-2">
-            <div className="flex items-center space-x-2">
-              {comment.member ? (
-                <Link
-                  href={memberProfileUrl({
-                    slug: comment.member.slug,
-                    _id: comment.member._id,
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                {comment.member ? (
+                  <Link
+                    href={memberProfileUrl({
+                      slug: comment.member.slug,
+                      _id: comment.member._id,
+                    })}
+                    className="font-medium text-foreground hover:text-primary transition-colors"
+                    data-testid="member-link"
+                  >
+                    {comment.member.firstName} {comment.member.lastName}
+                  </Link>
+                ) : (
+                  <span className="font-medium text-foreground">
+                    Unknown User
+                  </span>
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {formatDistanceToNow(new Date(comment.createdAt), {
+                    addSuffix: true,
                   })}
-                  className="font-medium text-foreground hover:text-primary transition-colors"
-                  data-testid="member-link"
-                >
-                  {comment.member.firstName} {comment.member.lastName}
-                </Link>
-              ) : (
-                <span className="font-medium text-foreground">
-                  Unknown User
+                  {comment.editedAt && " (edited)"}
                 </span>
-              )}
-              <span className="text-sm text-muted-foreground">
-                {formatDistanceToNow(new Date(comment.createdAt), {
-                  addSuffix: true,
-                })}
-              </span>
-              {comment.depth > 0 && (
-                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                  Reply
-                </span>
+                {comment.depth > 0 && (
+                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                    Reply
+                  </span>
+                )}
+              </div>
+              {comment.member && (
+                <Authenticated>
+                  <CommentActionsMenu
+                    commentId={comment._id}
+                    authorId={comment.member._id}
+                    postSlug={postSlug}
+                    categoryName={categoryName}
+                    onEditClick={() => setIsEditing(true)}
+                    isAdmin={isAdmin}
+                  />
+                </Authenticated>
               )}
             </div>
-            <p className="text-foreground whitespace-pre-wrap">
-              {comment.content}
-            </p>
-            
+            {isEditing ? (
+              <div className="mt-2">
+                <EnhancedCommentInput
+                  placeholder="Edit your comment..."
+                  initialValue={comment.content}
+                  onSubmit={async (content) => {
+                    try {
+                      await editComment({
+                        commentId: comment._id,
+                        content: content.trim(),
+                      });
+                      handleMutationSuccess("Comment updated successfully");
+                      setIsEditing(false);
+                    } catch (error) {
+                      handleMutationError(error);
+                    }
+                  }}
+                  isSubmitting={false}
+                  className="mb-2"
+                />
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setIsEditing(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            ) : (
+              <p className="text-foreground whitespace-pre-wrap">
+                {comment.content}
+              </p>
+            )}
+
             {comment.attachments && comment.attachments.length > 0 && (
               <div className="mt-3 space-y-2">
                 {comment.attachments!.map((attachment) => (
                   <div key={attachment.id} className="border rounded p-2">
-                    {attachment.type === "image" || attachment.type === "gif" ? (
+                    {attachment.type === "image" ||
+                    attachment.type === "gif" ? (
                       <div className="relative">
                         <Image
                           src={attachment.url}
@@ -252,17 +348,25 @@ function CommentItem({
                 ))}
               </div>
             )}
-            
-            {comment.linkPreviews && Object.entries(comment.linkPreviews!).map(([url, preview]) => (
-              <div key={url} className="mt-3 border rounded p-3 bg-muted/50">
-                <div className="text-sm font-medium">{preview.title}</div>
-                <div className="text-xs text-muted-foreground">{preview.description}</div>
-                <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline">
-                  {url}
-                </a>
-              </div>
-            ))}
-            
+
+            {comment.linkPreviews &&
+              Object.entries(comment.linkPreviews!).map(([url, preview]) => (
+                <div key={url} className="mt-3 border rounded p-3 bg-muted/50">
+                  <div className="text-sm font-medium">{preview.title}</div>
+                  <div className="text-xs text-muted-foreground">
+                    {preview.description}
+                  </div>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    {url}
+                  </a>
+                </div>
+              ))}
+
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
                 <Authenticated>
@@ -363,7 +467,9 @@ function CommentItem({
           <div className="mt-4 ml-11 space-y-3">
             <EnhancedCommentInput
               placeholder={`Reply to ${comment.member?.firstName || "this comment"}...`}
-              onSubmit={(content, attachments, linkPreviews) => onSubmitReply(comment._id, content, attachments, linkPreviews)}
+              onSubmit={(content, attachments, linkPreviews) =>
+                onSubmitReply(comment._id, content, attachments, linkPreviews)
+              }
               isSubmitting={isSubmittingReply}
               className="mb-3"
             />
@@ -372,7 +478,7 @@ function CommentItem({
             </Button>
           </div>
         )}
-      </div>
+      </motion.div>
 
       {/* Nested replies */}
       {hasReplies && isExpanded && (
@@ -385,6 +491,11 @@ function CommentItem({
               replyingTo={replyingTo}
               onSubmitReply={onSubmitReply}
               isSubmittingReply={isSubmittingReply}
+              isNewlyCreated={newlyCreatedCommentIds?.has(reply._id) || false}
+              newlyCreatedCommentIds={newlyCreatedCommentIds}
+              postSlug={postSlug}
+              categoryName={categoryName}
+              isAdmin={isAdmin}
             />
           ))}
         </div>
@@ -400,10 +511,23 @@ export default function CommentSection({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Id<"comments"> | null>(null);
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+  const [newlyCreatedCommentIds, setNewlyCreatedCommentIds] = useState<
+    Set<string>
+  >(new Set());
+
+  const params = useParams();
 
   const comments = useQuery(api.comments.getCommentsByPost, { postId });
   const createComment = useMutation(api.comments.createComment);
+  const currentMember = useQuery(api.members.getCurrentMember);
   const { handleMutationError, handleMutationSuccess } = useMutationError();
+
+  // Check if current user is admin
+  const isAdmin = currentMember?.role === "admin";
+
+  // Get post slug and category name from the post query or params
+  const postSlug = (params.slug as string) || "";
+  const categoryName = (params.category as string) || "";
 
   useEffect(() => {
     if (!targetCommentId || !comments) return;
@@ -423,43 +547,84 @@ export default function CommentSection({
     return () => cancelAnimationFrame(raf);
   }, [targetCommentId, comments]);
 
-  const handleSubmitComment = async (content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => {
+  const handleSubmitComment = async (
+    content: string,
+    attachments?: AttachmentType[],
+    linkPreviews?: Record<string, LinkPreviewType>,
+  ) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     setIsSubmitting(true);
 
     try {
-      await createComment({
+      const newComment = await createComment({
         postId,
         content: content.trim(),
         attachments,
         linkPreviews,
       });
+
+      if (newComment) {
+        setNewlyCreatedCommentIds((prev) => new Set(prev).add(newComment));
+
+        // Remove the highlight after animation completes
+        setTimeout(() => {
+          setNewlyCreatedCommentIds((prev) => {
+            const next = new Set(prev);
+            next.delete(newComment);
+            return next;
+          });
+        }, 1000);
+      }
+
       handleMutationSuccess("Comment posted successfully!");
     } catch (error) {
-      handleMutationError(error, () => handleSubmitComment(content, attachments, linkPreviews));
+      handleMutationError(error, () =>
+        handleSubmitComment(content, attachments, linkPreviews),
+      );
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleSubmitReply = async (parentId: Id<"comments">, content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => {
+  const handleSubmitReply = async (
+    parentId: Id<"comments">,
+    content: string,
+    attachments?: AttachmentType[],
+    linkPreviews?: Record<string, LinkPreviewType>,
+  ) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     setIsSubmittingReply(true);
 
     try {
-      await createComment({
+      const newReply = await createComment({
         postId,
         content: content.trim(),
         parentCommentId: parentId,
         attachments,
         linkPreviews,
       });
+
+      if (newReply) {
+        setNewlyCreatedCommentIds((prev) => new Set(prev).add(newReply));
+
+        // Remove the highlight after animation completes
+        setTimeout(() => {
+          setNewlyCreatedCommentIds((prev) => {
+            const next = new Set(prev);
+            next.delete(newReply);
+            return next;
+          });
+        }, 1000);
+      }
+
       setReplyingTo(null);
       handleMutationSuccess("Reply posted successfully!");
     } catch (error) {
-      handleMutationError(error, () => handleSubmitReply(parentId, content, attachments, linkPreviews));
+      handleMutationError(error, () =>
+        handleSubmitReply(parentId, content, attachments, linkPreviews),
+      );
     } finally {
       setIsSubmittingReply(false);
     }
@@ -540,6 +705,11 @@ export default function CommentSection({
                   replyingTo={replyingTo}
                   onSubmitReply={handleSubmitReply}
                   isSubmittingReply={isSubmittingReply}
+                  isNewlyCreated={newlyCreatedCommentIds.has(comment._id)}
+                  newlyCreatedCommentIds={newlyCreatedCommentIds}
+                  postSlug={postSlug}
+                  categoryName={categoryName}
+                  isAdmin={isAdmin}
                 />
               ))}
             </div>
