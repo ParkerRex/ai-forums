@@ -65,6 +65,17 @@ export const getCommentsByPost = query({
       }
     });
 
+    const sortReplies = (comments: CommentWithReplies[]) => {
+      comments.forEach(comment => {
+        if (comment.replies.length > 0) {
+          comment.replies.sort((a, b) => ((a as any).order || 0) - ((b as any).order || 0));
+          sortReplies(comment.replies);
+        }
+      });
+    };
+
+    sortReplies(rootComments);
+
     return rootComments;
   },
 });
@@ -148,6 +159,18 @@ export const createComment = mutation({
     const now = Date.now();
     const trimmedContent = content.trim();
 
+    let order = 0;
+    if (parentCommentId) {
+      const existingReplies = await ctx.db
+        .query("comments")
+        .withIndex("by_parent_and_order", (q) => 
+          q.eq("parentCommentId", parentCommentId)
+        )
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .collect();
+      order = existingReplies.length;
+    }
+
     // Check for duplicate comment before creating
     // Look for comments from the same author on the same post with the same content
     // within the last minute (60 seconds)
@@ -189,6 +212,7 @@ export const createComment = mutation({
       netVotes: 0,
       depth,
       childCount: 0,
+      order,
       attachments,
       linkPreviews,
     });
@@ -442,4 +466,53 @@ export const reportComment = mutation({
 
     return reportId;
   },
-});    
+});
+
+export const reorderCommentReplies = mutation({
+  args: {
+    parentCommentId: v.id("comments"),
+    commentId: v.id("comments"),
+    newOrder: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const member = await getAuthenticatedMember(ctx);
+    
+    const comment = await ctx.db.get(args.commentId);
+    if (!comment || comment.parentCommentId !== args.parentCommentId) {
+      throw new Error("Invalid comment");
+    }
+    
+    const parentComment = await ctx.db.get(args.parentCommentId);
+    if (!parentComment) throw new Error("Parent comment not found");
+    
+    if (comment.memberId !== member._id && parentComment.memberId !== member._id) {
+      throw new Error("Unauthorized to reorder this comment");
+    }
+    
+    const replies = await ctx.db
+      .query("comments")
+      .withIndex("by_parent_and_order", (q) => 
+        q.eq("parentCommentId", args.parentCommentId)
+      )
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+    
+    const sortedReplies = replies
+      .filter(r => r._id !== args.commentId)
+      .sort((a, b) => ((a as any).order || 0) - ((b as any).order || 0));
+    
+    sortedReplies.splice(args.newOrder, 0, comment);
+    
+    // Update order for all affected replies
+    const updates = sortedReplies.map((reply, index) => ({
+      id: reply._id,
+      order: index,
+    }));
+    
+    for (const update of updates) {
+      await ctx.db.patch(update.id, { order: update.order } as any);
+    }
+    
+    return { success: true };
+  },
+});                    

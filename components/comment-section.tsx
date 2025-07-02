@@ -2,7 +2,20 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 import { api } from "@/convex/_generated/api";
+import { SortableCommentItem } from "./sortable-comment-item";
 import { Id } from "@/convex/_generated/dataModel";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -10,7 +23,7 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInButton } from "@clerk/nextjs";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { formatDistanceToNow } from "date-fns";
-import { ChevronDown, ChevronRight, Paperclip } from "lucide-react";
+import { ChevronDown, ChevronRight, Paperclip, GripVertical } from "lucide-react";
 import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
 import { MessageSquareIcon } from "@/components/ui/message-square";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
@@ -101,6 +114,10 @@ interface CommentItemProps {
   postSlug: string;
   categoryName: string;
   isAdmin: boolean;
+  dragHandleProps?: {
+    [key: string]: unknown;
+  };
+  isDragging?: boolean;
 }
 
 function CommentItem({
@@ -114,6 +131,7 @@ function CommentItem({
   postSlug,
   categoryName,
   isAdmin,
+  dragHandleProps,
 }: CommentItemProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVoting, setIsVoting] = useState(false);
@@ -261,18 +279,29 @@ function CommentItem({
                   </span>
                 )}
               </div>
-              {comment.member && (
-                <Authenticated>
-                  <CommentActionsMenu
-                    commentId={comment._id}
-                    authorId={comment.member._id}
-                    postSlug={postSlug}
-                    categoryName={categoryName}
-                    onEditClick={() => setIsEditing(true)}
-                    isAdmin={isAdmin}
-                  />
-                </Authenticated>
-              )}
+              <div className="flex items-center space-x-1">
+                {comment.depth > 0 && dragHandleProps && (
+                  <button
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded cursor-grab active:cursor-grabbing transition-opacity"
+                    {...dragHandleProps}
+                    aria-label="Drag to reorder"
+                  >
+                    <GripVertical className="h-3 w-3 text-muted-foreground" />
+                  </button>
+                )}
+                {comment.member && (
+                  <Authenticated>
+                    <CommentActionsMenu
+                      commentId={comment._id}
+                      authorId={comment.member._id}
+                      postSlug={postSlug}
+                      categoryName={categoryName}
+                      onEditClick={() => setIsEditing(true)}
+                      isAdmin={isAdmin}
+                    />
+                  </Authenticated>
+                )}
+              </div>
             </div>
             {isEditing ? (
               <div className="mt-2">
@@ -482,25 +511,143 @@ function CommentItem({
 
       {/* Nested replies */}
       {hasReplies && isExpanded && (
-        <div className="space-y-3">
-          {comment.replies.map((reply) => (
-            <CommentItem
-              key={reply._id}
-              comment={reply}
-              onReply={onReply}
-              replyingTo={replyingTo}
-              onSubmitReply={onSubmitReply}
-              isSubmittingReply={isSubmittingReply}
-              isNewlyCreated={newlyCreatedCommentIds?.has(reply._id) || false}
-              newlyCreatedCommentIds={newlyCreatedCommentIds}
-              postSlug={postSlug}
-              categoryName={categoryName}
-              isAdmin={isAdmin}
-            />
-          ))}
-        </div>
+        <ReplyDragContext 
+          parentCommentId={comment._id}
+          replies={comment.replies}
+          onReply={onReply}
+          replyingTo={replyingTo}
+          onSubmitReply={onSubmitReply}
+          isSubmittingReply={isSubmittingReply}
+          newlyCreatedCommentIds={newlyCreatedCommentIds}
+          postSlug={postSlug}
+          categoryName={categoryName}
+          isAdmin={isAdmin}
+        />
       )}
     </div>
+  );
+}
+
+interface ReplyDragContextProps {
+  parentCommentId: Id<"comments">;
+  replies: CommentWithReplies[];
+  onReply: (parentId: Id<"comments"> | null) => void;
+  replyingTo: Id<"comments"> | null;
+  onSubmitReply: (
+    parentId: Id<"comments">,
+    content: string,
+    attachments?: AttachmentType[],
+    linkPreviews?: Record<string, LinkPreviewType>,
+  ) => void;
+  isSubmittingReply: boolean;
+  newlyCreatedCommentIds?: Set<string>;
+  postSlug: string;
+  categoryName: string;
+  isAdmin: boolean;
+}
+
+function ReplyDragContext({
+  parentCommentId,
+  replies,
+  onReply,
+  replyingTo,
+  onSubmitReply,
+  isSubmittingReply,
+  newlyCreatedCommentIds,
+  postSlug,
+  categoryName,
+  isAdmin,
+}: ReplyDragContextProps) {
+  const reorderReplies = useMutation(api.comments.reorderCommentReplies);
+  const currentMember = useQuery(api.members.getCurrentMember);
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      const newIndex = replies.findIndex((reply) => reply._id === over?.id);
+
+      try {
+        await reorderReplies({
+          parentCommentId,
+          commentId: active.id as Id<"comments">,
+          newOrder: newIndex,
+        });
+      } catch (error) {
+        console.error("Failed to reorder replies:", error);
+      }
+    }
+  };
+
+  const canReorder = currentMember && (
+    isAdmin || 
+    replies.some(r => r.member?._id === currentMember._id)
+  );
+
+  if (!canReorder) {
+    return (
+      <div className="space-y-3">
+        {replies.map((reply) => (
+          <CommentItem
+            key={reply._id}
+            comment={reply}
+            onReply={onReply}
+            replyingTo={replyingTo}
+            onSubmitReply={onSubmitReply}
+            isSubmittingReply={isSubmittingReply}
+            isNewlyCreated={newlyCreatedCommentIds?.has(reply._id) || false}
+            newlyCreatedCommentIds={newlyCreatedCommentIds}
+            postSlug={postSlug}
+            categoryName={categoryName}
+            isAdmin={isAdmin}
+          />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <DndContext
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
+      <SortableContext
+        items={replies.map(r => r._id)}
+        strategy={verticalListSortingStrategy}
+      >
+        <div className="space-y-3">
+          {replies.map((reply) => (
+            <SortableCommentItem
+              key={reply._id}
+              comment={reply}
+              disabled={!canReorder}
+            >
+              <CommentItem
+                comment={reply}
+                onReply={onReply}
+                replyingTo={replyingTo}
+                onSubmitReply={onSubmitReply}
+                isSubmittingReply={isSubmittingReply}
+                isNewlyCreated={newlyCreatedCommentIds?.has(reply._id) || false}
+                newlyCreatedCommentIds={newlyCreatedCommentIds}
+                postSlug={postSlug}
+                categoryName={categoryName}
+                isAdmin={isAdmin}
+              />
+            </SortableCommentItem>
+          ))}
+        </div>
+      </SortableContext>
+    </DndContext>
   );
 }
 
