@@ -25,6 +25,7 @@ import type * as members from "../members.js";
 import type * as migrations_add_member_slug from "../migrations/add_member_slug.js";
 import type * as migrations_add_post_media_fields from "../migrations/add_post_media_fields.js";
 import type * as migrations_fix_member_status from "../migrations/fix_member_status.js";
+import type * as notifications from "../notifications.js";
 import type * as postVersions from "../postVersions.js";
 import type * as posts from "../posts.js";
 import type * as search from "../search.js";
@@ -53,6 +54,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/add_member_slug": typeof migrations_add_member_slug;
   "migrations/add_post_media_fields": typeof migrations_add_post_media_fields;
   "migrations/fix_member_status": typeof migrations_fix_member_status;
+  notifications: typeof notifications;
   postVersions: typeof postVersions;
   posts: typeof posts;
   search: typeof search;
