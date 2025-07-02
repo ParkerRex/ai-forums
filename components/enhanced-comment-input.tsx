@@ -9,6 +9,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Paperclip, Smile, Image as ImageIcon, X } from "lucide-react";
 import { toast } from "sonner";
 import EmojiPicker from "emoji-picker-react";
+import Image from "next/image";
 import { uploadMedia, validateMediaFile, getFilePreviewUrl, revokeFilePreviewUrl } from "@/lib/upload-media";
 import { GifPicker } from "./gif-picker";
 
@@ -75,7 +76,7 @@ export function EnhancedCommentInput({
       const previewUrl = getFilePreviewUrl(file);
       setAttachmentPreviews(prev => [...prev, previewUrl]);
     }
-  }, [attachments.length]);
+  }, [attachments.length, gifAttachments.length]);
 
   const handleRemoveAttachment = useCallback((index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
@@ -165,9 +166,11 @@ export function EnhancedCommentInput({
           {attachments.map((file, index) => (
             <div key={`file-${index}`} className="relative">
               {file.type.startsWith("image/") ? (
-                <img
+                <Image
                   src={attachmentPreviews[index]}
                   alt={file.name}
+                  width={80}
+                  height={80}
                   className="w-20 h-20 object-cover rounded border"
                 />
               ) : (
@@ -188,9 +191,11 @@ export function EnhancedCommentInput({
           ))}
           {gifAttachments.map((gif, index) => (
             <div key={`gif-${index}`} className="relative">
-              <img
+              <Image
                 src={gif.url}
                 alt={gif.fileName}
+                width={80}
+                height={80}
                 className="w-20 h-20 object-cover rounded border"
               />
               <Button
@@ -202,7 +207,7 @@ export function EnhancedCommentInput({
               >
                 <X className="w-3 h-3" />
               </Button>
-              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-1 py-0.5 rounded-b">
+              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-foreground text-xs px-1 py-0.5 rounded-b">
                 GIF
               </div>
             </div>

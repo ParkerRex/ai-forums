@@ -15,6 +15,7 @@ import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
 import { MessageSquareIcon } from "@/components/ui/message-square";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import Link from "next/link";
+import Image from "next/image";
 import { memberProfileUrl } from "@/lib/utils";
 import { EnhancedCommentInput } from "./enhanced-comment-input";
 
@@ -218,13 +219,15 @@ function CommentItem({
                   <div key={attachment.id} className="border rounded p-2">
                     {attachment.type === "image" || attachment.type === "gif" ? (
                       <div className="relative">
-                        <img
+                        <Image
                           src={attachment.url}
                           alt={attachment.fileName}
+                          width={400}
+                          height={256}
                           className="max-w-full h-auto max-h-64 rounded"
                         />
                         {attachment.type === "gif" && (
-                          <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                          <div className="absolute top-2 left-2 bg-black/50 text-foreground text-xs px-2 py-1 rounded">
                             GIF
                           </div>
                         )}

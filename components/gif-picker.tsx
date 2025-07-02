@@ -4,7 +4,8 @@ import React, { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
-import { GiphyFetch, IGif } from "@giphy/js-fetch-api";
+import Image from "next/image";
+import { GiphyFetch } from "@giphy/js-fetch-api";
 
 const gf = new GiphyFetch(process.env.NEXT_PUBLIC_GIPHY_API_KEY || "");
 
@@ -14,7 +15,8 @@ interface GifPickerProps {
 
 export function GifPicker({ onGifSelect }: GifPickerProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [gifs, setGifs] = useState<IGif[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [gifs, setGifs] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -71,10 +73,12 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
           </div>
         ) : (
           gifs.map((gif) => (
-            <img
+            <Image
               key={gif.id}
               src={gif.images.fixed_height_small.url}
               alt={gif.title}
+              width={150}
+              height={150}
               className="cursor-pointer rounded hover:opacity-80"
               onClick={() => onGifSelect(gif.images.original.url)}
             />
