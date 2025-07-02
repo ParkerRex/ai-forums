@@ -34,11 +34,12 @@ import {
   Loader2,
   Send,
   FileText,
-  Image,
+  Image as ImageIcon,
   Link,
   Upload,
   X,
 } from "lucide-react";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 
@@ -436,7 +437,7 @@ export function PostCreationForm({
                 Text
               </TabsTrigger>
               <TabsTrigger value="image" className="flex items-center gap-2">
-                <Image className="h-4 w-4" />
+                <ImageIcon className="h-4 w-4" />
                 Image/Video
               </TabsTrigger>
               <TabsTrigger value="link" className="flex items-center gap-2">
@@ -621,10 +622,13 @@ export function PostCreationForm({
                   ) : (
                     <div className="relative">
                       {formData.type === "image" && mediaPreviewUrl && (
-                        <img
+                        <Image
                           src={mediaPreviewUrl}
-                          alt="Preview"
-                          className="max-h-64 mx-auto rounded"
+                          alt="Media preview"
+                          width={400}
+                          height={256}
+                          className="max-h-64 mx-auto rounded object-contain"
+                          unoptimized={true}
                         />
                       )}
                       {formData.type === "video" && mediaPreviewUrl && (
@@ -702,10 +706,13 @@ export function PostCreationForm({
                     <CardContent className="p-4">
                       <div className="flex space-x-4">
                         {formData.linkImage && (
-                          <img
+                          <Image
                             src={formData.linkImage}
-                            alt=""
+                            alt="Link preview image"
+                            width={96}
+                            height={96}
                             className="w-24 h-24 object-cover rounded"
+                            unoptimized={true}
                           />
                         )}
                         <div className="flex-1">

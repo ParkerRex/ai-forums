@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
@@ -10,7 +10,10 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInButton } from "@clerk/nextjs";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { formatDistanceToNow } from "date-fns";
-import { ChevronDown, ChevronRight, MessageSquare, Paperclip } from "lucide-react";
+import { ChevronDown, ChevronRight, Paperclip } from "lucide-react";
+import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
+import { MessageSquareIcon } from "@/components/ui/message-square";
+import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import Link from "next/link";
 import { memberProfileUrl } from "@/lib/utils";
 import { EnhancedCommentInput } from "./enhanced-comment-input";
@@ -43,6 +46,8 @@ type CommentWithReplies = {
   _id: Id<"comments">;
   content: string;
   createdAt: number;
+  upvotes: number;
+  netVotes: number;
   member: {
     _id: Id<"members">;
     firstName: string;
@@ -88,11 +93,79 @@ function CommentItem({
   isSubmittingReply,
 }: CommentItemProps) {
   const [isExpanded, setIsExpanded] = useState(true);
+  const [isVoting, setIsVoting] = useState(false);
+  const [optimisticNetVotes, setOptimisticNetVotes] = useState(
+    comment.netVotes,
+  );
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
+    null,
+  );
+
+  // Refs for animated icons
+  const upvoteIconRef = useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+  const replyIconRef = useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+
   const hasReplies = comment.replies && comment.replies.length > 0;
+
+  const voteOnComment = useMutation(api.votes.voteOnComment);
+  const userVote = useQuery(api.votes.getUserVote, {
+    targetId: comment._id,
+    targetType: "comment",
+  });
+  const { handleMutationError } = useMutationError();
+
+  const currentUserVote =
+    optimisticUserVote !== null ? optimisticUserVote : userVote;
 
   // Calculate indentation based on depth (max 3 levels)
   const indentLevel = Math.min(comment.depth, 3);
   const marginLeft = indentLevel * 24; // 24px per level
+
+  const handleUpvote = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isVoting) return;
+    setIsVoting(true);
+
+    const voteType = currentUserVote === "upvote" ? "remove" : "upvote";
+
+    let newNetVotes = optimisticNetVotes;
+    let newUserVote: string | null = null;
+
+    if (voteType === "upvote") {
+      newNetVotes = optimisticNetVotes + (currentUserVote === null ? 1 : 1);
+      newUserVote = "upvote";
+    } else {
+      newNetVotes = optimisticNetVotes - 1;
+      newUserVote = null;
+    }
+
+    setOptimisticNetVotes(newNetVotes);
+    setOptimisticUserVote(newUserVote);
+
+    try {
+      const result = await voteOnComment({
+        commentId: comment._id,
+        voteType,
+      });
+
+      setOptimisticNetVotes(result.netVotes);
+      setOptimisticUserVote(result.newVoteType);
+    } catch (error) {
+      setOptimisticNetVotes(comment.netVotes);
+      setOptimisticUserVote(userVote || null);
+      handleMutationError(error, () => handleUpvote(e), {
+        context: "voting on comment",
+      });
+    } finally {
+      setIsVoting(false);
+    }
+  };
 
   return (
     <div className="space-y-3" style={{ marginLeft: `${marginLeft}px` }}>
@@ -141,7 +214,7 @@ function CommentItem({
             
             {comment.attachments && comment.attachments.length > 0 && (
               <div className="mt-3 space-y-2">
-                {comment.attachments.map((attachment) => (
+                {comment.attachments!.map((attachment) => (
                   <div key={attachment.id} className="border rounded p-2">
                     {attachment.type === "image" ? (
                       <img
@@ -170,7 +243,7 @@ function CommentItem({
               </div>
             )}
             
-            {comment.linkPreviews && Object.entries(comment.linkPreviews).map(([url, preview]) => (
+            {comment.linkPreviews && Object.entries(comment.linkPreviews!).map(([url, preview]) => (
               <div key={url} className="mt-3 border rounded p-3 bg-muted/50">
                 <div className="text-sm font-medium">{preview.title}</div>
                 <div className="text-xs text-muted-foreground">{preview.description}</div>
@@ -179,34 +252,98 @@ function CommentItem({
                 </a>
               </div>
             ))}
-            <div className="flex items-center space-x-2">
-              <Authenticated>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onReply(comment._id)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  <MessageSquare className="w-4 h-4 mr-1" />
-                  Reply
-                </Button>
-              </Authenticated>
-              {hasReplies && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsExpanded(!isExpanded)}
-                  className="text-muted-foreground hover:text-foreground"
-                >
-                  {isExpanded ? (
-                    <ChevronDown className="w-4 h-4 mr-1" />
-                  ) : (
-                    <ChevronRight className="w-4 h-4 mr-1" />
-                  )}
-                  {comment.replies.length}{" "}
-                  {comment.replies.length === 1 ? "reply" : "replies"}
-                </Button>
-              )}
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <Authenticated>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => onReply(comment._id)}
+                    className="text-muted-foreground hover:text-foreground"
+                    onMouseEnter={() => replyIconRef.current?.startAnimation()}
+                    onMouseLeave={() => replyIconRef.current?.stopAnimation()}
+                  >
+                    <MessageSquareIcon
+                      ref={replyIconRef}
+                      size={14}
+                      className="mr-1"
+                    />
+                    Reply
+                  </Button>
+                </Authenticated>
+                {hasReplies && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsExpanded(!isExpanded)}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    {isExpanded ? (
+                      <ChevronDown className="w-4 h-4 mr-1" />
+                    ) : (
+                      <ChevronRight className="w-4 h-4 mr-1" />
+                    )}
+                    {comment.replies.length}{" "}
+                    {comment.replies.length === 1 ? "reply" : "replies"}
+                  </Button>
+                )}
+              </div>
+
+              {/* Voting moved to bottom right */}
+              <div className="flex items-center space-x-2">
+                <Authenticated>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-1 h-auto hover:bg-muted flex items-center space-x-1"
+                    onClick={handleUpvote}
+                    disabled={isVoting}
+                    onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+                    onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
+                  >
+                    <ArrowBigUpIcon
+                      ref={upvoteIconRef}
+                      size={14}
+                      className={`transition-colors ${
+                        currentUserVote === "upvote"
+                          ? "text-orange-500"
+                          : "text-muted-foreground hover:text-orange-500"
+                      }`}
+                    />
+                    <span className="text-xs font-medium text-foreground">
+                      {optimisticNetVotes}
+                    </span>
+                  </Button>
+                </Authenticated>
+                <Unauthenticated>
+                  <MembershipCTAModal
+                    title="Upvote Great Comments"
+                    description="Join VAI to upvote comments and help surface the best discussions in the community"
+                  >
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="p-1 h-auto hover:bg-muted flex items-center space-x-1"
+                      onMouseEnter={() =>
+                        upvoteIconRef.current?.startAnimation()
+                      }
+                      onMouseLeave={() =>
+                        upvoteIconRef.current?.stopAnimation()
+                      }
+                    >
+                      <ArrowBigUpIcon
+                        ref={upvoteIconRef}
+                        size={14}
+                        className="text-muted-foreground hover:text-orange-500"
+                      />
+                      <span className="text-xs font-medium text-foreground">
+                        {optimisticNetVotes}
+                      </span>
+                    </Button>
+                  </MembershipCTAModal>
+                </Unauthenticated>
+              </div>
             </div>
           </div>
         </div>
