@@ -948,6 +948,45 @@ export const getMemberBySlug = query({
   },
 });
 
+/**
+ * Get recently online members (active within the last 5 minutes)
+ * Used for real-time online users display
+ */
+export const getOnlineMembers = query({
+  args: {},
+  returns: v.array(v.object({
+    _id: v.id("members"),
+    firstName: v.string(),
+    lastName: v.string(),
+    avatarUrl: v.optional(v.string()),
+    fullName: v.string(),
+    initials: v.string(),
+    slug: v.string(),
+  })),
+  handler: async (ctx) => {
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    
+    const onlineMembers = await ctx.db
+      .query("members")
+      .withIndex("by_lastOnline", (q) => 
+        q.gt("lastOnline", fiveMinutesAgo)
+      )
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .order("desc")
+      .take(10); // Limit to prevent overcrowding
+
+    return onlineMembers.map(member => ({
+      _id: member._id,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      avatarUrl: member.avatarUrl,
+      fullName: `${member.firstName} ${member.lastName}`,
+      initials: `${member.firstName[0]}${member.lastName[0]}`.toUpperCase(),
+      slug: member.slug,
+    }));
+  },
+});
+
 // Helper function to calculate time ago
 function getTimeAgo(timestamp: number): string {
   const now = Date.now();
