@@ -27,9 +27,11 @@ import type * as migrations_add_post_media_fields from "../migrations/add_post_m
 import type * as migrations_fix_member_status from "../migrations/fix_member_status.js";
 import type * as postVersions from "../postVersions.js";
 import type * as posts from "../posts.js";
+import type * as resources from "../resources.js";
 import type * as search from "../search.js";
 import type * as stats from "../stats.js";
 import type * as storage from "../storage.js";
+import type * as topics from "../topics.js";
 import type * as votes from "../votes.js";
 
 /**
@@ -55,9 +57,11 @@ declare const fullApi: ApiFromModules<{
   "migrations/fix_member_status": typeof migrations_fix_member_status;
   postVersions: typeof postVersions;
   posts: typeof posts;
+  resources: typeof resources;
   search: typeof search;
   stats: typeof stats;
   storage: typeof storage;
+  topics: typeof topics;
   votes: typeof votes;
 }>;
 export declare const api: FilterApi<
