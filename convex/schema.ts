@@ -29,7 +29,8 @@ export const VoteTypeValidator = v.union(
 
 export const TargetTypeValidator = v.union(
   v.literal("post"),
-  v.literal("comment")
+  v.literal("comment"),
+  v.literal("resource")
 );
 
 export const CategoryStatusValidator = v.union(
