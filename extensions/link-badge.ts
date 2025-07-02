@@ -5,7 +5,7 @@ export interface LinkBadgeOptions {
   HTMLAttributes: Record<string, unknown>;
   openOnClick: boolean;
   validate?: (url: string) => boolean;
-  fetchPreview?: (url: string) => Promise<void>;
+  fetchPreview?: (url: string) => Promise<any>;
 }
 
 declare module '@tiptap/core' {
@@ -63,11 +63,10 @@ export const LinkBadge = Mark.create<LinkBadgeOptions>({
                 const hasLinkBadge = marks.some(mark => mark.type.name === 'linkBadge');
                 
                 if (!hasLinkBadge && this.options.validate?.(url) !== false) {
+                  this.options.fetchPreview?.(url).catch(console.error);
+                  
                   tr.addMark(start, end, this.type.create({ href: url }));
                   modified = true;
-                  
-                  // Optionally fetch preview data
-                  this.options.fetchPreview?.(url).catch(console.error);
                 }
               }
               
@@ -89,7 +88,6 @@ export const LinkBadge = Mark.create<LinkBadgeOptions>({
                   tr.addMark(start, start + linkText.length, this.type.create({ href: url }));
                   modified = true;
                   
-                  // Optionally fetch preview data
                   this.options.fetchPreview?.(url).catch(console.error);
                 }
               }
@@ -193,4 +191,4 @@ export const LinkBadge = Mark.create<LinkBadgeOptions>({
       },
     };
   },
-}); 
+});    

@@ -1,10 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  ArrowUp,
-  ArrowDown,
-  MessageSquare,
-  Share,
+  Bookmark,
   Flag,
   MoreHorizontal,
   Play,
@@ -14,6 +11,9 @@ import {
   History,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
+import { MessageSquareIcon } from "@/components/ui/message-square";
+import { RabbitIcon } from "@/components/ui/rabbit";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -24,11 +24,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Id } from "@/convex/_generated/dataModel";
 import { useRef, useState } from "react";
-import { useQuery } from "convex/react";
+import React from "react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { getMediaPlaceholder } from "@/lib/post-preview-utils";
 import { RenderTipTapContent } from "@/lib/render-post-content";
 import { memberProfileUrl } from "@/lib/utils";
+import { useMutationError } from "@/hooks/use-mutation-error";
+import { Authenticated, Unauthenticated } from "convex/react";
+import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { BookmarkButton } from "@/components/bookmark-button";
 
 interface Post {
@@ -95,17 +99,45 @@ export default function PostDetail({
   onViewHistory,
 }: PostDetailProps) {
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
+  const [isVoting, setIsVoting] = useState(false);
+
+  const [optimisticNetVotes, setOptimisticNetVotes] = useState(post.netVotes);
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
+    null,
+  );
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const postType = post.type || "text";
 
-  // Get current user to check if they can edit/delete this post
+  // Refs for animated icons
+  const upvoteIconRef = React.useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+  const commentIconRef = React.useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+  const shareIconRef = React.useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
+
   const currentMember = useQuery(api.members.getCurrentMember);
 
-  // Check if current user is the member who created this post
+  const voteOnPost = useMutation(api.votes.voteOnPost);
+  const userVote = useQuery(api.votes.getUserVote, {
+    targetId: post._id,
+    targetType: "post",
+  });
+  const { handleMutationError } = useMutationError();
+
+  const currentUserVote =
+    optimisticUserVote !== null ? optimisticUserVote : userVote;
+
   const isMemberPost =
     currentMember && post.member && currentMember._id === post.member?._id;
 
-  // Debug logging
   console.log("Debug member check:", {
     currentMember: currentMember
       ? { _id: currentMember._id, email: currentMember.email }
@@ -115,6 +147,46 @@ export default function PostDetail({
       : null,
     isMemberPost,
   });
+
+  const handleUpvote = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (isVoting) return;
+    setIsVoting(true);
+
+    const voteType = currentUserVote === "upvote" ? "remove" : "upvote";
+
+    let newNetVotes = optimisticNetVotes;
+    let newUserVote: string | null = null;
+
+    if (voteType === "upvote") {
+      newNetVotes = optimisticNetVotes + (currentUserVote === null ? 1 : 1);
+      newUserVote = "upvote";
+    } else {
+      newNetVotes = optimisticNetVotes - 1;
+      newUserVote = null;
+    }
+
+    setOptimisticNetVotes(newNetVotes);
+    setOptimisticUserVote(newUserVote);
+
+    try {
+      const result = await voteOnPost({
+        postId: post._id,
+        voteType,
+      });
+
+      setOptimisticNetVotes(result.netVotes);
+      setOptimisticUserVote(result.newVoteType);
+    } catch (error) {
+      setOptimisticNetVotes(post.netVotes);
+      setOptimisticUserVote(userVote || null);
+      handleMutationError(error, () => handleUpvote(e), {
+        context: "voting on post",
+      });
+    } finally {
+      setIsVoting(false);
+    }
+  };
 
   const handleVideoPlay = () => {
     if (videoRef.current) {
@@ -131,25 +203,52 @@ export default function PostDetail({
       {/* Main Post */}
       <div className="bg-card border border-border rounded-lg">
         <div className="flex">
-          {/* Voting */}
+          {/* Voting panel back on the left */}
           <div className="flex flex-col items-center p-4 space-y-1 bg-muted/50 rounded-l-lg">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-1 h-auto hover:bg-muted"
-            >
-              <ArrowUp className="w-6 h-6 text-muted-foreground hover:text-primary" />
-            </Button>
+            <Authenticated>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="p-1 h-auto hover:bg-muted"
+                onClick={handleUpvote}
+                disabled={isVoting}
+                onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+                onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
+              >
+                <ArrowBigUpIcon
+                  ref={upvoteIconRef}
+                  size={24}
+                  className={`transition-colors ${
+                    currentUserVote === "upvote"
+                      ? "text-orange-500"
+                      : "text-muted-foreground hover:text-orange-500"
+                  }`}
+                />
+              </Button>
+            </Authenticated>
+            <Unauthenticated>
+              <MembershipCTAModal
+                title="Upvote Great Content"
+                description="Join VAI to upvote posts and help surface the best content in the community"
+              >
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-1 h-auto hover:bg-muted"
+                  onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+                  onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
+                >
+                  <ArrowBigUpIcon
+                    ref={upvoteIconRef}
+                    size={24}
+                    className="text-muted-foreground hover:text-orange-500"
+                  />
+                </Button>
+              </MembershipCTAModal>
+            </Unauthenticated>
             <span className="text-lg font-bold text-foreground">
-              {post.netVotes}
+              {optimisticNetVotes}
             </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-1 h-auto hover:bg-muted"
-            >
-              <ArrowDown className="w-6 h-6 text-muted-foreground hover:text-destructive" />
-            </Button>
           </div>
 
           {/* Content */}
@@ -270,16 +369,24 @@ export default function PostDetail({
                 variant="ghost"
                 size="sm"
                 className="p-2 h-auto hover:bg-muted"
+                onMouseEnter={() => commentIconRef.current?.startAnimation()}
+                onMouseLeave={() => commentIconRef.current?.stopAnimation()}
               >
-                <MessageSquare className="w-4 h-4 mr-1" />
+                <MessageSquareIcon
+                  ref={commentIconRef}
+                  size={16}
+                  className="mr-1"
+                />
                 {post.commentCount} comments
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 className="p-2 h-auto hover:bg-muted"
+                onMouseEnter={() => shareIconRef.current?.startAnimation()}
+                onMouseLeave={() => shareIconRef.current?.stopAnimation()}
               >
-                <Share className="w-4 h-4 mr-1" />
+                <RabbitIcon ref={shareIconRef} size={16} className="mr-1" />
                 share
               </Button>
               <BookmarkButton

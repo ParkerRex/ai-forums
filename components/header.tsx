@@ -4,9 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Bookmark } from "lucide-react";
 import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
-import { SignUpButton, UserButton, SignInButton } from "@clerk/nextjs";
+import { UserButton, SignUpButton } from "@clerk/nextjs";
+import { AuthButton } from "@/components/auth-button";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import React from "react";
 
 export default function Header() {
@@ -70,10 +70,7 @@ export default function Header() {
               </Link>
             </Authenticated>
             <Unauthenticated>
-              <MembershipCTAModal
-                title="Create Your First Post"
-                description="Join VAI to share your AI workflows, prompts, and insights with the community"
-              >
+              <SignUpButton mode="modal">
                 <Button
                   variant="outline"
                   size="sm"
@@ -81,14 +78,13 @@ export default function Header() {
                   <Plus className="w-4 h-4 mr-2" />
                   create
                 </Button>
-              </MembershipCTAModal>
+              </SignUpButton>
             </Unauthenticated>
             <Authenticated>
               <UserButton />
             </Authenticated>
             <Unauthenticated>
-              <SignUpButton />
-              <SignInButton />
+              <AuthButton />
             </Unauthenticated>
           </div>
         </div>
