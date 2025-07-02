@@ -33,6 +33,7 @@ import { memberProfileUrl } from "@/lib/utils";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
+import { BookmarkButton } from "@/components/bookmark-button";
 
 interface Post {
   _id: Id<"posts">;
@@ -388,14 +389,11 @@ export default function PostDetail({
                 <RabbitIcon ref={shareIconRef} size={16} className="mr-1" />
                 share
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="p-2 h-auto hover:bg-muted"
-              >
-                <Bookmark className="w-4 h-4 mr-1" />
-                save
-              </Button>
+              <BookmarkButton
+                targetId={post._id}
+                targetType="post"
+                showCount={true}
+              />
               <Button
                 variant="ghost"
                 size="sm"

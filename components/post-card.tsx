@@ -12,6 +12,7 @@ import { useState, useRef } from "react";
 import PostPreview from "@/components/post-preview";
 import { PostData } from "@/lib/post-preview-utils";
 import { useMutationError } from "@/hooks/use-mutation-error";
+import { BookmarkButton } from "@/components/bookmark-button";
 
 // Interface to match Convex post data structure
 interface Post extends Omit<PostData, "member" | "author" | "category"> {
@@ -239,6 +240,7 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
+          <BookmarkButton targetId={post._id} targetType="post" size="sm" />
 
           <Button
             variant="ghost"

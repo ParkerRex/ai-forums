@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus } from "lucide-react";
+import { Search, Plus, Bookmark } from "lucide-react";
 import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
 import { UserButton, SignUpButton } from "@clerk/nextjs";
 import { AuthButton } from "@/components/auth-button";
@@ -48,6 +48,17 @@ export default function Header() {
               </Link>
             </Button>
             <Authenticated>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="px-2 text-muted-foreground hover:text-foreground"
+                asChild
+              >
+                <Link href="/bookmarks" className="flex items-center gap-1">
+                  <Bookmark size={18} />
+                  <span>bookmarks</span>
+                </Link>
+              </Button>
               <Link href="/create">
                 <Button
                   variant="outline"
