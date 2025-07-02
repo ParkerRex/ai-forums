@@ -7,6 +7,9 @@ export interface PostData {
   type?: "text" | "image" | "video" | "link";
   mediaUrl?: string;
   thumbnailUrl?: string;
+  aspectRatio?: number;
+  mediaWidth?: number;
+  mediaHeight?: number;
   linkUrl?: string;
   linkTitle?: string;
   linkDescription?: string;
@@ -273,4 +276,20 @@ export function getMediaPlaceholder(): string {
   // Return a base64 encoded 1x1 pixel placeholder
   // In production, this would return a properly sized blurred placeholder
   return "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7";
-}  
+}
+
+export function extractYouTubeVideoId(url: string): string | null {
+  try {
+    const urlObj = new URL(url);
+    
+    if (urlObj.hostname.includes('youtu.be')) {
+      return urlObj.pathname.slice(1);
+    } else if (urlObj.hostname.includes('youtube.com') && urlObj.searchParams.has('v')) {
+      return urlObj.searchParams.get('v');
+    }
+    
+    return null;
+  } catch {
+    return null;
+  }
+}          

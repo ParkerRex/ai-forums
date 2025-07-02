@@ -228,6 +228,9 @@ export const createPost = mutation({
     type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
     linkUrl: v.optional(v.string()),
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
@@ -292,6 +295,9 @@ export const createPost = mutation({
       type: postType,
       mediaUrl: args.mediaUrl,
       thumbnailUrl: args.thumbnailUrl,
+      aspectRatio: args.aspectRatio,
+      mediaWidth: args.mediaWidth,
+      mediaHeight: args.mediaHeight,
       linkUrl: args.linkUrl,
       linkTitle: args.linkTitle,
       linkDescription: args.linkDescription,
@@ -318,6 +324,9 @@ export const updatePost = mutation({
     type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
     linkUrl: v.optional(v.string()),
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
@@ -360,6 +369,9 @@ export const updatePost = mutation({
       type?: "text" | "image" | "video" | "link";
       mediaUrl?: string;
       thumbnailUrl?: string;
+      aspectRatio?: number;
+      mediaWidth?: number;
+      mediaHeight?: number;
       linkUrl?: string;
       linkTitle?: string;
       linkDescription?: string;
@@ -403,6 +415,15 @@ export const updatePost = mutation({
     if (args.thumbnailUrl !== undefined) {
       updates.thumbnailUrl = args.thumbnailUrl;
     }
+    if (args.aspectRatio !== undefined) {
+      updates.aspectRatio = args.aspectRatio;
+    }
+    if (args.mediaWidth !== undefined) {
+      updates.mediaWidth = args.mediaWidth;
+    }
+    if (args.mediaHeight !== undefined) {
+      updates.mediaHeight = args.mediaHeight;
+    }
     if (args.linkUrl !== undefined) {
       updates.linkUrl = args.linkUrl;
     }
@@ -432,6 +453,9 @@ export const editPost = mutation({
     type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
     linkUrl: v.optional(v.string()),
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
@@ -484,6 +508,9 @@ export const editPost = mutation({
       type: post.type,
       mediaUrl: post.mediaUrl,
       thumbnailUrl: post.thumbnailUrl,
+      aspectRatio: post.aspectRatio,
+      mediaWidth: post.mediaWidth,
+      mediaHeight: post.mediaHeight,
       linkUrl: post.linkUrl,
       linkTitle: post.linkTitle,
       linkDescription: post.linkDescription,
@@ -501,6 +528,9 @@ export const editPost = mutation({
       type?: "text" | "image" | "video" | "link";
       mediaUrl?: string;
       thumbnailUrl?: string;
+      aspectRatio?: number;
+      mediaWidth?: number;
+      mediaHeight?: number;
       linkUrl?: string;
       linkTitle?: string;
       linkDescription?: string;
@@ -544,6 +574,15 @@ export const editPost = mutation({
     }
     if (args.thumbnailUrl !== undefined) {
       updates.thumbnailUrl = args.thumbnailUrl;
+    }
+    if (args.aspectRatio !== undefined) {
+      updates.aspectRatio = args.aspectRatio;
+    }
+    if (args.mediaWidth !== undefined) {
+      updates.mediaWidth = args.mediaWidth;
+    }
+    if (args.mediaHeight !== undefined) {
+      updates.mediaHeight = args.mediaHeight;
     }
     if (args.linkUrl !== undefined) {
       updates.linkUrl = args.linkUrl;
@@ -879,4 +918,4 @@ export const addSlugsToExistingPosts = mutation({
     console.log("Slug generation migration completed successfully!");
     return { processed: posts.length };
   },
-});    
+});                
