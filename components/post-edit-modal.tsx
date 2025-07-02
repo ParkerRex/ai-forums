@@ -26,7 +26,7 @@ interface Post {
   content: string;
   slug: string;
   categoryId: Id<"categories">;
-  type?: "text" | "image" | "video" | "link";
+  type?: "text" | "image" | "video" | "link" | "poll";
   mediaUrl?: string;
   thumbnailUrl?: string;
   linkUrl?: string;

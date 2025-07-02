@@ -39,15 +39,17 @@ interface EnhancedCommentInputProps {
   onSubmit: (content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>, mentions?: Id<"members">[]) => void;
   isSubmitting: boolean;
   className?: string;
+  initialValue?: string;
 }
 
 export function EnhancedCommentInput({
   placeholder,
   onSubmit,
   isSubmitting,
-  className = ""
+  className = "",
+  initialValue = ""
 }: EnhancedCommentInputProps) {
-  const [content, setContent] = useState("");
+  const [content, setContent] = useState(initialValue);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
   const [gifAttachments, setGifAttachments] = useState<AttachmentType[]>([]);

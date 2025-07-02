@@ -216,7 +216,7 @@ export const createComment = mutation({
   },
 });
 
-// Update comment (edit)
+// Update comment (edit) with history tracking
 export const updateComment = mutation({
   args: {
     commentId: v.id("comments"),
@@ -238,23 +238,63 @@ export const updateComment = mutation({
     }
 
     const now = Date.now();
-    const updates: {
-      content: string;
-      updatedAt: number;
-      editedAt: number;
-      editReason?: string;
-    } = {
+    
+    // Create edit history entry
+    const editHistory = comment.editHistory || [];
+    editHistory.push({
+      content: comment.content, // Save the previous content
+      editedAt: comment.editedAt || comment.createdAt, // Use previous edit time or creation time
+    });
+
+    await ctx.db.patch(commentId, {
       content: content.trim(),
       updatedAt: now,
       editedAt: now,
-    };
+      editReason: editReason?.trim(),
+      editHistory,
+    });
+    
+    return commentId;
+  },
+});
 
-    if (editReason !== undefined) {
-      updates.editReason = editReason.trim();
+// Edit comment (new name to match the API)
+export const editComment = mutation({
+  args: {
+    commentId: v.id("comments"),
+    content: v.string(),
+  },
+  handler: async (ctx, args) => {
+    // Get authenticated member using unified helper
+    const member = await getAuthenticatedMember(ctx);
+
+    const comment = await ctx.db.get(args.commentId);
+    if (!comment) {
+      throw new Error("Comment not found");
     }
 
-    await ctx.db.patch(commentId, updates);
-    return commentId;
+    // Check if user is the author
+    if (!isCommentAuthor(comment, member._id)) {
+      throw new Error("Only the author can edit this comment");
+    }
+
+    const now = Date.now();
+    
+    // Create edit history entry
+    const editHistory = comment.editHistory || [];
+    editHistory.push({
+      content: comment.content, // Save the previous content
+      editedAt: comment.editedAt || comment.createdAt, // Use previous edit time or creation time
+    });
+
+    await ctx.db.patch(args.commentId, {
+      content: args.content.trim(),
+      updatedAt: now,
+      editedAt: now,
+      editHistory,
+    });
+    
+    return args.commentId;
   },
 });
 
@@ -352,4 +392,56 @@ export const getCommentCount = query({
 
     return comments.length;
   },
-});        
+});
+
+// Report a comment
+export const reportComment = mutation({
+  args: {
+    commentId: v.id("comments"),
+    reason: v.union(
+      v.literal("spam"),
+      v.literal("inappropriate"),
+      v.literal("harassment"),
+      v.literal("other")
+    ),
+    reasonText: v.optional(v.string()),
+  },
+  handler: async (ctx, { commentId, reason, reasonText }) => {
+    // Get authenticated member
+    const member = await getAuthenticatedMember(ctx);
+
+    // Verify comment exists
+    const comment = await ctx.db.get(commentId);
+    if (!comment || comment.status !== "active") {
+      throw new Error("Comment not found or already removed");
+    }
+
+    // Check if user already reported this comment
+    const existingReport = await ctx.db
+      .query("commentReports")
+      .withIndex("by_reporter_and_comment", (q) =>
+        q.eq("reporterId", member._id).eq("commentId", commentId)
+      )
+      .filter((q) => q.neq(q.field("status"), "dismissed"))
+      .first();
+
+    if (existingReport) {
+      throw new Error("You have already reported this comment");
+    }
+
+    // Create the report
+    const reportId = await ctx.db.insert("commentReports", {
+      commentId,
+      reporterId: member._id,
+      reason,
+      reasonText: reason === "other" && reasonText ? reasonText.trim() : undefined,
+      status: "pending",
+      createdAt: Date.now(),
+    });
+
+    // TODO: Send notification to admins
+    // This will be implemented when the notification system is added
+
+    return reportId;
+  },
+});

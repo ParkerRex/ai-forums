@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
 import type * as bookmarks from "../bookmarks.js";
 import type * as categories from "../categories.js";
@@ -25,12 +26,16 @@ import type * as members from "../members.js";
 import type * as migrations_add_member_slug from "../migrations/add_member_slug.js";
 import type * as migrations_add_post_media_fields from "../migrations/add_post_media_fields.js";
 import type * as migrations_fix_member_status from "../migrations/fix_member_status.js";
+import type * as migrations_migrate_post_attachments from "../migrations/migrate_post_attachments.js";
 import type * as notifications from "../notifications.js";
+import type * as polls from "../polls.js";
 import type * as postVersions from "../postVersions.js";
 import type * as posts from "../posts.js";
+import type * as resources from "../resources.js";
 import type * as search from "../search.js";
 import type * as stats from "../stats.js";
 import type * as storage from "../storage.js";
+import type * as topics from "../topics.js";
 import type * as votes from "../votes.js";
 
 /**
@@ -42,6 +47,7 @@ import type * as votes from "../votes.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  admin: typeof admin;
   auth: typeof auth;
   bookmarks: typeof bookmarks;
   categories: typeof categories;
@@ -54,12 +60,16 @@ declare const fullApi: ApiFromModules<{
   "migrations/add_member_slug": typeof migrations_add_member_slug;
   "migrations/add_post_media_fields": typeof migrations_add_post_media_fields;
   "migrations/fix_member_status": typeof migrations_fix_member_status;
+  "migrations/migrate_post_attachments": typeof migrations_migrate_post_attachments;
   notifications: typeof notifications;
+  polls: typeof polls;
   postVersions: typeof postVersions;
   posts: typeof posts;
+  resources: typeof resources;
   search: typeof search;
   stats: typeof stats;
   storage: typeof storage;
+  topics: typeof topics;
   votes: typeof votes;
 }>;
 export declare const api: FilterApi<

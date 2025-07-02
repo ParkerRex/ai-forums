@@ -7,7 +7,7 @@ import { getAuthenticatedMember } from "./auth";
 export const getUserVote = query({
   args: {
     targetId: v.string(),
-    targetType: v.union(v.literal("post"), v.literal("comment")),
+    targetType: v.union(v.literal("post"), v.literal("comment"), v.literal("resource")),
   },
   handler: async (ctx, { targetId, targetType }) => {
     // Optional auth - return null if not authenticated
@@ -35,7 +35,7 @@ export const getUserVote = query({
 export const getVoteCounts = query({
   args: {
     targetId: v.string(),
-    targetType: v.union(v.literal("post"), v.literal("comment")),
+    targetType: v.union(v.literal("post"), v.literal("comment"), v.literal("resource")),
   },
   handler: async (ctx, { targetId, targetType }) => {
     const votes = await ctx.db
@@ -266,4 +266,140 @@ export const getUserVotingActivity = query({
 
     return enrichedVotes.filter(vote => vote.target !== null);
   },
-}); 
+});
+
+export const getPostVoters = query({
+  args: {
+    postId: v.id("posts"),
+    limit: v.optional(v.number()),
+  },
+  returns: v.object({
+    voters: v.array(v.object({
+      _id: v.id("members"),
+      firstName: v.string(),
+      lastName: v.string(),
+      avatarUrl: v.optional(v.string()),
+      slug: v.string(),
+    })),
+    hasMore: v.boolean(),
+    total: v.number(),
+  }),
+  handler: async (ctx, { postId, limit = 10 }) => {
+    // Fetch the post first so we can use the authoritative upvote count
+    const post = await ctx.db.get(postId);
+
+    const votes = await ctx.db
+      .query("votes")
+      .withIndex("by_target_and_type", (q) =>
+        q.eq("targetId", postId).eq("targetType", "post")
+      )
+      .filter((q) => q.eq(q.field("voteType"), "upvote"))
+      .order("desc")
+      .take(limit + 1);
+    
+    const hasMore = votes.length > limit;
+    const voters = await Promise.all(
+      votes.slice(0, limit).map(async (vote) => {
+        const member = await ctx.db.get(vote.userId);
+        return member ? {
+          _id: member._id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          avatarUrl: member.avatarUrl,
+          slug: member.slug,
+        } : null;
+      })
+    );
+    
+    const validVoters = voters.filter((voter): voter is NonNullable<typeof voter> => voter !== null);
+    
+    // Use the post's upvotes field as the total count if available, otherwise fall back to the fetched length.
+    const totalUpvotes = post?.upvotes ?? votes.length;
+    
+    return {
+      voters: validVoters,
+      hasMore,
+      total: totalUpvotes,
+    };
+  },
+});
+
+export const voteOnResource = mutation({
+  args: {
+    resourceId: v.id("resources"),
+    voteType: v.union(v.literal("upvote"), v.literal("remove")),
+  },
+  returns: v.object({
+    success: v.boolean(),
+    newVoteType: v.union(v.string(), v.null()),
+    upvotes: v.number(),
+    netVotes: v.number(),
+  }),
+  handler: async (ctx, { resourceId, voteType }) => {
+    const member = await getAuthenticatedMember(ctx);
+
+    const resource = await ctx.db.get(resourceId);
+    if (!resource || resource.status !== "active") {
+      throw new Error("Resource not found or inactive");
+    }
+
+    const targetId = resourceId;
+
+    const existingVote = await ctx.db
+      .query("votes")
+      .withIndex("by_user_and_target", (q) =>
+        q.eq("userId", member._id)
+          .eq("targetId", targetId)
+          .eq("targetType", "resource")
+      )
+      .first();
+
+    const now = Date.now();
+    let upvoteDelta = 0;
+
+    if (voteType === "remove") {
+      if (existingVote) {
+        await ctx.db.delete(existingVote._id);
+        upvoteDelta = existingVote.voteType === "upvote" ? -1 : 0;
+      }
+    } else {
+      if (existingVote) {
+        if (existingVote.voteType !== voteType) {
+          await ctx.db.patch(existingVote._id, {
+            voteType,
+            updatedAt: now,
+          });
+          upvoteDelta = voteType === "upvote" ? 1 : -1;
+        }
+      } else {
+        await ctx.db.insert("votes", {
+          userId: member._id,
+          targetId,
+          targetType: "resource",
+          voteType,
+          createdAt: now,
+          updatedAt: now,
+        });
+        upvoteDelta = voteType === "upvote" ? 1 : 0;
+      }
+    }
+
+    if (upvoteDelta !== 0) {
+      const newUpvotes = Math.max(0, (resource.upvotes || 0) + upvoteDelta);
+      const newNetVotes = newUpvotes - (resource.downvotes || 0);
+
+      await ctx.db.patch(resourceId, {
+        upvotes: newUpvotes,
+        netVotes: newNetVotes,
+        updatedAt: now,
+      });
+    }
+
+    return {
+      success: true,
+      newVoteType: voteType === "remove" ? null : voteType,
+      upvotes: Math.max(0, (resource.upvotes || 0) + upvoteDelta),
+      netVotes: Math.max(0, (resource.upvotes || 0) + upvoteDelta) - (resource.downvotes || 0),
+    };
+  },
+});   

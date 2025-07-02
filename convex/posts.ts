@@ -228,11 +228,38 @@ export const createPost = mutation({
     type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
     linkUrl: v.optional(v.string()),
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
     mentions: v.optional(v.array(v.id("members"))),
+    // Multi-attachment support
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      type: v.union(v.literal("image"), v.literal("video"), v.literal("pdf"), v.literal("youtube")),
+      url: v.string(),
+      thumbnailUrl: v.optional(v.string()),
+      width: v.optional(v.number()),
+      height: v.optional(v.number()),
+      aspectRatio: v.optional(v.number()),
+      order: v.number(),
+      // PDF specific
+      pageCount: v.optional(v.number()),
+      fileSize: v.optional(v.number()),
+      // YouTube specific
+      videoId: v.optional(v.string()),
+      title: v.optional(v.string()),
+      duration: v.optional(v.string()),
+      channelName: v.optional(v.string()),
+      // Video specific
+      videoDuration: v.optional(v.string()),
+      format: v.optional(v.string()),
+      resolution: v.optional(v.string()),
+      codec: v.optional(v.string()),
+    }))),
   },
   handler: async (ctx, args) => {
     // Get authenticated member using unified helper
@@ -247,12 +274,41 @@ export const createPost = mutation({
     // Validate URLs in content for security
     validateContentUrls(args.content);
 
+    // Process attachments and determine legacy fields from first attachment
+    let resolvedType = args.type || "text";
+    let resolvedMediaUrl = args.mediaUrl;
+    let resolvedThumbnailUrl = args.thumbnailUrl;
+    let resolvedAspectRatio = args.aspectRatio;
+    let resolvedMediaWidth = args.mediaWidth;
+    let resolvedMediaHeight = args.mediaHeight;
+
+    if (args.attachments && args.attachments.length > 0) {
+      // Set legacy fields from first attachment for backward compatibility
+      const firstAttachment = args.attachments[0];
+      
+      // Map attachment type to post type
+      if (firstAttachment.type === "image") {
+        resolvedType = "image";
+      } else if (firstAttachment.type === "video") {
+        resolvedType = "video";
+      } else if (firstAttachment.type === "youtube") {
+        resolvedType = "video"; // YouTube embeds are treated as video posts
+      }
+      // PDF doesn't map to a specific post type, keep as is
+      
+      resolvedMediaUrl = resolvedMediaUrl || firstAttachment.url;
+      resolvedThumbnailUrl = resolvedThumbnailUrl || firstAttachment.thumbnailUrl;
+      resolvedAspectRatio = resolvedAspectRatio || firstAttachment.aspectRatio;
+      resolvedMediaWidth = resolvedMediaWidth || firstAttachment.width;
+      resolvedMediaHeight = resolvedMediaHeight || firstAttachment.height;
+    }
+
     // Validate type-specific requirements
-    const postType = args.type || "text";
-    if (postType === "image" && !args.mediaUrl) {
+    const postType = resolvedType;
+    if (postType === "image" && !resolvedMediaUrl) {
       throw new Error("Image posts require a media URL");
     }
-    if (postType === "video" && !args.mediaUrl) {
+    if (postType === "video" && !resolvedMediaUrl) {
       throw new Error("Video posts require a media URL");
     }
     if (postType === "link" && !args.linkUrl) {
@@ -290,14 +346,19 @@ export const createPost = mutation({
       isPinned: false,
       isLocked: false,
       // New media/link fields
-      type: postType,
-      mediaUrl: args.mediaUrl,
-      thumbnailUrl: args.thumbnailUrl,
+      type: resolvedType,
+      mediaUrl: resolvedMediaUrl,
+      thumbnailUrl: resolvedThumbnailUrl,
+      aspectRatio: resolvedAspectRatio,
+      mediaWidth: resolvedMediaWidth,
+      mediaHeight: resolvedMediaHeight,
       linkUrl: args.linkUrl,
       linkTitle: args.linkTitle,
       linkDescription: args.linkDescription,
       linkImage: args.linkImage,
       mentions: args.mentions,
+      // Multi-attachment support
+      attachments: args.attachments,
     });
 
     // Update category post count
@@ -306,7 +367,7 @@ export const createPost = mutation({
       updatedAt: now,
     });
 
-    return postId;
+    return { postId, slug };
   },
 });
 
@@ -320,6 +381,9 @@ export const updatePost = mutation({
     type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
     linkUrl: v.optional(v.string()),
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
@@ -359,9 +423,12 @@ export const updatePost = mutation({
       content?: string;
       slug?: string;
       editReason?: string;
-      type?: "text" | "image" | "video" | "link";
+      type?: "text" | "image" | "video" | "link" | "poll";
       mediaUrl?: string;
       thumbnailUrl?: string;
+      aspectRatio?: number;
+      mediaWidth?: number;
+      mediaHeight?: number;
       linkUrl?: string;
       linkTitle?: string;
       linkDescription?: string;
@@ -404,6 +471,15 @@ export const updatePost = mutation({
     }
     if (args.thumbnailUrl !== undefined) {
       updates.thumbnailUrl = args.thumbnailUrl;
+    }
+    if (args.aspectRatio !== undefined) {
+      updates.aspectRatio = args.aspectRatio;
+    }
+    if (args.mediaWidth !== undefined) {
+      updates.mediaWidth = args.mediaWidth;
+    }
+    if (args.mediaHeight !== undefined) {
+      updates.mediaHeight = args.mediaHeight;
     }
     if (args.linkUrl !== undefined) {
       updates.linkUrl = args.linkUrl;
@@ -434,10 +510,37 @@ export const editPost = mutation({
     type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
     linkUrl: v.optional(v.string()),
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
+    // Multi-attachment support
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      type: v.union(v.literal("image"), v.literal("video"), v.literal("pdf"), v.literal("youtube")),
+      url: v.string(),
+      thumbnailUrl: v.optional(v.string()),
+      width: v.optional(v.number()),
+      height: v.optional(v.number()),
+      aspectRatio: v.optional(v.number()),
+      order: v.number(),
+      // PDF specific
+      pageCount: v.optional(v.number()),
+      fileSize: v.optional(v.number()),
+      // YouTube specific
+      videoId: v.optional(v.string()),
+      title: v.optional(v.string()),
+      duration: v.optional(v.string()),
+      channelName: v.optional(v.string()),
+      // Video specific
+      videoDuration: v.optional(v.string()),
+      format: v.optional(v.string()),
+      resolution: v.optional(v.string()),
+      codec: v.optional(v.string()),
+    }))),
   },
   handler: async (ctx, args) => {
     // Get authenticated member using unified helper
@@ -453,12 +556,42 @@ export const editPost = mutation({
       throw new Error("Only the author can edit this post");
     }
 
+    // Process attachments and determine legacy fields from first attachment
+    let resolvedType = args.type ?? post.type ?? "text";
+    let resolvedMediaUrl = args.mediaUrl;
+    let resolvedThumbnailUrl = args.thumbnailUrl;
+    let resolvedAspectRatio = args.aspectRatio;
+    let resolvedMediaWidth = args.mediaWidth;
+    let resolvedMediaHeight = args.mediaHeight;
+
+    if (args.attachments && args.attachments.length > 0) {
+      // Set legacy fields from first attachment for backward compatibility
+      const firstAttachment = args.attachments[0];
+      
+      // Map attachment type to post type
+      if (firstAttachment.type === "image") {
+        resolvedType = "image";
+      } else if (firstAttachment.type === "video") {
+        resolvedType = "video";
+      } else if (firstAttachment.type === "youtube") {
+        resolvedType = "video"; // YouTube embeds are treated as video posts
+      }
+      // PDF doesn't map to a specific post type, keep as is
+      
+      // Only override if not explicitly provided
+      resolvedMediaUrl = args.mediaUrl !== undefined ? args.mediaUrl : firstAttachment.url;
+      resolvedThumbnailUrl = args.thumbnailUrl !== undefined ? args.thumbnailUrl : firstAttachment.thumbnailUrl;
+      resolvedAspectRatio = args.aspectRatio !== undefined ? args.aspectRatio : firstAttachment.aspectRatio;
+      resolvedMediaWidth = args.mediaWidth !== undefined ? args.mediaWidth : firstAttachment.width;
+      resolvedMediaHeight = args.mediaHeight !== undefined ? args.mediaHeight : firstAttachment.height;
+    }
+
     // Validate type-specific requirements
-    const postType = args.type || post.type || "text";
-    if (postType === "image" && args.mediaUrl === "") {
+    const postType = resolvedType;
+    if (postType === "image" && resolvedMediaUrl === "") {
       throw new Error("Image posts require a media URL");
     }
-    if (postType === "video" && args.mediaUrl === "") {
+    if (postType === "video" && resolvedMediaUrl === "") {
       throw new Error("Video posts require a media URL");
     }
     if (postType === "link" && args.linkUrl === "") {
@@ -486,10 +619,15 @@ export const editPost = mutation({
       type: post.type,
       mediaUrl: post.mediaUrl,
       thumbnailUrl: post.thumbnailUrl,
+      aspectRatio: post.aspectRatio,
+      mediaWidth: post.mediaWidth,
+      mediaHeight: post.mediaHeight,
       linkUrl: post.linkUrl,
       linkTitle: post.linkTitle,
       linkDescription: post.linkDescription,
       linkImage: post.linkImage,
+      // Preserve attachments
+      attachments: post.attachments,
     });
 
     const now = Date.now();
@@ -500,14 +638,37 @@ export const editPost = mutation({
       content?: string;
       slug?: string;
       editReason?: string;
-      type?: "text" | "image" | "video" | "link";
+      type?: "text" | "image" | "video" | "link" | "poll";
       mediaUrl?: string;
       thumbnailUrl?: string;
+      aspectRatio?: number;
+      mediaWidth?: number;
+      mediaHeight?: number;
       linkUrl?: string;
       linkTitle?: string;
       linkDescription?: string;
       linkImage?: string;
       categoryId?: Id<"categories">;
+      attachments?: Array<{
+        id: string;
+        type: "image" | "video" | "pdf" | "youtube";
+        url: string;
+        thumbnailUrl?: string;
+        width?: number;
+        height?: number;
+        aspectRatio?: number;
+        order: number;
+        pageCount?: number;
+        fileSize?: number;
+        videoId?: string;
+        title?: string;
+        duration?: string;
+        channelName?: string;
+        videoDuration?: string;
+        format?: string;
+        resolution?: string;
+        codec?: string;
+      }>;
     } = {
       updatedAt: now,
       editedAt: now,
@@ -538,14 +699,23 @@ export const editPost = mutation({
     }
 
     // Handle media/link field updates
-    if (args.type !== undefined) {
-      updates.type = args.type;
+    if (args.type !== undefined || resolvedType !== post.type) {
+      updates.type = resolvedType;
     }
-    if (args.mediaUrl !== undefined) {
-      updates.mediaUrl = args.mediaUrl;
+    if (args.mediaUrl !== undefined || resolvedMediaUrl !== post.mediaUrl) {
+      updates.mediaUrl = resolvedMediaUrl;
     }
-    if (args.thumbnailUrl !== undefined) {
-      updates.thumbnailUrl = args.thumbnailUrl;
+    if (args.thumbnailUrl !== undefined || resolvedThumbnailUrl !== post.thumbnailUrl) {
+      updates.thumbnailUrl = resolvedThumbnailUrl;
+    }
+    if (args.aspectRatio !== undefined || resolvedAspectRatio !== post.aspectRatio) {
+      updates.aspectRatio = resolvedAspectRatio;
+    }
+    if (args.mediaWidth !== undefined || resolvedMediaWidth !== post.mediaWidth) {
+      updates.mediaWidth = resolvedMediaWidth;
+    }
+    if (args.mediaHeight !== undefined || resolvedMediaHeight !== post.mediaHeight) {
+      updates.mediaHeight = resolvedMediaHeight;
     }
     if (args.linkUrl !== undefined) {
       updates.linkUrl = args.linkUrl;
@@ -558,6 +728,11 @@ export const editPost = mutation({
     }
     if (args.linkImage !== undefined) {
       updates.linkImage = args.linkImage;
+    }
+    
+    // Handle attachments update
+    if (args.attachments !== undefined) {
+      updates.attachments = args.attachments;
     }
 
     // Handle category change
@@ -881,4 +1056,4 @@ export const addSlugsToExistingPosts = mutation({
     console.log("Slug generation migration completed successfully!");
     return { processed: posts.length };
   },
-});        
+});

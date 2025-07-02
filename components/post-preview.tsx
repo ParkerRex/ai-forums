@@ -12,13 +12,15 @@ import {
   getPreviewClasses,
   hasMedia,
   isLinkPost,
+  isPollPost,
   getPostTypeLabel,
   shouldAutoplay,
   getMediaPlaceholder,
+  extractYouTubeVideoId,
   type PostData,
   type PreviewSize
 } from "@/lib/post-preview-utils";
-import { MessageSquare, Eye, ChevronUp, Play, ExternalLink } from "lucide-react";
+import { MessageSquare, Eye, ChevronUp, Play, ExternalLink, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface PostPreviewProps {
@@ -52,7 +54,14 @@ export default function PostPreview({
   const videoRef = useRef<HTMLVideoElement>(null);
 
   const previewAsset = getPostPreviewAsset(post);
-  const previewClasses = getPreviewClasses(size);
+  const assetInfo = post.aspectRatio ? {
+    width: post.mediaWidth,
+    height: post.mediaHeight,
+    naturalWidth: post.mediaWidth,
+    naturalHeight: post.mediaHeight,
+  } : undefined;
+  const previewClasses = getPreviewClasses(size, assetInfo);
+
   const stats = formatPostStats(post);
   const excerpt = getContentExcerpt(post.content, size === "small" ? 80 : 150);
 
@@ -108,8 +117,8 @@ export default function PostPreview({
     >
       <CardContent className="p-0">
         <div className={cn("flex", size === "large" ? "flex-col" : "gap-3 p-3")}>
-          {/* Media/Link Preview */}
-          {(hasMedia(post) || isLinkPost(post)) && (
+          {/* Media/Link/Poll Preview */}
+          {(hasMedia(post) || isLinkPost(post) || isPollPost(post)) && (
             <div className={cn(
               "relative overflow-hidden bg-muted",
               previewClasses.wrapper,
@@ -168,30 +177,74 @@ export default function PostPreview({
 
               {post.type === "link" && (
                 <div className="p-4 bg-muted h-full flex flex-col justify-between">
-                  {previewAsset.thumbnailUrl && size !== "small" && (
-                    <Image
-                      src={previewAsset.thumbnailUrl}
-                      alt={previewAsset.title || ""}
-                      width={200}
-                      height={100}
-                      className="w-full h-24 object-cover rounded mb-2"
-                    />
+                  {post.linkUrl && (post.linkUrl.includes('youtube.com') || post.linkUrl.includes('youtu.be')) ? (
+                    <div className="w-full">
+                      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                        <iframe
+                          src={`https://www.youtube.com/embed/${extractYouTubeVideoId(post.linkUrl)}`}
+                          title={post.linkTitle || 'YouTube video'}
+                          className="absolute inset-0 w-full h-full rounded"
+                          frameBorder="0"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                        />
+                      </div>
+                      {post.linkTitle && (
+                        <h4 className="font-medium text-sm mt-2 line-clamp-2">
+                          {post.linkTitle}
+                        </h4>
+                      )}
+                    </div>
+                  ) : (
+                    <>
+                      {previewAsset.thumbnailUrl && size !== "small" && (
+                        <Image
+                          src={previewAsset.thumbnailUrl}
+                          alt={previewAsset.title || ""}
+                          width={200}
+                          height={100}
+                          className="w-full h-24 object-cover rounded mb-2"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm line-clamp-2">
+                          {previewAsset.title || post.linkUrl}
+                        </h4>
+                        {previewAsset.description && size !== "small" && (
+                          <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
+                            {previewAsset.description}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
+                        <ExternalLink className="h-3 w-3" />
+                        <span className="truncate">
+                          {previewAsset.url && new URL(previewAsset.url).hostname}
+                        </span>
+                      </div>
+                    </>
                   )}
-                  <div className="flex-1">
-                    <h4 className="font-medium text-sm line-clamp-2">
-                      {previewAsset.title || post.linkUrl}
-                    </h4>
-                    {previewAsset.description && size !== "small" && (
-                      <p className="text-xs text-muted-foreground line-clamp-2 mt-1">
-                        {previewAsset.description}
+                </div>
+              )}
+
+              {post.type === "poll" && post.pollOptions && (
+                <div className="p-4 h-full flex flex-col justify-center">
+                  <div className="flex items-center gap-2 text-primary mb-2">
+                    <BarChart3 className="h-5 w-5" />
+                    <span className="text-sm font-medium">Poll</span>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">
+                      {post.pollOptions.length} options
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {post.totalPollVotes || 0} votes
+                    </p>
+                    {post.pollEndsAt && (
+                      <p className="text-xs text-muted-foreground">
+                        {post.pollEndsAt < Date.now() ? 'Ended' : 'Active'}
                       </p>
                     )}
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground mt-2">
-                    <ExternalLink className="h-3 w-3" />
-                    <span className="truncate">
-                      {previewAsset.url && new URL(previewAsset.url).hostname}
-                    </span>
                   </div>
                 </div>
               )}
@@ -289,4 +342,4 @@ export default function PostPreview({
       </CardContent>
     </Card>
   );
-}  
+}                        

@@ -496,4 +496,351 @@ describe("Phase 4 - Backend Refactor", () => {
       })
     ).rejects.toThrow("Only the author can edit this post");
   });
+});
+
+// Test multi-attachment support
+describe("Multi-attachment support", () => {
+  test("createPost with attachments sets legacy fields from first attachment", async () => {
+    const t = convexTest(schema);
+    
+    // Set up authentication
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id' 
+    });
+    
+    // Create test data
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        slug: 'test-user',
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+      });
+    });
+
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'test-category',
+        displayName: 'Test Category',
+        description: 'Test category description',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        postCount: 0,
+        status: 'active',
+        creatorId: memberId,
+      });
+    });
+
+    // Create post with multiple attachments
+    const postData = await asTestUser.mutation(api.posts.createPost, {
+      title: 'Post with attachments',
+      content: 'This post has multiple attachments',
+      categoryId: categoryId,
+      attachments: [
+        {
+          id: 'img1',
+          type: 'image' as const,
+          url: 'https://example.com/image1.jpg',
+          thumbnailUrl: 'https://example.com/thumb1.jpg',
+          width: 1920,
+          height: 1080,
+          aspectRatio: 1.78,
+          order: 0,
+        },
+        {
+          id: 'pdf1',
+          type: 'pdf' as const,
+          url: 'https://example.com/document.pdf',
+          order: 1,
+          pageCount: 10,
+          fileSize: 1024000,
+        },
+        {
+          id: 'vid1',
+          type: 'video' as const,
+          url: 'https://example.com/video.mp4',
+          thumbnailUrl: 'https://example.com/video-thumb.jpg',
+          order: 2,
+          videoDuration: '05:30',
+        },
+      ],
+    });
+
+    // Check that the post was created with attachments
+    const post = await t.run(async (ctx) => {
+      return await ctx.db.get(postData.postId);
+    });
+    
+    expect(post?.attachments).toHaveLength(3);
+    expect(post?.attachments?.[0].type).toBe('image');
+    expect(post?.attachments?.[1].type).toBe('pdf');
+    expect(post?.attachments?.[2].type).toBe('video');
+    
+    // Check legacy fields are set from first attachment
+    expect(post?.type).toBe('image');
+    expect(post?.mediaUrl).toBe('https://example.com/image1.jpg');
+    expect(post?.thumbnailUrl).toBe('https://example.com/thumb1.jpg');
+    expect(post?.mediaWidth).toBe(1920);
+    expect(post?.mediaHeight).toBe(1080);
+    expect(post?.aspectRatio).toBe(1.78);
+  });
+
+  test("createPost with YouTube attachment sets type to video", async () => {
+    const t = convexTest(schema);
+    
+    // Set up authentication
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id' 
+    });
+    
+    // Create test data
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        slug: 'test-user',
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+      });
+    });
+
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'test-category',
+        displayName: 'Test Category',
+        description: 'Test category description',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        postCount: 0,
+        status: 'active',
+        creatorId: memberId,
+      });
+    });
+
+    // Create post with YouTube attachment
+    const postData = await asTestUser.mutation(api.posts.createPost, {
+      title: 'YouTube video post',
+      content: 'Check out this video',
+      categoryId: categoryId,
+      attachments: [
+        {
+          id: 'yt1',
+          type: 'youtube' as const,
+          url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+          thumbnailUrl: 'https://img.youtube.com/vi/dQw4w9WgXcQ/maxresdefault.jpg',
+          order: 0,
+          videoId: 'dQw4w9WgXcQ',
+          title: 'Rick Astley - Never Gonna Give You Up',
+          duration: '3:33',
+          channelName: 'RickAstleyVEVO',
+        },
+      ],
+    });
+
+    const post = await t.run(async (ctx) => {
+      return await ctx.db.get(postData.postId);
+    });
+    
+    // YouTube should be mapped to video type
+    expect(post?.type).toBe('video');
+    expect(post?.mediaUrl).toBe('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+    expect(post?.attachments?.[0].type).toBe('youtube');
+    expect(post?.attachments?.[0].videoId).toBe('dQw4w9WgXcQ');
+  });
+
+  test("editPost with attachments updates legacy fields", async () => {
+    const t = convexTest(schema);
+    
+    // Set up authentication
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id' 
+    });
+    
+    // Create test data
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        slug: 'test-user',
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+      });
+    });
+
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'test-category',
+        displayName: 'Test Category',
+        description: 'Test category description',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        postCount: 0,
+        status: 'active',
+        creatorId: memberId,
+      });
+    });
+
+    // Create a text post first
+    const postId = await t.run(async (ctx) => {
+      return await ctx.db.insert('posts', {
+        title: 'Original Text Post',
+        content: 'Original content',
+        slug: 'test-post',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        memberId: memberId,
+        categoryId: categoryId,
+        status: 'active',
+        upvotes: 0,
+        downvotes: 0,
+        netVotes: 0,
+        commentCount: 0,
+        viewCount: 0,
+        isPinned: false,
+        isLocked: false,
+        type: 'text',
+      });
+    });
+
+    // Edit with attachments
+    await asTestUser.mutation(api.posts.editPost, {
+      postId: postId,
+      attachments: [
+        {
+          id: 'vid1',
+          type: 'video' as const,
+          url: 'https://example.com/new-video.mp4',
+          thumbnailUrl: 'https://example.com/new-thumb.jpg',
+          width: 1280,
+          height: 720,
+          aspectRatio: 1.78,
+          order: 0,
+        },
+      ],
+    });
+
+    const updatedPost = await t.run(async (ctx) => {
+      return await ctx.db.get(postId);
+    });
+    
+    // Check that type changed from text to video
+    expect(updatedPost?.type).toBe('video');
+    expect(updatedPost?.mediaUrl).toBe('https://example.com/new-video.mp4');
+    expect(updatedPost?.thumbnailUrl).toBe('https://example.com/new-thumb.jpg');
+    expect(updatedPost?.attachments).toHaveLength(1);
+    expect(updatedPost?.attachments?.[0].type).toBe('video');
+  });
+
+  test("editPost preserves attachments in version history", async () => {
+    const t = convexTest(schema);
+    
+    // Set up authentication
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id' 
+    });
+    
+    // Create test data
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        slug: 'test-user',
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+      });
+    });
+
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'test-category',
+        displayName: 'Test Category',
+        description: 'Test category description',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        postCount: 0,
+        status: 'active',
+        creatorId: memberId,
+      });
+    });
+
+    // Create post with attachments
+    const postId = await t.run(async (ctx) => {
+      return await ctx.db.insert('posts', {
+        title: 'Post with attachments',
+        content: 'Original content',
+        slug: 'test-post',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        memberId: memberId,
+        categoryId: categoryId,
+        status: 'active',
+        upvotes: 0,
+        downvotes: 0,
+        netVotes: 0,
+        commentCount: 0,
+        viewCount: 0,
+        isPinned: false,
+        isLocked: false,
+        type: 'image',
+        mediaUrl: 'https://example.com/old.jpg',
+        attachments: [
+          {
+            id: 'img1',
+            type: 'image' as const,
+            url: 'https://example.com/old.jpg',
+            order: 0,
+          },
+        ],
+      });
+    });
+
+    // Edit the post with new attachments
+    await asTestUser.mutation(api.posts.editPost, {
+      postId: postId,
+      attachments: [
+        {
+          id: 'img2',
+          type: 'image' as const,
+          url: 'https://example.com/new.jpg',
+          order: 0,
+        },
+        {
+          id: 'pdf1',
+          type: 'pdf' as const,
+          url: 'https://example.com/doc.pdf',
+          order: 1,
+        },
+      ],
+    });
+
+    // Check version history includes attachments
+    const versions = await t.run(async (ctx) => {
+      return await ctx.db
+        .query('post_versions')
+        .withIndex('by_postId', (q) => q.eq('postId', postId))
+        .collect();
+    });
+
+    expect(versions).toHaveLength(1);
+    expect(versions[0].attachments).toHaveLength(1);
+    expect(versions[0].attachments?.[0].url).toBe('https://example.com/old.jpg');
+    expect(versions[0].mediaUrl).toBe('https://example.com/old.jpg');
+  });
 }); 

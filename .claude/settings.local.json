@@ -17,7 +17,12 @@
       "Bash(npm run tsc:*)",
       "Bash(npx tsc:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(rg:*)"
+      "Bash(rg:*)",
+      "Bash(gh repo view:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm test)"
     ],
     "deny": []
   }

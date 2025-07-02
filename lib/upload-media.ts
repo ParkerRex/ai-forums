@@ -136,8 +136,8 @@ export async function uploadMedia(
   options: UploadOptions = {}
 ): Promise<UploadResult> {
   // Validate file
-  if (!file.type.startsWith("image/") && !file.type.startsWith("video/")) {
-    throw new Error("Only image and video files are supported");
+  if (!file.type.startsWith("image/") && !file.type.startsWith("video/") && file.type !== "application/pdf") {
+    throw new Error("Only image, video, and PDF files are supported");
   }
 
   // Try direct upload first, fallback to server upload on CORS error
@@ -166,6 +166,7 @@ export async function uploadMedia(
 export function validateMediaFile(file: File): { valid: boolean; error?: string } {
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
   const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
+  const MAX_PDF_SIZE = 20 * 1024 * 1024; // 20MB
 
   const ALLOWED_IMAGE_TYPES = [
     "image/jpeg",
@@ -179,6 +180,10 @@ export function validateMediaFile(file: File): { valid: boolean; error?: string 
     "video/mp4",
     "video/webm",
     "video/quicktime",
+  ];
+
+  const ALLOWED_PDF_TYPES = [
+    "application/pdf",
   ];
 
   if (ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -195,9 +200,16 @@ export function validateMediaFile(file: File): { valid: boolean; error?: string 
     return { valid: true };
   }
 
+  if (ALLOWED_PDF_TYPES.includes(file.type)) {
+    if (file.size > MAX_PDF_SIZE) {
+      return { valid: false, error: "PDF file must be less than 20MB" };
+    }
+    return { valid: true };
+  }
+
   return {
     valid: false,
-    error: "File type not supported. Please upload an image or video.",
+    error: "File type not supported. Please upload an image, video, or PDF.",
   };
 }
 
@@ -224,4 +236,63 @@ export function getFilePreviewUrl(file: File): string {
  */
 export function revokeFilePreviewUrl(url: string): void {
   URL.revokeObjectURL(url);
-} 
+}
+
+export function extractImageDimensions(file: File): Promise<{ width: number; height: number; aspectRatio: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      const width = img.naturalWidth;
+      const height = img.naturalHeight;
+      const aspectRatio = width / height;
+      
+      URL.revokeObjectURL(url);
+      resolve({ width, height, aspectRatio });
+    };
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load image for dimension extraction'));
+    };
+    
+    img.src = url;
+  });
+}
+
+export function extractVideoDimensions(file: File): Promise<{ width: number; height: number; aspectRatio: number }> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    const url = URL.createObjectURL(file);
+    
+    video.onloadedmetadata = () => {
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+      const aspectRatio = width / height;
+      
+      URL.revokeObjectURL(url);
+      resolve({ width, height, aspectRatio });
+    };
+    
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load video for dimension extraction'));
+    };
+    
+    video.src = url;
+  });
+}
+
+export async function extractMediaDimensions(file: File): Promise<{ width: number; height: number; aspectRatio: number }> {
+  if (file.type.startsWith('image/')) {
+    return extractImageDimensions(file);
+  } else if (file.type.startsWith('video/')) {
+    return extractVideoDimensions(file);
+  } else if (file.type === 'application/pdf') {
+    // For PDFs, we'll use a standard aspect ratio since dimensions aren't meaningful
+    return { width: 850, height: 1100, aspectRatio: 850 / 1100 }; // Standard US Letter aspect ratio
+  } else {
+    throw new Error('Unsupported file type for dimension extraction');
+  }
+}   

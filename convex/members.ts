@@ -39,6 +39,8 @@ const MemberUIValidator = v.object({
   lastOnlineRelative: v.string(),
   // URL slug
   slug: v.string(),
+  // Role
+  role: v.optional(v.union(v.literal("user"), v.literal("admin"))),
 });
 
 // Helper to backfill missing cached stats for a member with background caching
@@ -121,6 +123,8 @@ function transformMemberForUI(member: Doc<"members">) {
     // Add computed fields for UI
     fullName: `${member.firstName} ${member.lastName}`,
     initials: `${member.firstName[0]}${member.lastName[0]}`.toUpperCase(),
+    // Role
+    role: member.role,
     joinedDateFormatted: new Date(member.joinedDate).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -945,6 +949,45 @@ export const getMemberBySlug = query({
       return null;
     }
     return transformMemberForUI(member);
+  },
+});
+
+/**
+ * Get recently online members (active within the last 5 minutes)
+ * Used for real-time online users display
+ */
+export const getOnlineMembers = query({
+  args: {},
+  returns: v.array(v.object({
+    _id: v.id("members"),
+    firstName: v.string(),
+    lastName: v.string(),
+    avatarUrl: v.optional(v.string()),
+    fullName: v.string(),
+    initials: v.string(),
+    slug: v.string(),
+  })),
+  handler: async (ctx) => {
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+    
+    const onlineMembers = await ctx.db
+      .query("members")
+      .withIndex("by_lastOnline", (q) => 
+        q.gt("lastOnline", fiveMinutesAgo)
+      )
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .order("desc")
+      .take(10); // Limit to prevent overcrowding
+
+    return onlineMembers.map(member => ({
+      _id: member._id,
+      firstName: member.firstName,
+      lastName: member.lastName,
+      avatarUrl: member.avatarUrl,
+      fullName: `${member.firstName} ${member.lastName}`,
+      initials: `${member.firstName[0]}${member.lastName[0]}`.toUpperCase(),
+      slug: member.slug,
+    }));
   },
 });
 

@@ -13,7 +13,8 @@ export const PostTypeValidator = v.union(
   v.literal("text"),
   v.literal("image"),
   v.literal("video"),
-  v.literal("link")
+  v.literal("link"),
+  v.literal("poll")
 );
 
 export const CommentStatusValidator = v.union(
@@ -66,6 +67,8 @@ export default defineSchema({
     postCount: v.optional(v.number()),
     commentCount: v.optional(v.number()),
     netVoteCount: v.optional(v.number()),
+    // Admin role field
+    role: v.optional(v.union(v.literal("user"), v.literal("admin"))), // defaults to "user"
   })
     .index("by_status", ["status"])
     .index("by_joinedDate", ["joinedDate"])
@@ -124,6 +127,9 @@ export default defineSchema({
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
 
     linkPreviews: v.optional(v.record(v.string(), v.object({
       title: v.optional(v.string()),
@@ -133,6 +139,40 @@ export default defineSchema({
       url: v.string(),
     }))),
     mentions: v.optional(v.array(v.id("members"))),
+
+    // Poll-specific fields
+    pollOptions: v.optional(v.array(v.object({
+      id: v.string(),
+      text: v.string(),
+      voteCount: v.number()
+    }))),
+    pollEndsAt: v.optional(v.number()), // Unix timestamp
+    totalPollVotes: v.optional(v.number()),
+
+    // Multi-attachment support
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      type: v.union(v.literal("image"), v.literal("video"), v.literal("pdf"), v.literal("youtube")),
+      url: v.string(),
+      thumbnailUrl: v.optional(v.string()),
+      width: v.optional(v.number()),
+      height: v.optional(v.number()),
+      aspectRatio: v.optional(v.number()),
+      order: v.number(),
+      // PDF specific
+      pageCount: v.optional(v.number()),
+      fileSize: v.optional(v.number()),
+      // YouTube specific
+      videoId: v.optional(v.string()),
+      title: v.optional(v.string()),
+      duration: v.optional(v.string()),
+      channelName: v.optional(v.string()),
+      // Video specific
+      videoDuration: v.optional(v.string()),
+      format: v.optional(v.string()),
+      resolution: v.optional(v.string()),
+      codec: v.optional(v.string()),
+    }))),
 
   })
     .index("by_categoryId", ["categoryId"])
@@ -167,6 +207,10 @@ export default defineSchema({
     childCount: v.number(),
     editedAt: v.optional(v.number()),
     editReason: v.optional(v.string()),
+    editHistory: v.optional(v.array(v.object({
+      content: v.string(),
+      editedAt: v.number(),
+    }))),
     
     attachments: v.optional(v.array(v.object({
       id: v.string(),
@@ -241,6 +285,33 @@ export default defineSchema({
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
+    // Multi-attachment support
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      type: v.union(v.literal("image"), v.literal("video"), v.literal("pdf"), v.literal("youtube")),
+      url: v.string(),
+      thumbnailUrl: v.optional(v.string()),
+      width: v.optional(v.number()),
+      height: v.optional(v.number()),
+      aspectRatio: v.optional(v.number()),
+      order: v.number(),
+      // PDF specific
+      pageCount: v.optional(v.number()),
+      fileSize: v.optional(v.number()),
+      // YouTube specific
+      videoId: v.optional(v.string()),
+      title: v.optional(v.string()),
+      duration: v.optional(v.string()),
+      channelName: v.optional(v.string()),
+      // Video specific
+      videoDuration: v.optional(v.string()),
+      format: v.optional(v.string()),
+      resolution: v.optional(v.string()),
+      codec: v.optional(v.string()),
+    }))),
   })
     .index("by_postId", ["postId"])
     .index("by_post_and_version", ["postId", "version"])
@@ -282,4 +353,98 @@ export default defineSchema({
     .index("by_recipient", ["recipientId"])
     .index("by_recipient_and_read", ["recipientId", "read"])
     .index("by_createdAt", ["createdAt"]),
+
+  topics: defineTable({
+    name: v.string(),
+    displayName: v.string(),
+    description: v.string(),
+    icon: v.optional(v.string()),
+    resourceCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    status: v.union(v.literal("active"), v.literal("inactive")),
+  })
+    .index("by_name", ["name"])
+    .index("by_status", ["status"])
+    .searchIndex("search_topics", {
+      searchField: "displayName",
+      filterFields: ["status"]
+    }),
+
+  resources: defineTable({
+    title: v.string(),
+    description: v.string(),
+    url: v.string(),
+    topicId: v.id("topics"),
+    memberId: v.id("members"),
+    type: v.union(
+      v.literal("article"),
+      v.literal("video"),
+      v.literal("course"),
+      v.literal("documentation"),
+      v.literal("tool"),
+      v.literal("book"),
+      v.literal("other")
+    ),
+    difficulty: v.optional(v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"),
+      v.literal("advanced")
+    )),
+    isPaid: v.boolean(),
+    upvotes: v.number(),
+    downvotes: v.number(),
+    netVotes: v.number(),
+    viewCount: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("active"),
+      v.literal("rejected"),
+      v.literal("outdated")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    linkTitle: v.optional(v.string()),
+    linkDescription: v.optional(v.string()),
+    linkImage: v.optional(v.string()),
+  })
+    .index("by_topicId", ["topicId"])
+    .index("by_memberId", ["memberId"])
+    .index("by_status", ["status"])
+    .index("by_topic_and_votes", ["topicId", "netVotes"])
+    .index("by_topic_and_createdAt", ["topicId", "createdAt"])
+    .searchIndex("search_resources", {
+      searchField: "title",
+      filterFields: ["topicId", "type", "status"]
+    }),
+
+  // New table for poll votes
+  pollVotes: defineTable({
+    pollId: v.id("posts"),
+    userId: v.id("members"),
+    optionId: v.string(),
+    votedAt: v.number(),
+  })
+    .index("by_poll", ["pollId"])
+    .index("by_user_and_poll", ["userId", "pollId"]),
+
+  // New table for comment reports
+  commentReports: defineTable({
+    commentId: v.id("comments"),
+    reporterId: v.id("members"),
+    reason: v.union(
+      v.literal("spam"),
+      v.literal("inappropriate"),
+      v.literal("harassment"),
+      v.literal("other")
+    ),
+    reasonText: v.optional(v.string()),
+    status: v.union(v.literal("pending"), v.literal("resolved"), v.literal("dismissed")),
+    createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+    resolvedBy: v.optional(v.id("members")),
+  })
+    .index("by_comment", ["commentId"])
+    .index("by_status", ["status"])
+    .index("by_reporter_and_comment", ["reporterId", "commentId"]),
 });

@@ -7,28 +7,27 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DraftsModal } from "@/components/drafts-modal";
+import { PollCreationModal, PollData } from "@/components/poll-creation-modal";
+import { MediaUploadSection } from "@/components/media-upload-section";
+import { CategoryToggleGroup } from "@/components/category-toggle-group";
+import { MediaItem } from "@/types";
 import {
   PostFormData,
   validatePostForm,
   getCharacterCountInfo,
 } from "@/lib/form-validation";
-import {
-  uploadMedia,
-  validateMediaFile,
-  getFilePreviewUrl,
-  revokeFilePreviewUrl,
-} from "@/lib/upload-media";
+import { uploadMedia, revokeFilePreviewUrl } from "@/lib/upload-media";
 import {
   AlertCircle,
   Loader2,
@@ -36,8 +35,7 @@ import {
   FileText,
   Image as ImageIcon,
   Link,
-  Upload,
-  X,
+  BarChart3,
 } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -54,14 +52,19 @@ interface PostCreationFormProps {
 
 // Extended form data with media/link fields
 interface ExtendedPostFormData extends PostFormData {
-  type: "text" | "image" | "video" | "link";
+  type: "text" | "image" | "video" | "link" | "poll";
   mediaFile?: File;
   mediaUrl?: string;
   thumbnailUrl?: string;
+  aspectRatio?: number;
+  mediaWidth?: number;
+  mediaHeight?: number;
   linkUrl?: string;
   linkTitle?: string;
   linkDescription?: string;
   linkImage?: string;
+  pollData?: PollData;
+  mediaItems?: MediaItem[];
 }
 
 // Loading skeleton for the rich text editor
@@ -138,11 +141,15 @@ export function PostCreationForm({
     content: "",
     categoryId: "",
     type: "text",
+    mediaItems: [],
   });
 
   // Media preview state
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+
+  // Poll modal state
+  const [showPollModal, setShowPollModal] = useState(false);
 
   // Track which fields have been touched by the user
   const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(
@@ -162,11 +169,18 @@ export function PostCreationForm({
   const isPostTypeValid = () => {
     if (formData.type === "image" || formData.type === "video") {
       return (
-        formData.mediaFile !== undefined || formData.mediaUrl !== undefined
+        (formData.mediaItems && formData.mediaItems.length > 0) ||
+        formData.mediaFile !== undefined ||
+        formData.mediaUrl !== undefined
       );
     }
     if (formData.type === "link") {
       return formData.linkUrl !== undefined && formData.linkUrl.trim() !== "";
+    }
+    if (formData.type === "poll") {
+      return (
+        formData.pollData !== undefined && formData.pollData.options.length >= 2
+      );
     }
     return true;
   };
@@ -176,6 +190,7 @@ export function PostCreationForm({
   // Queries and mutations
   const categories = useQuery(api.categories.getCategories);
   const createPost = useMutation(api.posts.createPost);
+  const createPollPost = useMutation(api.polls.createPollPost);
   const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
 
   // Character count helpers
@@ -226,6 +241,7 @@ export function PostCreationForm({
         linkTitle: undefined,
         linkDescription: undefined,
         linkImage: undefined,
+        pollData: undefined,
       }));
       // Clean up media preview
       if (mediaPreviewUrl) {
@@ -237,54 +253,7 @@ export function PostCreationForm({
     [mediaPreviewUrl],
   );
 
-  const handleMediaFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const file = e.target.files?.[0];
-      if (!file) return;
-
-      // Validate file
-      const validation = validateMediaFile(file);
-      if (!validation.valid) {
-        toast.error(validation.error);
-        return;
-      }
-
-      // Set file and create preview
-      setFormData((prev) => ({ ...prev, mediaFile: file }));
-
-      // Clean up old preview
-      if (mediaPreviewUrl) {
-        revokeFilePreviewUrl(mediaPreviewUrl);
-      }
-
-      // Create new preview
-      const previewUrl = getFilePreviewUrl(file);
-      setMediaPreviewUrl(previewUrl);
-
-      // Detect media type from file
-      if (file.type.startsWith("image/")) {
-        setFormData((prev) => ({ ...prev, type: "image" }));
-      } else if (file.type.startsWith("video/")) {
-        setFormData((prev) => ({ ...prev, type: "video" }));
-      }
-    },
-    [mediaPreviewUrl],
-  );
-
-  const handleRemoveMedia = useCallback(() => {
-    setFormData((prev) => ({
-      ...prev,
-      mediaFile: undefined,
-      mediaUrl: undefined,
-      thumbnailUrl: undefined,
-    }));
-
-    if (mediaPreviewUrl) {
-      revokeFilePreviewUrl(mediaPreviewUrl);
-      setMediaPreviewUrl(null);
-    }
-    setUploadProgress(null);
-  }, [mediaPreviewUrl]);
+  // Old media handling functions removed - now handled by MediaUploadSection
 
   const handleLinkUrlChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -311,6 +280,11 @@ export function PostCreationForm({
     [fetchLinkPreview],
   );
 
+  const handlePollConfirm = useCallback((pollData: PollData) => {
+    setFormData((prev) => ({ ...prev, pollData }));
+    setShowPollModal(false);
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -326,9 +300,41 @@ export function PostCreationForm({
     try {
       let mediaUrl = formData.mediaUrl;
       let thumbnailUrl = formData.thumbnailUrl;
+      // Determine the correct post type. Default to the current formData.type.
+      let resolvedType: ExtendedPostFormData["type"] = formData.type;
 
-      // Upload media if needed
-      if (
+      // Handle new media items system
+      if (formData.mediaItems && formData.mediaItems.length > 0) {
+        // For now, use the first media item as the primary media
+        // In the future, you could support multiple media in a single post
+        const primaryMedia = formData.mediaItems[0];
+
+        // Ensure the post type matches the primary media type (image | video)
+        if (primaryMedia.type === "image" || primaryMedia.type === "video") {
+          resolvedType = primaryMedia.type;
+        }
+
+        // Check if media needs uploading (local file)
+        if (primaryMedia.url.startsWith("blob:") && !primaryMedia.isUploading) {
+          // Media should already be uploaded via onUpload callback
+          // If not, this is an error state
+          throw new Error(
+            "Media upload incomplete. Please wait for upload to finish.",
+          );
+        }
+
+        mediaUrl = primaryMedia.url;
+        thumbnailUrl = primaryMedia.thumbnailUrl;
+
+        // Use dimensions from the first media item
+        if (primaryMedia.width && primaryMedia.height) {
+          formData.aspectRatio = primaryMedia.aspectRatio;
+          formData.mediaWidth = primaryMedia.width;
+          formData.mediaHeight = primaryMedia.height;
+        }
+      }
+      // Fallback to old media upload system
+      else if (
         formData.mediaFile &&
         (formData.type === "image" || formData.type === "video")
       ) {
@@ -340,31 +346,82 @@ export function PostCreationForm({
           });
           mediaUrl = uploadResult.url;
           thumbnailUrl = uploadResult.thumbnailUrl;
+          // Ensure type matches the uploaded file
+          resolvedType = formData.type;
         } catch (uploadError) {
           console.error("Failed to upload media:", uploadError);
           throw new Error("Failed to upload media. Please try again.");
         }
       }
 
-      const postId = await createPost({
-        title: formData.title.trim(),
-        content: formData.content.trim(),
-        categoryId: formData.categoryId as Id<"categories">,
-        type: formData.type,
-        mediaUrl,
-        thumbnailUrl,
-        linkUrl: formData.linkUrl,
-        linkTitle: formData.linkTitle,
-        linkDescription: formData.linkDescription,
-        linkImage: formData.linkImage,
-      });
+      let postId;
+      let postSlug;
+
+      if (resolvedType === "poll" && formData.pollData) {
+        const result = await createPollPost({
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          categoryId: formData.categoryId as Id<"categories">,
+          pollOptions: formData.pollData.options,
+          pollDuration: formData.pollData.duration,
+        });
+        postId = result.postId;
+        postSlug = result.slug;
+      } else {
+        const result = await createPost({
+          title: formData.title.trim(),
+          content: formData.content.trim(),
+          categoryId: formData.categoryId as Id<"categories">,
+          type: resolvedType,
+          mediaUrl,
+          thumbnailUrl,
+          aspectRatio: formData.aspectRatio,
+          mediaWidth: formData.mediaWidth,
+          mediaHeight: formData.mediaHeight,
+          linkUrl: formData.linkUrl,
+          linkTitle: formData.linkTitle,
+          linkDescription: formData.linkDescription,
+          linkImage: formData.linkImage,
+          // Pass all media items as attachments
+          attachments: formData.mediaItems?.map((item, index) => ({
+            id: item.id,
+            type: item.type,
+            url: item.url,
+            thumbnailUrl: item.thumbnailUrl,
+            width: item.width,
+            height: item.height,
+            aspectRatio: item.aspectRatio,
+            order: index,
+            // PDF specific
+            pageCount: item.pageCount,
+            fileSize: item.fileSize,
+            // YouTube specific
+            videoId: item.videoId,
+            title: item.title,
+            duration: item.duration,
+            channelName: item.channelName,
+            // Video specific
+            videoDuration: item.videoDuration,
+            format: item.format,
+            resolution: item.resolution,
+            codec: item.codec,
+          })),
+        });
+        postId = result.postId;
+        postSlug = result.slug;
+      }
 
       toast.success("Post created successfully!");
 
       if (onSuccess) {
         onSuccess(postId);
       } else {
-        router.push(`/post/${postId}`);
+        // Find the category name for the redirect
+        const category = categories?.find((c) => c._id === formData.categoryId);
+        const categoryName = category?.name || "general";
+
+        // Now both post types return slug, so we can always use it
+        router.push(`/${categoryName}/${postSlug}`);
       }
     } catch (error) {
       console.error("Failed to create post:", error);
@@ -431,7 +488,7 @@ export function PostCreationForm({
             onValueChange={handleTypeChange}
             className="w-full"
           >
-            <TabsList className="grid w-full grid-cols-3">
+            <TabsList className="grid w-full grid-cols-4">
               <TabsTrigger value="text" className="flex items-center gap-2">
                 <FileText className="h-4 w-4" />
                 Text
@@ -443,6 +500,10 @@ export function PostCreationForm({
               <TabsTrigger value="link" className="flex items-center gap-2">
                 <Link className="h-4 w-4" />
                 Link
+              </TabsTrigger>
+              <TabsTrigger value="poll" className="flex items-center gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Poll
               </TabsTrigger>
             </TabsList>
 
@@ -484,30 +545,25 @@ export function PostCreationForm({
 
               {/* Category Field */}
               <div className="space-y-2">
-                <Label htmlFor="category">
+                <Label>
                   Category <span className="text-red-500">*</span>
                 </Label>
-                <Select
+                <CategoryToggleGroup
+                  categories={
+                    categories?.map((cat) => ({
+                      id: cat._id,
+                      name: cat.name,
+                      displayName: cat.displayName,
+                      description: cat.description,
+                      icon: cat.icon,
+                      postCount: cat.postCount,
+                      isTrending: false, // You can add trending logic here
+                    })) || []
+                  }
                   value={formData.categoryId}
-                  onValueChange={handleCategoryChange}
+                  onChange={handleCategoryChange}
                   disabled={isSubmitting}
-                >
-                  <SelectTrigger
-                    className={`${errors.categoryId && touchedFields.has("categoryId") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-green-700 focus:ring-green-700"}`}
-                  >
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {categories?.map((category) => (
-                      <SelectItem key={category._id} value={category._id}>
-                        <div className="flex items-center space-x-2">
-                          <span>{category.icon}</span>
-                          <span>{category.displayName}</span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                />
                 {errors.categoryId && touchedFields.has("categoryId") && (
                   <span className="text-red-500 text-sm">
                     {errors.categoryId}
@@ -588,83 +644,50 @@ export function PostCreationForm({
 
             <TabsContent value="image" className="mt-6 space-y-6">
               {/* Media Upload */}
-              <div className="space-y-2">
-                <Label>
-                  Upload Image or Video <span className="text-red-500">*</span>
-                </Label>
-                <div className="border-2 border-dashed rounded-lg p-6 text-center">
-                  {!formData.mediaFile && !mediaPreviewUrl ? (
-                    <>
-                      <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                      <Label htmlFor="media-upload" className="cursor-pointer">
-                        <span className="text-green-700 hover:text-green-800 font-medium">
-                          Click to upload
-                        </span>
-                        <span className="text-muted-foreground">
-                          {" "}
-                          or drag and drop
-                        </span>
-                      </Label>
-                      <input
-                        id="media-upload"
-                        type="file"
-                        accept="image/*,video/*"
-                        onChange={handleMediaFileChange}
-                        className="hidden"
-                        disabled={isSubmitting}
-                      />
-                      <p className="text-sm text-muted-foreground mt-2">
-                        Images: JPG, PNG, GIF, WebP (max 10MB)
-                        <br />
-                        Videos: MP4, WebM, QuickTime (max 100MB)
-                      </p>
-                    </>
-                  ) : (
-                    <div className="relative">
-                      {formData.type === "image" && mediaPreviewUrl && (
-                        <Image
-                          src={mediaPreviewUrl}
-                          alt="Media preview"
-                          width={400}
-                          height={256}
-                          className="max-h-64 mx-auto rounded object-contain"
-                          unoptimized={true}
-                        />
-                      )}
-                      {formData.type === "video" && mediaPreviewUrl && (
-                        <video
-                          src={mediaPreviewUrl}
-                          controls
-                          className="max-h-64 mx-auto rounded"
-                        />
-                      )}
-                      <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        className="absolute top-2 right-2"
-                        onClick={handleRemoveMedia}
-                        disabled={isSubmitting}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                      {uploadProgress !== null && (
-                        <div className="mt-4">
-                          <div className="w-full bg-muted opacity-50 rounded-full h-2">
-                            <div
-                              className="bg-green-700 h-2 rounded-full transition-all"
-                              style={{ width: `${uploadProgress}%` }}
-                            />
-                          </div>
-                          <p className="text-sm text-center mt-1">
-                            {uploadProgress}%
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <MediaUploadSection
+                media={formData.mediaItems || []}
+                onMediaChange={(mediaItems) => {
+                  setFormData((prev) => ({ ...prev, mediaItems }));
+                  // Preserve the currently selected tab ("image") even when the first media
+                  // item is a video. We still determine the final post type during submission
+                  // based on the media item's type, so no need to update `formData.type` here.
+                }}
+                onUpload={async (file, mediaItem) => {
+                  // Handle upload with progress tracking
+                  const result = await uploadMedia(convex, file, {
+                    onProgress: (progress) => {
+                      // Update the specific media item's progress
+                      setFormData((prev) => ({
+                        ...prev,
+                        mediaItems:
+                          prev.mediaItems?.map((item) =>
+                            item.id === mediaItem.id
+                              ? { ...item, uploadProgress: progress.percentage }
+                              : item,
+                          ) || [],
+                      }));
+                    },
+                  });
+
+                  // Update media item with uploaded URL
+                  setFormData((prev) => ({
+                    ...prev,
+                    mediaItems:
+                      prev.mediaItems?.map((item) =>
+                        item.id === mediaItem.id
+                          ? {
+                              ...item,
+                              url: result.url,
+                              thumbnailUrl: result.thumbnailUrl,
+                              isUploading: false,
+                              uploadProgress: 100,
+                            }
+                          : item,
+                      ) || [],
+                  }));
+                }}
+                disabled={isSubmitting}
+              />
 
               {/* Description for media posts */}
               <div className="space-y-2">
@@ -769,6 +792,78 @@ export function PostCreationForm({
                 </div>
               </div>
             </TabsContent>
+
+            <TabsContent value="poll" className="mt-6 space-y-6">
+              {/* Poll Options */}
+              <div className="space-y-2">
+                <Label>
+                  Poll Options <span className="text-red-500">*</span>
+                </Label>
+                {formData.pollData ? (
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="space-y-2">
+                        <p className="text-sm text-muted-foreground mb-3">
+                          {formData.pollData.options.length} options • Ends in{" "}
+                          {formData.pollData.duration === "unlimited"
+                            ? "never"
+                            : formData.pollData.duration}
+                        </p>
+                        {formData.pollData.options.map((option, index) => (
+                          <div
+                            key={option.id}
+                            className="flex items-center space-x-2"
+                          >
+                            <span className="text-sm text-muted-foreground w-6">
+                              {index + 1}.
+                            </span>
+                            <span className="flex-1">{option.text}</span>
+                          </div>
+                        ))}
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setShowPollModal(true)}
+                          className="w-full mt-3"
+                        >
+                          Edit Poll Options
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ) : (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowPollModal(true)}
+                    className="w-full"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Create Poll Options
+                  </Button>
+                )}
+              </div>
+
+              {/* Description for poll posts */}
+              <div className="space-y-2">
+                <Label htmlFor="poll-content">
+                  Description{" "}
+                  <span className="text-muted-foreground">(optional)</span>
+                </Label>
+                <Suspense fallback={<RichTextEditorSkeleton />}>
+                  <RichTextEditor
+                    content={formData.content}
+                    onChange={handleContentChange}
+                    placeholder="Add context or details about your poll..."
+                    className=""
+                  />
+                </Suspense>
+                <div className="text-sm text-muted-foreground text-right">
+                  {contentInfo.length}/10,000 characters
+                </div>
+              </div>
+            </TabsContent>
           </Tabs>
 
           {/* Form Actions */}
@@ -818,6 +913,13 @@ export function PostCreationForm({
           </div>
         </form>
       </CardContent>
+
+      {/* Poll Creation Modal */}
+      <PollCreationModal
+        isOpen={showPollModal}
+        onClose={() => setShowPollModal(false)}
+        onConfirm={handlePollConfirm}
+      />
     </Card>
   );
 }
