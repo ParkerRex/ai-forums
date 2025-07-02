@@ -22,11 +22,19 @@ export const globalSearch = query({
       viewer = undefined;
     }
 
-    const [posts, comments] = await Promise.all([
+    const [posts, comments, topics, resources] = await Promise.all([
       ctx.runQuery(api.posts.searchPosts, { searchTerm, limit, includeContent: true }),
       ctx.db
         .query("comments")
         .withSearchIndex("search_comments", (q: any) => q.search("content", searchTerm).eq("status", "active"))
+        .take(limit),
+      ctx.db
+        .query("topics")
+        .withSearchIndex("search_topics", (q: any) => q.search("displayName", searchTerm).eq("status", "active"))
+        .take(limit),
+      ctx.db
+        .query("resources")
+        .withSearchIndex("search_resources", (q: any) => q.search("title", searchTerm).eq("status", "active"))
         .take(limit),
     ]);
 
@@ -140,10 +148,48 @@ export const globalSearch = query({
       arr.findIndex((l: any) => l.link === link.link) === index
     );
 
+    const mappedTopics = topics.map((t: any) => ({
+      _id: t._id,
+      type: "topic" as const,
+      name: t.name,
+      displayName: t.displayName,
+      description: t.description,
+      resourceCount: t.resourceCount,
+    }));
+
+    const enrichedResources = await Promise.all(
+      resources.map(async (r: any) => {
+        const member = await ctx.db.get(r.memberId);
+        const topic = await ctx.db.get(r.topicId);
+        return {
+          _id: r._id,
+          type: "resource" as const,
+          title: r.title,
+          description: r.description,
+          url: r.url,
+          resourceType: r.type,
+          difficulty: r.difficulty,
+          isPaid: r.isPaid,
+          netVotes: r.netVotes,
+          member: member && 'firstName' in member ? {
+            firstName: member.firstName,
+            lastName: member.lastName,
+            username: member.email.split('@')[0],
+          } : null,
+          topic: topic && 'name' in topic ? {
+            name: topic.name,
+            displayName: topic.displayName,
+          } : null,
+        };
+      })
+    );
+
     return [
       ...mappedPosts,
       ...mappedComments,
+      ...mappedTopics,
+      ...enrichedResources,
       ...uniqueLinks,
     ].slice(0, limit);
   },
-});  
+});        
