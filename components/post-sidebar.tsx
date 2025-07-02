@@ -1,6 +1,7 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
+import { OnlineUsers } from "./online-users";
 
 export default function PostSidebar() {
   return (
@@ -45,6 +46,9 @@ export default function PostSidebar() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Online Users */}
+      <OnlineUsers />
 
       {/* About VAI Card */}
       <Card>
