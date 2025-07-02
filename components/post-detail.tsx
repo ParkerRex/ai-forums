@@ -33,6 +33,9 @@ import { useMutationError } from "@/hooks/use-mutation-error";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { BookmarkButton } from "@/components/bookmark-button";
+import { isYouTubeUrl, getYouTubeVideoId } from "@/lib/youtube-utils";
+import { YouTubeEmbed } from "@/components/youtube-embed";
+import { VoteHoverCard } from "@/components/vote-hover-card";
 
 interface Post {
   _id: Id<"posts">;
@@ -107,6 +110,16 @@ export default function PostDetail({
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const postType = post.type || "text";
+
+  // Safely extract YouTube video IDs in case the URL is malformed
+  const mediaYouTubeId =
+    post.mediaUrl && isYouTubeUrl(post.mediaUrl)
+      ? getYouTubeVideoId(post.mediaUrl)
+      : null;
+  const linkYouTubeId =
+    post.linkUrl && isYouTubeUrl(post.linkUrl)
+      ? getYouTubeVideoId(post.linkUrl)
+      : null;
 
   // Refs for animated icons
   const upvoteIconRef = React.useRef<{
@@ -245,9 +258,11 @@ export default function PostDetail({
                 </Button>
               </MembershipCTAModal>
             </Unauthenticated>
-            <span className="text-lg font-bold text-foreground">
-              {optimisticNetVotes}
-            </span>
+            <VoteHoverCard postId={post._id} voteCount={optimisticNetVotes}>
+              <span className="text-lg font-bold text-foreground cursor-pointer">
+                {optimisticNetVotes}
+              </span>
+            </VoteHoverCard>
           </div>
 
           {/* Content */}
@@ -299,63 +314,87 @@ export default function PostDetail({
             )}
 
             {postType === "video" && post.mediaUrl && (
-              <div className="mb-6 rounded-lg overflow-hidden relative bg-background">
-                <video
-                  ref={videoRef}
-                  src={post.mediaUrl}
-                  className="w-full h-auto max-h-[600px]"
-                  controls
-                  poster={post.thumbnailUrl}
-                  onPlay={() => setIsVideoPlaying(true)}
-                  onPause={() => setIsVideoPlaying(false)}
-                />
-                {!isVideoPlaying && post.thumbnailUrl && (
-                  <div
-                    className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                    onClick={handleVideoPlay}
+              <>
+                {mediaYouTubeId ? (
+                  <YouTubeEmbed videoId={mediaYouTubeId} title={post.title} />
+                ) : isYouTubeUrl(post.mediaUrl) ? (
+                  <a
+                    href={post.mediaUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mb-6 block text-primary underline"
                   >
-                    <div className="bg-background/80 rounded-full p-4 hover:bg-background/90 transition-colors">
-                      <Play className="h-12 w-12 text-primary-foreground fill-primary-foreground" />
-                    </div>
+                    View on YouTube
+                  </a>
+                ) : (
+                  <div className="mb-6 rounded-lg overflow-hidden relative bg-background">
+                    <video
+                      ref={videoRef}
+                      src={post.mediaUrl}
+                      className="w-full h-auto max-h-[600px]"
+                      controls
+                      poster={post.thumbnailUrl}
+                      onPlay={() => setIsVideoPlaying(true)}
+                      onPause={() => setIsVideoPlaying(false)}
+                    />
+                    {!isVideoPlaying && post.thumbnailUrl && (
+                      <div
+                        className="absolute inset-0 flex items-center justify-center cursor-pointer"
+                        onClick={handleVideoPlay}
+                      >
+                        <div className="bg-background/80 rounded-full p-4 hover:bg-background/90 transition-colors">
+                          <Play className="h-12 w-12 text-primary-foreground fill-primary-foreground" />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
+              </>
             )}
 
             {postType === "link" && post.linkUrl && (
-              <Card className="mb-6 overflow-hidden hover:shadow-md transition-shadow">
-                <a
-                  href={post.linkUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block"
-                >
-                  {post.linkImage && (
-                    <div className="relative h-48 bg-muted">
-                      <Image
-                        src={post.linkImage}
-                        alt={post.linkTitle || "Link preview"}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  )}
-                  <CardContent className="p-4">
-                    <h3 className="font-semibold text-lg mb-2">
-                      {post.linkTitle || post.linkUrl}
-                    </h3>
-                    {post.linkDescription && (
-                      <p className="text-sm text-muted-foreground mb-2 line-clamp-3">
-                        {post.linkDescription}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <ExternalLink className="h-3 w-3" />
-                      <span>{new URL(post.linkUrl).hostname}</span>
-                    </div>
-                  </CardContent>
-                </a>
-              </Card>
+              <>
+                {linkYouTubeId ? (
+                  <YouTubeEmbed
+                    videoId={linkYouTubeId}
+                    title={post.linkTitle || post.title}
+                  />
+                ) : (
+                  <Card className="mb-6 overflow-hidden hover:shadow-md transition-shadow">
+                    <a
+                      href={post.linkUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block"
+                    >
+                      {post.linkImage && (
+                        <div className="relative h-48 bg-muted">
+                          <Image
+                            src={post.linkImage}
+                            alt={post.linkTitle || "Link preview"}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
+                      )}
+                      <CardContent className="p-4">
+                        <h3 className="font-semibold text-lg mb-2">
+                          {post.linkTitle || post.linkUrl}
+                        </h3>
+                        {post.linkDescription && (
+                          <p className="text-sm text-muted-foreground mb-2 line-clamp-3">
+                            {post.linkDescription}
+                          </p>
+                        )}
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <ExternalLink className="h-3 w-3" />
+                          <span>{new URL(post.linkUrl).hostname}</span>
+                        </div>
+                      </CardContent>
+                    </a>
+                  </Card>
+                )}
+              </>
             )}
 
             {/* Rich Text Content */}
