@@ -216,12 +216,19 @@ function CommentItem({
               <div className="mt-3 space-y-2">
                 {comment.attachments!.map((attachment) => (
                   <div key={attachment.id} className="border rounded p-2">
-                    {attachment.type === "image" ? (
-                      <img
-                        src={attachment.url}
-                        alt={attachment.fileName}
-                        className="max-w-full h-auto max-h-64 rounded"
-                      />
+                    {attachment.type === "image" || attachment.type === "gif" ? (
+                      <div className="relative">
+                        <img
+                          src={attachment.url}
+                          alt={attachment.fileName}
+                          className="max-w-full h-auto max-h-64 rounded"
+                        />
+                        {attachment.type === "gif" && (
+                          <div className="absolute top-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded">
+                            GIF
+                          </div>
+                        )}
+                      </div>
                     ) : (
                       <div className="flex items-center gap-2">
                         <Paperclip className="w-4 h-4" />

@@ -47,6 +47,7 @@ export function EnhancedCommentInput({
   const [content, setContent] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
+  const [gifAttachments, setGifAttachments] = useState<AttachmentType[]>([]);
   const [linkPreviews, setLinkPreviews] = useState<Record<string, LinkPreviewType>>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
@@ -65,7 +66,7 @@ export function EnhancedCommentInput({
         continue;
       }
       
-      if (attachments.length >= 5) {
+      if (attachments.length + gifAttachments.length >= 5) {
         toast.error("Maximum 5 attachments allowed per comment");
         break;
       }
@@ -84,6 +85,10 @@ export function EnhancedCommentInput({
     }
     setAttachmentPreviews(prev => prev.filter((_, i) => i !== index));
   }, [attachmentPreviews]);
+
+  const handleRemoveGifAttachment = useCallback((index: number) => {
+    setGifAttachments(prev => prev.filter((_, i) => i !== index));
+  }, []);
 
   const handleEmojiSelect = useCallback((emojiData: { emoji: string }) => {
     setContent(prev => prev + emojiData.emoji);
@@ -111,7 +116,7 @@ export function EnhancedCommentInput({
   }, [fetchLinkPreview, linkPreviews]);
 
   const handleSubmit = useCallback(async () => {
-    if (!content.trim() && attachments.length === 0) return;
+    if (!content.trim() && attachments.length === 0 && gifAttachments.length === 0) return;
     
     const uploadedAttachments: AttachmentType[] = [];
     
@@ -130,10 +135,13 @@ export function EnhancedCommentInput({
         }
       }
       
+      uploadedAttachments.push(...gifAttachments);
+      
       onSubmit(content, uploadedAttachments.length > 0 ? uploadedAttachments : undefined, Object.keys(linkPreviews).length > 0 ? linkPreviews : undefined);
       
       setContent("");
       setAttachments([]);
+      setGifAttachments([]);
       attachmentPreviews.forEach(url => revokeFilePreviewUrl(url));
       setAttachmentPreviews([]);
       setLinkPreviews({});
@@ -141,7 +149,7 @@ export function EnhancedCommentInput({
       console.error("Failed to upload attachments:", error);
       toast.error("Failed to upload attachments. Please try again.");
     }
-  }, [content, attachments, linkPreviews, onSubmit, attachmentPreviews, convex]);
+  }, [content, attachments, gifAttachments, linkPreviews, onSubmit, attachmentPreviews, convex]);
 
   return (
     <div className={`space-y-3 ${className}`}>
@@ -152,10 +160,10 @@ export function EnhancedCommentInput({
         className="min-h-[80px]"
       />
       
-      {attachments.length > 0 && (
+      {(attachments.length > 0 || gifAttachments.length > 0) && (
         <div className="flex flex-wrap gap-2">
           {attachments.map((file, index) => (
-            <div key={index} className="relative">
+            <div key={`file-${index}`} className="relative">
               {file.type.startsWith("image/") ? (
                 <img
                   src={attachmentPreviews[index]}
@@ -176,6 +184,27 @@ export function EnhancedCommentInput({
               >
                 <X className="w-3 h-3" />
               </Button>
+            </div>
+          ))}
+          {gifAttachments.map((gif, index) => (
+            <div key={`gif-${index}`} className="relative">
+              <img
+                src={gif.url}
+                alt={gif.fileName}
+                className="w-20 h-20 object-cover rounded border"
+              />
+              <Button
+                type="button"
+                variant="destructive"
+                size="sm"
+                className="absolute -top-2 -right-2 w-6 h-6 p-0"
+                onClick={() => handleRemoveGifAttachment(index)}
+              >
+                <X className="w-3 h-3" />
+              </Button>
+              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-xs px-1 py-0.5 rounded-b">
+                GIF
+              </div>
             </div>
           ))}
         </div>
@@ -220,7 +249,21 @@ export function EnhancedCommentInput({
             <PopoverContent className="w-auto p-0">
               <GifPicker
                 onGifSelect={(gifUrl) => {
-                  setContent(prev => prev + ` ![GIF](${gifUrl}) `);
+                  if (attachments.length + gifAttachments.length >= 5) {
+                    toast.error("Maximum 5 attachments allowed per comment");
+                    return;
+                  }
+                  
+                  const gifAttachment: AttachmentType = {
+                    id: crypto.randomUUID(),
+                    type: "gif",
+                    url: gifUrl,
+                    fileName: "giphy.gif",
+                    fileSize: 0,
+                    mimeType: "image/gif",
+                  };
+                  
+                  setGifAttachments(prev => [...prev, gifAttachment]);
                   setShowGifPicker(false);
                 }}
               />
