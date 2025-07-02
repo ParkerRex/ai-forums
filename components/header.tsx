@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Bookmark } from "lucide-react";
+import { Search, Plus, Bookmark, BookOpen } from "lucide-react";
 import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
 import { UserButton, SignUpButton } from "@clerk/nextjs";
 import { AuthButton } from "@/components/auth-button";
@@ -45,6 +45,17 @@ export default function Header() {
               <Link href="/members" className="flex items-center gap-1">
                 <UsersIcon ref={iconRef} size={18} />
                 <span>members</span>
+              </Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2 text-muted-foreground hover:text-foreground"
+              asChild
+            >
+              <Link href="/educate" className="flex items-center gap-1">
+                <BookOpen size={18} />
+                <span>educate</span>
               </Link>
             </Button>
             <Authenticated>

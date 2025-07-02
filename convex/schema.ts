@@ -29,7 +29,8 @@ export const VoteTypeValidator = v.union(
 
 export const TargetTypeValidator = v.union(
   v.literal("post"),
-  v.literal("comment")
+  v.literal("comment"),
+  v.literal("resource")
 );
 
 export const CategoryStatusValidator = v.union(
@@ -238,4 +239,68 @@ export default defineSchema({
     .index("by_member_and_type", ["memberId", "targetType"])
     .index("by_member_and_createdAt", ["memberId", "createdAt"])
     .index("by_targetId", ["targetId"]),
+
+  topics: defineTable({
+    name: v.string(),
+    displayName: v.string(),
+    description: v.string(),
+    icon: v.optional(v.string()),
+    resourceCount: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    status: v.union(v.literal("active"), v.literal("inactive")),
+  })
+    .index("by_name", ["name"])
+    .index("by_status", ["status"])
+    .searchIndex("search_topics", {
+      searchField: "displayName",
+      filterFields: ["status"]
+    }),
+
+  resources: defineTable({
+    title: v.string(),
+    description: v.string(),
+    url: v.string(),
+    topicId: v.id("topics"),
+    memberId: v.id("members"),
+    type: v.union(
+      v.literal("article"),
+      v.literal("video"),
+      v.literal("course"),
+      v.literal("documentation"),
+      v.literal("tool"),
+      v.literal("book"),
+      v.literal("other")
+    ),
+    difficulty: v.optional(v.union(
+      v.literal("beginner"),
+      v.literal("intermediate"),
+      v.literal("advanced")
+    )),
+    isPaid: v.boolean(),
+    upvotes: v.number(),
+    downvotes: v.number(),
+    netVotes: v.number(),
+    viewCount: v.number(),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("active"),
+      v.literal("rejected"),
+      v.literal("outdated")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    linkTitle: v.optional(v.string()),
+    linkDescription: v.optional(v.string()),
+    linkImage: v.optional(v.string()),
+  })
+    .index("by_topicId", ["topicId"])
+    .index("by_memberId", ["memberId"])
+    .index("by_status", ["status"])
+    .index("by_topic_and_votes", ["topicId", "netVotes"])
+    .index("by_topic_and_createdAt", ["topicId", "createdAt"])
+    .searchIndex("search_resources", {
+      searchField: "title",
+      filterFields: ["topicId", "type", "status"]
+    }),
 });
