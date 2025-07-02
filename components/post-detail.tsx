@@ -1,7 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
-  Bookmark,
   Flag,
   MoreHorizontal,
   Play,
@@ -361,7 +360,7 @@ export default function PostDetail({
 
             {/* Rich Text Content */}
             <div className="mb-6" data-testid="post-content">
-              <RenderTipTapContent htmlContent={post.content} />
+              <RenderTipTapContent content={post.content} />
             </div>
 
             <div className="flex items-center space-x-4 text-sm text-muted-foreground border-t border-border pt-4">

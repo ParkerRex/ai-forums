@@ -99,8 +99,25 @@ export const createComment = mutation({
     content: v.string(),
     postId: v.id("posts"),
     parentCommentId: v.optional(v.id("comments")),
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      type: v.union(v.literal("image"), v.literal("document"), v.literal("gif")),
+      url: v.string(),
+      fileName: v.string(),
+      fileSize: v.number(),
+      mimeType: v.string(),
+      width: v.optional(v.number()),
+      height: v.optional(v.number()),
+    }))),
+    linkPreviews: v.optional(v.record(v.string(), v.object({
+      title: v.optional(v.string()),
+      description: v.optional(v.string()),
+      image: v.optional(v.string()),
+      siteName: v.optional(v.string()),
+      url: v.string(),
+    }))),
   },
-  handler: async (ctx, { content, postId, parentCommentId }) => {
+  handler: async (ctx, { content, postId, parentCommentId, attachments, linkPreviews }) => {
     // Get authenticated member using unified helper
     const member = await getAuthenticatedMember(ctx);
 
@@ -172,6 +189,8 @@ export const createComment = mutation({
       netVotes: 0,
       depth,
       childCount: 0,
+      attachments,
+      linkPreviews,
     });
 
     // Update post comment count
@@ -331,4 +350,4 @@ export const getCommentCount = query({
 
     return comments.length;
   },
-}); 
+});    
