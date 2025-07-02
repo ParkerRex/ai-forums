@@ -28,6 +28,7 @@ import {
   validateMediaFile,
   getFilePreviewUrl,
   revokeFilePreviewUrl,
+  extractMediaDimensions,
 } from "@/lib/upload-media";
 import {
   AlertCircle,
@@ -58,6 +59,9 @@ interface ExtendedPostFormData extends PostFormData {
   mediaFile?: File;
   mediaUrl?: string;
   thumbnailUrl?: string;
+  aspectRatio?: number;
+  mediaWidth?: number;
+  mediaHeight?: number;
   linkUrl?: string;
   linkTitle?: string;
   linkDescription?: string;
@@ -238,7 +242,7 @@ export function PostCreationForm({
   );
 
   const handleMediaFileChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
 
@@ -249,23 +253,36 @@ export function PostCreationForm({
         return;
       }
 
-      // Set file and create preview
-      setFormData((prev) => ({ ...prev, mediaFile: file }));
+      try {
+        const dimensions = await extractMediaDimensions(file);
+        
+        // Set file and dimensions
+        setFormData((prev) => ({ 
+          ...prev, 
+          mediaFile: file,
+          aspectRatio: dimensions.aspectRatio,
+          mediaWidth: dimensions.width,
+          mediaHeight: dimensions.height,
+        }));
 
-      // Clean up old preview
-      if (mediaPreviewUrl) {
-        revokeFilePreviewUrl(mediaPreviewUrl);
-      }
+        // Clean up old preview
+        if (mediaPreviewUrl) {
+          revokeFilePreviewUrl(mediaPreviewUrl);
+        }
 
-      // Create new preview
-      const previewUrl = getFilePreviewUrl(file);
-      setMediaPreviewUrl(previewUrl);
+        // Create new preview
+        const previewUrl = getFilePreviewUrl(file);
+        setMediaPreviewUrl(previewUrl);
 
-      // Detect media type from file
-      if (file.type.startsWith("image/")) {
-        setFormData((prev) => ({ ...prev, type: "image" }));
-      } else if (file.type.startsWith("video/")) {
-        setFormData((prev) => ({ ...prev, type: "video" }));
+        // Detect media type from file
+        if (file.type.startsWith("image/")) {
+          setFormData((prev) => ({ ...prev, type: "image" }));
+        } else if (file.type.startsWith("video/")) {
+          setFormData((prev) => ({ ...prev, type: "video" }));
+        }
+      } catch (error) {
+        console.error('Failed to extract media dimensions:', error);
+        toast.error('Failed to process media file');
       }
     },
     [mediaPreviewUrl],
@@ -353,6 +370,9 @@ export function PostCreationForm({
         type: formData.type,
         mediaUrl,
         thumbnailUrl,
+        aspectRatio: formData.aspectRatio,
+        mediaWidth: formData.mediaWidth,
+        mediaHeight: formData.mediaHeight,
         linkUrl: formData.linkUrl,
         linkTitle: formData.linkTitle,
         linkDescription: formData.linkDescription,

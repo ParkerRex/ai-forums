@@ -21,27 +21,31 @@ export const fetchLinkPreview = action({
       // Validate URL
       const urlObj = new URL(args.url);
       
-      // TODO: Implement actual OpenGraph fetching
-      // This would typically use a library like `node-html-parser` or `cheerio`
-      // to parse the HTML and extract OG tags
+      const isYouTube = urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be');
       
-      // Example implementation:
-      // const response = await fetch(args.url, {
-      //   headers: {
-      //     'User-Agent': 'Mozilla/5.0 (compatible; VaiVexBot/1.0)',
-      //   },
-      //   signal: AbortSignal.timeout(5000), // 5 second timeout
-      // });
-      // 
-      // const html = await response.text();
-      // const root = parse(html);
-      // 
-      // const ogTitle = root.querySelector('meta[property="og:title"]')?.getAttribute('content');
-      // const ogDescription = root.querySelector('meta[property="og:description"]')?.getAttribute('content');
-      // const ogImage = root.querySelector('meta[property="og:image"]')?.getAttribute('content');
-      // const ogSiteName = root.querySelector('meta[property="og:site_name"]')?.getAttribute('content');
+      if (isYouTube) {
+        let videoId = '';
+        if (urlObj.hostname.includes('youtu.be')) {
+          videoId = urlObj.pathname.slice(1);
+        } else if (urlObj.searchParams.has('v')) {
+          videoId = urlObj.searchParams.get('v') || '';
+        }
+        
+        if (videoId) {
+          return {
+            url: args.url,
+            title: `YouTube Video`,
+            description: "YouTube video embed",
+            image: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+            siteName: "YouTube",
+            fetchedAt: Date.now(),
+            isYouTubeEmbed: true,
+            youTubeVideoId: videoId,
+          };
+        }
+      }
       
-      // Stub response for development
+      // Stub response for other links
       const preview = {
         url: args.url,
         title: `Preview for ${urlObj.hostname}`,
@@ -50,9 +54,6 @@ export const fetchLinkPreview = action({
         siteName: urlObj.hostname,
         fetchedAt: Date.now(),
       };
-      
-      // TODO: Store in cache table
-      // await ctx.runMutation(internal.linkPreview.storeLinkPreview, preview);
       
       return preview;
     } catch (error) {
@@ -87,4 +88,4 @@ export const getLinkPreview = query({
     // For now, return null to trigger a fresh fetch
     return null;
   },
-}); 
+});  

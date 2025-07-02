@@ -224,4 +224,60 @@ export function getFilePreviewUrl(file: File): string {
  */
 export function revokeFilePreviewUrl(url: string): void {
   URL.revokeObjectURL(url);
-} 
+}
+
+export function extractImageDimensions(file: File): Promise<{ width: number; height: number; aspectRatio: number }> {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    
+    img.onload = () => {
+      const width = img.naturalWidth;
+      const height = img.naturalHeight;
+      const aspectRatio = width / height;
+      
+      URL.revokeObjectURL(url);
+      resolve({ width, height, aspectRatio });
+    };
+    
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load image for dimension extraction'));
+    };
+    
+    img.src = url;
+  });
+}
+
+export function extractVideoDimensions(file: File): Promise<{ width: number; height: number; aspectRatio: number }> {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    const url = URL.createObjectURL(file);
+    
+    video.onloadedmetadata = () => {
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+      const aspectRatio = width / height;
+      
+      URL.revokeObjectURL(url);
+      resolve({ width, height, aspectRatio });
+    };
+    
+    video.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error('Failed to load video for dimension extraction'));
+    };
+    
+    video.src = url;
+  });
+}
+
+export async function extractMediaDimensions(file: File): Promise<{ width: number; height: number; aspectRatio: number }> {
+  if (file.type.startsWith('image/')) {
+    return extractImageDimensions(file);
+  } else if (file.type.startsWith('video/')) {
+    return extractVideoDimensions(file);
+  } else {
+    throw new Error('Unsupported file type for dimension extraction');
+  }
+}   

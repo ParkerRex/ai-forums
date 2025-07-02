@@ -124,6 +124,9 @@ export default defineSchema({
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
 
     linkPreviews: v.optional(v.record(v.string(), v.object({
       title: v.optional(v.string()),
@@ -239,6 +242,9 @@ export default defineSchema({
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
+    aspectRatio: v.optional(v.number()),
+    mediaWidth: v.optional(v.number()),
+    mediaHeight: v.optional(v.number()),
   })
     .index("by_postId", ["postId"])
     .index("by_post_and_version", ["postId", "version"])
