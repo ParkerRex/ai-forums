@@ -136,8 +136,23 @@ export async function uploadMedia(
   options: UploadOptions = {}
 ): Promise<UploadResult> {
   // Validate file
-  if (!file.type.startsWith("image/") && !file.type.startsWith("video/") && file.type !== "application/pdf") {
-    throw new Error("Only image, video, and PDF files are supported");
+  const allowedTypes = [
+    "image/",
+    "video/",
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ];
+  
+  // Treat types ending with a trailing slash (e.g., "image/", "video/") as prefixes
+  // and match all others exactly. This prevents types like "application/pdf-malicious"
+  // from bypassing validation.
+  const isAllowed = allowedTypes.some((type) =>
+    type.endsWith("/") ? file.type.startsWith(type) : file.type === type
+  );
+  
+  if (!isAllowed) {
+    throw new Error("Only image, video, PDF, and Word documents are supported");
   }
 
   // Try direct upload first, fallback to server upload on CORS error
@@ -167,6 +182,7 @@ export function validateMediaFile(file: File): { valid: boolean; error?: string 
   const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
   const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
   const MAX_PDF_SIZE = 20 * 1024 * 1024; // 20MB
+  const MAX_DOC_SIZE = 20 * 1024 * 1024; // 20MB
 
   const ALLOWED_IMAGE_TYPES = [
     "image/jpeg",
@@ -184,6 +200,11 @@ export function validateMediaFile(file: File): { valid: boolean; error?: string 
 
   const ALLOWED_PDF_TYPES = [
     "application/pdf",
+  ];
+
+  const ALLOWED_DOC_TYPES = [
+    "application/msword", // .doc
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
   ];
 
   if (ALLOWED_IMAGE_TYPES.includes(file.type)) {
@@ -207,9 +228,16 @@ export function validateMediaFile(file: File): { valid: boolean; error?: string 
     return { valid: true };
   }
 
+  if (ALLOWED_DOC_TYPES.includes(file.type)) {
+    if (file.size > MAX_DOC_SIZE) {
+      return { valid: false, error: "Word document must be less than 20MB" };
+    }
+    return { valid: true };
+  }
+
   return {
     valid: false,
-    error: "File type not supported. Please upload an image, video, or PDF.",
+    error: "File type not supported. Please upload an image, video, PDF, or Word document.",
   };
 }
 
@@ -291,6 +319,9 @@ export async function extractMediaDimensions(file: File): Promise<{ width: numbe
     return extractVideoDimensions(file);
   } else if (file.type === 'application/pdf') {
     // For PDFs, we'll use a standard aspect ratio since dimensions aren't meaningful
+    return { width: 850, height: 1100, aspectRatio: 850 / 1100 }; // Standard US Letter aspect ratio
+  } else if (file.type === 'application/msword' || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+    // For Word documents, use a standard document aspect ratio
     return { width: 850, height: 1100, aspectRatio: 850 / 1100 }; // Standard US Letter aspect ratio
   } else {
     throw new Error('Unsupported file type for dimension extraction');

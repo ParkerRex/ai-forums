@@ -1,9 +1,10 @@
-import { query, mutation, internalMutation } from "./_generated/server";
+import { query, mutation, internalMutation, DatabaseReader } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthenticatedMember } from "./auth";
+import { Id } from "./_generated/dataModel";
 
 // Helper to check if member is admin
-async function isAdmin(ctx: any, memberId: string) {
+async function isAdmin(ctx: { db: DatabaseReader }, memberId: Id<"members">) {
   const member = await ctx.db.get(memberId);
   return member?.role === "admin";
 }

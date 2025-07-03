@@ -37,7 +37,7 @@ const PostPreview = lazy(() => import("@/components/post-preview"));
 
 // Extended form data with media/link fields
 export interface ExtendedPostFormData extends PostFormData {
-  type: "text" | "image" | "video" | "link";
+  type: "text" | "image" | "video" | "link" | "poll";
   mediaFile?: File;
   mediaUrl?: string;
   thumbnailUrl?: string;
@@ -446,7 +446,9 @@ export function PostFormFields({
                       <div className="relative">
                         {formData.type === "image" ? (
                           <Image
-                            src={mediaPreviewUrl || formData.mediaUrl}
+                            src={
+                              (mediaPreviewUrl || formData.mediaUrl) as string
+                            }
                             alt="Media preview"
                             width={400}
                             height={256}

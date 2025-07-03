@@ -1,12 +1,16 @@
 "use client";
 
-import { useEditor, EditorContent } from '@tiptap/react';
-import StarterKit from '@tiptap/starter-kit';
-import { Markdown } from 'tiptap-markdown';
-import { LinkBadge } from '@/extensions/link-badge';
-import { useAction } from 'convex/react';
-import { api } from '@/convex/_generated/api';
-import { Button } from '@/components/ui/button';
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { Markdown } from "tiptap-markdown";
+import {
+  LinkBadge,
+  Mention,
+  createMentionSuggestion,
+} from "@/components/rich-text/extensions";
+import { useAction, useConvex } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Button } from "@/components/ui/button";
 import {
   Bold,
   Italic,
@@ -15,9 +19,8 @@ import {
   Quote,
   Code,
   Undo,
-  Redo
-} from 'lucide-react';
-
+  Redo,
+} from "lucide-react";
 
 interface FullRichTextEditorProps {
   content?: string;
@@ -27,12 +30,34 @@ interface FullRichTextEditorProps {
 }
 
 export function FullRichTextEditor({
-  content = '',
+  content = "",
   onChange,
-  placeholder = 'Start writing your post...',
-  className = ''
+  placeholder = "Start writing your post...",
+  className = "",
 }: FullRichTextEditorProps) {
   const fetchLinkPreview = useAction(api.linkPreviews.fetchLinkPreview);
+  const convex = useConvex();
+
+  const searchMembers = async (term: string) => {
+    try {
+      if (!term || term.length === 0) {
+        // Show all active members when no search term (when user just types @)
+        const members = await convex.query(api.members.getAllMembers, {});
+        return members.slice(0, 20); // Limit to first 20 for performance
+      }
+
+      // Search members when user types after @
+      const members = await convex.query(api.members.searchMembers, {
+        searchTerm: term,
+        limit: 20, // Increased from 10 to 20 for better selection
+      });
+      return members || [];
+    } catch (error) {
+      console.error("Error searching members:", error);
+      return [];
+    }
+  };
+
   const editor = useEditor({
     extensions: [
       StarterKit.configure({
@@ -43,14 +68,14 @@ export function FullRichTextEditor({
       LinkBadge.configure({
         openOnClick: true,
         HTMLAttributes: {
-          class: 'link-badge-mark',
+          class: "link-badge-mark",
         },
         fetchPreview: async (url: string) => {
           try {
             const preview = await fetchLinkPreview({ url });
             return preview;
           } catch (error) {
-            console.warn('Failed to fetch link preview:', error);
+            console.warn("Failed to fetch link preview:", error);
             return null;
           }
         },
@@ -58,32 +83,47 @@ export function FullRichTextEditor({
       Markdown.configure({
         html: true,
         tightLists: true,
-        bulletListMarker: '-',
+        bulletListMarker: "-",
         linkify: true,
         breaks: false,
       }),
+      Mention.configure({
+        HTMLAttributes: {
+          class: "mention",
+        },
+        suggestion: createMentionSuggestion(searchMembers),
+      }),
     ],
     content,
+    immediatelyRender: false,
     onUpdate: ({ editor }) => {
-      onChange?.(editor.getHTML());
+      try {
+        const markdown =
+          editor.storage.markdown?.getMarkdown?.() || editor.getHTML();
+        onChange?.(markdown);
+      } catch {
+        // Fallback to HTML if markdown extension isn't ready
+        onChange?.(editor.getHTML());
+      }
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[200px] px-4 py-3',
+        class:
+          "prose prose-sm sm:prose lg:prose-lg xl:prose-2xl mx-auto focus:outline-none min-h-[200px] px-4 py-3",
         placeholder,
       },
     },
   });
 
-
-
   if (!editor) {
     return (
-      <div className={`border border rounded-lg ${className}`}>
+      <div className={`border rounded-lg ${className}`}>
         <div className="border-b border p-2 bg-muted rounded-t-lg">
           <div className="flex items-center justify-center">
             <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
-            <span className="text-sm text-muted-foreground">Loading editor...</span>
+            <span className="text-sm text-muted-foreground">
+              Loading editor...
+            </span>
           </div>
         </div>
         <div className="min-h-[200px] p-4">
@@ -97,7 +137,9 @@ export function FullRichTextEditor({
   }
 
   return (
-    <div className={`border border rounded-lg focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}>
+    <div
+      className={`border rounded-lg focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}
+    >
       {/* Toolbar */}
       <div className="border-b border p-2 bg-muted rounded-t-lg">
         <div className="flex flex-wrap gap-1 overflow-x-auto">
@@ -131,7 +173,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('bold') ? 'bg-green-100 text-green-700' : ''}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("bold") ? "bg-green-100 text-green-700" : ""}`}
           >
             <Bold className="h-4 w-4" />
           </Button>
@@ -140,7 +182,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('italic') ? 'bg-green-100 text-green-700' : ''}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("italic") ? "bg-green-100 text-green-700" : ""}`}
           >
             <Italic className="h-4 w-4" />
           </Button>
@@ -149,7 +191,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleCode().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('code') ? 'bg-green-100 text-green-700' : ''}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("code") ? "bg-green-100 text-green-700" : ""}`}
           >
             <Code className="h-4 w-4" />
           </Button>
@@ -162,7 +204,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('bulletList') ? 'bg-green-100 text-green-700' : ''}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("bulletList") ? "bg-green-100 text-green-700" : ""}`}
           >
             <List className="h-4 w-4" />
           </Button>
@@ -171,7 +213,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('orderedList') ? 'bg-green-100 text-green-700' : ''}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("orderedList") ? "bg-green-100 text-green-700" : ""}`}
           >
             <ListOrdered className="h-4 w-4" />
           </Button>
@@ -184,18 +226,17 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive('blockquote') ? 'bg-green-100 text-green-700' : ''}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("blockquote") ? "bg-green-100 text-green-700" : ""}`}
           >
             <Quote className="h-4 w-4" />
           </Button>
-
         </div>
       </div>
 
       {/* Editor Content */}
       <div className="relative">
-        <EditorContent 
-          editor={editor} 
+        <EditorContent
+          editor={editor}
           className="min-h-[200px] focus-within:outline-none"
         />
         {!content && (
@@ -221,22 +262,35 @@ export function FullRichTextEditor({
           text-decoration: none;
           transition: all 0.2s ease;
         }
-        
+
         :global(.link-badge-mark:hover) {
           background-color: hsl(var(--muted) / 0.8);
           border-color: hsl(var(--border));
           transform: translateY(-1px);
           box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        
+
         :global(.link-badge-mark::before) {
           content: "🔗";
           font-size: 0.75rem;
           opacity: 0.7;
+        }
+
+        :global(.mention) {
+          background-color: hsl(var(--primary) / 0.1);
+          color: hsl(var(--primary));
+          padding: 0.125rem 0.25rem;
+          border-radius: 0.25rem;
+          font-weight: 500;
+          text-decoration: none;
+        }
+
+        :global(.mention:hover) {
+          background-color: hsl(var(--primary) / 0.2);
         }
       `}</style>
     </div>
   );
 }
 
-export default FullRichTextEditor;    
+export default FullRichTextEditor;

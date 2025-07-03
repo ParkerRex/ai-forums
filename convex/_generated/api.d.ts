@@ -20,6 +20,7 @@ import type * as categories from "../categories.js";
 import type * as comments from "../comments.js";
 import type * as crons from "../crons.js";
 import type * as deduplication from "../deduplication.js";
+import type * as github from "../github.js";
 import type * as linkPreview from "../linkPreview.js";
 import type * as linkPreviews from "../linkPreviews.js";
 import type * as members from "../members.js";
@@ -27,6 +28,7 @@ import type * as migrations_add_member_slug from "../migrations/add_member_slug.
 import type * as migrations_add_post_media_fields from "../migrations/add_post_media_fields.js";
 import type * as migrations_fix_member_status from "../migrations/fix_member_status.js";
 import type * as migrations_migrate_post_attachments from "../migrations/migrate_post_attachments.js";
+import type * as notifications from "../notifications.js";
 import type * as polls from "../polls.js";
 import type * as postVersions from "../postVersions.js";
 import type * as posts from "../posts.js";
@@ -53,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   crons: typeof crons;
   deduplication: typeof deduplication;
+  github: typeof github;
   linkPreview: typeof linkPreview;
   linkPreviews: typeof linkPreviews;
   members: typeof members;
@@ -60,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/add_post_media_fields": typeof migrations_add_post_media_fields;
   "migrations/fix_member_status": typeof migrations_fix_member_status;
   "migrations/migrate_post_attachments": typeof migrations_migrate_post_attachments;
+  notifications: typeof notifications;
   polls: typeof polls;
   postVersions: typeof postVersions;
   posts: typeof posts;

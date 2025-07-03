@@ -5,23 +5,27 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
+import { toast } from "sonner";
 
 interface BookmarkButtonProps {
   targetId: string;
   targetType: "post" | "resource";
   size?: "sm" | "md" | "lg";
+  /** @deprecated Use showLabel instead */
   showCount?: boolean;
+  showLabel?: boolean;
   variant?: "ghost" | "outline";
   className?: string;
 }
 
-export function BookmarkButton({ 
-  targetId, 
-  targetType, 
-  size = "md", 
+export function BookmarkButton({
+  targetId,
+  targetType,
+  size = "md",
   showCount = false,
+  showLabel = false,
   variant = "ghost",
-  className = ""
+  className = "",
 }: BookmarkButtonProps) {
   const [isBookmarking, setIsBookmarking] = useState(false);
   const toggleBookmark = useMutation(api.bookmarks.toggleBookmark);
@@ -30,18 +34,26 @@ export function BookmarkButton({
     targetType,
   });
 
+  const shouldShowLabel = showLabel || showCount;
+  const displayLabel = isBookmarked ? "saved" : "save";
+
   const handleToggle = async (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isBookmarking) return;
     setIsBookmarking(true);
 
     try {
-      await toggleBookmark({
+      const result = await toggleBookmark({
         targetId,
         targetType,
       });
+
+      toast.success(
+        result.bookmarked ? "Added to bookmarks" : "Removed from bookmarks",
+      );
     } catch (error) {
       console.error("Error bookmarking:", error);
+      toast.error("Failed to update bookmark");
     } finally {
       setIsBookmarking(false);
     }
@@ -68,7 +80,9 @@ export function BookmarkButton({
                 : "text-muted-foreground hover:text-blue-500"
             }`}
           />
-          {showCount && <span className="ml-1 text-xs">save</span>}
+          {shouldShowLabel && (
+            <span className="ml-1 text-xs">{displayLabel}</span>
+          )}
         </Button>
       </Authenticated>
       <Unauthenticated>
@@ -81,8 +95,11 @@ export function BookmarkButton({
             size={buttonSize}
             className={`p-2 h-auto hover:bg-muted ${className}`}
           >
-            <Bookmark size={iconSize} className="text-muted-foreground hover:text-blue-500" />
-            {showCount && <span className="ml-1 text-xs">save</span>}
+            <Bookmark
+              size={iconSize}
+              className="text-muted-foreground hover:text-blue-500"
+            />
+            {shouldShowLabel && <span className="ml-1 text-xs">save</span>}
           </Button>
         </MembershipCTAModal>
       </Unauthenticated>
