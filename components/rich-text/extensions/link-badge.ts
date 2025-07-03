@@ -5,7 +5,7 @@ export interface LinkBadgeOptions {
   HTMLAttributes: Record<string, unknown>;
   openOnClick: boolean;
   validate?: (url: string) => boolean;
-  fetchPreview?: (url: string) => Promise<any>;
+  fetchPreview?: (url: string) => Promise<unknown>;
 }
 
 declare module '@tiptap/core' {

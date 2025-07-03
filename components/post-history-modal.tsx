@@ -60,19 +60,29 @@ function formatTimeAgo(timestamp: number): string {
 }
 
 // Simple diff component showing character-level changes
-function SimpleDiff({ oldText, newText }: { oldText: string; newText: string }) {
+function SimpleDiff({
+  oldText,
+  newText,
+}: {
+  oldText: string;
+  newText: string;
+}) {
   // For now, just show side-by-side comparison
   // In a real implementation, you might use a library like diff-match-patch
   return (
     <div className="grid grid-cols-2 gap-4">
       <div>
-        <h4 className="text-sm font-medium mb-2 text-muted-foreground">Previous Version</h4>
+        <h4 className="text-sm font-medium mb-2 text-muted-foreground">
+          Previous Version
+        </h4>
         <div className="bg-muted/50 p-3 rounded text-sm">
           <pre className="whitespace-pre-wrap font-sans">{oldText}</pre>
         </div>
       </div>
       <div>
-        <h4 className="text-sm font-medium mb-2 text-muted-foreground">Current Version</h4>
+        <h4 className="text-sm font-medium mb-2 text-muted-foreground">
+          Current Version
+        </h4>
         <div className="bg-muted/50 p-3 rounded text-sm">
           <pre className="whitespace-pre-wrap font-sans">{newText}</pre>
         </div>
@@ -81,8 +91,14 @@ function SimpleDiff({ oldText, newText }: { oldText: string; newText: string }) 
   );
 }
 
-export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalProps) {
-  const [selectedVersion, setSelectedVersion] = useState<PostVersion | null>(null);
+export function PostHistoryModal({
+  postId,
+  isOpen,
+  onClose,
+}: PostHistoryModalProps) {
+  const [selectedVersion, setSelectedVersion] = useState<PostVersion | null>(
+    null,
+  );
   const [viewMode, setViewMode] = useState<"rendered" | "diff">("rendered");
 
   // Fetch post history
@@ -131,7 +147,9 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
           </DialogHeader>
           <div className="text-center py-8">
             <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground">No edit history available for this post.</p>
+            <p className="text-muted-foreground">
+              No edit history available for this post.
+            </p>
           </div>
         </DialogContent>
       </Dialog>
@@ -140,11 +158,16 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh]" data-testid="post-history-modal">
+      <DialogContent
+        className="max-w-6xl max-h-[90vh]"
+        data-testid="post-history-modal"
+      >
         <DialogHeader>
-          <DialogTitle data-testid="history-modal-title">Post History</DialogTitle>
+          <DialogTitle data-testid="history-modal-title">
+            Post History
+          </DialogTitle>
         </DialogHeader>
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[70vh]">
           {/* Version List */}
           <div className="lg:col-span-1">
@@ -155,9 +178,11 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
             <ScrollArea className="h-full">
               <div className="space-y-2">
                 {/* Current version */}
-                <Card 
+                <Card
                   className={`cursor-pointer transition-colors ${
-                    selectedVersion === null ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
+                    selectedVersion === null
+                      ? "ring-2 ring-primary"
+                      : "hover:bg-muted/50"
                   }`}
                   onClick={() => setSelectedVersion(null)}
                   data-testid="history-version-card"
@@ -166,7 +191,9 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                     <div className="flex items-center justify-between mb-2">
                       <Badge variant="default">Current</Badge>
                       <span className="text-xs text-muted-foreground">
-                        {formatTimeAgo(currentPost.editedAt || currentPost.createdAt)}
+                        {formatTimeAgo(
+                          currentPost.editedAt || currentPost.createdAt,
+                        )}
                       </span>
                     </div>
                     <h4 className="text-sm font-medium line-clamp-2 mb-2">
@@ -174,17 +201,20 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                     </h4>
                     <div className="flex items-center text-xs text-muted-foreground">
                       <User className="h-3 w-3 mr-1" />
-                      {currentPost.member?.firstName} {currentPost.member?.lastName}
+                      {currentPost.member?.firstName}{" "}
+                      {currentPost.member?.lastName}
                     </div>
                   </CardContent>
                 </Card>
 
                 {/* Historical versions */}
                 {history.map((version) => (
-                  <Card 
+                  <Card
                     key={version._id}
                     className={`cursor-pointer transition-colors ${
-                      selectedVersion?._id === version._id ? 'ring-2 ring-primary' : 'hover:bg-muted/50'
+                      selectedVersion?._id === version._id
+                        ? "ring-2 ring-primary"
+                        : "hover:bg-muted/50"
                     }`}
                     onClick={() => setSelectedVersion(version)}
                     data-testid="history-version-card"
@@ -215,11 +245,16 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-sm font-medium flex items-center">
                 <Eye className="h-4 w-4 mr-2" />
-                {selectedVersion ? `Version ${selectedVersion.version}` : 'Current Version'}
+                {selectedVersion
+                  ? `Version ${selectedVersion.version}`
+                  : "Current Version"}
               </h3>
-              
+
               {selectedVersion && (
-                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as "rendered" | "diff")}>
+                <Tabs
+                  value={viewMode}
+                  onValueChange={(v) => setViewMode(v as "rendered" | "diff")}
+                >
                   <TabsList className="grid w-full grid-cols-2 max-w-[200px]">
                     <TabsTrigger value="rendered">Rendered</TabsTrigger>
                     <TabsTrigger value="diff">Diff</TabsTrigger>
@@ -233,21 +268,30 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                 viewMode === "rendered" ? (
                   <Card>
                     <CardHeader>
-                      <CardTitle className="text-lg">{selectedVersion.title}</CardTitle>
+                      <CardTitle className="text-lg">
+                        {selectedVersion.title}
+                      </CardTitle>
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Avatar className="h-6 w-6 mr-2">
-                          <AvatarImage src={selectedVersion.editor?.avatarUrl} />
+                          <AvatarImage
+                            src={selectedVersion.editor?.avatarUrl}
+                          />
                           <AvatarFallback>
-                            {selectedVersion.editor?.firstName?.[0]}{selectedVersion.editor?.lastName?.[0]}
+                            {selectedVersion.editor?.firstName?.[0]}
+                            {selectedVersion.editor?.lastName?.[0]}
                           </AvatarFallback>
                         </Avatar>
-                        Edited by {selectedVersion.editor?.firstName} {selectedVersion.editor?.lastName}
-                        <Separator orientation="vertical" className="mx-2 h-4" />
+                        Edited by {selectedVersion.editor?.firstName}{" "}
+                        {selectedVersion.editor?.lastName}
+                        <Separator
+                          orientation="vertical"
+                          className="mx-2 h-4"
+                        />
                         {new Date(selectedVersion.editedAt).toLocaleString()}
                       </div>
                     </CardHeader>
                     <CardContent data-testid="version-content">
-                      <RenderTipTapContent htmlContent={selectedVersion.content} />
+                      <RenderTipTapContent content={selectedVersion.content} />
                     </CardContent>
                   </Card>
                 ) : (
@@ -259,16 +303,16 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                       <div className="space-y-4">
                         <div>
                           <h4 className="text-sm font-medium mb-2">Title</h4>
-                          <SimpleDiff 
-                            oldText={selectedVersion.title} 
-                            newText={currentPost.title} 
+                          <SimpleDiff
+                            oldText={selectedVersion.title}
+                            newText={currentPost.title}
                           />
                         </div>
                         <div>
                           <h4 className="text-sm font-medium mb-2">Content</h4>
-                          <SimpleDiff 
-                            oldText={selectedVersion.content} 
-                            newText={currentPost.content} 
+                          <SimpleDiff
+                            oldText={selectedVersion.content}
+                            newText={currentPost.content}
                           />
                         </div>
                       </div>
@@ -278,21 +322,28 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
               ) : (
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-lg">{currentPost.title}</CardTitle>
+                    <CardTitle className="text-lg">
+                      {currentPost.title}
+                    </CardTitle>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Avatar className="h-6 w-6 mr-2">
-                                        <AvatarImage src={currentPost.member?.avatarUrl} />
-                <AvatarFallback>
-                  {currentPost.member?.firstName?.[0]}{currentPost.member?.lastName?.[0]}
-                </AvatarFallback>
+                        <AvatarImage src={currentPost.member?.avatarUrl} />
+                        <AvatarFallback>
+                          {currentPost.member?.firstName?.[0]}
+                          {currentPost.member?.lastName?.[0]}
+                        </AvatarFallback>
                       </Avatar>
-                                              {currentPost.editedAt ? 'Last edited' : 'Created'} by {currentPost.member?.firstName} {currentPost.member?.lastName}
+                      {currentPost.editedAt ? "Last edited" : "Created"} by{" "}
+                      {currentPost.member?.firstName}{" "}
+                      {currentPost.member?.lastName}
                       <Separator orientation="vertical" className="mx-2 h-4" />
-                      {new Date(currentPost.editedAt || currentPost.createdAt).toLocaleString()}
+                      {new Date(
+                        currentPost.editedAt || currentPost.createdAt,
+                      ).toLocaleString()}
                     </div>
                   </CardHeader>
                   <CardContent>
-                    <RenderTipTapContent htmlContent={currentPost.content} />
+                    <RenderTipTapContent content={currentPost.content} />
                   </CardContent>
                 </Card>
               )}
@@ -302,4 +353,4 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
       </DialogContent>
     </Dialog>
   );
-}  
+}

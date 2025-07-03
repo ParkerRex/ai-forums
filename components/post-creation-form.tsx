@@ -372,7 +372,8 @@ export function PostCreationForm({
           title: formData.title.trim(),
           content: formData.content.trim(),
           categoryId: formData.categoryId as Id<"categories">,
-          type: resolvedType,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          type: resolvedType as any,
           mediaUrl,
           thumbnailUrl,
           aspectRatio: formData.aspectRatio,
