@@ -1,0 +1,225 @@
+# VAI: AI Engineers Community Platform - Marketing Overview
+
+## 1. PRODUCT OVERVIEW
+
+### What is VAI?
+VAI is a modern, real-time community platform specifically designed for AI engineers to share knowledge, collaborate, and build together. It serves as "The Place AI Engineers Build Together" - a professional networking and knowledge-sharing hub for AI practitioners from leading companies like Google, Microsoft, and other top-tier organizations.
+
+### Core Purpose
+- Replace traditional, outdated community platforms with a modern, engaging experience
+- Provide AI engineers with a dedicated space to share workflows, prompts, insights, and connect with peers
+- Create a household name in the AI engineering community
+- Integrate AI-powered features to enhance member experience
+
+### Target Audience
+- **Primary**: AI Engineers, Machine Learning Engineers, Data Scientists
+- **Secondary**: AI Researchers, Technical Leaders in AI, AI Product Managers
+- **Tertiary**: Students and professionals transitioning into AI roles
+- **Geographic**: Global, with focus on English-speaking markets
+- **Company Affiliation**: Engineers from top tech companies (Google, Microsoft, Meta, OpenAI, etc.)
+
+## 2. KEY FEATURES
+
+### Content Creation & Management
+- **Multi-Format Posts**: Support for text, images, videos, links, and polls
+- **Rich Text Editing**: Advanced TipTap editor with formatting capabilities
+- **Automatic Link Previews**: Intelligent extraction of metadata from shared links
+- **Multi-Attachment Support**: Upload multiple files including images, videos, PDFs, and YouTube embeds
+- **Content Validation**: Built-in security checks and content validation
+- **Version History**: Complete edit tracking with rollback capabilities
+
+### Community Engagement
+- **Reddit-Style Voting**: Upvote/downvote system for posts and comments
+- **Nested Comments**: Threaded discussion system with unlimited depth
+- **Real-Time Updates**: Live updates without page refresh
+- **@Mentions**: Tag other members in posts and comments with notifications
+- **Bookmarking**: Save posts and resources for later reference
+
+### Advanced Features
+- **Interactive Polls**: Create polls with multiple options and time limits
+- **Global Search**: Full-text search across posts, comments, members, and resources
+- **Member Profiles**: Rich profiles with statistics, bio, social links, and skills
+- **Notification System**: Real-time notifications for mentions, replies, and interactions
+- **Online Status**: See who's currently active in the community
+- **Category Organization**: Structured content organization (Announcements, Workflows, Prompts, Connect, Content)
+
+### Media & Resource Handling
+- **YouTube Integration**: Native YouTube video embedding and previews
+- **PDF Support**: Upload and preview PDF documents
+- **Image Galleries**: Multi-image post support with grid layouts
+- **Video Autoplay**: Optimized video viewing experience
+- **Giphy Integration**: Support for animated GIFs
+
+## 3. TECHNICAL ARCHITECTURE
+
+### Modern Tech Stack
+- **Frontend**: Next.js 15 + React 19 + TypeScript
+- **Backend**: Convex (real-time database + serverless functions)
+- **Authentication**: Clerk (enterprise-grade auth)
+- **UI Framework**: Tailwind CSS + shadcn/ui components
+- **Rich Text**: TipTap editor
+- **Testing**: Vitest + Playwright (comprehensive test coverage)
+- **Deployment**: Vercel (optimized for Next.js)
+
+### Real-Time Architecture
+- **Live Data Sync**: Automatic UI updates when data changes
+- **Reactive Queries**: Real-time data fetching with Convex
+- **Optimistic Updates**: Instant UI feedback for better UX
+- **WebSocket Connections**: Persistent real-time connections
+
+### Database Design
+- **Scalable Schema**: Optimized for performance with proper indexing
+- **Search Indexes**: Full-text search across all content types
+- **Relationship Management**: Efficient handling of complex data relationships
+- **Caching Strategy**: Intelligent caching for member statistics and frequently accessed data
+
+## 4. UNIQUE VALUE PROPOSITIONS
+
+### 1. AI-First Community
+- Built specifically for AI engineers, not a generic platform adapted for AI
+- Content categories designed around AI workflows and use cases
+- Community members are verified AI professionals from top companies
+
+### 2. Real-Time Collaboration
+- Instant updates and live interactions
+- No page refreshes needed for new content
+- Real-time presence indicators
+
+### 3. Professional Quality
+- Enterprise-grade authentication and security
+- Modern, responsive design optimized for professional use
+- Comprehensive testing and quality assurance
+
+### 4. Rich Media Support
+- Native support for all media types relevant to AI work
+- YouTube integration for educational content
+- PDF support for research papers and documentation
+
+### 5. Advanced Search & Discovery
+- Semantic search capabilities (planned)
+- Full-text search across all content
+- Intelligent content recommendations
+
+## 5. USER EXPERIENCE
+
+### Onboarding Flow
+1. **Sign Up**: Seamless Clerk authentication with Google/GitHub integration
+2. **Profile Creation**: Rich profile setup with skills, bio, and social links
+3. **Category Exploration**: Guided tour of content categories
+4. **First Post**: Encouraged to share first workflow or insight
+
+### Daily Usage Patterns
+- **Morning Check-in**: Review notifications and new posts
+- **Active Participation**: Comment, vote, and share content throughout the day
+- **Knowledge Sharing**: Post workflows, prompts, and insights
+- **Evening Catch-up**: Browse trending content and engage with community
+
+### Mobile Experience
+- Fully responsive design optimized for mobile devices
+- Touch-friendly interface for voting and interactions
+- Optimized media viewing on smaller screens
+
+## 6. FEATURE CATEGORIES
+
+### Content & Publishing
+- Multi-format post creation
+- Rich text editing
+- Media attachments
+- Link previews
+- Poll creation
+- Content versioning
+
+### Community & Social
+- Member profiles
+- Following system (planned)
+- @Mentions and notifications
+- Real-time chat (planned)
+- Member directory
+- Online presence
+
+### Discovery & Search
+- Global search
+- Category filtering
+- Trending content
+- Personalized recommendations (planned)
+- Tag-based organization
+
+### Engagement & Interaction
+- Voting system
+- Nested comments
+- Bookmarking
+- Sharing capabilities
+- Reaction system (planned)
+
+### Administration & Moderation
+- Content reporting
+- Admin dashboard
+- Member management
+- Category management
+- Analytics and insights
+
+## 7. RECENT DEVELOPMENTS
+
+### Major Feature Releases
+- **Multi-Attachment System**: Support for multiple files per post
+- **Poll Functionality**: Interactive polls with voting and results
+- **Enhanced Search**: Global search across all content types
+- **Notification System**: Real-time notifications for all interactions
+- **YouTube Integration**: Native video embedding and previews
+- **PDF Support**: Document upload and preview capabilities
+- **Comment Reporting**: Community moderation tools
+- **Admin Dashboard**: Comprehensive admin controls
+
+### Technical Improvements
+- **Performance Optimization**: Faster load times and smoother interactions
+- **Mobile Responsiveness**: Enhanced mobile experience
+- **Security Enhancements**: Improved authentication and data protection
+- **Test Coverage**: Comprehensive E2E and unit testing
+- **Real-Time Sync**: Improved real-time data synchronization
+
+## 8. USE CASES
+
+### Primary Use Cases
+1. **Workflow Sharing**: AI engineers share automation and productivity workflows
+2. **Prompt Engineering**: Community-driven prompt templates and techniques
+3. **Technical Discussions**: Deep-dive conversations about AI implementations
+4. **Resource Sharing**: Curated lists of tools, papers, and learning materials
+5. **Career Networking**: Connect with peers and potential collaborators
+6. **Knowledge Base**: Searchable repository of AI engineering knowledge
+
+### Content Examples
+- "My GPT-4 workflow for code review automation"
+- "Effective prompts for technical documentation"
+- "Building RAG systems: lessons learned"
+- "AI tools that transformed my productivity"
+- "Hiring AI engineers: what to look for"
+
+## 9. TECHNICAL CAPABILITIES
+
+### Performance & Scalability
+- **Sub-second Load Times**: Optimized for speed with modern architecture
+- **Real-Time Sync**: Instant updates across all connected clients
+- **Scalable Infrastructure**: Built to handle growing community size
+- **CDN Integration**: Global content delivery for optimal performance
+
+### Security & Privacy
+- **Enterprise Authentication**: Clerk-powered secure login
+- **Data Protection**: GDPR-compliant data handling
+- **Content Moderation**: Automated and manual content review
+- **Secure File Uploads**: Validated and sanitized media uploads
+
+### Integration Capabilities
+- **Discord Integration**: Sync with existing Discord communities
+- **GitHub Integration**: Connect with developer workflows
+- **API-First Design**: Extensible for future integrations
+- **Webhook Support**: Real-time event notifications
+
+### Analytics & Insights
+- **Member Analytics**: Detailed engagement and activity metrics
+- **Content Performance**: Track post engagement and reach
+- **Community Health**: Monitor growth and engagement trends
+- **Search Analytics**: Understand content discovery patterns
+
+---
+
+*This document provides a comprehensive overview of VAI's capabilities, positioning, and unique value propositions for marketing and business development purposes.*

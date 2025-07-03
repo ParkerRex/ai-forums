@@ -3,10 +3,9 @@ import { ReactRenderer } from '@tiptap/react';
 import { Suggestion, SuggestionOptions } from '@tiptap/suggestion';
 import tippy, { Instance as TippyInstance } from 'tippy.js';
 import { MentionAutocomplete } from '@/components/mention-autocomplete';
-import { Id } from '@/convex/_generated/dataModel';
 
 export interface MentionOptions {
-  HTMLAttributes: Record<string, any>;
+  HTMLAttributes: Record<string, unknown>;
   suggestion: Partial<SuggestionOptions>;
 }
 
@@ -18,8 +17,8 @@ export const Mention = Node.create<MentionOptions>({
       HTMLAttributes: {},
       suggestion: {
         char: '@',
-        allowedPrefixes: [' ', '\n'],
-        startOfLine: false,
+        allowedPrefixes: [' ', '\n', ''],
+        startOfLine: true,
       },
     };
   },
@@ -121,8 +120,8 @@ export const Mention = Node.create<MentionOptions>({
     const suggestionPlugin = Suggestion({
       editor: this.editor,
       char: '@',
-      allowedPrefixes: [' ', '\n'],
-      startOfLine: false,
+      allowedPrefixes: [' ', '\n', ''],
+      startOfLine: true,
       ...this.options.suggestion,
     });
     
@@ -132,7 +131,7 @@ export const Mention = Node.create<MentionOptions>({
   },
 });
 
-export function createMentionSuggestion(searchMembers: (term: string) => Promise<any[]>) {
+export function createMentionSuggestion(searchMembers: (term: string) => Promise<unknown[]>) {
   return {
     items: async ({ query }: { query: string }) => {
       console.log('Mention suggestion triggered with query:', query);
@@ -147,7 +146,7 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
       return results;
     },
 
-    command: ({ editor, range, props }: any) => {
+    command: ({ editor, range, props }: { editor: unknown; range: unknown; props: unknown }) => {
       console.log('Mention command called with:', { editor, range, props });
       
       editor
@@ -173,13 +172,13 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
       let popup: TippyInstance[];
 
       return {
-        onStart: (props: any) => {
+        onStart: (props: unknown) => {
           console.log('Mention suggestion onStart called with props:', props);
           
           component = new ReactRenderer(MentionAutocomplete, {
             props: {
               items: props.items,
-              onSelect: (member: any) => {
+              onSelect: (member: unknown) => {
                 console.log('Mention extension: Member selected via onSelect:', member);
                 props.command({
                   id: member._id,
@@ -210,10 +209,10 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
           });
         },
 
-        onUpdate(props: any) {
+        onUpdate(props: unknown) {
           component.updateProps({
             items: props.items,
-            onSelect: (member: any) => {
+            onSelect: (member: unknown) => {
               console.log('Mention extension (onUpdate): Member selected via onSelect:', member);
               props.command({
                 id: member._id,
@@ -235,7 +234,7 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
           });
         },
 
-        onKeyDown(props: any) {
+        onKeyDown(props: unknown) {
           if (props.event.key === 'Escape') {
             popup[0]?.hide();
             return true;

@@ -27,10 +27,7 @@ export default function Header() {
           <div className="flex-1 max-w-md mx-8">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="type / to search"
-                className="pl-10"
-              />
+              <Input placeholder="type / to search" className="pl-10" />
             </div>
           </div>
 
@@ -72,10 +69,7 @@ export default function Header() {
                 </Link>
               </Button>
               <Link href="/create">
-                <Button
-                  variant="outline"
-                  size="sm"
-                >
+                <Button variant="outline" size="sm">
                   <Plus className="w-4 h-4 mr-2" />
                   create
                 </Button>
@@ -83,17 +77,14 @@ export default function Header() {
             </Authenticated>
             <Unauthenticated>
               <SignUpButton mode="modal">
-                <Button
-                  variant="outline"
-                  size="sm"
-                >
+                <Button variant="outline" size="sm">
                   <Plus className="w-4 h-4 mr-2" />
                   create
                 </Button>
               </SignUpButton>
             </Unauthenticated>
             <Authenticated>
-              {/* <NotificationDropdown /> */}
+              <NotificationDropdown />
               <UserButton />
             </Authenticated>
             <Unauthenticated>

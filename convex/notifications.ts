@@ -1,7 +1,65 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
+import type { MutationCtx } from "./_generated/server";
+
+/**
+ * Internal helper function to create notifications from other modules.
+ * This function handles deduplication and self-mention suppression.
+ */
+export async function insertNotification(
+  ctx: MutationCtx,
+  args: {
+    recipientId: Id<"members">;
+    type: "mention" | "reply" | "upvote" | "follow";
+    entityType: "post" | "comment";
+    entityId: string;
+    actorId: Id<"members">;
+    message: string;
+  }
+): Promise<Id<"notifications"> | null> {
+  // Suppress self-notifications
+  if (args.recipientId === args.actorId) {
+    return null;
+  }
+
+  // Check for existing notification to avoid duplicates
+  const existingNotification = await ctx.db
+    .query("notifications")
+    .withIndex("by_recipient", (q) => q.eq("recipientId", args.recipientId))
+    .filter((q) =>
+      q.and(
+        q.eq(q.field("type"), args.type),
+        q.eq(q.field("entityType"), args.entityType),
+        q.eq(q.field("entityId"), args.entityId),
+        q.eq(q.field("actorId"), args.actorId)
+      )
+    )
+    .first();
+
+  if (existingNotification) {
+    // Update existing notification with new message and mark as unread
+    await ctx.db.patch(existingNotification._id, {
+      message: args.message,
+      read: false,
+      createdAt: Date.now(),
+    });
+    return existingNotification._id;
+  }
+
+  // Create new notification
+  return await ctx.db.insert("notifications", {
+    recipientId: args.recipientId,
+    type: args.type,
+    entityType: args.entityType,
+    entityId: args.entityId,
+    actorId: args.actorId,
+    message: args.message,
+    read: false,
+    createdAt: Date.now(),
+  });
+}
 
 export const getNotifications = query({
   args: {
@@ -33,6 +91,9 @@ export const getNotifications = query({
       slug: v.string(),
     }), v.null()),
     timeAgo: v.string(),
+    // Additional fields for link construction
+    postId: v.union(v.id("posts"), v.null()),
+    postSlug: v.union(v.string(), v.null()),
   })),
   handler: async (ctx, args) => {
     const member = await getAuthenticatedMember(ctx);
@@ -53,6 +114,25 @@ export const getNotifications = query({
         const actor = await ctx.db.get(notification.actorId);
         const timeAgo = getTimeAgo(notification.createdAt);
 
+        // Get post information for link construction
+        let postId: Id<"posts"> | null = null;
+        let postSlug: string | null = null;
+
+        if (notification.entityType === "post") {
+          // For post notifications, entityId is the post ID
+          postId = notification.entityId as Id<"posts">;
+          const post = await ctx.db.get(postId);
+          postSlug = post?.slug || null;
+        } else if (notification.entityType === "comment") {
+          // For comment notifications, entityId is the comment ID, we need to get the post
+          const comment = await ctx.db.get(notification.entityId as Id<"comments">);
+          if (comment) {
+            postId = comment.postId;
+            const post = await ctx.db.get(comment.postId);
+            postSlug = post?.slug || null;
+          }
+        }
+
         return {
           ...notification,
           actor: actor ? {
@@ -62,6 +142,8 @@ export const getNotifications = query({
             slug: actor.slug,
           } : null,
           timeAgo,
+          postId,
+          postSlug,
         };
       })
     );

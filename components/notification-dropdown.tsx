@@ -37,25 +37,35 @@ interface NotificationData {
     slug: string;
   } | null;
   timeAgo: string;
+  // Additional fields for link construction
+  postId: Id<"posts"> | null;
+  postSlug: string | null;
 }
 
 export function NotificationDropdown() {
-  const { member, isLoading } = useCurrentMember();
+  const { member } = useCurrentMember();
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const notifications = useQuery(
     api.notifications.getNotifications,
-    member ? { limit: 10 } : "skip"
+    member ? { limit: 10 } : "skip",
   );
 
   const markAsRead = useMutation(api.notifications.markNotificationAsRead);
-  const markAllAsRead = useMutation(api.notifications.markAllNotificationsAsRead);
+  const markAllAsRead = useMutation(
+    api.notifications.markAllNotificationsAsRead,
+  );
 
   if (!member) return null;
 
-  const handleNotificationClick = async (notificationId: string, read: boolean) => {
+  const handleNotificationClick = async (
+    notificationId: string,
+    read: boolean,
+  ) => {
     if (!read) {
-      await markAsRead({ notificationId: notificationId as Id<"notifications"> });
+      await markAsRead({
+        notificationId: notificationId as Id<"notifications">,
+      });
     }
     setIsOpen(false);
   };
@@ -65,10 +75,17 @@ export function NotificationDropdown() {
   };
 
   const getNotificationLink = (notification: NotificationData) => {
+    // Use postSlug if available, otherwise fall back to postId
+    const postIdentifier = notification.postSlug || notification.postId;
+
+    if (!postIdentifier) {
+      return "/";
+    }
+
     if (notification.entityType === "post") {
-      return `/posts/${notification.entityId}`;
+      return `/posts/${postIdentifier}`;
     } else if (notification.entityType === "comment") {
-      return `/posts/${notification.entityId}#comment-${notification.entityId}`;
+      return `/posts/${postIdentifier}#comment-${notification.entityId}`;
     }
     return "/";
   };
@@ -83,19 +100,20 @@ export function NotificationDropdown() {
       <DropdownMenuContent align="end" className="w-80">
         <div className="flex items-center justify-between px-2 py-1">
           <DropdownMenuLabel>Notifications</DropdownMenuLabel>
-          {notifications && notifications.some((n: NotificationData) => !n.read) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs"
-              onClick={handleMarkAllAsRead}
-            >
-              Mark all read
-            </Button>
-          )}
+          {notifications &&
+            notifications.some((n: NotificationData) => !n.read) && (
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-xs"
+                onClick={handleMarkAllAsRead}
+              >
+                Mark all read
+              </Button>
+            )}
         </div>
         <DropdownMenuSeparator />
-        
+
         {!notifications || notifications.length === 0 ? (
           <div className="px-4 py-8 text-center text-muted-foreground text-sm">
             No notifications yet
@@ -106,7 +124,9 @@ export function NotificationDropdown() {
               <DropdownMenuItem
                 key={notification._id}
                 className="p-0"
-                onClick={() => handleNotificationClick(notification._id, notification.read)}
+                onClick={() =>
+                  handleNotificationClick(notification._id, notification.read)
+                }
               >
                 <Link
                   href={getNotificationLink(notification)}
@@ -124,7 +144,10 @@ export function NotificationDropdown() {
                         {notification.message}
                       </p>
                       {!notification.read && (
-                        <Badge variant="secondary" className="h-2 w-2 rounded-full p-0 bg-blue-500" />
+                        <Badge
+                          variant="secondary"
+                          className="h-2 w-2 rounded-full p-0 bg-blue-500"
+                        />
                       )}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">

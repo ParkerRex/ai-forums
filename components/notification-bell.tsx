@@ -13,11 +13,11 @@ interface NotificationBellProps {
 }
 
 export function NotificationBell({ onClick }: NotificationBellProps) {
-  const { member, isLoading } = useCurrentMember();
-  
+  const { member } = useCurrentMember();
+
   const unreadCount = useQuery(
     api.notifications.getUnreadNotificationCount,
-    member ? {} : "skip"
+    member ? {} : "skip",
   );
 
   if (!member) return null;

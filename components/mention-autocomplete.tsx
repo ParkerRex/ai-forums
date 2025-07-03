@@ -27,11 +27,11 @@ export function MentionAutocomplete({
 }: MentionAutocompleteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
-  
-  console.log('MentionAutocomplete: Component rendered with props:', { 
-    itemsCount: items?.length, 
-    hasOnSelect: typeof onSelect === 'function',
-    hasOnClose: typeof onClose === 'function'
+
+  console.log("MentionAutocomplete: Component rendered with props:", {
+    itemsCount: items?.length,
+    hasOnSelect: typeof onSelect === "function",
+    hasOnClose: typeof onClose === "function",
   });
 
   useEffect(() => {
@@ -39,6 +39,16 @@ export function MentionAutocomplete({
   }, [items]);
 
   useEffect(() => {
+    if (!Array.isArray(items)) {
+      console.error(
+        "[MentionAutocomplete] Expected 'items' prop to be an array, but received:",
+        items,
+        "(type:",
+        typeof items,
+        ") – Check caller component prop mismatch.",
+      );
+    }
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!items || items.length === 0) return;
 
@@ -75,36 +85,47 @@ export function MentionAutocomplete({
   return (
     <div
       ref={containerRef}
-      className="w-64 bg-popover border border-border rounded-md shadow-lg max-h-48 overflow-y-auto"
+      className="w-72 bg-popover border border-border rounded-md shadow-xl z-50"
     >
-      {items.map((member, index) => (
-        <div
-          key={member._id}
-          className={`flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-accent ${
-            index === selectedIndex ? "bg-accent" : ""
-          }`}
-          onClick={() => {
-            console.log('MentionAutocomplete: Member clicked:', member);
-            console.log('MentionAutocomplete: About to call onSelect with member:', member);
-            onSelect(member);
-            console.log('MentionAutocomplete: onSelect called successfully');
-          }}
-        >
-          <Avatar className="w-6 h-6">
-            <AvatarFallback className="bg-muted text-muted-foreground text-xs">
-              {member.firstName[0]}{member.lastName[0]}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-medium text-foreground truncate">
-              {member.firstName} {member.lastName}
-            </div>
-            <div className="text-xs text-muted-foreground truncate">
-              @{member.slug}
+      {items.length > 0 && (
+        <div className="px-3 py-2 text-xs font-medium text-muted-foreground border-b border-border bg-muted/50">
+          Mention a member
+        </div>
+      )}
+      <div className="max-h-64 overflow-y-auto">
+        {items.map((member, index) => (
+          <div
+            key={member._id}
+            className={`flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-accent ${
+              index === selectedIndex ? "bg-accent" : ""
+            }`}
+            onClick={() => {
+              console.log("MentionAutocomplete: Member clicked:", member);
+              console.log(
+                "MentionAutocomplete: About to call onSelect with member:",
+                member,
+              );
+              onSelect(member);
+              console.log("MentionAutocomplete: onSelect called successfully");
+            }}
+          >
+            <Avatar className="w-6 h-6">
+              <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                {member.firstName[0]}
+                {member.lastName[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-medium text-foreground truncate">
+                {member.firstName} {member.lastName}
+              </div>
+              <div className="text-xs text-muted-foreground truncate">
+                @{member.slug}
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

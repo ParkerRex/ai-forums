@@ -2,6 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
+import { insertNotification } from "./notifications";
 
 // Helper function to check if a member is the author of a comment
 function isCommentAuthor(comment: { memberId: Id<"members"> }, memberId: Id<"members">): boolean {
@@ -210,6 +211,51 @@ export const createComment = mutation({
           updatedAt: now,
         });
       }
+    }
+
+    // Create notifications
+    try {
+      // 1. Reply notification - notify the parent comment author
+      if (parentCommentId) {
+        const parentComment = await ctx.db.get(parentCommentId);
+        if (parentComment && parentComment.memberId !== member._id) {
+          const parentAuthor = await ctx.db.get(parentComment.memberId);
+          if (parentAuthor) {
+            await insertNotification(ctx, {
+              recipientId: parentComment.memberId,
+              type: "reply",
+              entityType: "comment",
+              entityId: commentId,
+              actorId: member._id,
+              message: `${member.firstName} ${member.lastName} replied to your comment`,
+            });
+          }
+        }
+      }
+
+      // 2. Mention notifications - notify mentioned users
+      if (mentions && mentions.length > 0) {
+        for (const mentionedMemberId of mentions) {
+          // Skip if mentioning self
+          if (mentionedMemberId === member._id) continue;
+
+          // Verify the mentioned member exists
+          const mentionedMember = await ctx.db.get(mentionedMemberId);
+          if (mentionedMember) {
+            await insertNotification(ctx, {
+              recipientId: mentionedMemberId,
+              type: "mention",
+              entityType: "comment",
+              entityId: commentId,
+              actorId: member._id,
+              message: `${member.firstName} ${member.lastName} mentioned you in a comment`,
+            });
+          }
+        }
+      }
+    } catch (error) {
+      // Log notification errors but don't fail the comment creation
+      console.error("Failed to create notifications for comment:", error);
     }
 
     return commentId;
