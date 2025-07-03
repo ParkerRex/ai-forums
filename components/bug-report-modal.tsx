@@ -53,7 +53,9 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
   const [browserInfo, setBrowserInfo] = useState<string>("");
-  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
+  const [uploadProgress, setUploadProgress] = useState<{
+    [key: string]: number;
+  }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const createBugReport = useAction(api.github.createBugReport);
@@ -85,24 +87,38 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
 
+      if (files.length === 0) return;
+
+      const maxAttachments = 5;
+      let currentCount = attachments.length;
+
+      // Accumulate new attachments first so we can batch update state once
+      const validFiles: File[] = [];
+      const previewUrls: string[] = [];
+
       for (const file of files) {
+        if (currentCount >= maxAttachments) {
+          toast.error("Maximum 5 attachments allowed per bug report");
+          break;
+        }
+
         const validation = validateMediaFile(file);
         if (!validation.valid) {
           toast.error(validation.error);
           continue;
         }
 
-        if (attachments.length >= 5) {
-          toast.error("Maximum 5 attachments allowed per bug report");
-          break;
-        }
+        validFiles.push(file);
+        previewUrls.push(getFilePreviewUrl(file));
+        currentCount += 1;
+      }
 
-        setAttachments((prev) => [...prev, file]);
-        const previewUrl = getFilePreviewUrl(file);
-        setAttachmentPreviews((prev) => [...prev, previewUrl]);
+      if (validFiles.length > 0) {
+        setAttachments((prev) => [...prev, ...validFiles]);
+        setAttachmentPreviews((prev) => [...prev, ...previewUrls]);
       }
     },
-    [attachments.length],
+    [attachments],
   );
 
   const handleRemoveAttachment = useCallback(
@@ -132,20 +148,23 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
         for (let i = 0; i < attachments.length; i++) {
           const file = attachments[i];
           const fileKey = `${file.name}-${i}`;
-          
+
           try {
             const uploadResult = await uploadMedia(convex, file, {
               onProgress: (progress) => {
-                setUploadProgress(prev => ({
+                setUploadProgress((prev) => ({
                   ...prev,
-                  [fileKey]: progress.percentage
+                  [fileKey]: progress.percentage,
                 }));
-                
+
                 // Show progress toast for the current file
                 if (progress.percentage < 100) {
-                  toast.loading(`Uploading ${file.name}: ${progress.percentage}%`, {
-                    id: fileKey,
-                  });
+                  toast.loading(
+                    `Uploading ${file.name}: ${progress.percentage}%`,
+                    {
+                      id: fileKey,
+                    },
+                  );
                 } else {
                   toast.success(`${file.name} uploaded successfully`, {
                     id: fileKey,
@@ -158,7 +177,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
             console.error("Failed to upload attachment:", uploadError);
             toast.error(
               `Failed to upload ${file.name}. Continuing without this attachment.`,
-              { id: fileKey }
+              { id: fileKey },
             );
           }
         }
@@ -375,14 +394,20 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                         <div className="w-20 h-20 bg-muted rounded border flex flex-col items-center justify-center p-2">
                           {file.type === "application/pdf" ? (
                             <FileText className="w-8 h-8 text-muted-foreground mb-1" />
-                          ) : file.type === "application/msword" || 
-                            file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
+                          ) : file.type === "application/msword" ||
+                            file.type ===
+                              "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
                             <FileText className="w-8 h-8 text-blue-600 mb-1" />
                           ) : (
                             <FileIcon className="w-8 h-8 text-muted-foreground mb-1" />
                           )}
-                          <span className="text-xs text-center truncate w-full" title={file.name}>
-                            {file.name.length > 10 ? file.name.substring(0, 7) + '...' : file.name}
+                          <span
+                            className="text-xs text-center truncate w-full"
+                            title={file.name}
+                          >
+                            {file.name.length > 10
+                              ? file.name.substring(0, 7) + "..."
+                              : file.name}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {(file.size / 1024).toFixed(0)}KB

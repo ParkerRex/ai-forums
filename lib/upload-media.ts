@@ -144,8 +144,11 @@ export async function uploadMedia(
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
   ];
   
-  const isAllowed = allowedTypes.some(type => 
-    type.includes("/") ? file.type.startsWith(type) : file.type === type
+  // Treat types ending with a trailing slash (e.g., "image/", "video/") as prefixes
+  // and match all others exactly. This prevents types like "application/pdf-malicious"
+  // from bypassing validation.
+  const isAllowed = allowedTypes.some((type) =>
+    type.endsWith("/") ? file.type.startsWith(type) : file.type === type
   );
   
   if (!isAllowed) {
