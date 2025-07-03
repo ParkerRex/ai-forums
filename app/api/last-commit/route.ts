@@ -20,7 +20,8 @@ export async function GET() {
       {
         headers: {
           Authorization: `Bearer ${githubToken}`,
-          Accept: 'application/vnd.github.v3+json',
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
         },
       }
     )

@@ -3,6 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useAction } from "convex/react";
+import { useConvex } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
   Dialog,
@@ -22,11 +23,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Paperclip, X, Loader2 } from "lucide-react";
+import { Paperclip, X, Loader2, FileText, FileIcon } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { getBrowserInfo } from "@/lib/browser-detection";
-import { validateMediaFile, getFilePreviewUrl, revokeFilePreviewUrl } from "@/lib/upload-media";
+import {
+  validateMediaFile,
+  getFilePreviewUrl,
+  revokeFilePreviewUrl,
+  uploadMedia,
+} from "@/lib/upload-media";
 
 interface BugReportModalProps {
   isOpen: boolean;
@@ -47,9 +53,11 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
   const [browserInfo, setBrowserInfo] = useState<string>("");
+  const [uploadProgress, setUploadProgress] = useState<{ [key: string]: number }>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const createBugReport = useAction(api.github.createBugReport);
+  const convex = useConvex();
 
   const {
     register,
@@ -73,35 +81,41 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
     }
   }, [isOpen]);
 
-  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    for (const file of files) {
-      const validation = validateMediaFile(file);
-      if (!validation.valid) {
-        toast.error(validation.error);
-        continue;
-      }
-      
-      if (attachments.length >= 5) {
-        toast.error("Maximum 5 attachments allowed per bug report");
-        break;
-      }
-      
-      setAttachments(prev => [...prev, file]);
-      const previewUrl = getFilePreviewUrl(file);
-      setAttachmentPreviews(prev => [...prev, previewUrl]);
-    }
-  }, [attachments.length]);
+  const handleFileSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
 
-  const handleRemoveAttachment = useCallback((index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
-    const previewUrl = attachmentPreviews[index];
-    if (previewUrl) {
-      revokeFilePreviewUrl(previewUrl);
-    }
-    setAttachmentPreviews(prev => prev.filter((_, i) => i !== index));
-  }, [attachmentPreviews]);
+      for (const file of files) {
+        const validation = validateMediaFile(file);
+        if (!validation.valid) {
+          toast.error(validation.error);
+          continue;
+        }
+
+        if (attachments.length >= 5) {
+          toast.error("Maximum 5 attachments allowed per bug report");
+          break;
+        }
+
+        setAttachments((prev) => [...prev, file]);
+        const previewUrl = getFilePreviewUrl(file);
+        setAttachmentPreviews((prev) => [...prev, previewUrl]);
+      }
+    },
+    [attachments.length],
+  );
+
+  const handleRemoveAttachment = useCallback(
+    (index: number) => {
+      setAttachments((prev) => prev.filter((_, i) => i !== index));
+      const previewUrl = attachmentPreviews[index];
+      if (previewUrl) {
+        revokeFilePreviewUrl(previewUrl);
+      }
+      setAttachmentPreviews((prev) => prev.filter((_, i) => i !== index));
+    },
+    [attachmentPreviews],
+  );
 
   const onSubmit = async (data: BugReportFormData) => {
     if (isSubmitting) return;
@@ -109,6 +123,47 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
     setIsSubmitting(true);
 
     try {
+      // Upload attachments to R2 first if any exist
+      let attachmentUrls: string[] = [];
+      if (attachments.length > 0) {
+        toast.info("Uploading attachments...");
+        setUploadProgress({});
+
+        for (let i = 0; i < attachments.length; i++) {
+          const file = attachments[i];
+          const fileKey = `${file.name}-${i}`;
+          
+          try {
+            const uploadResult = await uploadMedia(convex, file, {
+              onProgress: (progress) => {
+                setUploadProgress(prev => ({
+                  ...prev,
+                  [fileKey]: progress.percentage
+                }));
+                
+                // Show progress toast for the current file
+                if (progress.percentage < 100) {
+                  toast.loading(`Uploading ${file.name}: ${progress.percentage}%`, {
+                    id: fileKey,
+                  });
+                } else {
+                  toast.success(`${file.name} uploaded successfully`, {
+                    id: fileKey,
+                  });
+                }
+              },
+            });
+            attachmentUrls.push(uploadResult.url);
+          } catch (uploadError) {
+            console.error("Failed to upload attachment:", uploadError);
+            toast.error(
+              `Failed to upload ${file.name}. Continuing without this attachment.`,
+              { id: fileKey }
+            );
+          }
+        }
+      }
+
       const result = await createBugReport({
         title: data.title,
         stepsToReproduce: data.stepsToReproduce,
@@ -117,33 +172,34 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
         severity: data.severity,
         browserInfo,
         additionalContext: data.additionalContext,
-        attachments: attachments.length > 0 ? attachments : undefined,
+        attachmentUrls: attachmentUrls.length > 0 ? attachmentUrls : undefined,
       });
 
       toast.success(
         <div>
           Bug report submitted successfully!{" "}
-          <a 
-            href={result.issueUrl} 
-            target="_blank" 
+          <a
+            href={result.issueUrl}
+            target="_blank"
             rel="noopener noreferrer"
             className="underline"
           >
             View issue #{result.issueNumber}
           </a>
-        </div>
+        </div>,
       );
 
       reset();
       setAttachments([]);
-      attachmentPreviews.forEach(url => revokeFilePreviewUrl(url));
+      attachmentPreviews.forEach((url) => revokeFilePreviewUrl(url));
       setAttachmentPreviews([]);
       onClose();
     } catch (error) {
       console.error("Failed to submit bug report:", error);
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : "Failed to submit bug report. Please try again.";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to submit bug report. Please try again.";
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -154,7 +210,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
     if (!isSubmitting) {
       reset();
       setAttachments([]);
-      attachmentPreviews.forEach(url => revokeFilePreviewUrl(url));
+      attachmentPreviews.forEach((url) => revokeFilePreviewUrl(url));
       setAttachmentPreviews([]);
       onClose();
     }
@@ -185,7 +241,9 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               })}
             />
             {errors.title && (
-              <span className="text-sm text-red-600">{errors.title.message}</span>
+              <span className="text-sm text-red-600">
+                {errors.title.message}
+              </span>
             )}
           </div>
 
@@ -204,7 +262,9 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               })}
             />
             {errors.stepsToReproduce && (
-              <span className="text-sm text-red-600">{errors.stepsToReproduce.message}</span>
+              <span className="text-sm text-red-600">
+                {errors.stepsToReproduce.message}
+              </span>
             )}
           </div>
 
@@ -223,7 +283,9 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               })}
             />
             {errors.expectedBehavior && (
-              <span className="text-sm text-red-600">{errors.expectedBehavior.message}</span>
+              <span className="text-sm text-red-600">
+                {errors.expectedBehavior.message}
+              </span>
             )}
           </div>
 
@@ -242,13 +304,23 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               })}
             />
             {errors.actualBehavior && (
-              <span className="text-sm text-red-600">{errors.actualBehavior.message}</span>
+              <span className="text-sm text-red-600">
+                {errors.actualBehavior.message}
+              </span>
             )}
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="severity">Severity</Label>
-            <Select value={severity} onValueChange={(value) => setValue("severity", value as "Low" | "Medium" | "High" | "Critical")}>
+            <Select
+              value={severity}
+              onValueChange={(value) =>
+                setValue(
+                  "severity",
+                  value as "Low" | "Medium" | "High" | "Critical",
+                )
+              }
+            >
               <SelectTrigger>
                 <SelectValue placeholder="Select severity" />
               </SelectTrigger>
@@ -264,8 +336,12 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
           <div className="space-y-2">
             <Label>Environment Information</Label>
             <div className="p-3 bg-muted rounded-md text-sm">
-              <div><strong>Browser:</strong> {browserInfo}</div>
-              <div><strong>Platform:</strong> VAI-VEX</div>
+              <div>
+                <strong>Browser:</strong> {browserInfo}
+              </div>
+              <div>
+                <strong>Platform:</strong> VAI-VEX
+              </div>
             </div>
           </div>
 
@@ -282,7 +358,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                 <Paperclip className="w-4 h-4 mr-2" />
                 Add Files ({attachments.length}/5)
               </Button>
-              
+
               {attachments.length > 0 && (
                 <div className="flex flex-wrap gap-2">
                   {attachments.map((file, index) => (
@@ -296,8 +372,21 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                           className="w-20 h-20 object-cover rounded border"
                         />
                       ) : (
-                        <div className="w-20 h-20 bg-muted rounded border flex items-center justify-center">
-                          <span className="text-xs text-center p-1">{file.name}</span>
+                        <div className="w-20 h-20 bg-muted rounded border flex flex-col items-center justify-center p-2">
+                          {file.type === "application/pdf" ? (
+                            <FileText className="w-8 h-8 text-muted-foreground mb-1" />
+                          ) : file.type === "application/msword" || 
+                            file.type === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
+                            <FileText className="w-8 h-8 text-blue-600 mb-1" />
+                          ) : (
+                            <FileIcon className="w-8 h-8 text-muted-foreground mb-1" />
+                          )}
+                          <span className="text-xs text-center truncate w-full" title={file.name}>
+                            {file.name.length > 10 ? file.name.substring(0, 7) + '...' : file.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {(file.size / 1024).toFixed(0)}KB
+                          </span>
                         </div>
                       )}
                       <Button
@@ -317,7 +406,9 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="additionalContext">Additional Context (Optional)</Label>
+            <Label htmlFor="additionalContext">
+              Additional Context (Optional)
+            </Label>
             <Textarea
               id="additionalContext"
               placeholder="Any additional information that might be helpful..."
@@ -325,12 +416,15 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               {...register("additionalContext", {
                 maxLength: {
                   value: 500,
-                  message: "Additional context must be less than 500 characters",
+                  message:
+                    "Additional context must be less than 500 characters",
                 },
               })}
             />
             {errors.additionalContext && (
-              <span className="text-sm text-red-600">{errors.additionalContext.message}</span>
+              <span className="text-sm text-red-600">
+                {errors.additionalContext.message}
+              </span>
             )}
           </div>
 
