@@ -13,6 +13,7 @@ import PostPreview from "@/components/post-preview";
 import { PostData } from "@/lib/post-preview-utils";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { BookmarkButton } from "@/components/bookmark-button";
+import { toast } from "sonner";
 
 // Interface to match Convex post data structure
 interface Post extends Omit<PostData, "member" | "author" | "category"> {
@@ -139,6 +140,18 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
     router.push(`/${post.category?.name || "general"}/${post.slug}`);
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const postUrl = `${window.location.origin}/${post.category?.name || 'general'}/${post.slug}`;
+    
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      toast.success("Link copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy link");
+    }
+  };
+
   return (
     <div className="bg-card border border-border/50 rounded-md hover:border-border transition-colors">
       <div className="flex">
@@ -253,6 +266,7 @@ export default function PostCard({ post, size = "medium" }: PostCardProps) {
             variant="ghost"
             size="sm"
             className="p-2 h-auto hover:bg-muted"
+            onClick={handleShare}
             onMouseEnter={() => shareIconRef.current?.startAnimation()}
             onMouseLeave={() => shareIconRef.current?.stopAnimation()}
           >

@@ -63,7 +63,7 @@ describe('Post Creation', () => {
       
       const result = validateMediaFile(unsupportedFile);
       expect(result.valid).toBe(false);
-      expect(result.error).toBe('File type not supported. Please upload an image, video, or PDF.');
+      expect(result.error).toBe('File type not supported. Please upload an image, video, PDF, or Word document.');
     });
 
     it('should accept all supported image types', () => {
