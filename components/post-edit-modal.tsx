@@ -45,7 +45,12 @@ interface PostEditModalProps {
   onSuccess?: () => void;
 }
 
-export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModalProps) {
+export function PostEditModal({
+  post,
+  isOpen,
+  onClose,
+  onSuccess,
+}: PostEditModalProps) {
   const convex = useConvex();
   const router = useRouter();
 
@@ -64,7 +69,9 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
   });
 
   // Track which fields have been touched by the user
-  const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(new Set());
+  const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(
+    new Set(),
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -75,7 +82,9 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
   // Additional validation for media/link posts
   const isPostTypeValid = () => {
     if (formData.type === "image" || formData.type === "video") {
-      return formData.mediaFile !== undefined || formData.mediaUrl !== undefined;
+      return (
+        formData.mediaFile !== undefined || formData.mediaUrl !== undefined
+      );
     }
     if (formData.type === "link") {
       return formData.linkUrl !== undefined && formData.linkUrl.trim() !== "";
@@ -107,21 +116,27 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
   }, [post]);
 
   // Form handlers
-  const handleFormDataChange = useCallback((data: Partial<ExtendedPostFormData>) => {
-    setFormData(prev => ({ ...prev, ...data }));
-    setSubmitError(null);
-  }, []);
+  const handleFormDataChange = useCallback(
+    (data: Partial<ExtendedPostFormData>) => {
+      setFormData((prev) => ({ ...prev, ...data }));
+      setSubmitError(null);
+    },
+    [],
+  );
 
-  const handleTouchedFieldsChange = useCallback((fields: Set<keyof PostFormData>) => {
-    setTouchedFields(fields);
-  }, []);
+  const handleTouchedFieldsChange = useCallback(
+    (fields: Set<keyof PostFormData>) => {
+      setTouchedFields(fields);
+    },
+    [],
+  );
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!isFormComplete || isSubmitting) {
       // Mark all fields as touched to show validation errors
-      setTouchedFields(new Set(['title', 'content', 'categoryId']));
+      setTouchedFields(new Set(["title", "content", "categoryId"]));
       return;
     }
 
@@ -133,7 +148,10 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
       let thumbnailUrl = formData.thumbnailUrl;
 
       // Upload media if a new file was selected
-      if (formData.mediaFile && (formData.type === "image" || formData.type === "video")) {
+      if (
+        formData.mediaFile &&
+        (formData.type === "image" || formData.type === "video")
+      ) {
         try {
           const uploadResult = await uploadMedia(convex, formData.mediaFile, {
             onProgress: (progress) => {
@@ -152,7 +170,8 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
         postId: post._id,
         title: formData.title.trim(),
         content: formData.content.trim(),
-        type: formData.type,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type: formData.type as any,
         mediaUrl,
         thumbnailUrl,
         categoryId: formData.categoryId as Id<"categories">,
@@ -174,7 +193,8 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
       const updatedCategoryName = result.categoryName;
       const originalCategoryName = post.category?.name;
       const categoryChanged =
-        updatedCategoryName !== undefined && updatedCategoryName !== originalCategoryName;
+        updatedCategoryName !== undefined &&
+        updatedCategoryName !== originalCategoryName;
 
       if (slugChanged || categoryChanged) {
         // Prefer the updated category name when constructing the new URL
@@ -194,9 +214,10 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
       }
     } catch (error) {
       console.error("Failed to update post:", error);
-      const errorMessage = error instanceof Error
-        ? error.message
-        : "Failed to update post. Please try again.";
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to update post. Please try again.";
       setSubmitError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -211,7 +232,10 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="post-edit-modal">
+      <DialogContent
+        className="max-w-4xl max-h-[90vh] overflow-y-auto"
+        data-testid="post-edit-modal"
+      >
         <DialogHeader>
           <DialogTitle>Edit Post</DialogTitle>
         </DialogHeader>
@@ -246,11 +270,16 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
           />
 
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
-            <Button 
-              type="submit" 
+            <Button
+              type="submit"
               disabled={!isFormComplete || isSubmitting}
               className="min-w-[100px]"
               data-testid="save-post-button"
@@ -269,4 +298,4 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
       </DialogContent>
     </Dialog>
   );
-} 
+}
