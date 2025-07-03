@@ -94,6 +94,7 @@ interface CommentItemProps {
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
+    mentions?: Id<"members">[],
   ) => void;
   isSubmittingReply: boolean;
   isNewlyCreated?: boolean;
@@ -467,8 +468,14 @@ function CommentItem({
           <div className="mt-4 ml-11 space-y-3">
             <EnhancedCommentInput
               placeholder={`Reply to ${comment.member?.firstName || "this comment"}...`}
-              onSubmit={(content, attachments, linkPreviews) =>
-                onSubmitReply(comment._id, content, attachments, linkPreviews)
+              onSubmit={(content, attachments, linkPreviews, mentions) =>
+                onSubmitReply(
+                  comment._id,
+                  content,
+                  attachments,
+                  linkPreviews,
+                  mentions,
+                )
               }
               isSubmitting={isSubmittingReply}
               className="mb-3"
@@ -551,6 +558,7 @@ export default function CommentSection({
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
+    mentions?: Id<"members">[],
   ) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
@@ -562,6 +570,7 @@ export default function CommentSection({
         content: content.trim(),
         attachments,
         linkPreviews,
+        mentions,
       });
 
       if (newComment) {
@@ -580,7 +589,7 @@ export default function CommentSection({
       handleMutationSuccess("Comment posted successfully!");
     } catch (error) {
       handleMutationError(error, () =>
-        handleSubmitComment(content, attachments, linkPreviews),
+        handleSubmitComment(content, attachments, linkPreviews, mentions),
       );
     } finally {
       setIsSubmitting(false);
@@ -592,6 +601,7 @@ export default function CommentSection({
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
+    mentions?: Id<"members">[],
   ) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
@@ -604,6 +614,7 @@ export default function CommentSection({
         parentCommentId: parentId,
         attachments,
         linkPreviews,
+        mentions,
       });
 
       if (newReply) {
@@ -623,7 +634,13 @@ export default function CommentSection({
       handleMutationSuccess("Reply posted successfully!");
     } catch (error) {
       handleMutationError(error, () =>
-        handleSubmitReply(parentId, content, attachments, linkPreviews),
+        handleSubmitReply(
+          parentId,
+          content,
+          attachments,
+          linkPreviews,
+          mentions,
+        ),
       );
     } finally {
       setIsSubmittingReply(false);
