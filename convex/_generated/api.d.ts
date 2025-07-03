@@ -20,6 +20,7 @@ import type * as categories from "../categories.js";
 import type * as comments from "../comments.js";
 import type * as crons from "../crons.js";
 import type * as deduplication from "../deduplication.js";
+import type * as github from "../github.js";
 import type * as linkPreview from "../linkPreview.js";
 import type * as linkPreviews from "../linkPreviews.js";
 import type * as members from "../members.js";
@@ -54,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   comments: typeof comments;
   crons: typeof crons;
   deduplication: typeof deduplication;
+  github: typeof github;
   linkPreview: typeof linkPreview;
   linkPreviews: typeof linkPreviews;
   members: typeof members;
