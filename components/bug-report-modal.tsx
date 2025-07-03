@@ -140,7 +140,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
 
     try {
       // Upload attachments to R2 first if any exist
-      let attachmentUrls: string[] = [];
+      const attachmentUrls: string[] = [];
       if (attachments.length > 0) {
         toast.info("Uploading attachments...");
         setUploadProgress({});
