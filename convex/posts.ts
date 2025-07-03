@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 import { getAuthenticatedMember } from "./auth";
+import { insertNotification } from "./notifications";
 
 // Helper function to check if a member is the author of a post
 function isPostAuthor(post: { memberId: Id<"members"> }, memberId: Id<"members">): boolean {
@@ -235,6 +236,7 @@ export const createPost = mutation({
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
+    mentions: v.optional(v.array(v.id("members"))),
     // Multi-attachment support
     attachments: v.optional(v.array(v.object({
       id: v.string(),
@@ -355,6 +357,7 @@ export const createPost = mutation({
       linkTitle: args.linkTitle,
       linkDescription: args.linkDescription,
       linkImage: args.linkImage,
+      mentions: args.mentions,
       // Multi-attachment support
       attachments: args.attachments,
     });
@@ -364,6 +367,32 @@ export const createPost = mutation({
       postCount: (category.postCount || 0) + 1,
       updatedAt: now,
     });
+
+    // Create mention notifications
+    try {
+      if (args.mentions && args.mentions.length > 0) {
+        for (const mentionedMemberId of args.mentions) {
+          // Skip if mentioning self
+          if (mentionedMemberId === member._id) continue;
+
+          // Verify the mentioned member exists
+          const mentionedMember = await ctx.db.get(mentionedMemberId);
+          if (mentionedMember) {
+            await insertNotification(ctx, {
+              recipientId: mentionedMemberId,
+              type: "mention",
+              entityType: "post",
+              entityId: postId,
+              actorId: member._id,
+              message: `${member.firstName} ${member.lastName} mentioned you in a post`,
+            });
+          }
+        }
+      }
+    } catch (error) {
+      // Log notification errors but don't fail the post creation
+      console.error("Failed to create notifications for post:", error);
+    }
 
     return { postId, slug };
   },
@@ -1054,4 +1083,4 @@ export const addSlugsToExistingPosts = mutation({
     console.log("Slug generation migration completed successfully!");
     return { processed: posts.length };
   },
-});                
+});
