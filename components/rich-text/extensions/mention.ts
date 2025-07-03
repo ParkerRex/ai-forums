@@ -139,14 +139,17 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
       console.log('Search results:', results);
       console.log('Returning results count:', results.length);
       if (results.length > 0) {
-        console.log('First result structure:', JSON.stringify(results[0], null, 2));
-        console.log('First result keys:', Object.keys(results[0]));
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const first: any = results[0];
+        console.log('First result structure:', JSON.stringify(first, null, 2));
+        console.log('First result keys:', Object.keys(first));
       }
       console.log('About to return results from items function');
       return results;
     },
 
-    command: ({ editor, range, props }: { editor: unknown; range: unknown; props: unknown }) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    command: ({ editor, range, props }: { editor: any; range: any; props: any }) => {
       console.log('Mention command called with:', { editor, range, props });
       
       editor
@@ -172,18 +175,21 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
       let popup: TippyInstance[];
 
       return {
-        onStart: (props: unknown) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onStart: (props: any) => {
           console.log('Mention suggestion onStart called with props:', props);
           
           component = new ReactRenderer(MentionAutocomplete, {
             props: {
               items: props.items,
               onSelect: (member: unknown) => {
-                console.log('Mention extension: Member selected via onSelect:', member);
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const m = member as any;
+                console.log('Mention extension: Member selected via onSelect:', m);
                 props.command({
-                  id: member._id,
-                  label: `${member.firstName} ${member.lastName}`,
-                  slug: member.slug,
+                  id: m._id,
+                  label: `${m.firstName} ${m.lastName}`,
+                  slug: m.slug,
                 });
               },
               onClose: () => {
@@ -209,15 +215,18 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
           });
         },
 
-        onUpdate(props: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onUpdate(props: any) {
           component.updateProps({
             items: props.items,
             onSelect: (member: unknown) => {
-              console.log('Mention extension (onUpdate): Member selected via onSelect:', member);
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const m = member as any;
+              console.log('Mention extension (onUpdate): Member selected via onSelect:', m);
               props.command({
-                id: member._id,
-                label: `${member.firstName} ${member.lastName}`,
-                slug: member.slug,
+                id: m._id,
+                label: `${m.firstName} ${m.lastName}`,
+                slug: m.slug,
               });
             },
             onClose: () => {
@@ -234,7 +243,8 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
           });
         },
 
-        onKeyDown(props: unknown) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onKeyDown(props: any) {
           if (props.event.key === 'Escape') {
             popup[0]?.hide();
             return true;

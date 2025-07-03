@@ -117,7 +117,7 @@ export function FullRichTextEditor({
 
   if (!editor) {
     return (
-      <div className={`border border rounded-lg ${className}`}>
+      <div className={`border rounded-lg ${className}`}>
         <div className="border-b border p-2 bg-muted rounded-t-lg">
           <div className="flex items-center justify-center">
             <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
@@ -138,7 +138,7 @@ export function FullRichTextEditor({
 
   return (
     <div
-      className={`border border rounded-lg focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}
+      className={`border rounded-lg focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}
     >
       {/* Toolbar */}
       <div className="border-b border p-2 bg-muted rounded-t-lg">
