@@ -10,10 +10,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Paperclip, Smile, Image as ImageIcon, X } from "lucide-react";
+import { Paperclip, Smile, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
 import EmojiPicker from "emoji-picker-react";
-import Image from "next/image";
 import {
   uploadMedia,
   validateMediaFile,
@@ -23,6 +22,8 @@ import {
 import { GifPicker } from "./gif-picker";
 import { MentionAutocomplete } from "./mention-autocomplete";
 import { Id } from "@/convex/_generated/dataModel";
+import { MediaPreviewGrid } from "./media-preview-grid";
+import { MediaItem } from "@/types";
 
 type AttachmentType = {
   id: string;
@@ -31,6 +32,20 @@ type AttachmentType = {
   fileName: string;
   fileSize: number;
   mimeType: string;
+  width?: number;
+  height?: number;
+};
+
+// Internal attachment item that can hold either a File or remote URL
+type AttachmentItem = {
+  id: string;
+  type: "image" | "document" | "gif";
+  url: string; // preview URL or remote URL
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  order: number;
+  file?: File; // Present if needs upload
   width?: number;
   height?: number;
 };
@@ -54,6 +69,7 @@ interface EnhancedCommentInputProps {
   isSubmitting: boolean;
   className?: string;
   initialValue?: string;
+  initialAttachments?: AttachmentType[];
 }
 
 export function EnhancedCommentInput({
@@ -62,11 +78,10 @@ export function EnhancedCommentInput({
   isSubmitting,
   className = "",
   initialValue = "",
+  initialAttachments = [],
 }: EnhancedCommentInputProps) {
   const [content, setContent] = useState(initialValue);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
-  const [gifAttachments, setGifAttachments] = useState<AttachmentType[]>([]);
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
   const [linkPreviews, setLinkPreviews] = useState<
     Record<string, LinkPreviewType>
   >({});
@@ -91,6 +106,25 @@ export function EnhancedCommentInput({
   const convex = useConvex();
   const fetchLinkPreview = useAction(api.linkPreviews.fetchLinkPreview);
 
+  // Initialize attachments from initialAttachments
+  useEffect(() => {
+    if (initialAttachments.length > 0) {
+      const items: AttachmentItem[] = initialAttachments.map((att, index) => ({
+        id: att.id,
+        type: att.type,
+        url: att.url,
+        fileName: att.fileName,
+        fileSize: att.fileSize,
+        mimeType: att.mimeType,
+        order: index,
+        width: att.width,
+        height: att.height,
+        // No file property - these are already uploaded
+      }));
+      setAttachments(items);
+    }
+  }, [initialAttachments]);
+
   const handleFileSelect = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(e.target.files || []);
@@ -102,34 +136,61 @@ export function EnhancedCommentInput({
           continue;
         }
 
-        if (attachments.length + gifAttachments.length >= 5) {
+        if (attachments.length >= 5) {
           toast.error("Maximum 5 attachments allowed per comment");
           break;
         }
 
-        setAttachments((prev) => [...prev, file]);
         const previewUrl = getFilePreviewUrl(file);
-        setAttachmentPreviews((prev) => [...prev, previewUrl]);
+        const newItem: AttachmentItem = {
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          type: file.type.startsWith("image/") ? "image" : "document",
+          url: previewUrl,
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+          order: attachments.length,
+          file, // Store file for later upload
+        };
+
+        setAttachments((prev) => [...prev, newItem]);
       }
     },
-    [attachments.length, gifAttachments.length],
+    [attachments.length],
   );
 
   const handleRemoveAttachment = useCallback(
-    (index: number) => {
-      setAttachments((prev) => prev.filter((_, i) => i !== index));
-      const previewUrl = attachmentPreviews[index];
-      if (previewUrl) {
-        revokeFilePreviewUrl(previewUrl);
+    (mediaId: string) => {
+      const item = attachments.find((a) => a.id === mediaId);
+      if (item?.file) {
+        // Revoke preview URL if it's a local file
+        revokeFilePreviewUrl(item.url);
       }
-      setAttachmentPreviews((prev) => prev.filter((_, i) => i !== index));
+
+      setAttachments((prev) => {
+        const filtered = prev.filter((a) => a.id !== mediaId);
+        // Reorder remaining items
+        return filtered.map((item, index) => ({ ...item, order: index }));
+      });
     },
-    [attachmentPreviews],
+    [attachments],
   );
 
-  const handleRemoveGifAttachment = useCallback((index: number) => {
-    setGifAttachments((prev) => prev.filter((_, i) => i !== index));
-  }, []);
+  const handleReorderAttachments = useCallback(
+    (reorderedMedia: MediaItem[]) => {
+      setAttachments((prev) => {
+        const newOrder = reorderedMedia.map((media) => media.id);
+        const sorted = [...prev].sort((a, b) => {
+          const aIndex = newOrder.indexOf(a.id);
+          const bIndex = newOrder.indexOf(b.id);
+          return aIndex - bIndex;
+        });
+        // Update order property
+        return sorted.map((item, index) => ({ ...item, order: index }));
+      });
+    },
+    [],
+  );
 
   const handleEmojiSelect = useCallback((emojiData: { emoji: string }) => {
     setContent((prev) => prev + emojiData.emoji);
@@ -219,32 +280,65 @@ export function EnhancedCommentInput({
     setMentionStartIndex(-1);
   }, []);
 
+  const handleGifSelect = useCallback(
+    (gifUrl: string) => {
+      if (attachments.length >= 5) {
+        toast.error("Maximum 5 attachments allowed per comment");
+        return;
+      }
+
+      const gifItem: AttachmentItem = {
+        id: `gif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: "gif",
+        url: gifUrl,
+        fileName: "giphy.gif",
+        fileSize: 0,
+        mimeType: "image/gif",
+        order: attachments.length,
+        // No file - this is already a remote URL
+      };
+
+      setAttachments((prev) => [...prev, gifItem]);
+      setShowGifPicker(false);
+    },
+    [attachments.length],
+  );
+
   const handleSubmit = useCallback(async () => {
-    if (
-      !content.trim() &&
-      attachments.length === 0 &&
-      gifAttachments.length === 0
-    )
-      return;
+    if (!content.trim() && attachments.length === 0) return;
 
     const uploadedAttachments: AttachmentType[] = [];
 
     try {
-      if (attachments.length > 0) {
-        for (const file of attachments) {
-          const uploadResult = await uploadMedia(convex, file);
+      // Upload attachments that have files
+      for (const item of attachments) {
+        if (item.file) {
+          // This needs upload
+          const uploadResult = await uploadMedia(convex, item.file);
           uploadedAttachments.push({
-            id: crypto.randomUUID(),
-            type: file.type.startsWith("image/") ? "image" : "document",
+            id: item.id,
+            type: item.type,
             url: uploadResult.url,
-            fileName: file.name,
-            fileSize: file.size,
-            mimeType: file.type,
+            fileName: item.fileName,
+            fileSize: item.fileSize,
+            mimeType: item.mimeType,
+            width: item.width,
+            height: item.height,
+          });
+        } else {
+          // Already uploaded or remote URL (like GIF)
+          uploadedAttachments.push({
+            id: item.id,
+            type: item.type,
+            url: item.url,
+            fileName: item.fileName,
+            fileSize: item.fileSize,
+            mimeType: item.mimeType,
+            width: item.width,
+            height: item.height,
           });
         }
       }
-
-      uploadedAttachments.push(...gifAttachments);
 
       onSubmit(
         content,
@@ -253,27 +347,37 @@ export function EnhancedCommentInput({
         mentions.length > 0 ? mentions : undefined,
       );
 
+      // Clean up
       setContent("");
       setAttachments([]);
-      setGifAttachments([]);
       setMentions([]);
-      attachmentPreviews.forEach((url) => revokeFilePreviewUrl(url));
-      setAttachmentPreviews([]);
+      // Revoke any preview URLs
+      attachments.forEach((item) => {
+        if (item.file) {
+          revokeFilePreviewUrl(item.url);
+        }
+      });
       setLinkPreviews({});
     } catch (error) {
       console.error("Failed to upload attachments:", error);
       toast.error("Failed to upload attachments. Please try again.");
     }
-  }, [
-    content,
-    attachments,
-    gifAttachments,
-    linkPreviews,
-    mentions,
-    onSubmit,
-    attachmentPreviews,
-    convex,
-  ]);
+  }, [content, attachments, linkPreviews, mentions, onSubmit, convex]);
+
+  // Convert AttachmentItem[] to MediaItem[] for MediaPreviewGrid
+  const mediaItems: MediaItem[] = attachments.map((item) => ({
+    id: item.id,
+    type:
+      item.type === "gif"
+        ? "image"
+        : item.type === "document"
+          ? "pdf"
+          : "image",
+    url: item.url,
+    thumbnailUrl: item.url,
+    order: item.order,
+    fileSize: item.fileSize,
+  }));
 
   // Fetch members for mention suggestions
   useEffect(() => {
@@ -333,58 +437,13 @@ export function EnhancedCommentInput({
         )}
       </div>
 
-      {(attachments.length > 0 || gifAttachments.length > 0) && (
-        <div className="flex flex-wrap gap-2">
-          {attachments.map((file, index) => (
-            <div key={`file-${index}`} className="relative">
-              {file.type.startsWith("image/") ? (
-                <Image
-                  src={attachmentPreviews[index]}
-                  alt={file.name}
-                  width={80}
-                  height={80}
-                  className="w-20 h-20 object-cover rounded border"
-                />
-              ) : (
-                <div className="w-20 h-20 bg-muted rounded border flex items-center justify-center">
-                  <span className="text-xs text-center p-1">{file.name}</span>
-                </div>
-              )}
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                className="absolute -top-2 -right-2 w-6 h-6 p-0"
-                onClick={() => handleRemoveAttachment(index)}
-              >
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-          ))}
-          {gifAttachments.map((gif, index) => (
-            <div key={`gif-${index}`} className="relative">
-              <Image
-                src={gif.url}
-                alt={gif.fileName}
-                width={80}
-                height={80}
-                className="w-20 h-20 object-cover rounded border"
-              />
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                className="absolute -top-2 -right-2 w-6 h-6 p-0"
-                onClick={() => handleRemoveGifAttachment(index)}
-              >
-                <X className="w-3 h-3" />
-              </Button>
-              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-foreground text-xs px-1 py-0.5 rounded-b">
-                GIF
-              </div>
-            </div>
-          ))}
-        </div>
+      {attachments.length > 0 && (
+        <MediaPreviewGrid
+          media={mediaItems}
+          onReorder={handleReorderAttachments}
+          onRemove={handleRemoveAttachment}
+          disabled={isSubmitting}
+        />
       )}
 
       {Object.entries(linkPreviews).map(([url, preview]) => (
@@ -404,6 +463,7 @@ export function EnhancedCommentInput({
             variant="ghost"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
+            disabled={attachments.length >= 5}
           >
             <Paperclip className="w-4 h-4" />
           </Button>
@@ -426,26 +486,7 @@ export function EnhancedCommentInput({
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
-              <GifPicker
-                onGifSelect={(gifUrl) => {
-                  if (attachments.length + gifAttachments.length >= 5) {
-                    toast.error("Maximum 5 attachments allowed per comment");
-                    return;
-                  }
-
-                  const gifAttachment: AttachmentType = {
-                    id: crypto.randomUUID(),
-                    type: "gif",
-                    url: gifUrl,
-                    fileName: "giphy.gif",
-                    fileSize: 0,
-                    mimeType: "image/gif",
-                  };
-
-                  setGifAttachments((prev) => [...prev, gifAttachment]);
-                  setShowGifPicker(false);
-                }}
-              />
+              <GifPicker onGifSelect={handleGifSelect} />
             </PopoverContent>
           </Popover>
         </div>

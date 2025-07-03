@@ -243,8 +243,8 @@ export default function PostDetail({
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const postUrl = `${window.location.origin}/${post.category?.name || 'general'}/${post.slug}`;
-    
+    const postUrl = `${window.location.origin}/${post.category?.name || "general"}/${post.slug}`;
+
     try {
       await navigator.clipboard.writeText(postUrl);
       toast.success("Link copied to clipboard!");
@@ -493,7 +493,8 @@ export default function PostDetail({
               <BookmarkButton
                 targetId={post._id}
                 targetType="post"
-                showCount={true}
+                showLabel={true}
+                size="sm"
               />
               <Button
                 variant="ghost"

@@ -205,11 +205,22 @@ export default defineSchema({
     netVotes: v.number(),
     depth: v.number(),
     childCount: v.number(),
+    order: v.optional(v.number()),
     editedAt: v.optional(v.number()),
     editReason: v.optional(v.string()),
     editHistory: v.optional(v.array(v.object({
       content: v.string(),
       editedAt: v.number(),
+      attachments: v.optional(v.array(v.object({
+        id: v.string(),
+        type: v.union(v.literal("image"), v.literal("document"), v.literal("gif")),
+        url: v.string(),
+        fileName: v.string(),
+        fileSize: v.number(),
+        mimeType: v.string(),
+        width: v.optional(v.number()),
+        height: v.optional(v.number()),
+      }))),
     }))),
     
     attachments: v.optional(v.array(v.object({
@@ -238,6 +249,7 @@ export default defineSchema({
     .index("by_post_and_createdAt", ["postId", "createdAt"])
     .index("by_post_and_netVotes", ["postId", "netVotes"])
     .index("by_parent_and_createdAt", ["parentCommentId", "createdAt"])
+    .index("by_parent_and_order", ["parentCommentId", "order"])
     .index("by_status", ["status"])
     .index("by_post_member_createdAt", ["postId", "memberId", "createdAt"])
     .searchIndex("search_comments", {
