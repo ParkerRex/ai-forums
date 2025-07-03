@@ -211,6 +211,16 @@ export default defineSchema({
     editHistory: v.optional(v.array(v.object({
       content: v.string(),
       editedAt: v.number(),
+      attachments: v.optional(v.array(v.object({
+        id: v.string(),
+        type: v.union(v.literal("image"), v.literal("document"), v.literal("gif")),
+        url: v.string(),
+        fileName: v.string(),
+        fileSize: v.number(),
+        mimeType: v.string(),
+        width: v.optional(v.number()),
+        height: v.optional(v.number()),
+      }))),
     }))),
     
     attachments: v.optional(v.array(v.object({

@@ -23,7 +23,12 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInButton } from "@clerk/nextjs";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { formatDistanceToNow } from "date-fns";
-import { ChevronDown, ChevronRight, Paperclip, GripVertical } from "lucide-react";
+import {
+  ChevronDown,
+  ChevronRight,
+  Paperclip,
+  GripVertical,
+} from "lucide-react";
 import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
 import { MessageSquareIcon } from "@/components/ui/message-square";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
@@ -309,11 +314,13 @@ function CommentItem({
                 <EnhancedCommentInput
                   placeholder="Edit your comment..."
                   initialValue={comment.content}
-                  onSubmit={async (content) => {
+                  initialAttachments={comment.attachments}
+                  onSubmit={async (content, attachments) => {
                     try {
                       await editComment({
                         commentId: comment._id,
                         content: content.trim(),
+                        attachments,
                       });
                       handleMutationSuccess("Comment updated successfully");
                       setIsEditing(false);
@@ -518,7 +525,7 @@ function CommentItem({
 
       {/* Nested replies */}
       {hasReplies && isExpanded && (
-        <ReplyDragContext 
+        <ReplyDragContext
           parentCommentId={comment._id}
           replies={comment.replies}
           onReply={onReply}
@@ -567,13 +574,13 @@ function ReplyDragContext({
 }: ReplyDragContextProps) {
   const reorderReplies = useMutation(api.comments.reorderCommentReplies);
   const currentMember = useQuery(api.members.getCurrentMember);
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
         distance: 8,
       },
-    })
+    }),
   );
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -594,10 +601,9 @@ function ReplyDragContext({
     }
   };
 
-  const canReorder = currentMember && (
-    isAdmin || 
-    replies.some(r => r.member?._id === currentMember._id)
-  );
+  const canReorder =
+    currentMember &&
+    (isAdmin || replies.some((r) => r.member?._id === currentMember._id));
 
   if (!canReorder) {
     return (
@@ -628,7 +634,7 @@ function ReplyDragContext({
       onDragEnd={handleDragEnd}
     >
       <SortableContext
-        items={replies.map(r => r._id)}
+        items={replies.map((r) => r._id)}
         strategy={verticalListSortingStrategy}
       >
         <div className="space-y-3">
