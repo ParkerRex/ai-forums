@@ -2,6 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp } from "lucide-react";
 import { OnlineUsers } from "./online-users";
+import { SidebarRoadmapComponent } from "./sidebar-roadmap-component";
 
 export default function PostSidebar() {
   return (
@@ -49,6 +50,9 @@ export default function PostSidebar() {
 
       {/* Online Users */}
       <OnlineUsers />
+
+      {/* Roadmap */}
+      <SidebarRoadmapComponent />
 
       {/* About VAI Card */}
       <Card>
