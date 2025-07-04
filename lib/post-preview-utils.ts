@@ -182,34 +182,53 @@ export function getAssetOrientation(asset?: AssetInfo): "portrait" | "landscape"
  */
 export function getPreviewClasses(
   size: PreviewSize,
-  asset?: AssetInfo
+  asset?: AssetInfo,
+  post?: PostData
 ): {
   wrapper: string;
   media: string;
   aspectRatio: string;
+  dynamicStyle?: React.CSSProperties;
 } {
+  // If we have actual dimensions, use them for dynamic sizing
+  if (post?.aspectRatio && post?.mediaWidth && post?.mediaHeight) {
+    const aspectRatio = post.aspectRatio;
+    
+    // For all sizes, let media display at full width with proper aspect ratio
+    // Remove max height constraints to show media at actual size
+    return {
+      wrapper: "w-full",
+      media: "object-contain",
+      aspectRatio: "",
+      dynamicStyle: {
+        aspectRatio: aspectRatio.toString(),
+      }
+    };
+  }
+  
+  // Fallback for posts without dimension data (legacy posts)
   const orientation = getAssetOrientation(asset);
   
   switch (size) {
     case "small":
       return {
-        wrapper: "w-20 h-20",
-        media: orientation === "portrait" ? "object-contain" : "object-cover",
-        aspectRatio: "aspect-square",
+        wrapper: "w-full",
+        media: "object-contain",
+        aspectRatio: orientation === "portrait" ? "aspect-[9/16]" : "aspect-video",
       };
     
     case "medium":
       return {
-        wrapper: "w-32",
-        media: orientation === "portrait" ? "object-contain" : "object-cover",
-        aspectRatio: orientation === "portrait" ? "aspect-[3/4] max-h-40" : "aspect-[16/9] max-h-24",
+        wrapper: "w-full",
+        media: "object-contain",
+        aspectRatio: orientation === "portrait" ? "aspect-[9/16]" : "aspect-video",
       };
     
     case "large":
       return {
         wrapper: "w-full",
-        media: "object-cover",
-        aspectRatio: orientation === "portrait" ? "aspect-[3/4] max-h-80" : "aspect-[16/9] max-h-60",
+        media: "object-contain",
+        aspectRatio: orientation === "portrait" ? "aspect-[9/16]" : "aspect-video",
       };
   }
 }

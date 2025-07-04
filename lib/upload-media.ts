@@ -17,6 +17,7 @@ export interface UploadOptions {
   onProgress?: (progress: UploadProgress) => void;
   generateThumbnail?: boolean;
   useServerUpload?: boolean;
+  skipThumbnail?: boolean;
 }
 
 /**
@@ -62,9 +63,30 @@ async function uploadViaServer(
 
     onProgress?.({ loaded: 100, total: 100, percentage: 100 });
 
+    // Extract thumbnail for videos
+    let thumbnailUrl: string | undefined;
+    if (file.type.startsWith('video/') && !options.skipThumbnail) {
+      const thumbnailDataUrl = await extractVideoThumbnail(file);
+      if (thumbnailDataUrl) {
+        // Convert data URL to file and upload
+        const thumbnailBlob = await fetch(thumbnailDataUrl).then(r => r.blob());
+        const thumbnailFile = new File([thumbnailBlob], `${file.name}-thumbnail.jpg`, { type: 'image/jpeg' });
+        
+        try {
+          const thumbnailResult = await uploadViaServer(convex, thumbnailFile, { ...options, skipThumbnail: true });
+          thumbnailUrl = thumbnailResult.url;
+        } catch (thumbnailErr) {
+          // Log the error but continue – failure to upload a thumbnail
+          // should not fail the main upload.
+          console.error("Failed to upload video thumbnail:", thumbnailErr);
+        }
+      }
+    }
+
     return {
       url: result.publicUrl,
       objectKey: result.objectKey,
+      thumbnailUrl,
     };
   } catch (error) {
     console.error("Server upload failed:", error);
@@ -105,15 +127,54 @@ async function uploadViaDirect(
       }
     });
 
-    xhr.addEventListener("load", () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        resolve({
-          url: publicUrl,
-          objectKey,
-          // TODO: Generate thumbnail for videos
-        });
-      } else {
-        reject(new Error(`Upload failed with status: ${xhr.status}`));
+    xhr.addEventListener("load", async () => {
+      try {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          // Extract thumbnail for videos
+          let thumbnailUrl: string | undefined;
+
+          if (file.type.startsWith('video/') && !options.skipThumbnail) {
+            try {
+              const thumbnailDataUrl = await extractVideoThumbnail(file);
+
+              if (thumbnailDataUrl) {
+                // Convert data URL to file and upload
+                const thumbnailBlob = await fetch(thumbnailDataUrl).then((r) => r.blob());
+                const thumbnailFile = new File([thumbnailBlob], `${file.name}-thumbnail.jpg`, {
+                  type: "image/jpeg",
+                });
+
+                try {
+                  const thumbnailResult = await uploadViaDirect(convex, thumbnailFile, {
+                    ...options,
+                    skipThumbnail: true,
+                  });
+                  thumbnailUrl = thumbnailResult.url;
+                } catch (thumbnailErr) {
+                  // Log the error but continue – failure to upload a thumbnail
+                  // should not fail the main upload.
+                  console.error("Failed to upload video thumbnail:", thumbnailErr);
+                }
+              }
+            } catch (thumbnailErr) {
+              // Log the error but continue – failure to upload a thumbnail
+              // should not fail the main upload.
+              console.error("Failed to upload video thumbnail:", thumbnailErr);
+            }
+          }
+
+          resolve({
+            url: publicUrl,
+            objectKey,
+            thumbnailUrl,
+          });
+        } else {
+          reject(new Error(`Upload failed with status: ${xhr.status}`));
+        }
+      } catch (err) {
+        // Catch any unexpected errors in the load handler to prevent the
+        // promise from neither resolving nor rejecting.
+        reject(err instanceof Error ? err : new Error(String(err)));
       }
     });
 
@@ -275,14 +336,64 @@ export function validateDocumentFile(file: File): { valid: boolean; error?: stri
 }
 
 /**
- * Extract video thumbnail (stub - would use video element + canvas in production)
+ * Extract video thumbnail using video element and canvas
  */
 export async function extractVideoThumbnail(file: File): Promise<string | null> {
-  // TODO: Implement video thumbnail extraction
-  // This would create a video element, seek to first frame,
-  // draw to canvas, and export as data URL
-  console.log("Video thumbnail extraction not implemented for:", file.name);
-  return null;
+  return new Promise((resolve) => {
+    const video = document.createElement('video');
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    
+    if (!ctx) {
+      console.error('Could not get canvas context');
+      resolve(null);
+      return;
+    }
+
+    // Create object URL for the video file
+    const videoUrl = URL.createObjectURL(file);
+    
+    video.addEventListener('loadedmetadata', () => {
+      // Set canvas size to match video
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      // Seek to 1 second (or 10% of duration if video is short)
+      video.currentTime = Math.min(1, video.duration * 0.1);
+    });
+    
+    video.addEventListener('seeked', () => {
+      // Draw current frame to canvas
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      
+      // Convert to blob with reasonable quality
+      canvas.toBlob((blob) => {
+        if (blob) {
+          // Convert blob to data URL
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            const dataUrl = reader.result as string;
+            URL.revokeObjectURL(videoUrl);
+            resolve(dataUrl);
+          };
+          reader.readAsDataURL(blob);
+        } else {
+          URL.revokeObjectURL(videoUrl);
+          resolve(null);
+        }
+      }, 'image/jpeg', 0.8);
+    });
+    
+    video.addEventListener('error', () => {
+      console.error('Error loading video for thumbnail extraction');
+      URL.revokeObjectURL(videoUrl);
+      resolve(null);
+    });
+    
+    // Set video source and load
+    video.src = videoUrl;
+    video.load();
+  });
 }
 
 /**

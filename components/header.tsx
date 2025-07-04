@@ -87,17 +87,17 @@ export default function Header() {
                 </Link>
               </Button>
               <Link href="/create">
-                <Button variant="outline" size="sm">
+                <Button variant="default" size="default" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
                   <Plus className="w-4 h-4 mr-2" />
-                  create
+                  Create Post
                 </Button>
               </Link>
             </Authenticated>
             <Unauthenticated>
               <SignUpButton mode="modal">
-                <Button variant="outline" size="sm">
+                <Button variant="default" size="default" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
                   <Plus className="w-4 h-4 mr-2" />
-                  create
+                  Create Post
                 </Button>
               </SignUpButton>
             </Unauthenticated>

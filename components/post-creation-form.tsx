@@ -513,27 +513,27 @@ export function PostCreationForm({
               {/* Title Field */}
               <div className="space-y-2">
                 <Label htmlFor="title">
-                  Title <span className="text-red-500">*</span>
+                  Title
                 </Label>
                 <Input
                   id="title"
                   type="text"
                   value={formData.title}
                   onChange={handleTitleChange}
-                  placeholder="Enter your post title..."
+                  placeholder="Enter your post title (required)"
                   className={`${errors.title && touchedFields.has("title") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-green-700 focus:ring-green-700"}`}
                   disabled={isSubmitting}
                 />
                 <div className="flex justify-between items-center text-sm">
                   <div>
                     {errors.title && touchedFields.has("title") && (
-                      <span className="text-red-500">{errors.title}</span>
+                      <span className="text-muted-foreground text-xs">{errors.title}</span>
                     )}
                   </div>
                   <div
-                    className={`${
+                    className={`text-xs ${
                       titleInfo.status === "error"
-                        ? "text-red-500"
+                        ? "text-muted-foreground"
                         : titleInfo.status === "warning"
                           ? "text-yellow-500"
                           : "text-muted-foreground"
@@ -547,7 +547,7 @@ export function PostCreationForm({
               {/* Category Field */}
               <div className="space-y-2">
                 <Label>
-                  Category <span className="text-red-500">*</span>
+                  Category
                 </Label>
                 <CategoryToggleGroup
                   categories={
@@ -566,7 +566,7 @@ export function PostCreationForm({
                   disabled={isSubmitting}
                 />
                 {errors.categoryId && touchedFields.has("categoryId") && (
-                  <span className="text-red-500 text-sm">
+                  <span className="text-muted-foreground text-xs">
                     {errors.categoryId}
                   </span>
                 )}
@@ -577,7 +577,7 @@ export function PostCreationForm({
             <TabsContent value="text" className="mt-6">
               <div className="space-y-2">
                 <Label htmlFor="content">
-                  Content <span className="text-red-500">*</span>
+                  Content
                 </Label>
                 <Tabs defaultValue="edit" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
@@ -589,7 +589,7 @@ export function PostCreationForm({
                       <RichTextEditor
                         content={formData.content}
                         onChange={handleContentChange}
-                        placeholder="Write your post content here..."
+                        placeholder="Write your post content here (required)"
                         className={
                           errors.content && touchedFields.has("content")
                             ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
@@ -625,13 +625,13 @@ export function PostCreationForm({
                 <div className="flex justify-between items-center text-sm">
                   <div>
                     {errors.content && touchedFields.has("content") && (
-                      <span className="text-red-500">{errors.content}</span>
+                      <span className="text-muted-foreground text-xs">{errors.content}</span>
                     )}
                   </div>
                   <div
-                    className={`${
+                    className={`text-xs ${
                       contentInfo.status === "error"
-                        ? "text-red-500"
+                        ? "text-muted-foreground"
                         : contentInfo.status === "warning"
                           ? "text-yellow-500"
                           : "text-muted-foreground"
@@ -714,14 +714,14 @@ export function PostCreationForm({
               {/* Link URL */}
               <div className="space-y-2">
                 <Label htmlFor="link-url">
-                  Link URL <span className="text-red-500">*</span>
+                  Link URL
                 </Label>
                 <Input
                   id="link-url"
                   type="url"
                   value={formData.linkUrl || ""}
                   onChange={handleLinkUrlChange}
-                  placeholder="https://example.com"
+                  placeholder="https://example.com (required)"
                   className="focus:border-green-700 focus:ring-green-700"
                   disabled={isSubmitting}
                 />
@@ -759,13 +759,13 @@ export function PostCreationForm({
               {/* Description for link posts */}
               <div className="space-y-2">
                 <Label htmlFor="link-content">
-                  Description <span className="text-red-500">*</span>
+                  Description
                 </Label>
                 <Suspense fallback={<RichTextEditorSkeleton />}>
                   <RichTextEditor
                     content={formData.content}
                     onChange={handleContentChange}
-                    placeholder="Share your thoughts about this link..."
+                    placeholder="Share your thoughts about this link (required)"
                     className={
                       errors.content && touchedFields.has("content")
                         ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
@@ -776,13 +776,13 @@ export function PostCreationForm({
                 <div className="flex justify-between items-center text-sm">
                   <div>
                     {errors.content && touchedFields.has("content") && (
-                      <span className="text-red-500">{errors.content}</span>
+                      <span className="text-muted-foreground text-xs">{errors.content}</span>
                     )}
                   </div>
                   <div
-                    className={`${
+                    className={`text-xs ${
                       contentInfo.status === "error"
-                        ? "text-red-500"
+                        ? "text-muted-foreground"
                         : contentInfo.status === "warning"
                           ? "text-yellow-500"
                           : "text-muted-foreground"
@@ -798,7 +798,7 @@ export function PostCreationForm({
               {/* Poll Options */}
               <div className="space-y-2">
                 <Label>
-                  Poll Options <span className="text-red-500">*</span>
+                  Poll Options
                 </Label>
                 {formData.pollData ? (
                   <Card>
