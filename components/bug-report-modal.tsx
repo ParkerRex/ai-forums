@@ -53,9 +53,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
   const [browserInfo, setBrowserInfo] = useState<string>("");
-  const [uploadProgress, setUploadProgress] = useState<{
-    [key: string]: number;
-  }>({});
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const createBugReport = useAction(api.github.createBugReport);
@@ -143,7 +141,6 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
       const attachmentUrls: string[] = [];
       if (attachments.length > 0) {
         toast.info("Uploading attachments...");
-        setUploadProgress({});
 
         for (let i = 0; i < attachments.length; i++) {
           const file = attachments[i];
@@ -152,11 +149,6 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
           try {
             const uploadResult = await uploadMedia(convex, file, {
               onProgress: (progress) => {
-                setUploadProgress((prev) => ({
-                  ...prev,
-                  [fileKey]: progress.percentage,
-                }));
-
                 // Show progress toast for the current file
                 if (progress.percentage < 100) {
                   toast.loading(

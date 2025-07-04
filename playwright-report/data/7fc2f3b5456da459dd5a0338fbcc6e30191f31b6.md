@@ -408,7 +408,7 @@
     - img
     - text: Toggle theme
   - button "Submit Bug"
-  - text: ⏱ 13h 24m to Community Call
+  - text: ⏱ 13h 22m to Community Call
   - img
   - text: 3 hrs ago Discord
 - heading "Command Palette" [level=2]
@@ -416,5 +416,5 @@
 - region "Notifications alt+T"
 - button "Open Next.js Dev Tools":
   - img
-- alert
+- alert: VAI | The Place AI Engineers Build Together
 ```

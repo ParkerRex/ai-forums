@@ -1,6 +1,20 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  webpack: (config, { isServer }) => {
+    // Handle canvas module for react-pdf
+    if (isServer) {
+      config.externals = config.externals || [];
+      config.externals.push('canvas');
+    } else {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        canvas: false,
+      };
+    }
+    
+    return config;
+  },
   images: {
     remotePatterns: [
       // Primary public bucket hostname (configurable)

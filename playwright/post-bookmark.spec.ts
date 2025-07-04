@@ -10,8 +10,9 @@ test.describe('Post Bookmark Functionality', () => {
     if (await firstPost.count() > 0) {
       await firstPost.click();
     } else {
-      // If no posts exist, create one or skip the test
-      test.skip('No posts available for testing');
+      // If no posts exist, skip the test
+      test.skip(true, 'No posts available for testing');
+      return;
     }
 
     // Wait for the page to load
@@ -53,7 +54,8 @@ test.describe('Post Bookmark Functionality', () => {
     if (await firstPost.count() > 0) {
       await firstPost.click();
     } else {
-      test.skip('No posts available for testing');
+      test.skip(true, 'No posts available for testing');
+      return;
     }
 
     await page.waitForLoadState('networkidle');
@@ -91,7 +93,8 @@ test.describe('Post Bookmark Functionality', () => {
     if (await firstPost.count() > 0) {
       await firstPost.click();
     } else {
-      test.skip('No posts available for testing');
+      test.skip(true, 'No posts available for testing');
+      return;
     }
 
     await page.waitForLoadState('networkidle');

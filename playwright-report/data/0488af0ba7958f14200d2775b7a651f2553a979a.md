@@ -408,7 +408,7 @@
     - img
     - text: Toggle theme
   - button "Submit Bug"
-  - text: ⏱ 13h 24m to Community Call
+  - text: ⏱ 13h 22m to Community Call
   - img
   - text: 3 hrs ago Discord
 - heading "Command Palette" [level=2]
@@ -417,4 +417,33 @@
 - button "Open Next.js Dev Tools":
   - img
 - alert
+- dialog:
+  - button "Close modal"
+  - heading "Create your account" [level=1]
+  - paragraph: Welcome! Please fill in the details to get started.
+  - button "Sign in with Google Continue with Google":
+    - img "Sign in with Google"
+    - text: Continue with Google
+  - paragraph: or
+  - text: First name Optional
+  - textbox "First name"
+  - text: Last name Optional
+  - textbox "Last name"
+  - text: Email address
+  - textbox "Email address"
+  - text: Password
+  - textbox "Password"
+  - button "Show password":
+    - img
+  - button "Continue":
+    - text: Continue
+    - img
+  - text: Already have an account?
+  - link "Sign in":
+    - /url: http://localhost:3000/CLERK-ROUTER/VIRTUAL/sign-in
+  - paragraph: Secured by
+  - link "Clerk logo":
+    - /url: https://go.clerk.com/components
+    - img
+  - paragraph: Development mode
 ```

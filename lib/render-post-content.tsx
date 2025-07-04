@@ -93,48 +93,53 @@ function getDisplayTextForUrl(url: string, preview?: LinkPreview): string {
 
 // For backward compatibility, also export a function that handles HTML from TipTap
 export function RenderTipTapContent({ content }: { content: string }) {
-  // Sanitize HTML and allow our link badge classes
-  const sanitizedHtml = DOMPurify.sanitize(content, {
-    ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'h1', 'h2', 'h3'],
-    ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'data-link-badge', 'data-preview-title', 'data-preview-description']
-  });
+  const isHtml = content.trim().startsWith('<') || /<[^>]+>/.test(content);
   
-  return (
-    <>
-      <div 
-        className="prose prose-sm max-w-none text-foreground"
-        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
-      />
-      <style jsx global>{`
-        .link-badge-mark {
-          display: inline-flex;
-          align-items: center;
-          gap: 0.375rem;
-          padding: 0.25rem 0.5rem;
-          font-size: 0.875rem;
-          font-weight: 500;
-          background-color: hsl(var(--muted) / 0.5);
-          border: 1px solid hsl(var(--border) / 0.5);
-          border-radius: calc(var(--radius) - 2px);
-          color: hsl(var(--foreground));
-          text-decoration: none;
-          transition: all 0.2s ease;
-          cursor: pointer;
-        }
-        
-        .link-badge-mark:hover {
-          background-color: hsl(var(--muted) / 0.8);
-          border-color: hsl(var(--border));
-          transform: translateY(-1px);
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .link-badge-mark::before {
-          content: "🔗";
-          font-size: 0.75rem;
-          opacity: 0.7;
-        }
-      `}</style>
-    </>
-  );
-}     
+  if (isHtml) {
+    const sanitizedHtml = DOMPurify.sanitize(content, {
+      ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'h1', 'h2', 'h3'],
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'data-link-badge', 'data-preview-title', 'data-preview-description']
+    });
+    
+    return (
+      <>
+        <div 
+          className="prose prose-sm max-w-none text-foreground"
+          dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+        />
+        <style jsx global>{`
+          .link-badge-mark {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background-color: hsl(var(--muted) / 0.5);
+            border: 1px solid hsl(var(--border) / 0.5);
+            border-radius: calc(var(--radius) - 2px);
+            color: hsl(var(--foreground));
+            text-decoration: none;
+            transition: all 0.2s ease;
+            cursor: pointer;
+          }
+          
+          .link-badge-mark:hover {
+            background-color: hsl(var(--muted) / 0.8);
+            border-color: hsl(var(--border));
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          }
+          
+          .link-badge-mark::before {
+            content: "🔗";
+            font-size: 0.75rem;
+            opacity: 0.7;
+          }
+        `}</style>
+      </>
+    );
+  } else {
+    return <RenderPostContent content={content} />;
+  }
+}               

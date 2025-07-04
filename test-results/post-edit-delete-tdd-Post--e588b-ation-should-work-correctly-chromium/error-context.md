@@ -408,7 +408,7 @@
     - img
     - text: Toggle theme
   - button "Submit Bug"
-  - text: ⏱ 13h 24m to Community Call
+  - text: ⏱ 13h 23m to Community Call
   - img
   - text: 3 hrs ago Discord
 - heading "Command Palette" [level=2]

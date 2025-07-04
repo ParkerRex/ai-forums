@@ -36,7 +36,25 @@
   - text: /announcements
 - button:
   - img
-- text: 0 💭 Prompts
+- text: 0 🎥 Content
+- link "Rich Text Editor Performance Test":
+  - /url: /post/jd79pg0edjqtteajn6hvx1vx3x7jzj75
+  - heading "Rich Text Editor Performance Test" [level=3]
+- text: by
+- link "Parker Rex":
+  - /url: /members/parker-rex
+- text: • 7/2/2025
+- paragraph: Now testing bold text and italic text to verify formatting works correctly.
+- button "3 comments":
+  - img
+  - text: 3 comments
+- button
+- button "share":
+  - img
+  - text: share
+- button:
+  - img
+- text: 1 💭 Prompts
 - link "Test ataeada da":
   - /url: /post/jd791prjarap15azkbs2ssvahn7jyc8d
   - heading "Test ataeada da" [level=3]
@@ -45,16 +63,16 @@
   - /url: /members/parker-rex
 - text: • 7/2/2025
 - paragraph: "**asdada**"
-- button "0 comments":
+- button "1 comments":
   - img
-  - text: 0 comments
+  - text: 1 comments
 - button
 - button "share":
   - img
   - text: share
 - button:
   - img
-- text: 0 🎥 Content Video
+- text: 1 🎥 Content Video
 - link "test test test":
   - /url: /post/jd79s5rfkcan412dnf5881fn8s7jybdf
   - heading "test test test" [level=3]
@@ -71,7 +89,7 @@
   - text: share
 - button:
   - img
-- text: "0"
+- text: "1"
 - img "asdadasdadasd"
 - text: 🎥 Content Image
 - link "asdadasdadasd":
@@ -126,7 +144,7 @@
   - text: share
 - button:
   - img
-- text: 1 📢 Announcements
+- text: 2 📢 Announcements
 - link "Google Released their CLI Coding tool (free)":
   - /url: /post/jd7651dpyefjhxge97kgnvfc697jnym4
   - heading "Google Released their CLI Coding tool (free)" [level=3]
@@ -144,7 +162,7 @@
   - text: share
 - button:
   - img
-- text: 2 ⚡ Workflows
+- text: 3 ⚡ Workflows
 - link "Do you believe in Magic?":
   - /url: /post/jd74wbdj5904yhs8vnb19khadh7jmpqc
   - heading "Do you believe in Magic?" [level=3]
@@ -373,24 +391,6 @@
 - button "share":
   - img
   - text: share
-- button:
-  - img
-- text: 1 ⚡ Workflows
-- link "Intro - Rento":
-  - /url: /post/jd70t0vwe0n07z444epx9fx9m17jnbv0
-  - heading "Intro - Rento" [level=3]
-- text: by
-- link "Rento Rinalds":
-  - /url: /members/rento-rinalds
-- text: • 6/17/2025
-- paragraph: Hi, I'm Rento, I am a Senior Full-Stack JavaScript Developer with over 16...
-- button "2 comments":
-  - img
-  - text: 2 comments
-- button
-- button "share":
-  - img
-  - text: share
 - text: Recent AI News
 - heading "OpenAI Announces GPT-5 Development" [level=4]
 - paragraph: Next-generation model promises significant improvements in reasoning and multimodal capabilities.
@@ -400,20 +400,15 @@
 - text: 4 hours ago
 - heading "Meta AI Unveils Llama 3.3 70B" [level=4]
 - paragraph: Open-source model achieves performance comparable to larger proprietary models.
-- text: 6 hours ago Online Now (1)
-- link "PR Parker Rex Online":
-  - /url: /members/parker-rex
-  - text: PR
-  - paragraph: Parker Rex
-  - text: Online
-- text: About VAI
+- text: 6 hours ago About VAI
 - paragraph: A community platform for AI professionals to share workflows, prompts, insights, and connect with like-minded practitioners.
 - contentinfo:
   - button "Toggle theme":
     - img
     - img
     - text: Toggle theme
-  - text: ⏱ 1d 22h to Community Call
+  - button "Submit Bug"
+  - text: ⏱ 13h 24m to Community Call
   - img
   - text: 3 hrs ago Discord
 - heading "Command Palette" [level=2]
