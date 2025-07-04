@@ -241,6 +241,39 @@ export function validateMediaFile(file: File): { valid: boolean; error?: string 
   };
 }
 
+const MAX_DOC_SIZE = 20 * 1024 * 1024; // 20MB
+
+const ALLOWED_DOCUMENT_TYPES = [
+  "application/pdf",
+  "application/msword", // .doc
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document", // .docx
+  "text/plain", // .txt
+  "text/markdown", // .md
+  "application/vnd.ms-powerpoint", // .ppt
+  "application/vnd.openxmlformats-officedocument.presentationml.presentation", // .pptx
+  "application/vnd.ms-excel", // .xls
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", // .xlsx
+  "text/csv", // .csv
+];
+
+/**
+ * Validate document file for paperclip uploads (text-based files only)
+ */
+export function validateDocumentFile(file: File): { valid: boolean; error?: string } {
+  if (!ALLOWED_DOCUMENT_TYPES.includes(file.type)) {
+    return {
+      valid: false,
+      error: "File type not supported. Please upload PDF, Word, PowerPoint, Excel, text, or markdown documents.",
+    };
+  }
+
+  if (file.size > MAX_DOC_SIZE) {
+    return { valid: false, error: "Document must be less than 20MB" };
+  }
+
+  return { valid: true };
+}
+
 /**
  * Extract video thumbnail (stub - would use video element + canvas in production)
  */

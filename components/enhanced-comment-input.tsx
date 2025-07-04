@@ -10,7 +10,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Paperclip, Smile, Image as ImageIcon } from "lucide-react";
+import { Paperclip } from "lucide-react";
+import { GifIcon } from "@/components/ui/gif";
+import { EmojiIcon } from "@/components/ui/emoji";
 import { toast } from "sonner";
 import EmojiPicker from "emoji-picker-react";
 import {
@@ -471,7 +473,7 @@ export function EnhancedCommentInput({
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
             <PopoverTrigger asChild>
               <Button type="button" variant="ghost" size="sm">
-                <Smile className="w-4 h-4" />
+                <EmojiIcon size={16} />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -482,7 +484,7 @@ export function EnhancedCommentInput({
           <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
             <PopoverTrigger asChild>
               <Button type="button" variant="ghost" size="sm">
-                <ImageIcon className="w-4 h-4" />
+                <GifIcon size={16} />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
@@ -500,7 +502,7 @@ export function EnhancedCommentInput({
         ref={fileInputRef}
         type="file"
         multiple
-        accept="image/*,video/*,.pdf,.doc,.docx"
+        accept="image/*,video/*,.pdf,.doc,.docx,.txt,.md,.ppt,.pptx,.xls,.xlsx,.csv"
         className="hidden"
         onChange={handleFileSelect}
       />
