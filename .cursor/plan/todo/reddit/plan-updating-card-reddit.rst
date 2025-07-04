@@ -16,3 +16,6 @@ the recent news section:
 - has the source above it. 
 - shows how long ago the article was posted.
 
+
+
+cards appear on the home page, the post detail page, the members page... theyre all the same. 

@@ -1,6 +1,7 @@
 "use client";
+import React from "react";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
@@ -27,15 +28,8 @@ export function SidebarRoadmapComponent() {
 
   const { issues, isLoading, error } = useGitHubIssues(1);
 
-  // Load more issues when dialog opens
-  useEffect(() => {
-    if (isDialogOpen && allIssues.length === 0 && issues.length > 0) {
-      setAllIssues(issues);
-      loadMoreIssues();
-    }
-  }, [isDialogOpen, issues, allIssues.length]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const loadMoreIssues = async () => {
+  // Fetch additional GitHub issues beyond the first page.
+  const loadMoreIssues = useCallback(async () => {
     setIsLoadingMore(true);
     try {
       const nextPage = currentPage + 1;
@@ -54,14 +48,24 @@ export function SidebarRoadmapComponent() {
     } finally {
       setIsLoadingMore(false);
     }
-  };
+  }, [currentPage]);
+
+  // Load more issues when dialog opens
+  useEffect(() => {
+    if (isDialogOpen && allIssues.length === 0 && issues.length > 0) {
+      setAllIssues(issues);
+      loadMoreIssues();
+    }
+  }, [isDialogOpen, issues, allIssues.length, loadMoreIssues]);
 
   if (error) {
     return (
       <>
         <Card size="compact" className="border-muted/50">
           <CardHeader className="relative pb-2 pt-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Roadmap</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Roadmap
+            </CardTitle>
             <Button
               variant="ghost"
               size="icon"

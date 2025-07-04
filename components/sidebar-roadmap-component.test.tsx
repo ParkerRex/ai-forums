@@ -1,17 +1,18 @@
+// @vitest-environment jsdom
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
 
-// Mock the GitHub issues hook
+// Use `vi.hoisted` so the spy is created before Vitest hoists and executes the
+// mock factory, preventing TDZ issues.
+const mockUseGitHubIssues = vi.hoisted(() => vi.fn());
+
 vi.mock("@/lib/github", () => ({
-  useGitHubIssues: vi.fn(),
+  useGitHubIssues: mockUseGitHubIssues,
 }));
 
 import { SidebarRoadmapComponent } from "./sidebar-roadmap-component";
-import { useGitHubIssues } from "@/lib/github";
-
-const mockUseGitHubIssues = useGitHubIssues as ReturnType<typeof vi.fn>;
 
 // Mock the BugReportModal component
 vi.mock("@/components/bug-report-modal", () => ({

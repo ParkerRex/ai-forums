@@ -126,32 +126,58 @@ async function uploadViaDirect(
     });
 
     xhr.addEventListener("load", async () => {
-      if (xhr.status >= 200 && xhr.status < 300) {
-        // Extract thumbnail for videos
-        let thumbnailUrl: string | undefined;
-        if (file.type.startsWith('video/') && !options.skipThumbnail) {
-          const thumbnailDataUrl = await extractVideoThumbnail(file);
-          if (thumbnailDataUrl) {
-            // Convert data URL to file and upload
-            const thumbnailBlob = await fetch(thumbnailDataUrl).then(r => r.blob());
-            const thumbnailFile = new File([thumbnailBlob], `${file.name}-thumbnail.jpg`, { type: 'image/jpeg' });
-            
+      try {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          // Extract thumbnail for videos
+          let thumbnailUrl: string | undefined;
+
+          if (file.type.startsWith('video/') && !options.skipThumbnail) {
             try {
-              const thumbnailResult = await uploadViaDirect(convex, thumbnailFile, { ...options, skipThumbnail: true });
-              thumbnailUrl = thumbnailResult.url;
-            } catch (error) {
-              console.error('Failed to upload video thumbnail:', error);
+              const thumbnailDataUrl = await extractVideoThumbnail(file);
+
+              if (thumbnailDataUrl) {
+                // Convert data URL to file and upload
+                const thumbnailBlob = await fetch(thumbnailDataUrl).then((r) => r.blob());
+                const thumbnailFile = new File([thumbnailBlob], `${file.name}-thumbnail.jpg`, {
+                  type: "image/jpeg",
+                });
+
+                try {
+                  const thumbnailResult = await uploadViaDirect(convex, thumbnailFile, {
+                    ...options,
+                    skipThumbnail: true,
+                  });
+                  thumbnailUrl = thumbnailResult.url;
+                } catch (thumbnailErr) {
+                  // Log the error but continue – failure to upload a thumbnail
+                  // should not fail the main upload.
+                  console.error("Failed to upload video thumbnail:", thumbnailErr);
+                }
+              }
+            } catch (thumbExtractionErr) {
+              // If thumbnail extraction itself fails, reject so that calling
+              // code can handle the error instead of hanging indefinitely.
+              reject(
+                thumbExtractionErr instanceof Error
+                  ? thumbExtractionErr
+                  : new Error(String(thumbExtractionErr))
+              );
+              return;
             }
           }
+
+          resolve({
+            url: publicUrl,
+            objectKey,
+            thumbnailUrl,
+          });
+        } else {
+          reject(new Error(`Upload failed with status: ${xhr.status}`));
         }
-        
-        resolve({
-          url: publicUrl,
-          objectKey,
-          thumbnailUrl,
-        });
-      } else {
-        reject(new Error(`Upload failed with status: ${xhr.status}`));
+      } catch (err) {
+        // Catch any unexpected errors in the load handler to prevent the
+        // promise from neither resolving nor rejecting.
+        reject(err instanceof Error ? err : new Error(String(err)));
       }
     });
 
