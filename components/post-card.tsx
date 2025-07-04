@@ -63,7 +63,7 @@ interface PostCardProps {
   size?: "small" | "medium" | "large";
 }
 
-export default function PostCard({ post }: PostCardProps) {
+export default function PostCard({ post, size = "large" }: PostCardProps) {
   const router = useRouter();
   const [isVoting, setIsVoting] = useState(false);
 
@@ -142,8 +142,8 @@ export default function PostCard({ post }: PostCardProps) {
 
   const handleShare = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    const postUrl = `${window.location.origin}/${post.category?.name || 'general'}/${post.slug}`;
-    
+    const postUrl = `${window.location.origin}/${post.category?.name || "general"}/${post.slug}`;
+
     try {
       await navigator.clipboard.writeText(postUrl);
       toast.success("Link copied to clipboard!");
@@ -204,10 +204,13 @@ export default function PostCard({ post }: PostCardProps) {
         </div>
 
         {/* Main content using PostPreview */}
-        <div className="flex-1 cursor-pointer group-hover:bg-muted/5 transition-colors duration-200" onClick={handleClick}>
+        <div
+          className="flex-1 cursor-pointer group-hover:bg-muted/5 transition-colors duration-200"
+          onClick={handleClick}
+        >
           <PostPreview
             post={post as PostData}
-            size="large"
+            size={size}
             showStats={false}
             showCategory={true}
             showMember={true}
