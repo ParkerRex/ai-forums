@@ -75,8 +75,10 @@ async function uploadViaServer(
         try {
           const thumbnailResult = await uploadViaServer(convex, thumbnailFile, { ...options, skipThumbnail: true });
           thumbnailUrl = thumbnailResult.url;
-        } catch (error) {
-          console.error('Failed to upload video thumbnail:', error);
+        } catch (thumbnailErr) {
+          // Log the error but continue – failure to upload a thumbnail
+          // should not fail the main upload.
+          console.error("Failed to upload video thumbnail:", thumbnailErr);
         }
       }
     }
@@ -154,15 +156,10 @@ async function uploadViaDirect(
                   console.error("Failed to upload video thumbnail:", thumbnailErr);
                 }
               }
-            } catch (thumbExtractionErr) {
-              // If thumbnail extraction itself fails, reject so that calling
-              // code can handle the error instead of hanging indefinitely.
-              reject(
-                thumbExtractionErr instanceof Error
-                  ? thumbExtractionErr
-                  : new Error(String(thumbExtractionErr))
-              );
-              return;
+            } catch (thumbnailErr) {
+              // Log the error but continue – failure to upload a thumbnail
+              // should not fail the main upload.
+              console.error("Failed to upload video thumbnail:", thumbnailErr);
             }
           }
 
