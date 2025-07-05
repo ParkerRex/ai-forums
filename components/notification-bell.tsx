@@ -3,7 +3,7 @@
 import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Bell } from "lucide-react";
+import { BellIcon } from "@/components/ui/bell";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useCurrentMember } from "@/hooks/use-current-member";
@@ -14,6 +14,10 @@ interface NotificationBellProps {
 
 export function NotificationBell({ onClick }: NotificationBellProps) {
   const { member } = useCurrentMember();
+  const bellIconRef = React.useRef<{
+    startAnimation: () => void;
+    stopAnimation: () => void;
+  }>(null);
 
   const unreadCount = useQuery(
     api.notifications.getUnreadNotificationCount,
@@ -28,8 +32,10 @@ export function NotificationBell({ onClick }: NotificationBellProps) {
       size="sm"
       className="relative px-2 text-muted-foreground hover:text-foreground"
       onClick={onClick}
+      onMouseEnter={() => bellIconRef.current?.startAnimation()}
+      onMouseLeave={() => bellIconRef.current?.stopAnimation()}
     >
-      <Bell size={18} />
+      <BellIcon ref={bellIconRef} size={18} />
       {unreadCount !== undefined && unreadCount > 0 && (
         <Badge
           variant="destructive"

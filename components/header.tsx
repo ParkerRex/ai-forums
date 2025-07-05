@@ -3,16 +3,25 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Search, Plus, Bookmark, BookOpen } from "lucide-react";
+import { Bookmark, BookOpen } from "lucide-react";
 import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
+import {
+  CalendarDaysIcon,
+  CalendarDaysIconHandle,
+} from "@/components/ui/calendar-days";
 import { UserButton, SignUpButton } from "@clerk/nextjs";
 import { AuthButton } from "@/components/auth-button";
 import { NotificationDropdown } from "@/components/notification-dropdown";
 import { Authenticated, Unauthenticated } from "convex/react";
 import React from "react";
+import { SearchIcon, SearchIconHandle } from "@/components/ui/search";
+import { PlusIcon, PlusIconHandle } from "@/components/ui/plus";
 
 export default function Header() {
   const iconRef = React.useRef<UsersIconHandle>(null);
+  const calendarIconRef = React.useRef<CalendarDaysIconHandle>(null);
+  const searchIconRef = React.useRef<SearchIconHandle>(null);
+  const plusIconRef = React.useRef<PlusIconHandle>(null);
 
   return (
     <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
@@ -43,13 +52,35 @@ export default function Header() {
           </div>
 
           <div className="flex-1 max-w-md mx-8">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+            <div
+              className="relative"
+              onMouseEnter={() => searchIconRef.current?.startAnimation()}
+              onMouseLeave={() => searchIconRef.current?.stopAnimation()}
+            >
+              <SearchIcon
+                ref={searchIconRef}
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
+                size={16}
+              />
               <Input placeholder="type / to search" className="pl-10" />
             </div>
           </div>
 
           <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="px-2 text-muted-foreground hover:text-foreground"
+              onMouseEnter={() => calendarIconRef.current?.startAnimation()}
+              onMouseLeave={() => calendarIconRef.current?.stopAnimation()}
+              asChild
+            >
+              <Link href="/calendar" className="flex items-center gap-1">
+                <CalendarDaysIcon ref={calendarIconRef} size={18} />
+                <span>calendar</span>
+              </Link>
+            </Button>
+
             <Button
               variant="ghost"
               size="sm"
@@ -87,16 +118,28 @@ export default function Header() {
                 </Link>
               </Button>
               <Link href="/create">
-                <Button variant="default" size="default" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
-                  <Plus className="w-4 h-4 mr-2" />
+                <Button
+                  variant="default"
+                  size="default"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                  onMouseEnter={() => plusIconRef.current?.startAnimation()}
+                  onMouseLeave={() => plusIconRef.current?.stopAnimation()}
+                >
+                  <PlusIcon ref={plusIconRef} size={16} className="mr-2" />
                   Create Post
                 </Button>
               </Link>
             </Authenticated>
             <Unauthenticated>
               <SignUpButton mode="modal">
-                <Button variant="default" size="default" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
-                  <Plus className="w-4 h-4 mr-2" />
+                <Button
+                  variant="default"
+                  size="default"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                  onMouseEnter={() => plusIconRef.current?.startAnimation()}
+                  onMouseLeave={() => plusIconRef.current?.stopAnimation()}
+                >
+                  <PlusIcon ref={plusIconRef} size={16} className="mr-2" />
                   Create Post
                 </Button>
               </SignUpButton>
