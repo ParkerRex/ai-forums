@@ -26,20 +26,30 @@ export default function NewsPage() {
     if (showRefreshing) setRefreshing(true);
     try {
       const defaultSources = [
-        { type: "repository" as const, url: "https://github.com/microsoft/chat-copilot", name: "Microsoft Copilot" },
-        { type: "website" as const, url: "https://x.ai/news", name: "x.ai News" },
+        {
+          type: "repository" as const,
+          url: "https://github.com/microsoft/chat-copilot",
+          name: "Microsoft Copilot",
+        },
+        {
+          type: "website" as const,
+          url: "https://x.ai/news",
+          name: "x.ai News",
+        },
       ];
 
-      const customSources = member?.newsPreferences?.customSources || defaultSources;
+      const customSources =
+        member?.newsPreferences?.customSources || defaultSources;
       const results: NewsItem[] = [];
 
-      const mainResponse = await fetch('/api/news', {
-        method: 'POST',
+      const mainResponse = await fetch("/api/news", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          query: "latest AI developments machine learning artificial intelligence",
+          query:
+            "latest AI developments machine learning artificial intelligence",
           numResults: 15,
         }),
       });
@@ -60,15 +70,23 @@ export default function NewsPage() {
 
       for (const source of customSources.slice(0, 2)) {
         try {
-          const customResponse = await fetch('/api/news', {
-            method: 'POST',
+          const customResponse = await fetch("/api/news", {
+            method: "POST",
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
             },
             body: JSON.stringify({
               query: `${source.name} latest updates`,
               numResults: 5,
-              includeDomains: source.type === "website" ? [new URL(source.url).hostname] : undefined,
+              includeDomains: (() => {
+                if (source.type !== "website") return undefined;
+                try {
+                  const host = new URL(source.url).hostname;
+                  return host ? [host] : undefined;
+                } catch {
+                  return undefined;
+                }
+              })(),
             }),
           });
 
@@ -94,7 +112,10 @@ export default function NewsPage() {
         .sort((a, b) => {
           if (!a.publishedDate) return 1;
           if (!b.publishedDate) return -1;
-          return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+          return (
+            new Date(b.publishedDate).getTime() -
+            new Date(a.publishedDate).getTime()
+          );
         })
         .slice(0, 20);
 
@@ -148,7 +169,9 @@ export default function NewsPage() {
               onClick={() => loadNews(true)}
               disabled={refreshing}
             >
-              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? 'animate-spin' : ''}`} />
+              <RefreshCw
+                className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+              />
               Refresh
             </Button>
             <Button variant="outline" size="sm">
@@ -157,7 +180,7 @@ export default function NewsPage() {
             </Button>
           </div>
         </div>
-        
+
         <div className="grid gap-6">
           {news.map((item, index) => (
             <NewsCard key={index} item={item} />

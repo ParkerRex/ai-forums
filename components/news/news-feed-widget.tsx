@@ -25,20 +25,30 @@ export function NewsFeedWidget() {
     const loadNews = async () => {
       try {
         const defaultSources = [
-          { type: "repository" as const, url: "https://github.com/microsoft/chat-copilot", name: "Microsoft Copilot" },
-          { type: "website" as const, url: "https://x.ai/news", name: "x.ai News" },
+          {
+            type: "repository" as const,
+            url: "https://github.com/microsoft/chat-copilot",
+            name: "Microsoft Copilot",
+          },
+          {
+            type: "website" as const,
+            url: "https://x.ai/news",
+            name: "x.ai News",
+          },
         ];
 
-        const customSources = member?.newsPreferences?.customSources || defaultSources;
+        const customSources =
+          member?.newsPreferences?.customSources || defaultSources;
         const results: NewsItem[] = [];
 
-        const mainResponse = await fetch('/api/news', {
-          method: 'POST',
+        const mainResponse = await fetch("/api/news", {
+          method: "POST",
           headers: {
-            'Content-Type': 'application/json',
+            "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            query: "latest AI developments machine learning artificial intelligence",
+            query:
+              "latest AI developments machine learning artificial intelligence",
             numResults: 3,
           }),
         });
@@ -60,15 +70,23 @@ export function NewsFeedWidget() {
         if (customSources.length > 0) {
           const source = customSources[0];
           try {
-            const customResponse = await fetch('/api/news', {
-              method: 'POST',
+            const customResponse = await fetch("/api/news", {
+              method: "POST",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
               body: JSON.stringify({
                 query: `${source.name} latest updates`,
                 numResults: 2,
-                includeDomains: source.type === "website" ? [new URL(source.url).hostname] : undefined,
+                includeDomains: (() => {
+                  if (source.type !== "website") return undefined;
+                  try {
+                    const host = new URL(source.url).hostname;
+                    return host ? [host] : undefined;
+                  } catch {
+                    return undefined;
+                  }
+                })(),
               }),
             });
 
@@ -94,7 +112,10 @@ export function NewsFeedWidget() {
           .sort((a, b) => {
             if (!a.publishedDate) return 1;
             if (!b.publishedDate) return -1;
-            return new Date(b.publishedDate).getTime() - new Date(a.publishedDate).getTime();
+            return (
+              new Date(b.publishedDate).getTime() -
+              new Date(a.publishedDate).getTime()
+            );
           })
           .slice(0, 5);
 
@@ -141,7 +162,10 @@ export function NewsFeedWidget() {
             <TrendingUp className="w-5 h-5 mr-2" />
             Recent AI News
           </div>
-          <Link href="/news" className="text-sm text-muted-foreground hover:text-foreground">
+          <Link
+            href="/news"
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
             View all
           </Link>
         </CardTitle>

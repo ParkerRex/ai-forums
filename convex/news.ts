@@ -61,7 +61,16 @@ export const fetchAINews = action({
               body: JSON.stringify({
                 query: `${source.name} latest updates`,
                 numResults: Math.ceil(limit * 0.15),
-                includeDomains: source.type === "website" ? [new URL(source.url).hostname] : undefined,
+                includeDomains:
+                  (() => {
+                    if (source.type !== "website") return undefined;
+                    try {
+                      const host = new URL(source.url).hostname;
+                      return host ? [host] : undefined;
+                    } catch {
+                      return undefined;
+                    }
+                  })(),
               }),
             });
 

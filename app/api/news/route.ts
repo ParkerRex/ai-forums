@@ -10,12 +10,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'EXA API key not configured' }, { status: 500 });
     }
 
-    console.log('EXA API Key check in API route:', {
-      keyExists: !!apiKey,
-      keyLength: apiKey?.length,
-      keyPrefix: apiKey?.substring(0, 8) + '...',
-    });
-
     const requestBody = {
       query,
       category: 'news',
@@ -28,11 +22,6 @@ export async function POST(request: NextRequest) {
       startPublishedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
     };
 
-    console.log('EXA API Request:', {
-      url: 'https://api.exa.ai/search',
-      body: requestBody,
-    });
-
     const response = await fetch('https://api.exa.ai/search', {
       method: 'POST',
       headers: {
@@ -44,11 +33,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('EXA API Error Details:', {
-        status: response.status,
-        statusText: response.statusText,
-        body: errorText,
-      });
+      console.error('EXA API error:', response.status, response.statusText);
       throw new Error(`EXA API error: ${response.status} - ${errorText}`);
     }
 
