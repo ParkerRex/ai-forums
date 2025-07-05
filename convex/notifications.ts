@@ -12,7 +12,7 @@ export async function insertNotification(
   ctx: MutationCtx,
   args: {
     recipientId: Id<"members">;
-    type: "mention" | "reply" | "upvote" | "follow";
+    type: "mention" | "reply" | "upvote" | "follow" | "comment_report";
     entityType: "post" | "comment";
     entityId: string;
     actorId: Id<"members">;
@@ -73,7 +73,8 @@ export const getNotifications = query({
       v.literal("mention"),
       v.literal("reply"),
       v.literal("upvote"),
-      v.literal("follow")
+      v.literal("follow"),
+      v.literal("comment_report")
     ),
     entityType: v.union(
       v.literal("post"),
@@ -179,7 +180,8 @@ export const createNotification = mutation({
       v.literal("mention"),
       v.literal("reply"),
       v.literal("upvote"),
-      v.literal("follow")
+      v.literal("follow"),
+      v.literal("comment_report")
     ),
     entityType: v.union(
       v.literal("post"),

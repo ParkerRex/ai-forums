@@ -71,6 +71,7 @@ export const getReportedComments = query({
             _id: post._id,
             title: post.title,
             slug: post.slug,
+            categoryName: (await ctx.db.get(post.categoryId))?.name ?? null,
           } : null,
         };
       })
