@@ -23,7 +23,7 @@ interface NotificationData {
   _id: Id<"notifications">;
   _creationTime: number;
   recipientId: Id<"members">;
-  type: "mention" | "reply" | "upvote" | "follow";
+  type: "mention" | "reply" | "upvote" | "follow" | "comment_report";
   entityType: "post" | "comment";
   entityId: string;
   actorId: Id<"members">;
@@ -75,6 +75,10 @@ export function NotificationDropdown() {
   };
 
   const getNotificationLink = (notification: NotificationData) => {
+    if (notification.type === "comment_report") {
+      return "/admin/reported-comments";
+    }
+
     // Use postSlug if available, otherwise fall back to postId
     const postIdentifier = notification.postSlug || notification.postId;
 

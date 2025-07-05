@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -13,8 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2, Link2, Flag } from "lucide-react";
+import { MoreHorizontal, Edit, Trash2, Link2, Flag, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { COMMENT_EDIT_WINDOW_MS } from "@/lib/constants";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -33,23 +34,40 @@ interface CommentActionsMenuProps {
   categoryName: string;
   onEditClick: () => void;
   isAdmin?: boolean;
+  commentCreatedAt: number;
 }
 
-export function CommentActionsMenu({
+export default function CommentActionsMenu({
   commentId,
   authorId,
   postSlug,
   categoryName,
   onEditClick,
   isAdmin = false,
+  commentCreatedAt,
 }: CommentActionsMenuProps) {
   const { user } = useUser();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const deleteComment = useMutation(api.comments.deleteComment);
 
   const isOwnComment = user?.publicMetadata?.memberId === authorId;
+
+  const canEdit = useMemo(() => {
+    if (!isOwnComment && !isAdmin) return false;
+    
+    if (isAdmin) return true;
+    
+    const commentAge = Date.now() - commentCreatedAt;
+    return commentAge <= COMMENT_EDIT_WINDOW_MS;
+  }, [isOwnComment, isAdmin, commentCreatedAt]);
+
+  const editTimeExpired = useMemo(() => {
+    const commentAge = Date.now() - commentCreatedAt;
+    return commentAge > COMMENT_EDIT_WINDOW_MS;
+  }, [commentCreatedAt]);
 
   const handleCopyLink = () => {
     const url = `${window.location.origin}/${categoryName}/${postSlug}#comment-${commentId}`;
@@ -58,6 +76,7 @@ export function CommentActionsMenu({
   };
 
   const handleDelete = async () => {
+    setIsDeleting(true);
     try {
       await deleteComment({ commentId });
       toast.success("Comment deleted successfully");
@@ -65,6 +84,8 @@ export function CommentActionsMenu({
     } catch (err) {
       console.error(err);
       toast.error("Failed to delete comment");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -84,10 +105,17 @@ export function CommentActionsMenu({
         <DropdownMenuContent align="end">
           {(isOwnComment || isAdmin) && (
             <>
-              <DropdownMenuItem onClick={onEditClick}>
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
+              {canEdit ? (
+                <DropdownMenuItem onClick={onEditClick}>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+              ) : editTimeExpired && isOwnComment ? (
+                <DropdownMenuItem disabled>
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit (24h window expired)
+                </DropdownMenuItem>
+              ) : null}
               <DropdownMenuItem
                 onClick={() => setShowDeleteDialog(true)}
                 className="text-red-600"
@@ -128,8 +156,16 @@ export function CommentActionsMenu({
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-red-600 hover:bg-red-700"
+              disabled={isDeleting}
             >
-              Delete
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -161,9 +197,11 @@ function CommentReportDialog({
     "spam" | "inappropriate" | "harassment" | "other"
   >("spam");
   const [reasonText, setReasonText] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
   const reportComment = useMutation(api.comments.reportComment);
 
   const handleReport = async () => {
+    setIsReporting(true);
     try {
       await reportComment({
         commentId,
@@ -175,6 +213,8 @@ function CommentReportDialog({
     } catch (err) {
       console.error(err);
       toast.error("Failed to report comment");
+    } finally {
+      setIsReporting(false);
     }
   };
 
@@ -222,9 +262,16 @@ function CommentReportDialog({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleReport}
-            disabled={reason === "other" && !reasonText.trim()}
+            disabled={reason === "other" && !reasonText.trim() || isReporting}
           >
-            Report
+            {isReporting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Reporting...
+              </>
+            ) : (
+              "Report"
+            )}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
