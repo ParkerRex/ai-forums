@@ -1,52 +1,14 @@
 "use client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
 import { OnlineUsers } from "./online-users";
 import { SidebarRoadmapComponent } from "./sidebar-roadmap-component";
+import { NewsFeedWidget } from "./news/news-feed-widget";
 
 export default function PostSidebar() {
   return (
     <div className="space-y-6">
-      {/* Recent AI News Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2" />
-            Recent AI News
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div className="border-b border pb-3 last:border-b-0 last:pb-0">
-              <h4 className="text-sm font-medium text-foreground mb-1">
-                OpenAI Announces GPT-5 Development
-              </h4>
-              <p className="text-xs text-muted-foreground mb-2">
-                Next-generation model promises significant improvements in reasoning and multimodal capabilities.
-              </p>
-              <span className="text-xs text-muted-foreground opacity-70">2 hours ago</span>
-            </div>
-            <div className="border-b border pb-3 last:border-b-0 last:pb-0">
-              <h4 className="text-sm font-medium text-foreground mb-1">
-                Google Releases Gemini 2.0 Flash
-              </h4>
-              <p className="text-xs text-muted-foreground mb-2">
-                New model features enhanced speed and efficiency for real-time AI applications.
-              </p>
-              <span className="text-xs text-muted-foreground opacity-70">4 hours ago</span>
-            </div>
-            <div className="border-b border pb-3 last:border-b-0 last:pb-0">
-              <h4 className="text-sm font-medium text-foreground mb-1">
-                Meta AI Unveils Llama 3.3 70B
-              </h4>
-              <p className="text-xs text-muted-foreground mb-2">
-                Open-source model achieves performance comparable to larger proprietary models.
-              </p>
-              <span className="text-xs text-muted-foreground opacity-70">6 hours ago</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      {/* AI News Feed */}
+      <NewsFeedWidget />
 
       {/* Online Users */}
       <OnlineUsers />
