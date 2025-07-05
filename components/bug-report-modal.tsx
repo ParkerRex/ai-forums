@@ -23,7 +23,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Paperclip, X, Loader2, FileText, FileIcon } from "lucide-react";
+import { X, Loader2, FileText, FileIcon } from "lucide-react";
+import { LinkIcon } from "@/components/ui/link";
 import { toast } from "sonner";
 import Image from "next/image";
 import { getBrowserInfo } from "@/lib/browser-detection";
@@ -366,7 +367,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                 onClick={() => fileInputRef.current?.click()}
                 disabled={attachments.length >= 5}
               >
-                <Paperclip className="w-4 h-4 mr-2" />
+                <LinkIcon size={16} className="mr-2" />
                 Add Files ({attachments.length}/5)
               </Button>
 

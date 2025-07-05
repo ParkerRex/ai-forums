@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
 import { MessageSquareIcon } from "@/components/ui/message-square";
-import { RabbitIcon } from "@/components/ui/rabbit";
+import { UploadIcon } from "@/components/ui/upload";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -487,7 +487,7 @@ export default function PostDetail({
                 onMouseEnter={() => shareIconRef.current?.startAnimation()}
                 onMouseLeave={() => shareIconRef.current?.stopAnimation()}
               >
-                <RabbitIcon ref={shareIconRef} size={16} className="mr-1" />
+                <UploadIcon ref={shareIconRef} size={16} className="mr-1" />
                 share
               </Button>
               <BookmarkButton
