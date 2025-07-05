@@ -553,8 +553,28 @@ export const reportComment = mutation({
       createdAt: Date.now(),
     });
 
-    // TODO: Send notification to admins
-    // This will be implemented when the notification system is added
+    try {
+      const admins = await ctx.db
+        .query("members")
+        .filter((q) => q.eq(q.field("role"), "admin"))
+        .collect();
+      
+      const comment = await ctx.db.get(commentId);
+      const post = comment ? await ctx.db.get(comment.postId) : null;
+      
+      for (const admin of admins) {
+        await insertNotification(ctx, {
+          recipientId: admin._id,
+          type: "comment_report",
+          entityType: "comment",
+          entityId: commentId,
+          actorId: member._id,
+          message: `A comment has been reported for: ${reason}`,
+        });
+      }
+    } catch (error) {
+      console.error("Failed to send admin notifications for comment report:", error);
+    }
 
     return reportId;
   },

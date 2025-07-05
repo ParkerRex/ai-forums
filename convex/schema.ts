@@ -353,7 +353,8 @@ const notifications = defineTable({
     v.literal("mention"),
     v.literal("reply"),
     v.literal("upvote"),
-    v.literal("follow")
+    v.literal("follow"),
+    v.literal("comment_report")
   ),
   entityType: v.union(
     v.literal("post"),

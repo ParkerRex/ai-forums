@@ -33,7 +33,7 @@ import Image from "next/image";
 import { memberProfileUrl } from "@/lib/utils";
 import { EnhancedCommentInput } from "./enhanced-comment-input";
 import { motion } from "framer-motion";
-import { CommentActionsMenu } from "./comment-actions-menu";
+import CommentActionsMenu from "./comment-actions-menu";
 import { useParams } from "next/navigation";
 
 type AttachmentType = {
@@ -300,6 +300,7 @@ function CommentItem({
                       categoryName={categoryName}
                       onEditClick={() => setIsEditing(true)}
                       isAdmin={isAdmin}
+                      commentCreatedAt={comment.createdAt}
                     />
                   </Authenticated>
                 )}
@@ -688,19 +689,43 @@ export default function CommentSection({
   useEffect(() => {
     if (!targetCommentId || !comments) return;
 
-    // allow React to paint comment elements first
-    const raf = requestAnimationFrame(() => {
-      const el = document.getElementById(`comment-${targetCommentId}`);
-      if (el) {
-        el.scrollIntoView({ behavior: "smooth", block: "center" });
-        el.classList.add("ring-2", "ring-primary", "ring-offset-2");
-        setTimeout(() => {
-          el.classList.remove("ring-2", "ring-primary", "ring-offset-2");
-        }, 3000);
-      }
-    });
+    const scrollToComment = () => {
+      const element = document.getElementById(`comment-${targetCommentId}`);
+      if (!element) return;
 
-    return () => cancelAnimationFrame(raf);
+      const expandParentComments = () => {
+        let currentElement = element;
+        while (currentElement) {
+          const parentComment = currentElement.closest('[data-comment-collapsed="true"]');
+          if (parentComment) {
+            const expandButton = parentComment.querySelector('[data-expand-button]');
+            if (expandButton) {
+              (expandButton as HTMLElement).click();
+            }
+          }
+          currentElement = parentComment as HTMLElement;
+        }
+      };
+
+      expandParentComments();
+
+      const headerOffset = 100;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+
+      element.classList.add("comment-highlight");
+      setTimeout(() => {
+        element.classList.remove("comment-highlight");
+      }, 3000);
+    };
+
+    const timeoutId = setTimeout(scrollToComment, 200);
+    return () => clearTimeout(timeoutId);
   }, [targetCommentId, comments]);
 
   const handleSubmitComment = async (
