@@ -68,6 +68,16 @@ const members = defineTable({
   netVoteCount: v.optional(v.number()),
   // Admin role field
   role: v.optional(v.union(v.literal("user"), v.literal("admin"))), // defaults to "user"
+  
+  newsPreferences: v.optional(v.object({
+    enabledCategories: v.array(v.string()),
+    customSources: v.array(v.object({
+      type: v.union(v.literal("repository"), v.literal("website")),
+      url: v.string(),
+      name: v.string(),
+    })),
+    refreshInterval: v.number(), // minutes
+  })),
 })
   .index("by_status", ["status"])
   .index("by_joinedDate", ["joinedDate"])
