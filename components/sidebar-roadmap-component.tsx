@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { BugReportModal } from "@/components/bug-report-modal";
+import { FeatureRequestButton } from "@/components/feature-request-button";
 import { useGitHubIssues } from "@/lib/github";
 import { ExternalLink, Loader2, Bug } from "lucide-react";
 import { ExpandIcon, type ExpandIconHandle } from "@/components/ui/expand";
@@ -79,15 +80,18 @@ export function SidebarRoadmapComponent() {
             <p className="text-xs text-muted-foreground">
               Failed to load roadmap items.
             </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full h-7 text-xs text-muted-foreground hover:text-foreground"
-              onClick={() => setIsBugReportOpen(true)}
-            >
-              <Bug className="h-3 w-3 mr-1.5" />
-              Report Bug
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="flex-1 w-full h-7 text-xs text-muted-foreground hover:text-foreground"
+                onClick={() => setIsBugReportOpen(true)}
+              >
+                <Bug className="h-3 w-3 mr-1.5" />
+                Report Bug
+              </Button>
+              <FeatureRequestButton />
+            </div>
           </CardContent>
         </Card>
         <BugReportModal
@@ -169,16 +173,17 @@ export function SidebarRoadmapComponent() {
             <IssuesList issues={issues.slice(0, 3)} showCaption={false} />
           )}
 
-          <div className="pt-1">
+          <div className="pt-1 flex gap-2">
             <Button
               variant="ghost"
               size="sm"
-              className="w-full h-7 text-xs text-muted-foreground hover:text-foreground"
+              className="flex-1 w-full h-7 text-xs text-muted-foreground hover:text-foreground"
               onClick={() => setIsBugReportOpen(true)}
             >
               <Bug className="h-3 w-3 mr-1.5" />
               Report Bug
             </Button>
+            <FeatureRequestButton />
           </div>
         </CardContent>
       </Card>
