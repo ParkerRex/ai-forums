@@ -1,6 +1,113 @@
 import { v } from "convex/values";
 import { action } from "./_generated/server";
 
+export const createFeatureRequest = action({
+  args: {
+    title: v.string(),
+    description: v.string(),
+    screenshotUrls: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, args): Promise<{ issueNumber: number; issueUrl: string; success: boolean }> => {
+    const screenshotUrls = args.screenshotUrls || [];
+    let identity: { email?: string; name?: string } | undefined;
+    
+    try {
+      const userIdentity = await ctx.auth.getUserIdentity();
+      identity = userIdentity || undefined;
+    } catch {
+      identity = undefined;
+    }
+    
+    const memberInfo = identity?.email 
+      ? `${identity.name || "Anonymous"} (${identity.email})` 
+      : "Anonymous user";
+
+    const githubToken = process.env.GITHUB_TOKEN;
+    
+    if (!githubToken) {
+      throw new Error('GitHub token not configured');
+    }
+
+    const GITHUB_API_URL = 'https://api.github.com';
+    const OWNER = 'joinvai';
+    const REPO = 'vai-vex';
+
+    const issueBody = `## Feature Description
+${args.description}
+
+---
+*Submitted by*: ${memberInfo}${
+      screenshotUrls.length > 0 
+        ? `\n\n## Screenshots\n${screenshotUrls.map((url, index) => {
+            const urlParts = url.split('/');
+            const filename = urlParts[urlParts.length - 1] || `Screenshot ${index + 1}`;
+            const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+            const isImage = imageExtensions.some(ext => url.toLowerCase().includes(ext));
+            
+            if (isImage) {
+              return `${index + 1}. ![${filename}](${url})`;
+            } else {
+              return `${index + 1}. [📎 ${filename}](${url})`;
+            }
+          }).join('\n')}` 
+        : ''
+    }
+
+---
+*This feature request was submitted via the in-app feature request system.*`;
+
+    const labels = ['user submitted', 'feature request'];
+
+    const response: Response = await fetch(
+      `${GITHUB_API_URL}/repos/${OWNER}/${REPO}/issues`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${githubToken}`,
+          Accept: 'application/vnd.github+json',
+          'X-GitHub-Api-Version': '2022-11-28',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: `[Feature] ${args.title}`,
+          body: issueBody,
+          labels,
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error('GitHub API error:', errorData);
+      
+      let errorMessage = 'Failed to create GitHub issue';
+      if (errorData.message) {
+        errorMessage += `: ${errorData.message}`;
+      }
+      type GitHubErrorItem = { message?: string; code?: string };
+      let errorDetails = '';
+      if (Array.isArray(errorData.errors)) {
+        errorDetails = (errorData.errors as GitHubErrorItem[])
+          .map((e) => e.message || e.code)
+          .join(', ');
+      }
+      if (errorDetails) {
+        errorMessage += ` (${errorDetails})`;
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    const issue = await response.json();
+
+    return {
+      issueNumber: issue.number,
+      issueUrl: issue.html_url,
+      success: true,
+    };
+  },
+});
+
 export const createBugReport = action({
   args: {
     title: v.string(),
