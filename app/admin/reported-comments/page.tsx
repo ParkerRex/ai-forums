@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -22,7 +23,6 @@ import {
 } from "@/components/ui/select";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLink, Trash2, X } from "lucide-react";
-import { toast } from "sonner";
 import { PageErrorBoundary } from "@/components/error-boundary";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import Link from "next/link";
@@ -57,7 +57,7 @@ function ReportedCommentsContent() {
   const handleResolve = async (reportId: string, deleteComment: boolean = false) => {
     try {
       await resolveReport({
-        reportId: reportId as any,
+        reportId: reportId as Id<"commentReports">,
         action: "resolve",
         deleteComment,
       });
@@ -74,7 +74,7 @@ function ReportedCommentsContent() {
   const handleDismiss = async (reportId: string) => {
     try {
       await resolveReport({
-        reportId: reportId as any,
+        reportId: reportId as Id<"commentReports">,
         action: "dismiss",
       });
       handleMutationSuccess("Report dismissed");
@@ -103,7 +103,7 @@ function ReportedCommentsContent() {
       spam: "bg-red-100 text-red-800",
       inappropriate: "bg-orange-100 text-orange-800",
       harassment: "bg-purple-100 text-purple-800",
-      other: "bg-gray-100 text-gray-800",
+      other: "bg-muted text-muted-foreground",
     };
     
     return (
@@ -194,7 +194,7 @@ function ReportedCommentsContent() {
                         </p>
                         {report.post && (
                           <Link
-                            href={`/${report.post.categoryName || 'general'}/${report.post.slug}#comment-${report.comment._id}`}
+                            href={`/general/${report.post.slug}#comment-${report.comment._id}`}
                             className="text-xs text-blue-600 hover:underline flex items-center gap-1"
                           >
                             View in context <ExternalLink className="w-3 h-3" />
