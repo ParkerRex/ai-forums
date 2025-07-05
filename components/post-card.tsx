@@ -2,7 +2,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
 import { MessageSquareIcon } from "@/components/ui/message-square";
-import { RabbitIcon } from "@/components/ui/rabbit";
+import { UploadIcon } from "@/components/ui/upload";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -273,7 +273,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
             onMouseEnter={() => shareIconRef.current?.startAnimation()}
             onMouseLeave={() => shareIconRef.current?.stopAnimation()}
           >
-            <RabbitIcon ref={shareIconRef} size={16} className="mr-1.5" />
+            <UploadIcon ref={shareIconRef} size={16} className="mr-1.5" />
             <span className="font-medium">share</span>
           </Button>
         </div>

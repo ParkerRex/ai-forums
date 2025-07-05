@@ -15,7 +15,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Paperclip, X, Loader2, FileText, FileIcon } from "lucide-react";
+import { X, Loader2, FileText, FileIcon } from "lucide-react";
+import { LinkIcon } from "@/components/ui/link";
 import { toast } from "sonner";
 import Image from "next/image";
 import { RichTextEditor } from "@/components/rich-text-editor";
@@ -36,7 +37,10 @@ interface FeatureRequestFormData {
   description: string;
 }
 
-export function FeatureRequestModal({ isOpen, onClose }: FeatureRequestModalProps) {
+export function FeatureRequestModal({
+  isOpen,
+  onClose,
+}: FeatureRequestModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
@@ -251,7 +255,7 @@ export function FeatureRequestModal({ isOpen, onClose }: FeatureRequestModalProp
                 onClick={() => fileInputRef.current?.click()}
                 disabled={attachments.length >= 5}
               >
-                <Paperclip className="w-4 h-4 mr-2" />
+                <LinkIcon size={16} className="mr-2" />
                 Add Screenshots ({attachments.length}/5)
               </Button>
 

@@ -23,14 +23,10 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInButton } from "@clerk/nextjs";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { formatDistanceToNow } from "date-fns";
-import {
-  ChevronDown,
-  ChevronRight,
-  Paperclip,
-  GripVertical,
-} from "lucide-react";
+import { ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
 import { MessageSquareIcon } from "@/components/ui/message-square";
+import { LinkIcon } from "@/components/ui/link";
 import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import Link from "next/link";
 import Image from "next/image";
@@ -367,7 +363,7 @@ function CommentItem({
                       </div>
                     ) : (
                       <div className="flex items-center gap-2">
-                        <Paperclip className="w-4 h-4" />
+                        <LinkIcon size={16} />
                         <a
                           href={attachment.url}
                           target="_blank"

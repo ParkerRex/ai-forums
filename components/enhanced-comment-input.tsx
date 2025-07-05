@@ -10,9 +10,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Paperclip } from "lucide-react";
+import { LinkIcon } from "@/components/ui/link";
 import { GifIcon } from "@/components/ui/gif";
-import { EmojiIcon } from "@/components/ui/emoji";
+import { SmileIcon } from "@/components/ui/smile";
 import { toast } from "sonner";
 import EmojiPicker from "emoji-picker-react";
 import {
@@ -467,13 +467,13 @@ export function EnhancedCommentInput({
             onClick={() => fileInputRef.current?.click()}
             disabled={attachments.length >= 5}
           >
-            <Paperclip className="w-4 h-4" />
+            <LinkIcon size={16} />
           </Button>
 
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
             <PopoverTrigger asChild>
               <Button type="button" variant="ghost" size="sm">
-                <EmojiIcon size={16} />
+                <SmileIcon size={16} />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">

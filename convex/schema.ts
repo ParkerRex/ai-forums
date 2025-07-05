@@ -40,68 +40,69 @@ export const CategoryStatusValidator = v.union(
   v.literal("private")
 );
 
-export default defineSchema({
-  members: defineTable({
-    firstName: v.string(),
-    lastName: v.string(),
-    email: v.string(),
-    externalId: v.optional(v.string()), // Clerk user ID for new auth system
-    status: v.union(v.literal("active"), v.literal("churned"), v.literal("free"), v.literal("duplicate")),
-    joinedDate: v.number(),
-    country: v.optional(v.string()),
-    slug: v.string(),
-    mergedInto: v.optional(v.id("members")),
-    updatedAt: v.number(),
-    bio: v.optional(v.string()),
-    lastOnline: v.number(),
-    linkGithub: v.optional(v.string()),
-    linkX: v.optional(v.string()),
-    linkYouTube: v.optional(v.string()),
-    location: v.optional(v.string()),
-    // New fields for member upgrades
-    avatarUrl: v.optional(v.string()),
-    websiteUrl: v.optional(v.string()),
-    linkedinUrl: v.optional(v.string()),
-    skills: v.optional(v.array(v.string())),
-    // Cached stats fields
-    postCount: v.optional(v.number()),
-    commentCount: v.optional(v.number()),
-    netVoteCount: v.optional(v.number()),
-    // Admin role field
-    role: v.optional(v.union(v.literal("user"), v.literal("admin"))), // defaults to "user"
-  })
-    .index("by_status", ["status"])
-    .index("by_joinedDate", ["joinedDate"])
-    .index("by_lastOnline", ["lastOnline"])
-    .index("by_status_and_joinedDate", ["status", "joinedDate"])
-    .index("by_skills", ["skills"])
-    .index("by_slug", ["slug"])
-    .index("by_externalId", ["externalId"])
-    .searchIndex("search_members", {
-      searchField: "firstName",
-      filterFields: ["status"]
-    }),
-  categories: defineTable({
-    name: v.string(),
-    displayName: v.string(),
-    description: v.string(),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-    postCount: v.number(),
-    status: CategoryStatusValidator,
-    creatorId: v.id("members"),
-    rules: v.optional(v.string()),
-    bannerImage: v.optional(v.string()),
-    icon: v.optional(v.string()),
-  })
-    .index("by_name", ["name"])
-    .index("by_status", ["status"])
-    .index("by_postCount", ["postCount"])
-    .searchIndex("search_categories", {
-      searchField: "displayName",
-      filterFields: ["status"]
-    }),
-  posts: defineTable({
+const members = defineTable({
+  firstName: v.string(),
+  lastName: v.string(),
+  email: v.string(),
+  externalId: v.optional(v.string()), // Clerk user ID for new auth system
+  status: v.union(v.literal("active"), v.literal("churned"), v.literal("free"), v.literal("duplicate")),
+  joinedDate: v.number(),
+  country: v.optional(v.string()),
+  slug: v.string(),
+  mergedInto: v.optional(v.id("members")),
+  updatedAt: v.number(),
+  bio: v.optional(v.string()),
+  lastOnline: v.number(),
+  linkGithub: v.optional(v.string()),
+  linkX: v.optional(v.string()),
+  linkYouTube: v.optional(v.string()),
+  location: v.optional(v.string()),
+  // New fields for member upgrades
+  avatarUrl: v.optional(v.string()),
+  websiteUrl: v.optional(v.string()),
+  linkedinUrl: v.optional(v.string()),
+  skills: v.optional(v.array(v.string())),
+  // Cached stats fields
+  postCount: v.optional(v.number()),
+  commentCount: v.optional(v.number()),
+  netVoteCount: v.optional(v.number()),
+  // Admin role field
+  role: v.optional(v.union(v.literal("user"), v.literal("admin"))), // defaults to "user"
+})
+  .index("by_status", ["status"])
+  .index("by_joinedDate", ["joinedDate"])
+  .index("by_lastOnline", ["lastOnline"])
+  .index("by_status_and_joinedDate", ["status", "joinedDate"])
+  .index("by_skills", ["skills"])
+  .index("by_slug", ["slug"])
+  .index("by_externalId", ["externalId"])
+  .searchIndex("search_members", {
+    searchField: "firstName",
+    filterFields: ["status"]
+  });
+
+const categories = defineTable({
+  name: v.string(),
+  displayName: v.string(),
+  description: v.string(),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+  postCount: v.number(),
+  status: CategoryStatusValidator,
+  creatorId: v.id("members"),
+  rules: v.optional(v.string()),
+  bannerImage: v.optional(v.string()),
+  icon: v.optional(v.string()),
+})
+  .index("by_name", ["name"])
+  .index("by_status", ["status"])
+  .index("by_postCount", ["postCount"])
+  .searchIndex("search_categories", {
+    searchField: "displayName",
+    filterFields: ["status"]
+  });
+
+const posts = defineTable({
     title: v.string(),
     content: v.string(),
     slug: v.string(),
@@ -174,25 +175,26 @@ export default defineSchema({
       codec: v.optional(v.string()),
     }))),
 
+})
+  .index("by_categoryId", ["categoryId"])
+  .index("by_memberId", ["memberId"])
+  .index("by_status", ["status"])
+  .index("by_createdAt", ["createdAt"])
+  .index("by_netVotes", ["netVotes"])
+  .index("by_slug", ["slug"])
+  .index("by_category_and_createdAt", ["categoryId", "createdAt"])
+  .index("by_category_and_netVotes", ["categoryId", "netVotes"])
+  .index("by_member_and_createdAt", ["memberId", "createdAt"])
+  .searchIndex("search_posts", {
+    searchField: "title",
+    filterFields: ["categoryId", "status", "memberId"]
   })
-    .index("by_categoryId", ["categoryId"])
-    .index("by_memberId", ["memberId"])
-    .index("by_status", ["status"])
-    .index("by_createdAt", ["createdAt"])
-    .index("by_netVotes", ["netVotes"])
-    .index("by_slug", ["slug"])
-    .index("by_category_and_createdAt", ["categoryId", "createdAt"])
-    .index("by_category_and_netVotes", ["categoryId", "netVotes"])
-    .index("by_member_and_createdAt", ["memberId", "createdAt"])
-    .searchIndex("search_posts", {
-      searchField: "title",
-      filterFields: ["categoryId", "status", "memberId"]
-    })
-    .searchIndex("search_posts_content", {
-      searchField: "content",
-      filterFields: ["categoryId", "status", "memberId"]
-    }),
-  comments: defineTable({
+  .searchIndex("search_posts_content", {
+    searchField: "content",
+    filterFields: ["categoryId", "status", "memberId"]
+  });
+
+const comments = defineTable({
     content: v.string(),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -242,46 +244,47 @@ export default defineSchema({
       url: v.string(),
     }))),
     mentions: v.optional(v.array(v.id("members"))),
-  })
-    .index("by_postId", ["postId"])
-    .index("by_memberId", ["memberId"])
-    .index("by_parentCommentId", ["parentCommentId"])
-    .index("by_post_and_createdAt", ["postId", "createdAt"])
-    .index("by_post_and_netVotes", ["postId", "netVotes"])
-    .index("by_parent_and_createdAt", ["parentCommentId", "createdAt"])
-    .index("by_parent_and_order", ["parentCommentId", "order"])
-    .index("by_status", ["status"])
-    .index("by_post_member_createdAt", ["postId", "memberId", "createdAt"])
-    .searchIndex("search_comments", {
-      searchField: "content",
-      filterFields: ["postId", "status", "memberId"]
-    }),
-  votes: defineTable({
+})
+  .index("by_postId", ["postId"])
+  .index("by_memberId", ["memberId"])
+  .index("by_parentCommentId", ["parentCommentId"])
+  .index("by_post_and_createdAt", ["postId", "createdAt"])
+  .index("by_post_and_netVotes", ["postId", "netVotes"])
+  .index("by_parent_and_createdAt", ["parentCommentId", "createdAt"])
+  .index("by_parent_and_order", ["parentCommentId", "order"])
+  .index("by_status", ["status"])
+  .index("by_post_member_createdAt", ["postId", "memberId", "createdAt"])
+  .searchIndex("search_comments", {
+    searchField: "content",
+    filterFields: ["postId", "status", "memberId"]
+  });
+
+const votes = defineTable({
     userId: v.id("members"),
     targetId: v.string(),
     targetType: TargetTypeValidator,
     voteType: VoteTypeValidator,
     createdAt: v.number(),
     updatedAt: v.number(),
-  })
-    .index("by_userId", ["userId"])
-    .index("by_targetId", ["targetId"])
-    .index("by_user_and_target", ["userId", "targetId", "targetType"])
-    .index("by_target_and_type", ["targetId", "targetType"]),
+})
+  .index("by_userId", ["userId"])
+  .index("by_targetId", ["targetId"])
+  .index("by_user_and_target", ["userId", "targetId", "targetType"])
+  .index("by_target_and_type", ["targetId", "targetType"]);
 
-  postViews: defineTable({
+const postViews = defineTable({
     postId: v.id("posts"),
     userId: v.optional(v.id("members")),
     viewedAt: v.number(),
     ipAddress: v.optional(v.string()),
     userAgent: v.optional(v.string()),
-  })
-    .index("by_postId", ["postId"])
-    .index("by_userId", ["userId"])
-    .index("by_post_and_user", ["postId", "userId"])
-    .index("by_viewedAt", ["viewedAt"]),
+})
+  .index("by_postId", ["postId"])
+  .index("by_userId", ["userId"])
+  .index("by_post_and_user", ["postId", "userId"])
+  .index("by_viewedAt", ["viewedAt"]);
 
-  post_versions: defineTable({
+const post_versions = defineTable({
     postId: v.id("posts"),
     version: v.number(),
     title: v.string(),
@@ -324,49 +327,49 @@ export default defineSchema({
       resolution: v.optional(v.string()),
       codec: v.optional(v.string()),
     }))),
-  })
-    .index("by_postId", ["postId"])
-    .index("by_post_and_version", ["postId", "version"])
-    .index("by_editorId", ["editorId"])
-    .index("by_editedAt", ["editedAt"]),
+})
+  .index("by_postId", ["postId"])
+  .index("by_post_and_version", ["postId", "version"])
+  .index("by_editorId", ["editorId"])
+  .index("by_editedAt", ["editedAt"]);
 
-  bookmarks: defineTable({
+const bookmarks = defineTable({
     memberId: v.id("members"),
     targetId: v.string(),
     targetType: v.union(v.literal("post"), v.literal("resource")),
     createdAt: v.number(),
     notes: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
-  })
-    .index("by_memberId", ["memberId"])
-    .index("by_member_and_target", ["memberId", "targetId", "targetType"])
-    .index("by_member_and_type", ["memberId", "targetType"])
-    .index("by_member_and_createdAt", ["memberId", "createdAt"])
-    .index("by_targetId", ["targetId"]),
+})
+  .index("by_memberId", ["memberId"])
+  .index("by_member_and_target", ["memberId", "targetId", "targetType"])
+  .index("by_member_and_type", ["memberId", "targetType"])
+  .index("by_member_and_createdAt", ["memberId", "createdAt"])
+  .index("by_targetId", ["targetId"]);
 
-  notifications: defineTable({
-    recipientId: v.id("members"),
-    type: v.union(
-      v.literal("mention"),
-      v.literal("reply"),
-      v.literal("upvote"),
-      v.literal("follow")
-    ),
-    entityType: v.union(
-      v.literal("post"),
-      v.literal("comment")
-    ),
-    entityId: v.string(),
-    actorId: v.id("members"),
-    message: v.string(),
-    read: v.boolean(),
-    createdAt: v.number(),
-  })
-    .index("by_recipient", ["recipientId"])
-    .index("by_recipient_and_read", ["recipientId", "read"])
-    .index("by_createdAt", ["createdAt"]),
+const notifications = defineTable({
+  recipientId: v.id("members"),
+  type: v.union(
+    v.literal("mention"),
+    v.literal("reply"),
+    v.literal("upvote"),
+    v.literal("follow")
+  ),
+  entityType: v.union(
+    v.literal("post"),
+    v.literal("comment")
+  ),
+  entityId: v.string(),
+  actorId: v.id("members"),
+  message: v.string(),
+  read: v.boolean(),
+  createdAt: v.number(),
+})
+  .index("by_recipient", ["recipientId"])
+  .index("by_recipient_and_read", ["recipientId", "read"])
+  .index("by_createdAt", ["createdAt"]);
 
-  topics: defineTable({
+const topics = defineTable({
     name: v.string(),
     displayName: v.string(),
     description: v.string(),
@@ -375,15 +378,15 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     status: v.union(v.literal("active"), v.literal("inactive")),
-  })
-    .index("by_name", ["name"])
-    .index("by_status", ["status"])
-    .searchIndex("search_topics", {
-      searchField: "displayName",
-      filterFields: ["status"]
-    }),
+})
+  .index("by_name", ["name"])
+  .index("by_status", ["status"])
+  .searchIndex("search_topics", {
+    searchField: "displayName",
+    filterFields: ["status"]
+  });
 
-  resources: defineTable({
+const resources = defineTable({
     title: v.string(),
     description: v.string(),
     url: v.string(),
@@ -419,29 +422,27 @@ export default defineSchema({
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
-  })
-    .index("by_topicId", ["topicId"])
-    .index("by_memberId", ["memberId"])
-    .index("by_status", ["status"])
-    .index("by_topic_and_votes", ["topicId", "netVotes"])
-    .index("by_topic_and_createdAt", ["topicId", "createdAt"])
-    .searchIndex("search_resources", {
-      searchField: "title",
-      filterFields: ["topicId", "type", "status"]
-    }),
+})
+  .index("by_topicId", ["topicId"])
+  .index("by_memberId", ["memberId"])
+  .index("by_status", ["status"])
+  .index("by_topic_and_votes", ["topicId", "netVotes"])
+  .index("by_topic_and_createdAt", ["topicId", "createdAt"])
+  .searchIndex("search_resources", {
+    searchField: "title",
+    filterFields: ["topicId", "type", "status"]
+  });
 
-  // New table for poll votes
-  pollVotes: defineTable({
+const pollVotes = defineTable({
     pollId: v.id("posts"),
     userId: v.id("members"),
     optionId: v.string(),
     votedAt: v.number(),
-  })
-    .index("by_poll", ["pollId"])
-    .index("by_user_and_poll", ["userId", "pollId"]),
+})
+  .index("by_poll", ["pollId"])
+  .index("by_user_and_poll", ["userId", "pollId"]);
 
-  // New table for comment reports
-  commentReports: defineTable({
+const commentReports = defineTable({
     commentId: v.id("comments"),
     reporterId: v.id("members"),
     reason: v.union(
@@ -455,8 +456,79 @@ export default defineSchema({
     createdAt: v.number(),
     resolvedAt: v.optional(v.number()),
     resolvedBy: v.optional(v.id("members")),
-  })
-    .index("by_comment", ["commentId"])
-    .index("by_status", ["status"])
-    .index("by_reporter_and_comment", ["reporterId", "commentId"]),
+})
+  .index("by_comment", ["commentId"])
+  .index("by_status", ["status"])
+  .index("by_reporter_and_comment", ["reporterId", "commentId"]);
+
+const events = defineTable({
+  title: v.string(),
+  description: v.string(),
+  startTime: v.number(),
+  endTime: v.number(),
+  timezone: v.string(),
+  type: v.union(
+    v.literal("community_call"),
+    v.literal("watch_party"),
+    v.literal("workshop"),
+    v.literal("meetup"),
+    v.literal("other")
+  ),
+  location: v.object({
+    type: v.union(v.literal("virtual"), v.literal("physical")),
+    details: v.string(),
+    platform: v.optional(v.union(
+      v.literal("zoom"),
+      v.literal("discord"),
+      v.literal("youtube"),
+      v.literal("other")
+    )),
+  }),
+  createdBy: v.id("members"),
+  maxAttendees: v.optional(v.number()),
+  requiresRSVP: v.boolean(),
+  attendees: v.array(v.id("members")),
+  waitlist: v.array(v.id("members")),
+  status: v.union(
+    v.literal("upcoming"),
+    v.literal("live"),
+    v.literal("completed"),
+    v.literal("cancelled")
+  ),
+  googleCalendarId: v.optional(v.string()),
+  discordEventId: v.optional(v.string()),
+  streamUrl: v.optional(v.string()),
+  recordingUrl: v.optional(v.string()),
+  resources: v.array(v.object({
+    title: v.string(),
+    url: v.string(),
+  })),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index("by_startTime", ["startTime"])
+  .index("by_createdBy", ["createdBy"])
+  .index("by_status", ["status"])
+  .index("by_type", ["type"])
+  .index("by_startTime_and_status", ["startTime", "status"])
+  .searchIndex("search_events", {
+    searchField: "title",
+    filterFields: ["type", "status", "createdBy"]
+  });
+
+export default defineSchema({
+  members,
+  categories,
+  posts,
+  comments,
+  votes,
+  postViews,
+  post_versions,
+  bookmarks,
+  notifications,
+  topics,
+  resources,
+  pollVotes,
+  commentReports,
+  events,
 });
