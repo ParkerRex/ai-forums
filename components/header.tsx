@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Plus, Bookmark, BookOpen } from "lucide-react";
 import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
 import { UserButton, SignUpButton } from "@clerk/nextjs";
 import { AuthButton } from "@/components/auth-button";
+import { NotificationDropdown } from "@/components/notification-dropdown";
 import { Authenticated, Unauthenticated } from "convex/react";
 import React from "react";
 
@@ -17,8 +19,25 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center space-x-8">
-            <Link href="/" className="text-2xl font-bold text-foreground">
-              VAI
+            <Link href="/" className="flex items-center">
+              {/* Light mode logo */}
+              <Image
+                src="/vai-black.svg"
+                alt="VAI logo"
+                width={40}
+                height={40}
+                className="block dark:hidden"
+                priority
+              />
+              {/* Dark mode logo */}
+              <Image
+                src="/vai-white.svg"
+                alt="VAI logo"
+                width={40}
+                height={40}
+                className="hidden dark:block"
+                priority
+              />
             </Link>
             <nav className="hidden md:flex space-x-6"></nav>
           </div>
@@ -26,10 +45,7 @@ export default function Header() {
           <div className="flex-1 max-w-md mx-8">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
-              <Input
-                placeholder="type / to search"
-                className="pl-10"
-              />
+              <Input placeholder="type / to search" className="pl-10" />
             </div>
           </div>
 
@@ -71,27 +87,22 @@ export default function Header() {
                 </Link>
               </Button>
               <Link href="/create">
-                <Button
-                  variant="outline"
-                  size="sm"
-                >
+                <Button variant="default" size="default" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
                   <Plus className="w-4 h-4 mr-2" />
-                  create
+                  Create Post
                 </Button>
               </Link>
             </Authenticated>
             <Unauthenticated>
               <SignUpButton mode="modal">
-                <Button
-                  variant="outline"
-                  size="sm"
-                >
+                <Button variant="default" size="default" className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium">
                   <Plus className="w-4 h-4 mr-2" />
-                  create
+                  Create Post
                 </Button>
               </SignUpButton>
             </Unauthenticated>
             <Authenticated>
+              <NotificationDropdown />
               <UserButton />
             </Authenticated>
             <Unauthenticated>

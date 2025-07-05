@@ -7,5 +7,6 @@ import { api } from "../convex/_generated/api";
  * Uses the unified auth system with automatic member creation/updates.
  */
 export function useCurrentMember() {
-  return useQuery(api.auth.current);
-} 
+  const member = useQuery(api.auth.current);
+  return { member, isLoading: member === undefined };
+}   

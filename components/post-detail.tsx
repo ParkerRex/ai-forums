@@ -38,11 +38,13 @@ import { YouTubeEmbed } from "@/components/youtube-embed";
 import { VoteHoverCard } from "@/components/vote-hover-card";
 import { PollDisplay } from "@/components/poll-display";
 import { AttachmentGrid } from "@/components/attachment-grid";
+import { toast } from "sonner";
 
 interface Post {
   _id: Id<"posts">;
   title: string;
   content: string;
+  slug: string;
   createdAt: number;
   editedAt?: number;
   netVotes: number;
@@ -236,6 +238,18 @@ export default function PostDetail({
       } else {
         videoRef.current.play();
       }
+    }
+  };
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const postUrl = `${window.location.origin}/${post.category?.name || "general"}/${post.slug}`;
+
+    try {
+      await navigator.clipboard.writeText(postUrl);
+      toast.success("Link copied to clipboard!");
+    } catch {
+      toast.error("Failed to copy link");
     }
   };
 
@@ -469,6 +483,7 @@ export default function PostDetail({
                 variant="ghost"
                 size="sm"
                 className="p-2 h-auto hover:bg-muted"
+                onClick={handleShare}
                 onMouseEnter={() => shareIconRef.current?.startAnimation()}
                 onMouseLeave={() => shareIconRef.current?.stopAnimation()}
               >
@@ -478,7 +493,8 @@ export default function PostDetail({
               <BookmarkButton
                 targetId={post._id}
                 targetType="post"
-                showCount={true}
+                showLabel={true}
+                size="sm"
               />
               <Button
                 variant="ghost"

@@ -139,6 +139,7 @@ const posts = defineTable({
       siteName: v.optional(v.string()),
       url: v.string(),
     }))),
+    mentions: v.optional(v.array(v.id("members"))),
 
     // Poll-specific fields
     pollOptions: v.optional(v.array(v.object({
@@ -206,11 +207,22 @@ const comments = defineTable({
     netVotes: v.number(),
     depth: v.number(),
     childCount: v.number(),
+    order: v.optional(v.number()),
     editedAt: v.optional(v.number()),
     editReason: v.optional(v.string()),
     editHistory: v.optional(v.array(v.object({
       content: v.string(),
       editedAt: v.number(),
+      attachments: v.optional(v.array(v.object({
+        id: v.string(),
+        type: v.union(v.literal("image"), v.literal("document"), v.literal("gif")),
+        url: v.string(),
+        fileName: v.string(),
+        fileSize: v.number(),
+        mimeType: v.string(),
+        width: v.optional(v.number()),
+        height: v.optional(v.number()),
+      }))),
     }))),
     
     attachments: v.optional(v.array(v.object({
@@ -231,6 +243,7 @@ const comments = defineTable({
       siteName: v.optional(v.string()),
       url: v.string(),
     }))),
+    mentions: v.optional(v.array(v.id("members"))),
 })
   .index("by_postId", ["postId"])
   .index("by_memberId", ["memberId"])
@@ -238,6 +251,7 @@ const comments = defineTable({
   .index("by_post_and_createdAt", ["postId", "createdAt"])
   .index("by_post_and_netVotes", ["postId", "netVotes"])
   .index("by_parent_and_createdAt", ["parentCommentId", "createdAt"])
+  .index("by_parent_and_order", ["parentCommentId", "order"])
   .index("by_status", ["status"])
   .index("by_post_member_createdAt", ["postId", "memberId", "createdAt"])
   .searchIndex("search_comments", {
@@ -332,6 +346,28 @@ const bookmarks = defineTable({
   .index("by_member_and_type", ["memberId", "targetType"])
   .index("by_member_and_createdAt", ["memberId", "createdAt"])
   .index("by_targetId", ["targetId"]);
+
+const notifications = defineTable({
+  recipientId: v.id("members"),
+  type: v.union(
+    v.literal("mention"),
+    v.literal("reply"),
+    v.literal("upvote"),
+    v.literal("follow")
+  ),
+  entityType: v.union(
+    v.literal("post"),
+    v.literal("comment")
+  ),
+  entityId: v.string(),
+  actorId: v.id("members"),
+  message: v.string(),
+  read: v.boolean(),
+  createdAt: v.number(),
+})
+  .index("by_recipient", ["recipientId"])
+  .index("by_recipient_and_read", ["recipientId", "read"])
+  .index("by_createdAt", ["createdAt"]);
 
 const topics = defineTable({
     name: v.string(),
@@ -489,6 +525,7 @@ export default defineSchema({
   postViews,
   post_versions,
   bookmarks,
+  notifications,
   topics,
   resources,
   pollVotes,

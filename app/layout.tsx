@@ -21,10 +21,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "VAI | The Place AI Engineers Build Together",
-  description: "The Best Place to Learn Alongside Engineers from companies like Google and Microsoft",
+  title: "The Place AI Engineers Build Together",
+  description:
+    "The Best Place to Learn Alongside Engineers from companies like Google and Microsoft",
   icons: {
-    icon: "/convex.svg",
+    icon: "/vai.svg",
   },
 };
 
@@ -47,9 +48,7 @@ export default function RootLayout({
           <ClerkProvider dynamic>
             <ConvexClientProvider>
               <Header />
-              <div className="pb-[24px]">
-                {children}
-              </div>
+              <div className="pb-[24px]">{children}</div>
               <Footer />
               <GlobalSearch />
               <Toaster />

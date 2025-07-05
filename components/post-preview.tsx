@@ -60,10 +60,10 @@ export default function PostPreview({
     naturalWidth: post.mediaWidth,
     naturalHeight: post.mediaHeight,
   } : undefined;
-  const previewClasses = getPreviewClasses(size, assetInfo);
+  const previewClasses = getPreviewClasses(size, assetInfo, post);
 
   const stats = formatPostStats(post);
-  const excerpt = getContentExcerpt(post.content, size === "small" ? 80 : 150);
+  const excerpt = getContentExcerpt(post.content, size === "small" ? 120 : 200);
 
   // Handle video autoplay on hover
   useEffect(() => {
@@ -108,7 +108,7 @@ export default function PostPreview({
   return (
     <Card
       className={cn(
-        "overflow-hidden transition-all hover:shadow-md cursor-pointer",
+        "overflow-hidden transition-all duration-200 hover:shadow-lg hover:scale-[1.02] cursor-pointer",
         className
       )}
       onMouseEnter={() => setIsHovering(true)}
@@ -116,24 +116,115 @@ export default function PostPreview({
       onClick={handleClick}
     >
       <CardContent className="p-0">
-        <div className={cn("flex", size === "large" ? "flex-col" : "gap-3 p-3")}>
+        <div className={cn("flex flex-col", size !== "large" && "p-3")}>
+          {/* Content */}
+          <div className={cn(
+            "flex-1 min-w-0",
+            (hasMedia(post) || isLinkPost(post) || isPollPost(post)) && "mb-3"
+          )}>
+            {/* Header */}
+            <div className="flex items-start justify-between gap-2 mb-2">
+              <div className="flex-1 min-w-0">
+                {showCategory && post.category && (
+                  <div className="flex items-center gap-2 mb-1">
+                    <Badge variant="secondary" className="text-xs">
+                      {post.category.icon} {post.category.displayName}
+                    </Badge>
+                    {post.type !== "text" && (
+                      <Badge variant="outline" className="text-xs">
+                        {getPostTypeLabel(post)}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+                <Link href={postUrl} className="group">
+                  <h3 className={cn(
+                    "font-semibold line-clamp-2 group-hover:text-primary transition-colors",
+                    size === "small" ? "text-base" : "text-lg"
+                  )}>
+                    {post.title}
+                  </h3>
+                </Link>
+              </div>
+              {showStats && (
+                <div className="flex items-center gap-1 text-muted-foreground">
+                  <ChevronUp className={cn(
+                    "h-4 w-4",
+                    stats.score > 0 && "text-green-600",
+                    stats.score < 0 && "text-red-600"
+                  )} />
+                  <span className={cn(
+                    "text-sm font-medium",
+                    stats.score > 0 && "text-green-600",
+                    stats.score < 0 && "text-red-600"
+                  )}>
+                    {stats.votes}
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* Author and excerpt */}
+            {shouldShowMember && post.member && (
+              <div className="text-sm text-muted-foreground mb-2">
+                by{" "}
+                <Link
+                  href={`/members/${post.member?.slug || post.member?.username}`}
+                  className="hover:text-foreground transition-colors font-medium"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  {post.member?.firstName} {post.member?.lastName}
+                </Link>
+                {" • "}
+                {new Date(post.createdAt).toLocaleDateString()}
+              </div>
+            )}
+
+            {/* Content excerpt */}
+            {excerpt && (
+              <p className={cn(
+                "text-muted-foreground line-clamp-3 leading-relaxed",
+                size === "small" ? "text-sm" : "text-base"
+              )}>
+                {excerpt}
+              </p>
+            )}
+
+            {/* Stats footer */}
+            {showStats && size !== "small" && (
+              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1">
+                  <MessageSquare className="h-3 w-3" />
+                  <span>{stats.comments} comments</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <Eye className="h-3 w-3" />
+                  <span>{stats.views} views</span>
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Media/Link/Poll Preview */}
           {(hasMedia(post) || isLinkPost(post) || isPollPost(post)) && (
-            <div className={cn(
-              "relative overflow-hidden bg-muted",
-              previewClasses.wrapper,
-              previewClasses.aspectRatio,
-              size !== "large" && "flex-shrink-0 rounded"
-            )}>
+            <div 
+              className={cn(
+                "relative overflow-hidden bg-muted rounded-lg",
+                previewClasses.wrapper,
+                previewClasses.aspectRatio
+              )}
+              style={previewClasses.dynamicStyle}
+            >
               {post.type === "image" && previewAsset.url && (
                 <Image
                   src={previewAsset.thumbnailUrl || previewAsset.url}
                   alt={post.title}
                   fill
-                  sizes={size === "large" ? "100vw" : "(max-width: 768px) 100px, 200px"}
+                  sizes="(max-width: 768px) 100vw, 800px"
                   className={cn("w-full h-full", previewClasses.media)}
                   placeholder="blur"
                   blurDataURL={getMediaPlaceholder()}
+                  priority
                 />
               )}
 
@@ -144,11 +235,20 @@ export default function PostPreview({
                       src={previewAsset.thumbnailUrl}
                       alt={post.title}
                       fill
-                      sizes={size === "large" ? "100vw" : "(max-width: 768px) 100px, 200px"}
+                      sizes="(max-width: 768px) 100vw, 800px"
                       className={cn("w-full h-full", previewClasses.media)}
                       placeholder="blur"
                       blurDataURL={getMediaPlaceholder()}
+                      priority
                     />
+                  )}
+                  {!previewAsset.thumbnailUrl && !isVideoPlaying && (
+                    <div className="absolute inset-0 bg-muted flex items-center justify-center">
+                      <div className="text-center">
+                        <Play className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
+                        <p className="text-sm text-muted-foreground">Video</p>
+                      </div>
+                    </div>
                   )}
                   <video
                     ref={videoRef}
@@ -166,9 +266,9 @@ export default function PostPreview({
                     onPause={() => setIsVideoPlaying(false)}
                   />
                   {!isVideoPlaying && (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="bg-black/50 rounded-full p-3">
-                        <Play className="h-6 w-6 text-primary-foreground fill-primary-foreground" />
+                    <div className="absolute inset-0 flex items-center justify-center bg-background/10 transition-colors group-hover:bg-background/20">
+                      <div className="bg-background/90 backdrop-blur-sm rounded-full p-4 shadow-lg transform transition-transform group-hover:scale-110">
+                        <Play className="h-8 w-8 text-foreground fill-foreground ml-0.5" />
                       </div>
                     </div>
                   )}
@@ -250,94 +350,6 @@ export default function PostPreview({
               )}
             </div>
           )}
-
-          {/* Content */}
-          <div className={cn(
-            "flex-1 min-w-0",
-            size === "large" && "p-4"
-          )}>
-            {/* Header */}
-            <div className="flex items-start justify-between gap-2 mb-2">
-              <div className="flex-1 min-w-0">
-                {showCategory && post.category && (
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {post.category.icon} {post.category.displayName}
-                    </Badge>
-                    {post.type !== "text" && (
-                      <Badge variant="outline" className="text-xs">
-                        {getPostTypeLabel(post)}
-                      </Badge>
-                    )}
-                  </div>
-                )}
-                <Link href={postUrl} className="group">
-                  <h3 className={cn(
-                    "font-semibold line-clamp-2 group-hover:text-primary transition-colors",
-                    size === "small" ? "text-sm" : "text-base"
-                  )}>
-                    {post.title}
-                  </h3>
-                </Link>
-              </div>
-              {showStats && (
-                <div className="flex items-center gap-1 text-muted-foreground">
-                  <ChevronUp className={cn(
-                    "h-4 w-4",
-                    stats.score > 0 && "text-green-600",
-                    stats.score < 0 && "text-red-600"
-                  )} />
-                  <span className={cn(
-                    "text-sm font-medium",
-                    stats.score > 0 && "text-green-600",
-                    stats.score < 0 && "text-red-600"
-                  )}>
-                    {stats.votes}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Author and excerpt */}
-            {shouldShowMember && post.member && (
-              <div className="text-xs text-muted-foreground mb-2">
-                by{" "}
-                <Link
-                  href={`/members/${post.member?.slug || post.member?.username}`}
-                  className="hover:text-foreground transition-colors"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {post.member?.firstName} {post.member?.lastName}
-                </Link>
-                {" • "}
-                {new Date(post.createdAt).toLocaleDateString()}
-              </div>
-            )}
-
-            {/* Content excerpt */}
-            {(!hasMedia(post) || size !== "small") && excerpt && (
-              <p className={cn(
-                "text-muted-foreground line-clamp-2",
-                size === "small" ? "text-xs" : "text-sm"
-              )}>
-                {excerpt}
-              </p>
-            )}
-
-            {/* Stats footer */}
-            {showStats && size !== "small" && (
-              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
-                <div className="flex items-center gap-1">
-                  <MessageSquare className="h-3 w-3" />
-                  <span>{stats.comments} comments</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <Eye className="h-3 w-3" />
-                  <span>{stats.views} views</span>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
       </CardContent>
     </Card>

@@ -5,7 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
@@ -20,7 +26,9 @@ interface ResourceSubmissionPageClientProps {
   }>;
 }
 
-export default function ResourceSubmissionPageClient({ params }: ResourceSubmissionPageClientProps) {
+export default function ResourceSubmissionPageClient({
+  params,
+}: ResourceSubmissionPageClientProps) {
   const [topicName, setTopicName] = useState<string>("");
   const [formData, setFormData] = useState({
     title: "",
@@ -46,23 +54,26 @@ export default function ResourceSubmissionPageClient({ params }: ResourceSubmiss
     });
   }, [params]);
 
-  const topic = useQuery(api.topics.getTopicByName, topicName ? { name: topicName } : "skip");
+  const topic = useQuery(
+    api.topics.getTopicByName,
+    topicName ? { name: topicName } : "skip",
+  );
   const createResource = useMutation(api.resources.createResource);
 
   const handleUrlChange = async (url: string) => {
-    setFormData(prev => ({ ...prev, url }));
-    
+    setFormData((prev) => ({ ...prev, url }));
+
     if (url && isValidUrl(url)) {
       setIsLoadingPreview(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         setUrlPreview({
           title: "Sample Title from URL",
           description: "Sample description extracted from the URL",
         });
-        
+
         if (!formData.title) {
-          setFormData(prev => ({ ...prev, title: "Sample Title from URL" }));
+          setFormData((prev) => ({ ...prev, title: "Sample Title from URL" }));
         }
       } catch (error) {
         console.error("Failed to fetch URL preview:", error);
@@ -85,13 +96,17 @@ export default function ResourceSubmissionPageClient({ params }: ResourceSubmiss
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!topic) {
       toast.error("Topic not found");
       return;
     }
 
-    if (!formData.title.trim() || !formData.description.trim() || !formData.url.trim()) {
+    if (
+      !formData.title.trim() ||
+      !formData.description.trim() ||
+      !formData.url.trim()
+    ) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -102,15 +117,17 @@ export default function ResourceSubmissionPageClient({ params }: ResourceSubmiss
     }
 
     setIsSubmitting(true);
-    
+
     try {
       await createResource({
         title: formData.title.trim(),
         description: formData.description.trim(),
         url: formData.url.trim(),
         topicId: topic._id,
-        type: formData.type,
-        difficulty: formData.difficulty || undefined,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        type: formData.type as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        difficulty: (formData.difficulty || undefined) as any,
         isPaid: formData.isPaid,
       });
 
@@ -164,7 +181,7 @@ export default function ResourceSubmissionPageClient({ params }: ResourceSubmiss
             Back to {topic.displayName}
           </Link>
         </Button>
-        
+
         <h1 className="text-2xl font-bold mb-2">
           Submit {topic.displayName} Resource
         </h1>
@@ -218,7 +235,9 @@ export default function ResourceSubmissionPageClient({ params }: ResourceSubmiss
                 id="title"
                 placeholder="Resource title"
                 value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, title: e.target.value }))
+                }
                 required
               />
             </div>
@@ -229,7 +248,12 @@ export default function ResourceSubmissionPageClient({ params }: ResourceSubmiss
                 id="description"
                 placeholder="Describe what this resource covers and why it's valuable..."
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 rows={4}
                 required
               />
@@ -240,7 +264,9 @@ export default function ResourceSubmissionPageClient({ params }: ResourceSubmiss
                 <Label htmlFor="type">Resource Type *</Label>
                 <Select
                   value={formData.type}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, type: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -261,7 +287,9 @@ export default function ResourceSubmissionPageClient({ params }: ResourceSubmiss
                 <Label htmlFor="difficulty">Difficulty Level</Label>
                 <Select
                   value={formData.difficulty}
-                  onValueChange={(value) => setFormData(prev => ({ ...prev, difficulty: value }))}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, difficulty: value }))
+                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select difficulty" />
@@ -279,8 +307,8 @@ export default function ResourceSubmissionPageClient({ params }: ResourceSubmiss
               <Checkbox
                 id="isPaid"
                 checked={formData.isPaid}
-                onCheckedChange={(checked) => 
-                  setFormData(prev => ({ ...prev, isPaid: checked === true }))
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, isPaid: checked === true }))
                 }
               />
               <Label htmlFor="isPaid">This is a paid resource</Label>

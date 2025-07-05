@@ -1,17 +1,31 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useAction, useConvex } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Paperclip, Smile, Image as ImageIcon, X } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Paperclip } from "lucide-react";
+import { GifIcon } from "@/components/ui/gif";
+import { EmojiIcon } from "@/components/ui/emoji";
 import { toast } from "sonner";
 import EmojiPicker from "emoji-picker-react";
-import Image from "next/image";
-import { uploadMedia, validateMediaFile, getFilePreviewUrl, revokeFilePreviewUrl } from "@/lib/upload-media";
+import {
+  uploadMedia,
+  validateMediaFile,
+  getFilePreviewUrl,
+  revokeFilePreviewUrl,
+} from "@/lib/upload-media";
 import { GifPicker } from "./gif-picker";
+import { MentionAutocomplete } from "./mention-autocomplete";
+import { Id } from "@/convex/_generated/dataModel";
+import { MediaPreviewGrid } from "./media-preview-grid";
+import { MediaItem } from "@/types";
 
 type AttachmentType = {
   id: string;
@@ -20,6 +34,20 @@ type AttachmentType = {
   fileName: string;
   fileSize: number;
   mimeType: string;
+  width?: number;
+  height?: number;
+};
+
+// Internal attachment item that can hold either a File or remote URL
+type AttachmentItem = {
+  id: string;
+  type: "image" | "document" | "gif";
+  url: string; // preview URL or remote URL
+  fileName: string;
+  fileSize: number;
+  mimeType: string;
+  order: number;
+  file?: File; // Present if needs upload
   width?: number;
   height?: number;
 };
@@ -34,10 +62,16 @@ type LinkPreviewType = {
 
 interface EnhancedCommentInputProps {
   placeholder: string;
-  onSubmit: (content: string, attachments?: AttachmentType[], linkPreviews?: Record<string, LinkPreviewType>) => void;
+  onSubmit: (
+    content: string,
+    attachments?: AttachmentType[],
+    linkPreviews?: Record<string, LinkPreviewType>,
+    mentions?: Id<"members">[],
+  ) => void;
   isSubmitting: boolean;
   className?: string;
   initialValue?: string;
+  initialAttachments?: AttachmentType[];
 }
 
 export function EnhancedCommentInput({
@@ -45,186 +79,385 @@ export function EnhancedCommentInput({
   onSubmit,
   isSubmitting,
   className = "",
-  initialValue = ""
+  initialValue = "",
+  initialAttachments = [],
 }: EnhancedCommentInputProps) {
   const [content, setContent] = useState(initialValue);
-  const [attachments, setAttachments] = useState<File[]>([]);
-  const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
-  const [gifAttachments, setGifAttachments] = useState<AttachmentType[]>([]);
-  const [linkPreviews, setLinkPreviews] = useState<Record<string, LinkPreviewType>>({});
+  const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
+  const [linkPreviews, setLinkPreviews] = useState<
+    Record<string, LinkPreviewType>
+  >({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
-  
+  const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
+  const [mentionSearchTerm, setMentionSearchTerm] = useState("");
+  const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
+  const [mentionStartIndex, setMentionStartIndex] = useState(-1);
+  const [mentions, setMentions] = useState<Id<"members">[]>([]);
+  const [memberResults, setMemberResults] = useState<
+    Array<{
+      _id: Id<"members">;
+      firstName: string;
+      lastName: string;
+      slug: string;
+    }>
+  >([]);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const convex = useConvex();
   const fetchLinkPreview = useAction(api.linkPreviews.fetchLinkPreview);
 
-  const handleFileSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    
-    for (const file of files) {
-      const validation = validateMediaFile(file);
-      if (!validation.valid) {
-        toast.error(validation.error);
-        continue;
-      }
-      
-      if (attachments.length + gifAttachments.length >= 5) {
-        toast.error("Maximum 5 attachments allowed per comment");
-        break;
-      }
-      
-      setAttachments(prev => [...prev, file]);
-      const previewUrl = getFilePreviewUrl(file);
-      setAttachmentPreviews(prev => [...prev, previewUrl]);
+  // Initialize attachments from initialAttachments
+  useEffect(() => {
+    if (initialAttachments.length > 0) {
+      const items: AttachmentItem[] = initialAttachments.map((att, index) => ({
+        id: att.id,
+        type: att.type,
+        url: att.url,
+        fileName: att.fileName,
+        fileSize: att.fileSize,
+        mimeType: att.mimeType,
+        order: index,
+        width: att.width,
+        height: att.height,
+        // No file property - these are already uploaded
+      }));
+      setAttachments(items);
     }
-  }, [attachments.length, gifAttachments.length]);
+  }, [initialAttachments]);
 
-  const handleRemoveAttachment = useCallback((index: number) => {
-    setAttachments(prev => prev.filter((_, i) => i !== index));
-    const previewUrl = attachmentPreviews[index];
-    if (previewUrl) {
-      revokeFilePreviewUrl(previewUrl);
-    }
-    setAttachmentPreviews(prev => prev.filter((_, i) => i !== index));
-  }, [attachmentPreviews]);
+  const handleFileSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const files = Array.from(e.target.files || []);
 
-  const handleRemoveGifAttachment = useCallback((index: number) => {
-    setGifAttachments(prev => prev.filter((_, i) => i !== index));
-  }, []);
+      for (const file of files) {
+        const validation = validateMediaFile(file);
+        if (!validation.valid) {
+          toast.error(validation.error);
+          continue;
+        }
+
+        if (attachments.length >= 5) {
+          toast.error("Maximum 5 attachments allowed per comment");
+          break;
+        }
+
+        const previewUrl = getFilePreviewUrl(file);
+        const newItem: AttachmentItem = {
+          id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+          type: file.type.startsWith("image/") ? "image" : "document",
+          url: previewUrl,
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+          order: attachments.length,
+          file, // Store file for later upload
+        };
+
+        setAttachments((prev) => [...prev, newItem]);
+      }
+    },
+    [attachments.length],
+  );
+
+  const handleRemoveAttachment = useCallback(
+    (mediaId: string) => {
+      const item = attachments.find((a) => a.id === mediaId);
+      if (item?.file) {
+        // Revoke preview URL if it's a local file
+        revokeFilePreviewUrl(item.url);
+      }
+
+      setAttachments((prev) => {
+        const filtered = prev.filter((a) => a.id !== mediaId);
+        // Reorder remaining items
+        return filtered.map((item, index) => ({ ...item, order: index }));
+      });
+    },
+    [attachments],
+  );
+
+  const handleReorderAttachments = useCallback(
+    (reorderedMedia: MediaItem[]) => {
+      setAttachments((prev) => {
+        const newOrder = reorderedMedia.map((media) => media.id);
+        const sorted = [...prev].sort((a, b) => {
+          const aIndex = newOrder.indexOf(a.id);
+          const bIndex = newOrder.indexOf(b.id);
+          return aIndex - bIndex;
+        });
+        // Update order property
+        return sorted.map((item, index) => ({ ...item, order: index }));
+      });
+    },
+    [],
+  );
 
   const handleEmojiSelect = useCallback((emojiData: { emoji: string }) => {
-    setContent(prev => prev + emojiData.emoji);
+    setContent((prev) => prev + emojiData.emoji);
     setShowEmojiPicker(false);
   }, []);
 
-  const handleContentChange = useCallback(async (newContent: string) => {
-    setContent(newContent);
-    
-    const urlRegex = /https?:\/\/[^\s]+/g;
-    const urls = newContent.match(urlRegex) || [];
-    
-    for (const url of urls) {
-      if (!linkPreviews[url]) {
-        try {
-          const preview = await fetchLinkPreview({ url });
-          if (preview) {
-            setLinkPreviews(prev => ({ ...prev, [url]: preview }));
+  const handleContentChange = useCallback(
+    async (newContent: string, cursorPosition?: number) => {
+      setContent(newContent);
+
+      const urlRegex = /https?:\/\/[^\s]+/g;
+      const urls = newContent.match(urlRegex) || [];
+
+      for (const url of urls) {
+        if (!linkPreviews[url]) {
+          try {
+            const preview = await fetchLinkPreview({ url });
+            if (preview) {
+              setLinkPreviews((prev) => ({ ...prev, [url]: preview }));
+            }
+          } catch (error) {
+            console.error("Failed to fetch link preview:", error);
           }
-        } catch (error) {
-          console.error("Failed to fetch link preview:", error);
         }
       }
-    }
-  }, [fetchLinkPreview, linkPreviews]);
+
+      if (cursorPosition !== undefined) {
+        const textBeforeCursor = newContent.slice(0, cursorPosition);
+        const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+        if (lastAtIndex !== -1) {
+          const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
+          const hasSpaceAfterAt =
+            textAfterAt.includes(" ") || textAfterAt.includes("\n");
+
+          if (!hasSpaceAfterAt && textAfterAt.length <= 20) {
+            setMentionSearchTerm(textAfterAt);
+            setMentionStartIndex(lastAtIndex);
+            setShowMentionAutocomplete(true);
+
+            const textarea = document.querySelector("textarea");
+            const wrapper = wrapperRef.current;
+            if (textarea && wrapper) {
+              const textRect = textarea.getBoundingClientRect();
+              const wrapRect = wrapper.getBoundingClientRect();
+              setMentionPosition({
+                top: textRect.bottom - wrapRect.top + 5,
+                left: textRect.left - wrapRect.left,
+              });
+            }
+          } else {
+            setShowMentionAutocomplete(false);
+          }
+        } else {
+          setShowMentionAutocomplete(false);
+        }
+      }
+    },
+    [fetchLinkPreview, linkPreviews],
+  );
+
+  const handleMentionSelect = useCallback(
+    (member: {
+      _id: Id<"members">;
+      firstName: string;
+      lastName: string;
+      slug: string;
+    }) => {
+      const beforeMention = content.slice(0, mentionStartIndex);
+      const afterMention = content.slice(
+        mentionStartIndex + mentionSearchTerm.length + 1,
+      );
+      const newContent = `${beforeMention}@${member.slug} ${afterMention}`;
+
+      setContent(newContent);
+      setMentions((prev) => [...prev, member._id]);
+      setShowMentionAutocomplete(false);
+      setMentionSearchTerm("");
+      setMentionStartIndex(-1);
+    },
+    [content, mentionStartIndex, mentionSearchTerm],
+  );
+
+  const handleMentionClose = useCallback(() => {
+    setShowMentionAutocomplete(false);
+    setMentionSearchTerm("");
+    setMentionStartIndex(-1);
+  }, []);
+
+  const handleGifSelect = useCallback(
+    (gifUrl: string) => {
+      if (attachments.length >= 5) {
+        toast.error("Maximum 5 attachments allowed per comment");
+        return;
+      }
+
+      const gifItem: AttachmentItem = {
+        id: `gif-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: "gif",
+        url: gifUrl,
+        fileName: "giphy.gif",
+        fileSize: 0,
+        mimeType: "image/gif",
+        order: attachments.length,
+        // No file - this is already a remote URL
+      };
+
+      setAttachments((prev) => [...prev, gifItem]);
+      setShowGifPicker(false);
+    },
+    [attachments.length],
+  );
 
   const handleSubmit = useCallback(async () => {
-    if (!content.trim() && attachments.length === 0 && gifAttachments.length === 0) return;
-    
+    if (!content.trim() && attachments.length === 0) return;
+
     const uploadedAttachments: AttachmentType[] = [];
-    
+
     try {
-      if (attachments.length > 0) {
-        for (const file of attachments) {
-          const uploadResult = await uploadMedia(convex, file);
+      // Upload attachments that have files
+      for (const item of attachments) {
+        if (item.file) {
+          // This needs upload
+          const uploadResult = await uploadMedia(convex, item.file);
           uploadedAttachments.push({
-            id: crypto.randomUUID(),
-            type: file.type.startsWith("image/") ? "image" : "document",
+            id: item.id,
+            type: item.type,
             url: uploadResult.url,
-            fileName: file.name,
-            fileSize: file.size,
-            mimeType: file.type,
+            fileName: item.fileName,
+            fileSize: item.fileSize,
+            mimeType: item.mimeType,
+            width: item.width,
+            height: item.height,
+          });
+        } else {
+          // Already uploaded or remote URL (like GIF)
+          uploadedAttachments.push({
+            id: item.id,
+            type: item.type,
+            url: item.url,
+            fileName: item.fileName,
+            fileSize: item.fileSize,
+            mimeType: item.mimeType,
+            width: item.width,
+            height: item.height,
           });
         }
       }
-      
-      uploadedAttachments.push(...gifAttachments);
-      
-      onSubmit(content, uploadedAttachments.length > 0 ? uploadedAttachments : undefined, Object.keys(linkPreviews).length > 0 ? linkPreviews : undefined);
-      
+
+      onSubmit(
+        content,
+        uploadedAttachments.length > 0 ? uploadedAttachments : undefined,
+        Object.keys(linkPreviews).length > 0 ? linkPreviews : undefined,
+        mentions.length > 0 ? mentions : undefined,
+      );
+
+      // Clean up
       setContent("");
       setAttachments([]);
-      setGifAttachments([]);
-      attachmentPreviews.forEach(url => revokeFilePreviewUrl(url));
-      setAttachmentPreviews([]);
+      setMentions([]);
+      // Revoke any preview URLs
+      attachments.forEach((item) => {
+        if (item.file) {
+          revokeFilePreviewUrl(item.url);
+        }
+      });
       setLinkPreviews({});
     } catch (error) {
       console.error("Failed to upload attachments:", error);
       toast.error("Failed to upload attachments. Please try again.");
     }
-  }, [content, attachments, gifAttachments, linkPreviews, onSubmit, attachmentPreviews, convex]);
+  }, [content, attachments, linkPreviews, mentions, onSubmit, convex]);
+
+  // Convert AttachmentItem[] to MediaItem[] for MediaPreviewGrid
+  const mediaItems: MediaItem[] = attachments.map((item) => ({
+    id: item.id,
+    type:
+      item.type === "gif"
+        ? "image"
+        : item.type === "document"
+          ? "pdf"
+          : "image",
+    url: item.url,
+    thumbnailUrl: item.url,
+    order: item.order,
+    fileSize: item.fileSize,
+  }));
+
+  // Fetch members for mention suggestions
+  useEffect(() => {
+    let cancelled = false;
+    const fetchMembers = async () => {
+      if (!showMentionAutocomplete) return;
+      try {
+        // When search term is empty (just "@"), show first 20 members
+        const term = mentionSearchTerm.trim();
+        const results =
+          term.length === 0
+            ? await convex.query(api.members.getAllMembers, {})
+            : await convex.query(api.members.searchMembers, {
+                searchTerm: term,
+                limit: 20,
+              });
+        if (!cancelled) {
+          setMemberResults(results.slice(0, 20));
+        }
+      } catch (error) {
+        console.error("Failed to search members:", error);
+      }
+    };
+    fetchMembers();
+    return () => {
+      cancelled = true;
+    };
+  }, [mentionSearchTerm, showMentionAutocomplete, convex]);
 
   return (
-    <div className={`space-y-3 ${className}`}>
-      <Textarea
-        placeholder={placeholder}
-        value={content}
-        onChange={(e) => handleContentChange(e.target.value)}
-        className="min-h-[80px]"
-      />
-      
-      {(attachments.length > 0 || gifAttachments.length > 0) && (
-        <div className="flex flex-wrap gap-2">
-          {attachments.map((file, index) => (
-            <div key={`file-${index}`} className="relative">
-              {file.type.startsWith("image/") ? (
-                <Image
-                  src={attachmentPreviews[index]}
-                  alt={file.name}
-                  width={80}
-                  height={80}
-                  className="w-20 h-20 object-cover rounded border"
-                />
-              ) : (
-                <div className="w-20 h-20 bg-muted rounded border flex items-center justify-center">
-                  <span className="text-xs text-center p-1">{file.name}</span>
-                </div>
-              )}
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                className="absolute -top-2 -right-2 w-6 h-6 p-0"
-                onClick={() => handleRemoveAttachment(index)}
-              >
-                <X className="w-3 h-3" />
-              </Button>
-            </div>
-          ))}
-          {gifAttachments.map((gif, index) => (
-            <div key={`gif-${index}`} className="relative">
-              <Image
-                src={gif.url}
-                alt={gif.fileName}
-                width={80}
-                height={80}
-                className="w-20 h-20 object-cover rounded border"
-              />
-              <Button
-                type="button"
-                variant="destructive"
-                size="sm"
-                className="absolute -top-2 -right-2 w-6 h-6 p-0"
-                onClick={() => handleRemoveGifAttachment(index)}
-              >
-                <X className="w-3 h-3" />
-              </Button>
-              <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-foreground text-xs px-1 py-0.5 rounded-b">
-                GIF
-              </div>
-            </div>
-          ))}
-        </div>
+    <div ref={wrapperRef} className={`space-y-3 ${className} relative`}>
+      <div className="relative">
+        <Textarea
+          placeholder={placeholder}
+          value={content}
+          onChange={(e) => {
+            const target = e.target as HTMLTextAreaElement;
+            handleContentChange(e.target.value, target.selectionStart);
+          }}
+          className="min-h-[80px]"
+        />
+        {showMentionAutocomplete && (
+          <div
+            style={{
+              position: "absolute",
+              top: mentionPosition.top,
+              left: mentionPosition.left,
+              zIndex: 50,
+            }}
+          >
+            <MentionAutocomplete
+              items={memberResults}
+              onSelect={handleMentionSelect}
+              onClose={handleMentionClose}
+            />
+          </div>
+        )}
+      </div>
+
+      {attachments.length > 0 && (
+        <MediaPreviewGrid
+          media={mediaItems}
+          onReorder={handleReorderAttachments}
+          onRemove={handleRemoveAttachment}
+          disabled={isSubmitting}
+        />
       )}
-      
+
       {Object.entries(linkPreviews).map(([url, preview]) => (
         <div key={url} className="border rounded p-3 bg-muted/50">
           <div className="text-sm font-medium">{preview.title}</div>
-          <div className="text-xs text-muted-foreground">{preview.description}</div>
+          <div className="text-xs text-muted-foreground">
+            {preview.description}
+          </div>
           <div className="text-xs text-blue-600">{url}</div>
         </div>
       ))}
-      
+
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Button
@@ -232,62 +465,44 @@ export function EnhancedCommentInput({
             variant="ghost"
             size="sm"
             onClick={() => fileInputRef.current?.click()}
+            disabled={attachments.length >= 5}
           >
             <Paperclip className="w-4 h-4" />
           </Button>
-          
+
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
             <PopoverTrigger asChild>
               <Button type="button" variant="ghost" size="sm">
-                <Smile className="w-4 h-4" />
+                <EmojiIcon size={16} />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
               <EmojiPicker onEmojiClick={handleEmojiSelect} />
             </PopoverContent>
           </Popover>
-          
+
           <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
             <PopoverTrigger asChild>
               <Button type="button" variant="ghost" size="sm">
-                <ImageIcon className="w-4 h-4" />
+                <GifIcon size={16} />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0">
-              <GifPicker
-                onGifSelect={(gifUrl) => {
-                  if (attachments.length + gifAttachments.length >= 5) {
-                    toast.error("Maximum 5 attachments allowed per comment");
-                    return;
-                  }
-                  
-                  const gifAttachment: AttachmentType = {
-                    id: crypto.randomUUID(),
-                    type: "gif",
-                    url: gifUrl,
-                    fileName: "giphy.gif",
-                    fileSize: 0,
-                    mimeType: "image/gif",
-                  };
-                  
-                  setGifAttachments(prev => [...prev, gifAttachment]);
-                  setShowGifPicker(false);
-                }}
-              />
+              <GifPicker onGifSelect={handleGifSelect} />
             </PopoverContent>
           </Popover>
         </div>
-        
+
         <Button onClick={handleSubmit} disabled={isSubmitting}>
           {isSubmitting ? "Posting..." : "Post"}
         </Button>
       </div>
-      
+
       <input
         ref={fileInputRef}
         type="file"
         multiple
-        accept="image/*,video/*,.pdf,.doc,.docx"
+        accept="image/*,video/*,.pdf,.doc,.docx,.txt,.md,.ppt,.pptx,.xls,.xlsx,.csv"
         className="hidden"
         onChange={handleFileSelect}
       />

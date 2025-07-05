@@ -2,6 +2,8 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
+import { insertNotification } from "./notifications";
+import { api } from "./_generated/api";
 
 // Helper function to check if a member is the author of a comment
 function isCommentAuthor(comment: { memberId: Id<"members"> }, memberId: Id<"members">): boolean {
@@ -65,6 +67,21 @@ export const getCommentsByPost = query({
       }
     });
 
+    const sortReplies = (comments: CommentWithReplies[]) => {
+      comments.forEach(comment => {
+        if (comment.replies.length > 0) {
+          comment.replies.sort((a, b) => {
+            const aOrder = 'order' in a ? (a.order as number) : 0;
+            const bOrder = 'order' in b ? (b.order as number) : 0;
+            return aOrder - bOrder;
+          });
+          sortReplies(comment.replies);
+        }
+      });
+    };
+
+    sortReplies(rootComments);
+
     return rootComments;
   },
 });
@@ -116,8 +133,9 @@ export const createComment = mutation({
       siteName: v.optional(v.string()),
       url: v.string(),
     }))),
+    mentions: v.optional(v.array(v.id("members"))),
   },
-  handler: async (ctx, { content, postId, parentCommentId, attachments, linkPreviews }) => {
+  handler: async (ctx, { content, postId, parentCommentId, attachments, linkPreviews, mentions }) => {
     // Get authenticated member using unified helper
     const member = await getAuthenticatedMember(ctx);
 
@@ -147,6 +165,18 @@ export const createComment = mutation({
 
     const now = Date.now();
     const trimmedContent = content.trim();
+
+    let order = 0;
+    if (parentCommentId) {
+      const existingReplies = await ctx.db
+        .query("comments")
+        .withIndex("by_parent_and_order", (q) => 
+          q.eq("parentCommentId", parentCommentId)
+        )
+        .filter((q) => q.eq(q.field("status"), "active"))
+        .collect();
+      order = existingReplies.length;
+    }
 
     // Check for duplicate comment before creating
     // Look for comments from the same author on the same post with the same content
@@ -189,8 +219,10 @@ export const createComment = mutation({
       netVotes: 0,
       depth,
       childCount: 0,
+      order,
       attachments,
       linkPreviews,
+      mentions,
     });
 
     // Update post comment count
@@ -208,6 +240,51 @@ export const createComment = mutation({
           updatedAt: now,
         });
       }
+    }
+
+    // Create notifications
+    try {
+      // 1. Reply notification - notify the parent comment author
+      if (parentCommentId) {
+        const parentComment = await ctx.db.get(parentCommentId);
+        if (parentComment && parentComment.memberId !== member._id) {
+          const parentAuthor = await ctx.db.get(parentComment.memberId);
+          if (parentAuthor) {
+            await insertNotification(ctx, {
+              recipientId: parentComment.memberId,
+              type: "reply",
+              entityType: "comment",
+              entityId: commentId,
+              actorId: member._id,
+              message: `${member.firstName} ${member.lastName} replied to your comment`,
+            });
+          }
+        }
+      }
+
+      // 2. Mention notifications - notify mentioned users
+      if (mentions && mentions.length > 0) {
+        for (const mentionedMemberId of mentions) {
+          // Skip if mentioning self
+          if (mentionedMemberId === member._id) continue;
+
+          // Verify the mentioned member exists
+          const mentionedMember = await ctx.db.get(mentionedMemberId);
+          if (mentionedMember) {
+            await insertNotification(ctx, {
+              recipientId: mentionedMemberId,
+              type: "mention",
+              entityType: "comment",
+              entityId: commentId,
+              actorId: member._id,
+              message: `${member.firstName} ${member.lastName} mentioned you in a comment`,
+            });
+          }
+        }
+      }
+    } catch (error) {
+      // Log notification errors but don't fail the comment creation
+      console.error("Failed to create notifications for comment:", error);
     }
 
     return commentId;
@@ -261,6 +338,16 @@ export const editComment = mutation({
   args: {
     commentId: v.id("comments"),
     content: v.string(),
+    attachments: v.optional(v.array(v.object({
+      id: v.string(),
+      type: v.union(v.literal("image"), v.literal("document"), v.literal("gif")),
+      url: v.string(),
+      fileName: v.string(),
+      fileSize: v.number(),
+      mimeType: v.string(),
+      width: v.optional(v.number()),
+      height: v.optional(v.number()),
+    }))),
   },
   handler: async (ctx, args) => {
     // Get authenticated member using unified helper
@@ -282,11 +369,40 @@ export const editComment = mutation({
     const editHistory = comment.editHistory || [];
     editHistory.push({
       content: comment.content, // Save the previous content
+      attachments: comment.attachments, // Save previous attachments
       editedAt: comment.editedAt || comment.createdAt, // Use previous edit time or creation time
     });
 
+    // Handle attachment deletions
+    if (args.attachments !== undefined && comment.attachments) {
+      const newAttachmentUrls = new Set(args.attachments.map(a => a.url));
+      const removedAttachments = comment.attachments.filter(
+        oldAttachment => !newAttachmentUrls.has(oldAttachment.url)
+      );
+
+      // Delete removed attachments from storage
+      for (const attachment of removedAttachments) {
+        // Extract objectKey from the URL
+        // URL format: https://account.r2.cloudflarestorage.com/bucket/uploads/timestamp-id.ext
+        // or: https://custom.r2.dev/uploads/timestamp-id.ext
+        const urlParts = attachment.url.split('/');
+        const uploadsIndex = urlParts.indexOf('uploads');
+        if (uploadsIndex !== -1 && uploadsIndex < urlParts.length - 1) {
+          const objectKey = urlParts.slice(uploadsIndex).join('/');
+          try {
+            await ctx.scheduler.runAfter(0, api.storage.deleteObject, { objectKey });
+            console.log(`Deleted attachment: ${objectKey}`);
+          } catch (error) {
+            console.error(`Failed to delete attachment: ${objectKey}`, error);
+            // Continue with the edit even if deletion fails
+          }
+        }
+      }
+    }
+
     await ctx.db.patch(args.commentId, {
       content: args.content.trim(),
+      attachments: args.attachments,
       updatedAt: now,
       editedAt: now,
       editHistory,
@@ -417,7 +533,7 @@ export const reportComment = mutation({
     // Check if user already reported this comment
     const existingReport = await ctx.db
       .query("commentReports")
-      .withIndex("by_reporter_and_comment", (q) => 
+      .withIndex("by_reporter_and_comment", (q) =>
         q.eq("reporterId", member._id).eq("commentId", commentId)
       )
       .filter((q) => q.neq(q.field("status"), "dismissed"))
@@ -442,4 +558,52 @@ export const reportComment = mutation({
 
     return reportId;
   },
-});    
+});
+export const reorderCommentReplies = mutation({
+  args: {
+    parentCommentId: v.id("comments"),
+    commentId: v.id("comments"),
+    newOrder: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const member = await getAuthenticatedMember(ctx);
+
+    const comment = await ctx.db.get(args.commentId);
+    if (!comment || comment.parentCommentId !== args.parentCommentId) {
+      throw new Error("Invalid comment");
+    }
+
+    const parentComment = await ctx.db.get(args.parentCommentId);
+    if (!parentComment) throw new Error("Parent comment not found");
+
+    if (comment.memberId !== member._id && parentComment.memberId !== member._id) {
+      throw new Error("Unauthorized to reorder this comment");
+    }
+
+    const replies = await ctx.db
+      .query("comments")
+      .withIndex("by_parent_and_order", (q) =>
+        q.eq("parentCommentId", args.parentCommentId)
+      )
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+
+    const sortedReplies = replies
+      .filter(r => r._id !== args.commentId)
+      .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+    sortedReplies.splice(args.newOrder, 0, comment);
+
+    // Update order for all affected replies
+    const updates = sortedReplies.map((reply, index) => ({
+      id: reply._id,
+      order: index,
+    }));
+
+    for (const update of updates) {
+      await ctx.db.patch(update.id, { order: update.order });
+    }
+
+    return { success: true };
+  },
+});

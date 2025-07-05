@@ -75,7 +75,11 @@ const validateHandle = (handle: string): boolean => {
   return /^[a-zA-Z0-9._-]+$/.test(handle) && handle.length <= 50;
 };
 
-export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEditFormProps) {
+export default function MemberEditForm({
+  member,
+  onSuccess,
+  onCancel,
+}: MemberEditFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const updateMemberProfile = useMutation(api.members.updateMemberProfile);
   const { handleMutationError, handleMutationSuccess } = useMutationError();
@@ -118,12 +122,16 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
       handleMutationSuccess("Profile updated successfully!");
       onSuccess();
     } catch (error) {
-      handleMutationError(error, async () => {
-        await updateMemberProfile(updateData);
-      }, {
-        context: "updating profile",
-        maxRetries: 3
-      });
+      handleMutationError(
+        error,
+        async () => {
+          await updateMemberProfile(updateData);
+        },
+        {
+          context: "updating profile",
+          maxRetries: 3,
+        },
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -151,7 +159,9 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
               <span className="text-red-600">{errors.bio.message}</span>
             )}
           </div>
-          <span className={`${bioLength > 450 ? 'text-red-600' : 'text-muted-foreground'}`}>
+          <span
+            className={`${bioLength > 450 ? "text-red-600" : "text-muted-foreground"}`}
+          >
             {bioLength}/500
           </span>
         </div>
@@ -171,7 +181,9 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
           })}
         />
         {errors.location && (
-          <span className="text-sm text-red-600">{errors.location.message}</span>
+          <span className="text-sm text-red-600">
+            {errors.location.message}
+          </span>
         )}
       </div>
 
@@ -183,7 +195,7 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
         <div className="space-y-2">
           <Label htmlFor="githubHandle">GitHub</Label>
           <div className="flex">
-            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border border-r-0 border rounded-l-md">
+            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border-r-0 border rounded-l-md">
               github.com/
             </span>
             <Input
@@ -192,12 +204,15 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
               className="rounded-l-none"
               {...register("githubHandle", {
                 validate: (value) =>
-                  validateHandle(value) || "Please enter a valid username (letters, numbers, dots, hyphens, underscores only)",
+                  validateHandle(value) ||
+                  "Please enter a valid username (letters, numbers, dots, hyphens, underscores only)",
               })}
             />
           </div>
           {errors.githubHandle && (
-            <span className="text-sm text-red-600">{errors.githubHandle.message}</span>
+            <span className="text-sm text-red-600">
+              {errors.githubHandle.message}
+            </span>
           )}
         </div>
 
@@ -205,7 +220,7 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
         <div className="space-y-2">
           <Label htmlFor="xHandle">X (Twitter)</Label>
           <div className="flex">
-            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border border-r-0 border rounded-l-md">
+            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border border-r-0 rounded-l-md">
               x.com/
             </span>
             <Input
@@ -214,12 +229,15 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
               className="rounded-l-none"
               {...register("xHandle", {
                 validate: (value) =>
-                  validateHandle(value) || "Please enter a valid username (letters, numbers, dots, hyphens, underscores only)",
+                  validateHandle(value) ||
+                  "Please enter a valid username (letters, numbers, dots, hyphens, underscores only)",
               })}
             />
           </div>
           {errors.xHandle && (
-            <span className="text-sm text-red-600">{errors.xHandle.message}</span>
+            <span className="text-sm text-red-600">
+              {errors.xHandle.message}
+            </span>
           )}
         </div>
 
@@ -227,7 +245,7 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
         <div className="space-y-2">
           <Label htmlFor="youtubeHandle">YouTube</Label>
           <div className="flex">
-            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border border-r-0 border rounded-l-md">
+            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border-r-0 border rounded-l-md">
               youtube.com/@
             </span>
             <Input
@@ -236,12 +254,15 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
               className="rounded-l-none"
               {...register("youtubeHandle", {
                 validate: (value) =>
-                  validateHandle(value) || "Please enter a valid username (letters, numbers, dots, hyphens, underscores only)",
+                  validateHandle(value) ||
+                  "Please enter a valid username (letters, numbers, dots, hyphens, underscores only)",
               })}
             />
           </div>
           {errors.youtubeHandle && (
-            <span className="text-sm text-red-600">{errors.youtubeHandle.message}</span>
+            <span className="text-sm text-red-600">
+              {errors.youtubeHandle.message}
+            </span>
           )}
         </div>
       </div>
@@ -260,7 +281,11 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
         <Button
           type="submit"
           disabled={isSubmitting || !isDirty || !isOnline}
-          title={!isOnline ? "You're offline. Please check your connection." : undefined}
+          title={
+            !isOnline
+              ? "You're offline. Please check your connection."
+              : undefined
+          }
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -272,4 +297,4 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
       </div>
     </form>
   );
-} 
+}
