@@ -45,7 +45,9 @@ function ReportedCommentsContent() {
     return (
       <div className="container max-w-4xl mx-auto p-6">
         <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Access Denied</h1>
+          <h1 className="text-2xl font-bold text-foreground mb-4">
+            Access Denied
+          </h1>
           <p className="text-muted-foreground">
             You need admin privileges to access this page.
           </p>
@@ -54,7 +56,10 @@ function ReportedCommentsContent() {
     );
   }
 
-  const handleResolve = async (reportId: string, deleteComment: boolean = false) => {
+  const handleResolve = async (
+    reportId: string,
+    deleteComment: boolean = false,
+  ) => {
     try {
       await resolveReport({
         reportId: reportId as Id<"commentReports">,
@@ -62,7 +67,9 @@ function ReportedCommentsContent() {
         deleteComment,
       });
       handleMutationSuccess(
-        deleteComment ? "Report resolved and comment deleted" : "Report resolved"
+        deleteComment
+          ? "Report resolved and comment deleted"
+          : "Report resolved",
       );
     } catch (error) {
       handleMutationError(error, () => handleResolve(reportId, deleteComment), {
@@ -105,7 +112,7 @@ function ReportedCommentsContent() {
       harassment: "bg-purple-100 text-purple-800",
       other: "bg-muted text-muted-foreground",
     };
-    
+
     return (
       <Badge className={colors[reason as keyof typeof colors] || colors.other}>
         {reason}
@@ -127,8 +134,10 @@ function ReportedCommentsContent() {
       <div className="mb-6">
         <Select
           value={statusFilter || "all"}
-          onValueChange={(value) => 
-            setStatusFilter(value === "all" ? undefined : value as ReportStatus)
+          onValueChange={(value) =>
+            setStatusFilter(
+              value === "all" ? undefined : (value as ReportStatus),
+            )
           }
         >
           <SelectTrigger className="w-48">
@@ -161,7 +170,9 @@ function ReportedCommentsContent() {
       ) : reports.length === 0 ? (
         <div className="text-center py-12">
           <p className="text-muted-foreground">
-            {statusFilter ? `No ${statusFilter} reports found.` : "No reports found."}
+            {statusFilter
+              ? `No ${statusFilter} reports found.`
+              : "No reports found."}
           </p>
         </div>
       ) : (
@@ -194,7 +205,7 @@ function ReportedCommentsContent() {
                         </p>
                         {report.post && (
                           <Link
-                            href={`/general/${report.post.slug}#comment-${report.comment._id}`}
+                            href={`/${report.post.categoryName ?? "general"}/${report.post.slug}#comment-${report.comment._id}`}
                             className="text-xs text-blue-600 hover:underline flex items-center gap-1"
                           >
                             View in context <ExternalLink className="w-3 h-3" />
@@ -210,10 +221,13 @@ function ReportedCommentsContent() {
                   <TableCell>
                     {report.comment?.author ? (
                       <span className="text-sm">
-                        {report.comment.author.firstName} {report.comment.author.lastName}
+                        {report.comment.author.firstName}{" "}
+                        {report.comment.author.lastName}
                       </span>
                     ) : (
-                      <span className="text-muted-foreground text-sm">Unknown</span>
+                      <span className="text-muted-foreground text-sm">
+                        Unknown
+                      </span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -222,7 +236,9 @@ function ReportedCommentsContent() {
                         {report.reporter.firstName} {report.reporter.lastName}
                       </span>
                     ) : (
-                      <span className="text-muted-foreground text-sm">Unknown</span>
+                      <span className="text-muted-foreground text-sm">
+                        Unknown
+                      </span>
                     )}
                   </TableCell>
                   <TableCell>
