@@ -108,14 +108,21 @@ export default function NewsPage() {
         }
       }
 
+      const getTimestamp = (date?: string) => {
+        if (!date) return null;
+        const ts = new Date(date).getTime();
+        return isNaN(ts) ? null : ts;
+      };
+
       const sortedNews = results
         .sort((a, b) => {
-          if (!a.publishedDate) return 1;
-          if (!b.publishedDate) return -1;
-          return (
-            new Date(b.publishedDate).getTime() -
-            new Date(a.publishedDate).getTime()
-          );
+          const tsA = getTimestamp(a.publishedDate);
+          const tsB = getTimestamp(b.publishedDate);
+
+          if (tsA === null && tsB === null) return 0;
+          if (tsA === null) return 1;
+          if (tsB === null) return -1;
+          return tsB - tsA;
         })
         .slice(0, 20);
 
