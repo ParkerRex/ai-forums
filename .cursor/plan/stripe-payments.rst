@@ -1,3 +1,42 @@
+Phase 0 – Data Preparation
+==========================
+
+Affected Files
+--------------
+* ``migration-data/legacy-member-billing.json`` – **new** data file you will create and commit.
+* (local tools only) ``scripts/csv-to-json-example.ts`` *(optional helper, not committed)*.
+
+Summary of Changes
+------------------
+1. Export **CSV** of legacy members from old platform including at minimum columns:
+   ``email``, ``subscription_interval`` (monthly|annual), ``amount_usd``, ``purchase_date`` (ISO 8601).
+2. Manually review / clean data (remove duplicates, ensure emails match Convex).
+3. Transform CSV → JSON array using template below and save as ``migration-data/legacy-member-billing.json``.
+4. For each member row fill in:
+   * ``interval`` – "monthly"|"annual".
+   * ``amountUsd`` – integer dollars (e.g. 39, 50, 299).
+   * ``purchaseDate`` – ISO timestamp ``YYYY-MM-DDTHH:MM:SSZ``.
+   * (optional) ``stripeCustomerId`` if already present.
+   * (optional) ``comment`` notes.
+5. Commit the JSON file so Phase 1b backfill can consume it.
+
+Template
+~~~~~~~~
+
+.. code-block:: json
+
+    [
+      {
+        "email": "alice@example.com",
+        "interval": "monthly",
+        "amountUsd": 39,
+        "purchaseDate": "2024-06-23T18:45:00Z",
+        "stripeCustomerId": "cus_12345",   // optional
+        "comment": "Imported from old tool, early-bird coupon" // optional
+      }
+    ]
+
+
 Phase 1 – Data Model + Migration
 ================================
 
@@ -33,6 +72,32 @@ Unit Tests
 * ``members-billing.test.ts``: create three synthetic members with differing ``joinedDate`` and run migration; expect correct plan assignments.
 
 
+Phase 1b – Legacy Billing Backfill
+==================================
+
+Affected Files
+--------------
+* ``convex/mutations/billing/backfillFromLegacy.ts`` – new internal mutation.
+* ``scripts/backfill-legacy-billing.ts`` – one-off script to run locally.
+* ``convex/test/legacy-billing-backfill.test.ts`` – unit tests.
+
+Summary of Changes
+------------------
+1. Add ``backfillFromLegacy`` mutation which patches existing members with the following fields based on legacy purchase data:
+   * ``billingInterval``
+   * ``billingRateCents``
+   * ``discountPercent`` (calculated vs standard price USD 39.99 / 399.99)
+   * ``billingPlan`` (``"custom"`` when price ≠ standard tiers)
+   * ``grandfathered = True``
+   * ``nextInvoiceAt`` (``purchaseDate`` + interval duration)
+2. ``scripts/backfill-legacy-billing.ts`` reads ``migration-data/legacy-member-billing.json`` (``email``, ``interval``, ``amountUsd``, ``purchaseDate``) and invokes the mutation for each record.
+3. Unit test seeds three sample records and asserts member documents are patched correctly, including discount calculations.
+
+Unit Tests
+~~~~~~~~~~
+* ``legacy-billing-backfill.test.ts``: runs script against mock DB and verifies state.
+
+
 Phase 2 – Stripe Backend Integration
 ===================================
 
@@ -57,6 +122,7 @@ Summary of Changes
 3. **config**: add ``STRIPE_SECRET_KEY`` & ``STRIPE_WEBHOOK_SECRET`` env vars (document in ``README.md``).
 4. **auth.ts** helper ``getAuthenticatedMember``: export ``isPaidMember(member)`` utility (``billingPlan ≠ "free"``).
 5. **Unit tests** using stripe-mock: simulate webhook; expect member fields updated.
+6. **scripts/import-existing-members-to-stripe.ts** – iterates over members with billing data but missing ``stripeCustomerId`` and creates corresponding Stripe customers & subscriptions reflecting their existing ``billingInterval`` / ``billingRateCents``.
 
 Unit Tests
 ~~~~~~~~~~
@@ -88,11 +154,24 @@ Unit Tests
 Checklist
 =========
 
+Phase 0
+-------
+☐ export legacy membership CSV
+☐ clean & validate rows
+☐ convert to JSON using template
+☐ save to ``migration-data/legacy-member-billing.json`` and commit
+
 Phase 1
 -------
 ☐ modify ``schema.ts``
 ☐ write migration ``add_member_billing_fields.ts``
 ☐ add unit test ``members-billing.test.ts``
+
+Phase 1b
+-------
+☐ create ``convex/mutations/billing/backfillFromLegacy.ts``
+☐ write ``scripts/backfill-legacy-billing.ts``
+☐ add unit test ``legacy-billing-backfill.test.ts``
 
 Phase 2
 -------
@@ -101,6 +180,7 @@ Phase 2
 ☐ implement ``/api/stripe/webhook`` route
 ☐ update ``auth.ts`` helper & tests
 ☐ add unit test ``payments.test.ts``
+☐ write ``scripts/import-existing-members-to-stripe.ts``
 
 Phase 3
 -------
