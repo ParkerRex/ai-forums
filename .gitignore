@@ -47,3 +47,4 @@ package-lock.json
 /.clerk/
 
 # Member data files (contains real user data)
+/migration-data/

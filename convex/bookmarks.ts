@@ -131,3 +131,47 @@ export const getUserBookmarks = query({
     };
   },
 });
+
+/**
+ * Future enhancements for bookmark functionality:
+ * 
+ * 1. Add bookmark notes/annotations:
+ *    - Allow users to add personal notes to bookmarks
+ *    - Enable searching through bookmark notes
+ * 
+ * 2. Add bookmark tags/categories:
+ *    - Let users organize bookmarks with custom tags
+ *    - Enable filtering by user-defined tags
+ * 
+ * 3. Add bookmark collections:
+ *    - Allow users to group bookmarks into collections
+ *    - Enable sharing collections with other users
+ * 
+ * 4. Add bookmark analytics:
+ *    - Track which bookmarks are accessed most frequently
+ *    - Suggest related content based on bookmarks
+ * 
+ * 5. Add bookmark import/export:
+ *    - Allow users to export their bookmarks
+ *    - Enable importing bookmarks from other platforms
+ * 
+ * 6. Add bookmark reminders:
+ *    - Let users set reminders to revisit bookmarks
+ *    - Send notifications for stale bookmarks
+ * 
+ * Example extended schema:
+ * ```typescript
+ * const bookmarks = defineTable({
+ *   memberId: v.id("members"),
+ *   targetId: v.string(),
+ *   targetType: v.union(v.literal("post"), v.literal("resource")),
+ *   createdAt: v.number(),
+ *   notes: v.optional(v.string()),
+ *   tags: v.optional(v.array(v.string())),
+ *   collectionId: v.optional(v.id("bookmark_collections")),
+ *   reminderAt: v.optional(v.number()),
+ *   lastAccessedAt: v.optional(v.number()),
+ *   accessCount: v.optional(v.number()),
+ * });
+ * ```
+ */

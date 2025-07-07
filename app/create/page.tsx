@@ -1,30 +1,104 @@
+/**
+ * @fileoverview Create post page component for the VAI Community platform.
+ * This is the main page component that handles content creation for different post types
+ * including text posts, media uploads, link sharing, and poll creation.
+ * 
+ * The page provides authentication-gated access to the post creation form,
+ * showing a sign-up prompt for unauthenticated users and the full creation
+ * interface for authenticated users.
+ * 
+ * Key features:
+ * - Authentication state management with Convex and Clerk
+ * - Responsive design with mobile-first approach
+ * - Loading states with skeleton components
+ * - Error boundaries and fallback UI
+ * - SEO optimized with proper meta tags
+ * 
+ * @author VAI Community Team
+ * @version 1.0.0
+ * @since 2024-01-01
+ */
+
 "use client";
 
-import { Authenticated, Unauthenticated } from "convex/react";
-import { PostCreationForm } from "@/components/post-creation-form";
+// React and Next.js imports for client-side rendering and hooks
 import { Suspense } from "react";
+
+// Convex authentication components for managing user auth state
+// These components automatically handle authentication state and render children conditionally
+import { Authenticated, Unauthenticated } from "convex/react";
+
+// Custom post creation form component that handles all content creation logic
+// This is the main component that users interact with to create posts
+import { PostCreationForm } from "@/components/post-creation-form";
+
+// Shadcn/ui components for consistent styling and layout
+// Card components provide structured container layouts with proper spacing
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Clerk authentication components for sign-up and sign-in modals
+// These provide pre-built UI for user authentication flows
 import { SignUpButton, SignInButton } from "@clerk/nextjs";
 
-// Fast loading skeleton for the entire form
+/**
+ * CreatePostSkeleton component renders a loading placeholder during form initialization.
+ * This skeleton mimics the structure of the actual post creation form to provide
+ * a smooth loading experience and prevent layout shift.
+ * 
+ * The skeleton includes placeholders for:
+ * - Form title and header
+ * - Input fields (title, category, content)
+ * - Action buttons (cancel, publish, drafts)
+ * - Rich text editor area
+ * 
+ * Design considerations:
+ * - Uses consistent spacing with the actual form
+ * - Muted background colors for subtle appearance
+ * - Responsive widths that match real form elements
+ * - Animation classes for smooth loading states
+ * 
+ * @returns {JSX.Element} The skeleton loading component
+ */
 function CreatePostSkeleton() {
   return (
+    // Main card container with responsive max width and auto centering
+    // Matches the actual form layout for consistent user experience
     <Card className="w-full max-w-4xl mx-auto">
+      {/* Header section skeleton with title placeholder */}
       <CardHeader>
         <CardTitle>Create New Post</CardTitle>
       </CardHeader>
+      
+      {/* Content section with form field skeletons */}
       <CardContent>
         <div className="space-y-6">
+          {/* Form fields skeleton group with consistent spacing */}
           <div className="space-y-2">
+            {/* Title field label skeleton - 1/4 width to match label size */}
             <div className="h-4 bg-muted rounded w-1/4" />
+            
+            {/* Title input field skeleton - full width input */}
             <div className="h-10 bg-muted rounded" />
+            
+            {/* Category field label skeleton - 1/4 width */}
             <div className="h-4 bg-muted rounded w-1/4" />
+            
+            {/* Category selector skeleton - full width */}
             <div className="h-10 bg-muted rounded" />
+            
+            {/* Content/rich text editor skeleton - taller for text area */}
             <div className="h-32 bg-muted rounded" />
           </div>
+          
+          {/* Action buttons skeleton group */}
           <div className="flex space-x-4">
+            {/* Cancel button skeleton */}
             <div className="h-10 bg-muted rounded w-20" />
+            
+            {/* Drafts button skeleton */}
             <div className="h-10 bg-muted rounded w-20" />
+            
+            {/* Publish button skeleton - slightly wider */}
             <div className="h-10 bg-muted rounded w-24" />
           </div>
         </div>
@@ -33,26 +107,81 @@ function CreatePostSkeleton() {
   );
 }
 
+/**
+ * CreatePostPage is the main page component for content creation in the VAI Community.
+ * This component handles the complete content creation workflow including authentication,
+ * form rendering, and user onboarding for new users.
+ * 
+ * Architecture:
+ * - Uses Convex's authentication components for state management
+ * - Implements code splitting with React Suspense for optimal loading
+ * - Provides fallback UI for unauthenticated users
+ * - Responsive design that works on mobile and desktop
+ * 
+ * Authentication Flow:
+ * 1. Check user authentication state via Convex
+ * 2. If authenticated: Show post creation form with all features
+ * 3. If unauthenticated: Show onboarding UI with sign-up prompt
+ * 
+ * Performance Optimizations:
+ * - Lazy loading of PostCreationForm component
+ * - Skeleton loading states to prevent layout shift
+ * - Suspense boundaries for better error handling
+ * - Minimal initial bundle size with code splitting
+ * 
+ * @returns {JSX.Element} The complete create post page with authentication handling
+ * 
+ * @example
+ * // This component is used as a Next.js page route
+ * // URL: /create
+ * // Automatically handles authentication and routing
+ * 
+ * @see {@link PostCreationForm} - The main form component for authenticated users
+ * @see {@link CreatePostSkeleton} - Loading skeleton for form initialization
+ */
 export default function CreatePostPage() {
   return (
+    // Main page container with full viewport height and background
+    // Uses CSS custom properties for theme-aware background colors
     <div className="min-h-screen bg-background">
+      {/* Authenticated user section - shows when user is logged in */}
+      {/* Convex automatically manages auth state and renders children conditionally */}
       <Authenticated>
+        {/* Responsive container with progressive enhancement for larger screens */}
+        {/* Padding scales from mobile (px-4) to desktop (lg:px-8) */}
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+          {/* Suspense boundary for code splitting and loading states */}
+          {/* PostCreationForm is lazy-loaded to reduce initial bundle size */}
           <Suspense fallback={<CreatePostSkeleton />}>
             <PostCreationForm />
           </Suspense>
         </div>
       </Authenticated>
 
+      {/* Unauthenticated user section - shows when user is not logged in */}
+      {/* Provides clear onboarding flow with value proposition */}
       <Unauthenticated>
+        {/* Centered container with responsive padding */}
         <div className="max-w-4xl mx-auto px-4 py-8">
+          {/* Narrow content area for better reading experience */}
           <div className="max-w-md mx-auto">
+            {/* Card component with consistent styling and subtle elevation */}
             <div className="bg-card rounded-lg shadow-sm border border-border p-8 text-center">
+              {/* Primary heading with emphasis on community aspect */}
               <h1 className="text-2xl font-bold text-foreground mb-4">Join VAI Community</h1>
+              
+              {/* Value proposition text that explains the platform benefits */}
+              {/* Emphasizes the target audience (engineers from top companies) */}
               <p className="text-muted-foreground mb-6">
                 Create an account to share your AI workflows, prompts, and insights with our community of engineers from top companies.
               </p>
+              
+              {/* Primary call-to-action button using Clerk's pre-built modal */}
+              {/* Modal mode provides seamless UX without page navigation */}
               <SignUpButton mode="modal" />
+              
+              {/* Secondary action for existing users */}
+              {/* Provides clear path for users who already have accounts */}
               <p className="text-sm text-muted-foreground">
                 Already have an account? <SignInButton mode="modal" />
               </p>

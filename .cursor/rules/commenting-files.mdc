@@ -1,18 +1,9 @@
 ---
 alwaysApply: true
 ---
-Lets work through some of the things I learned from watching
-
-the guy who built Terraforms / Ghosttys tips on how to use AI.
-
-
-The first concepts....
-
-
-Well these are written on my monitor with stickie notes... so ill just read them! 
-
-
- Include 2 lines of comments for every one line of code. 
+# Commenting Files 
+Include 2 lines of comments for every one line of code. 
+If it's typescript, use TSDOCS format. The comments should be helpful for humans and llm's to read. It should be written so that a jr or mid level engineer can quickly get up to speed.
 
 Here's an example of how I would write a new feature:
 desktop.zig 

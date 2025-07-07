@@ -1,3 +1,19 @@
+/**
+ * Category Page Client Component
+ *
+ * Client component that handles the interactive features of category pages.
+ * Manages post filtering, sorting, and displays category-specific content.
+ *
+ * Features:
+ * - Real-time post loading with Convex queries
+ * - Post sorting (newest, popular, trending)
+ * - Category validation and 404 handling
+ * - Loading states with skeleton UI
+ * - Responsive layout with sidebar
+ *
+ * @see CategoryPage - Server component that handles SEO and routing
+ */
+
 "use client";
 
 import { useQuery } from "convex/react";
@@ -9,37 +25,70 @@ import { notFound } from "next/navigation";
 import { useState } from "react";
 import { use } from "react";
 
+/**
+ * Props for the CategoryPageClient component
+ *
+ * Receives Promise-based params from the server component
+ * following Next.js 15 patterns.
+ */
 interface CategoryPageClientProps {
+  /** Promise containing the dynamic route parameters */
   params: Promise<{
+    /** The category name from the URL path */
     category: string;
   }>;
 }
 
-export default function CategoryPageClient({ params }: CategoryPageClientProps) {
-  // Unwrap the params promise (Next.js 15 behavior)
+/**
+ * Category Page Client Component
+ *
+ * Renders the category page with post filtering, sorting, and interactive features.
+ * Handles loading states, error states, and category validation.
+ *
+ * @param params - Promise containing the dynamic route parameters
+ * @returns JSX element rendering the category page with posts
+ *
+ * @example
+ * // Used by server component:
+ * <CategoryPageClient params={Promise.resolve({ category: "workflows" })} />
+ */
+export default function CategoryPageClient({
+  params,
+}: CategoryPageClientProps) {
+  // Unwrap the params promise using React's use() hook (Next.js 15 behavior)
+  // This allows the component to work with streaming and concurrent features
   const resolvedParams = use(params);
   const categoryName = resolvedParams?.category;
 
-  // Fetch category by name
-  const category = useQuery(api.categories.getCategoryByName, 
-    categoryName ? { name: categoryName } : "skip"
+  // Fetch category data by name from Convex database
+  // Uses conditional query - skips if no categoryName to avoid unnecessary requests
+  const category = useQuery(
+    api.categories.getCategoryByName,
+    categoryName ? { name: categoryName } : "skip",
   );
 
-  const [sortBy, setSortBy] = useState<"newest" | "popular" | "trending">("newest");
+  // State for post sorting - controls how posts are ordered in the list
+  const [sortBy, setSortBy] = useState<"newest" | "popular" | "trending">(
+    "newest",
+  );
 
-  // Show loading state while fetching
+  // Show loading skeleton while fetching category data
+  // In Convex, undefined means loading, null means not found
   if (category === undefined) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
         <div className="animate-pulse">
+          {/* Category header skeleton */}
           <div className="h-8 bg-muted rounded mb-4 w-48"></div>
           <div className="h-4 bg-muted rounded mb-2 w-96"></div>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+            {/* Post list skeleton */}
             <div className="lg:col-span-3 space-y-4">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-32 bg-muted rounded"></div>
               ))}
             </div>
+            {/* Sidebar skeleton */}
             <div className="lg:col-span-1">
               <div className="h-64 bg-muted rounded"></div>
             </div>
@@ -49,18 +98,22 @@ export default function CategoryPageClient({ params }: CategoryPageClientProps) 
     );
   }
 
-  // Show 404 if category doesn't exist
+  // Handle invalid category or missing category name
+  // null from Convex means the category doesn't exist in the database
   if (category === null || !categoryName) {
     notFound();
   }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      {/* Category Header */}
+      {/* Category Header - Shows category info and post count */}
       <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
+          {/* Optional category icon */}
           {category.icon && <span className="text-2xl">{category.icon}</span>}
-          <h1 className="text-3xl font-bold text-foreground">{category.displayName}</h1>
+          <h1 className="text-3xl font-bold text-foreground">
+            {category.displayName}
+          </h1>
         </div>
         <p className="text-muted-foreground">{category.description}</p>
         <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
@@ -68,23 +121,25 @@ export default function CategoryPageClient({ params }: CategoryPageClientProps) 
         </div>
       </div>
 
-      {/* Post Header with sorting */}
+      {/* Post Header with sorting controls */}
       <PostHeader
         selectedCategoryId={category._id}
-        onCategorySelect={() => {}} // No category switching on category pages
+        onCategorySelect={() => {}} // Disabled: no category switching on category pages
         sortBy={sortBy}
         onSortChange={setSortBy}
       />
 
-      {/* Posts Grid */}
+      {/* Posts Grid - Responsive layout with main content and sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main post list - takes 3/4 of the width on large screens */}
         <div className="lg:col-span-3">
           <PostList categoryId={category._id} sortBy={sortBy} />
         </div>
+        {/* Sidebar - takes 1/4 of the width on large screens */}
         <div className="lg:col-span-1">
           <PostSidebar />
         </div>
       </div>
     </div>
   );
-} 
+}

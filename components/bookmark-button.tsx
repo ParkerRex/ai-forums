@@ -1,3 +1,21 @@
+/**
+ * @fileoverview Bookmark button component for saving and unsaving posts and resources.
+ * This component provides a unified interface for users to bookmark content across the application.
+ * It handles authentication states, loading states, and provides visual feedback for bookmark actions.
+ * 
+ * Key Features:
+ * - Toggle bookmark functionality (save/unsave)
+ * - Authentication-aware rendering
+ * - Visual feedback with filled/unfilled bookmark icon
+ * - Configurable size, label, and styling options
+ * - Membership CTA for unauthenticated users
+ * - Toast notifications for user feedback
+ * - Loading states during API calls
+ * 
+ * @author VAI Team
+ * @since 1.0.0
+ */
+
 import React, { useState } from "react";
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -106,3 +124,9 @@ export function BookmarkButton({
     </>
   );
 }
+
+/**
+ * Export the BookmarkButton component as the default export.
+ * This allows for easier imports throughout the application.
+ */
+export default BookmarkButton;
