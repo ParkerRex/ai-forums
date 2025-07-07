@@ -639,16 +639,20 @@ Phase 1 – Database Schema & Migration ✅
 
 Phase 2 – Stripe Integration
 ----------------------------
-☐ Set up Stripe account and create price IDs for all tiers
-☐ Create 100% off coupon code for free lifetime members
-☐ Configure webhook secret in environment variables
-☐ Create checkout session mutation in convex/stripe/checkout.ts
-☐ Implement webhook handler in convex/stripe/webhooks.ts
-☐ Create webhook endpoint in app/api/stripe/webhook/route.ts
-☐ Add customer portal integration in convex/stripe/portal.ts
-☐ Handle subscription lifecycle events
-☐ Process payment success/failure webhooks
-☐ Create subscription info query in convex/stripe/getSubscriptionInfo.ts and expose it in the member profile UI
+☑ Set up Stripe account and create price IDs for all tiers
+☑ Create 100% off coupon code for free lifetime members
+☑ Configure webhook secret in environment variables
+☑ Create webhook endpoint in app/api/stripe/webhook/route.ts
+☑ Implement webhook handler in convex/stripe/webhooks.ts
+☑ Add customer portal integration in convex/stripe/portal.ts
+☑ Handle subscription lifecycle events
+☑ Process payment success/failure webhooks
+☑ Create checkout session (now Payment Link) mutation in convex/stripe/checkout.ts
+☐ Generate & store Payment Links for each tier (STRIPE_…_PAYMENT_LINK env vars)
+☐ Cron job to send renewal reminders 7 days before due date (convex/crons.ts)
+☐ Banner component (components/payment-reminder-banner.tsx) shown X days before due
+☐ Restrict guarded content on/after due date for unpaid members
+☐ Expose getSubscriptionInfo query in member profile UI
 
 Phase 3 – Access Control & Paywall
 -----------------------------------
