@@ -151,6 +151,52 @@ Unit Tests
 * React testing: render ``BillingPlanCard`` with various member props; assert correct labels & button state.
 
 
+Key Considerations & Potential Issues
+====================================
+
+Date Handling
+-------------
+* **Issue**: The news card component shows a date parsing issue (``isNaN(parsedDate.getTime())``)
+* **Recommendation**: Use Unix timestamps consistently throughout billing:
+  - ``nextInvoiceAt`` as Unix ms (not ISO strings)
+  - ``purchaseDate`` in migration JSON should be converted to Unix timestamps during import
+  - All date comparisons should use numeric timestamps to avoid parsing issues
+
+Stripe Integration Architecture
+-------------------------------
+* **Webhook Security**: Must verify webhook signatures to prevent replay attacks
+* **Idempotency**: Handle duplicate webhook events gracefully (Stripe may retry)
+* **Race Conditions**: Member creation vs Stripe customer creation timing
+* **Error Handling**: Graceful degradation if Stripe is unavailable
+
+Data Consistency
+----------------
+* **Source of Truth**: ``billingRateCents`` should be authoritative, not Stripe's price
+* **Grandfathered Plans**: Need clear business rules for when grandfathering expires
+* **Plan Migration**: Define upgrade/downgrade paths between billing plans
+
+Missing Components
+------------------
+* **Customer Portal**: Add Stripe Customer Portal integration for self-service
+* **Invoice History**: Store invoice records in Convex for offline access
+* **Payment Methods**: UI to update payment methods
+* **Cancellation Flow**: Handle subscription cancellations and retention
+* **Trial Periods**: Support for free trials if needed
+* **Proration**: Handle mid-cycle plan changes
+
+Environment Setup
+-----------------
+* **Stripe CLI**: Document requirement for local webhook testing
+* **Test Data**: Provide test credit card numbers in docs
+* **Staging Environment**: Consider separate Stripe test account
+
+Testing Gaps
+------------
+* **Failed Payment Handling**: Test declined cards, expired cards
+* **Subscription Lifecycle**: Test full cycle from creation to renewal
+* **Edge Cases**: Multiple simultaneous checkouts, browser back button
+* **Internationalization**: Currency conversion if supporting non-USD
+
 Checklist
 =========
 
@@ -160,30 +206,42 @@ Phase 0
 ☐ clean & validate rows
 ☐ convert to JSON using template
 ☐ save to ``migration-data/legacy-member-billing.json`` and commit
+☐ **NEW**: Convert ISO dates to Unix timestamps in migration script
 
 Phase 1
 -------
 ☐ modify ``schema.ts``
 ☐ write migration ``add_member_billing_fields.ts``
 ☐ add unit test ``members-billing.test.ts``
+☐ **NEW**: Add ``invoiceHistory`` table to schema
+☐ **NEW**: Add ``by_stripeCustomerId`` index for webhook lookups
 
 Phase 1b
 -------
 ☐ create ``convex/mutations/billing/backfillFromLegacy.ts``
 ☐ write ``scripts/backfill-legacy-billing.ts``
 ☐ add unit test ``legacy-billing-backfill.test.ts``
+☐ **NEW**: Validate all email matches before import
 
 Phase 2
 -------
 ☐ create ``convex/payments.ts``
 ☐ implement ``/api/stripe/create-checkout-session`` route
 ☐ implement ``/api/stripe/webhook`` route
+☐ **NEW**: implement ``/api/stripe/portal`` route
 ☐ update ``auth.ts`` helper & tests
 ☐ add unit test ``payments.test.ts``
 ☐ write ``scripts/import-existing-members-to-stripe.ts``
+☐ **NEW**: Add webhook signature verification
+☐ **NEW**: Add idempotency key handling
+☐ **NEW**: Document Stripe CLI setup for local testing
 
 Phase 3
 -------
 ☐ build client billing components & pages
 ☐ wire upgrade button in header
-☐ add component tests 
+☐ add component tests
+☐ **NEW**: Add payment method update UI
+☐ **NEW**: Add subscription cancellation flow
+☐ **NEW**: Add invoice history display
+☐ **NEW**: Handle loading states during checkout 
