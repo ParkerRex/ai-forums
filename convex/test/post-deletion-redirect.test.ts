@@ -65,6 +65,9 @@ describe("Post Deletion for Redirect Support", () => {
         slug: 'test-user',
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
       });
     });
 
@@ -153,6 +156,9 @@ describe("Post Deletion for Redirect Support", () => {
         slug: 'test-user',
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
       });
     });
 
@@ -237,6 +243,9 @@ describe("Post Deletion for Redirect Support", () => {
         slug: 'author-user',
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
       });
     });
 
@@ -251,6 +260,9 @@ describe("Post Deletion for Redirect Support", () => {
         slug: 'other-user',
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
       });
     });
 
@@ -341,6 +353,9 @@ describe("Post Deletion for Redirect Support", () => {
         slug: 'test-user',
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
       });
     });
 

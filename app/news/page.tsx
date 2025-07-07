@@ -1,11 +1,11 @@
 /**
  * @fileoverview AI News Feed Page Component
- * 
+ *
  * This is the main news feed page that displays a curated collection of AI-related
  * news articles. It aggregates content from multiple sources including custom user-configured
  * sources and default AI news sources. The page features real-time refresh capabilities,
  * intelligent sorting by publication date, and responsive loading states.
- * 
+ *
  * Key features:
  * - Aggregates news from multiple sources (default AI sources + custom user sources)
  * - Real-time refresh functionality with loading indicators
@@ -14,12 +14,12 @@
  * - User preference integration for customizable news sources
  * - Error handling for failed API requests
  * - Limit of 20 articles to ensure optimal performance
- * 
+ *
  * @component NewsPage
  * @requires useCurrentMember hook for user preferences
  * @requires NewsCard component for article display
  * @requires /api/news endpoint for fetching articles
- * 
+ *
  * @author VAI VEX Team
  * @since 1.0.0
  */
@@ -41,11 +41,11 @@ import { Card, CardContent } from "@/components/ui/card";
 
 /**
  * Represents a news article with all relevant metadata.
- * 
+ *
  * This interface defines the structure of news items returned from the API
  * and displayed in the news feed. It includes optional fields to handle
  * varying data quality from different news sources.
- * 
+ *
  * @interface NewsItem
  * @property {string} title - The headline or title of the news article
  * @property {string} url - Direct link to the full article on the source website
@@ -65,13 +65,13 @@ interface NewsItem {
 
 /**
  * Main news feed page component that displays curated AI news articles.
- * 
+ *
  * This component serves as the primary interface for users to consume AI-related
  * news content. It intelligently aggregates articles from multiple sources,
  * provides real-time refresh capabilities, and maintains responsive loading states.
  * The component respects user preferences for custom news sources while falling
  * back to sensible defaults for new users.
- * 
+ *
  * Component behavior:
  * - Loads news automatically on mount and when user preferences change
  * - Supports manual refresh with visual feedback
@@ -79,10 +79,10 @@ interface NewsItem {
  * - Sorts articles by publication date (newest first)
  * - Limits display to 20 articles for optimal performance
  * - Handles API errors gracefully with console logging
- * 
+ *
  * @component
  * @returns {JSX.Element} The complete news feed page with header, controls, and article grid
- * 
+ *
  * @example
  * ```tsx
  * // Used in Next.js app router
@@ -96,27 +96,27 @@ export default function NewsPage() {
   // State for storing the fetched news articles array
   // Starts as empty array and gets populated by loadNews function
   const [news, setNews] = useState<NewsItem[]>([]);
-  
+
   // State for tracking initial page load status
   // Controls display of skeleton loading states vs actual content
   const [loading, setLoading] = useState(true);
-  
+
   // State for tracking manual refresh operations
   // Controls spinner animation on refresh button and prevents multiple simultaneous refreshes
   const [refreshing, setRefreshing] = useState(false);
-  
+
   // Access current authenticated member for personalized news source preferences
   // Used to determine which custom news sources to query
   const { member } = useCurrentMember();
 
   /**
    * Loads and aggregates news articles from multiple sources.
-   * 
+   *
    * This function is the core of the news aggregation system. It fetches articles
    * from both default AI news sources and user-configured custom sources. The function
    * handles multiple concurrent API requests, processes responses, and sorts results
    * by publication date for optimal user experience.
-   * 
+   *
    * Process flow:
    * 1. Set loading states based on refresh context
    * 2. Define default news sources as fallback
@@ -125,15 +125,15 @@ export default function NewsPage() {
    * 5. Fetch from up to 2 custom sources (5 articles each)
    * 6. Combine, sort, and limit results to 20 articles
    * 7. Update component state with processed news
-   * 
+   *
    * @param {boolean} [showRefreshing=false] - Whether to show refresh loading indicator
    * @returns {Promise<void>} - Promise that resolves when news loading is complete
-   * 
+   *
    * @example
    * ```typescript
    * // Initial load on component mount
    * await loadNews();
-   * 
+   *
    * // Manual refresh with visual feedback
    * await loadNews(true);
    * ```
@@ -142,20 +142,20 @@ export default function NewsPage() {
     // Set refreshing state if this is a manual refresh operation
     // This enables the spinning animation on the refresh button
     if (showRefreshing) setRefreshing(true);
-    
+
     try {
       // Define default news sources for users without custom preferences
       // These sources provide reliable AI-focused content
       const defaultSources = [
         {
-          type: "repository" as const,           // GitHub repository source type
+          type: "repository" as const, // GitHub repository source type
           url: "https://github.com/microsoft/chat-copilot",
-          name: "Microsoft Copilot",             // Human-readable source name
+          name: "Microsoft Copilot", // Human-readable source name
         },
         {
-          type: "website" as const,              // Website source type
-          url: "https://x.ai/news",              // x.ai official news page
-          name: "x.ai News",                     // Human-readable source name
+          type: "website" as const, // Website source type
+          url: "https://x.ai/news", // x.ai official news page
+          name: "x.ai News", // Human-readable source name
         },
       ];
 
@@ -163,7 +163,7 @@ export default function NewsPage() {
       // This allows personalized news feeds based on user interests
       const customSources =
         member?.newsPreferences?.customSources || defaultSources;
-      
+
       // Initialize results array to collect articles from all sources
       const results: NewsItem[] = [];
 
@@ -178,7 +178,7 @@ export default function NewsPage() {
           // Broad query to capture diverse AI-related news content
           query:
             "latest AI developments machine learning artificial intelligence",
-          numResults: 15,                         // Request 15 articles for good coverage
+          numResults: 15, // Request 15 articles for good coverage
         }),
       });
 
@@ -186,17 +186,17 @@ export default function NewsPage() {
       // Extract articles and normalize them to our NewsItem interface
       if (mainResponse.ok) {
         const mainNews = await mainResponse.json();
-        
+
         // Iterate through API results and transform to our standardized format
         // Handle potential missing or undefined results array gracefully
         for (const item of mainNews.results || []) {
           results.push({
-            title: item.title,                   // Article headline
-            url: item.url,                       // Direct link to full article
-            publishedDate: item.publishedDate,   // When the article was published
-            author: item.author,                 // Article author if available
-            summary: item.summary,               // AI-generated summary
-            source: "AI News",                   // Standardized source label
+            title: item.title, // Article headline
+            url: item.url, // Direct link to full article
+            publishedDate: item.publishedDate, // When the article was published
+            author: item.author, // Article author if available
+            summary: item.summary, // AI-generated summary
+            source: "AI News", // Standardized source label
           });
         }
       }
@@ -215,14 +215,14 @@ export default function NewsPage() {
             body: JSON.stringify({
               // Create source-specific query for more relevant results
               query: `${source.name} latest updates`,
-              numResults: 5,                       // Fewer results per source to maintain diversity
-              
+              numResults: 5, // Fewer results per source to maintain diversity
+
               // Extract domain from website sources for targeted searching
               // This ensures results come from the specified source domain
               includeDomains: (() => {
                 // Only apply domain filtering for website sources
                 if (source.type !== "website") return undefined;
-                
+
                 try {
                   // Parse hostname from source URL for domain filtering
                   const host = new URL(source.url).hostname;
@@ -240,17 +240,17 @@ export default function NewsPage() {
           // Add articles to results array with source attribution
           if (customResponse.ok) {
             const customNews = await customResponse.json();
-            
+
             // Transform custom source results to standardized format
             // Use the custom source name for proper attribution
             for (const item of customNews.results || []) {
               results.push({
-                title: item.title,               // Article headline
-                url: item.url,                   // Direct link to full article
+                title: item.title, // Article headline
+                url: item.url, // Direct link to full article
                 publishedDate: item.publishedDate, // Publication timestamp
-                author: item.author,             // Author information
-                summary: item.summary,           // Article summary
-                source: source.name,             // Use custom source name for attribution
+                author: item.author, // Author information
+                summary: item.summary, // Article summary
+                source: source.name, // Use custom source name for attribution
               });
             }
           }
@@ -263,21 +263,21 @@ export default function NewsPage() {
 
       /**
        * Safely converts date strings to timestamps for sorting.
-       * 
+       *
        * This helper function handles inconsistent date formats from different
        * news sources. It returns null for invalid dates to enable graceful
        * sorting where articles with invalid dates appear at the bottom.
-       * 
+       *
        * @param {string} [date] - Optional date string to convert
        * @returns {number | null} - Timestamp in milliseconds or null if invalid
        */
       const getTimestamp = (date?: string) => {
         // Return null immediately if no date provided
         if (!date) return null;
-        
+
         // Attempt to parse date string to timestamp
         const ts = new Date(date).getTime();
-        
+
         // Return null for invalid dates (NaN), valid timestamp otherwise
         return isNaN(ts) ? null : ts;
       };
@@ -292,13 +292,13 @@ export default function NewsPage() {
 
           // Both articles have invalid dates - maintain original order
           if (tsA === null && tsB === null) return 0;
-          
+
           // Article A has invalid date - move to bottom
           if (tsA === null) return 1;
-          
+
           // Article B has invalid date - move to bottom
           if (tsB === null) return -1;
-          
+
           // Both articles have valid dates - sort newest first
           return tsB - tsA;
         })
@@ -323,7 +323,7 @@ export default function NewsPage() {
   // This ensures fresh content when users update their news source preferences
   useEffect(() => {
     loadNews();
-  }, [member?.newsPreferences]);                    // Re-run when news preferences change
+  }, [member?.newsPreferences]); // Re-run when news preferences change
 
   // Render skeleton loading state during initial data fetch
   // This provides immediate visual feedback while API requests are in progress
@@ -335,7 +335,7 @@ export default function NewsPage() {
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold">AI News Feed</h1>
           </div>
-          
+
           {/* Grid of skeleton cards to simulate actual news layout */}
           <div className="grid gap-6">
             {[...Array(6)].map((_, i) => (
@@ -367,22 +367,22 @@ export default function NewsPage() {
         {/* Header section with page title and action buttons */}
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold">AI News Feed</h1>
-          
+
           {/* Control buttons for refresh and preferences */}
           <div className="flex gap-2">
             {/* Refresh button with loading state and spinner animation */}
             <Button
               variant="outline"
               size="sm"
-              onClick={() => loadNews(true)}        // Trigger refresh with loading indicator
-              disabled={refreshing}                 // Prevent multiple simultaneous refreshes
+              onClick={() => loadNews(true)} // Trigger refresh with loading indicator
+              disabled={refreshing} // Prevent multiple simultaneous refreshes
             >
               <RefreshCw
                 className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
               />
               Refresh
             </Button>
-            
+
             {/* Preferences button for future news source customization */}
             <Button variant="outline" size="sm">
               <Settings className="w-4 h-4 mr-2" />
@@ -395,8 +395,6 @@ export default function NewsPage() {
         {/* Uses gap-6 for consistent spacing between article cards */}
         <div className="grid gap-6">
           {news.map((item, index) => (
-            {/* Render each news article using the NewsCard component */}
-            {/* Using index as key since articles may not have unique IDs */}
             <NewsCard key={index} item={item} />
           ))}
         </div>

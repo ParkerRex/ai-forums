@@ -59,6 +59,9 @@ test("getAuthenticatedMember creates member for new user", async () => {
   expect(member.joinedDate).toBeDefined(); // Should be set to current time
   expect(member.lastOnline).toBeDefined(); // Should be set to current time
   expect(member.updatedAt).toBeDefined(); // Should be set to current time
+  expect(member.tier).toBe('free'); // Added required payment tier
+  expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
+  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
 });
 
 /**
@@ -88,6 +91,9 @@ test("getAuthenticatedMember returns existing member and updates lastOnline", as
       slug: 'jane-smith',
       updatedAt: Date.now() - 86400000, // 1 day ago
       lastOnline: Date.now() - 86400000, // 1 day ago (stale)
+      tier: 'free', // Added required payment tier
+      subscriptionStatus: 'none', // Added required subscription status
+      stripeCustomerId: 'cus_test', // Dummy Stripe customer ID for tests
     });
   });
 
@@ -117,6 +123,9 @@ test("getAuthenticatedMember returns existing member and updates lastOnline", as
   // Verify activity timestamps were updated to reflect current login
   expect(member.lastOnline).toBeGreaterThanOrEqual(beforeTime); // Updated to current time
   expect(member.updatedAt).toBeGreaterThanOrEqual(beforeTime); // Updated to current time
+  expect(member.tier).toBe('free'); // Added required payment tier
+  expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
+  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
 });
 
 /**
@@ -146,6 +155,9 @@ test("getAuthenticatedMember patches legacy member with externalId", async () =>
       slug: 'bob-wilson',
       updatedAt: Date.now() - 86400000,
       lastOnline: Date.now() - 86400000,
+      tier: 'free', // Added required payment tier
+      subscriptionStatus: 'none', // Added required subscription status
+      stripeCustomerId: 'cus_test', // Dummy Stripe customer ID for tests
     });
   });
 
@@ -176,6 +188,9 @@ test("getAuthenticatedMember patches legacy member with externalId", async () =>
   // Verify activity timestamps were updated after migration
   expect(member.lastOnline).toBeGreaterThanOrEqual(beforeTime); // Updated
   expect(member.updatedAt).toBeGreaterThanOrEqual(beforeTime); // Updated
+  expect(member.tier).toBe('free'); // Added required payment tier
+  expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
+  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
 });
 
 /**
@@ -235,6 +250,9 @@ test("getAuthenticatedMember handles missing name gracefully", async () => {
   expect(member.email).toBe('minimal@example.com'); // From identity
   expect(member.externalId).toBe('clerk-user-minimal'); // From subject
   expect(member.slug).toBe('minimal'); // Derived from email prefix
+  expect(member.tier).toBe('free'); // Added required payment tier
+  expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
+  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
 });
 
 /**
@@ -269,6 +287,9 @@ test("ensureMember internal mutation returns member ID", async () => {
   expect(typeof member._id).toBe('string'); // Convex ID format
   expect(member.email).toBe('test@example.com'); // Correct email
   expect(member.externalId).toBe('clerk-user-test'); // Correct Clerk ID
+  expect(member.tier).toBe('free'); // Added required payment tier
+  expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
+  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
 });
 
 /**

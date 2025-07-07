@@ -60,6 +60,9 @@ test("editPost should create version history", async () => {
       slug: 'test-user',
       updatedAt: Date.now(),
       lastOnline: Date.now(),
+      tier: 'free',
+      subscriptionStatus: 'none',
+      stripeCustomerId: 'cus_test',
     });
   });
 
@@ -164,6 +167,9 @@ test("deletePost should soft delete posts", async () => {
       slug: 'test-user',
       updatedAt: Date.now(),
       lastOnline: Date.now(),
+      tier: 'free',
+      subscriptionStatus: 'none',
+      stripeCustomerId: 'cus_test',
     });
   });
 
@@ -247,6 +253,9 @@ test("getPostHistory should return versions with editor info", async () => {
       updatedAt: Date.now(),
       lastOnline: Date.now(),
       avatarUrl: 'https://example.com/avatar.jpg', // Avatar for display
+      tier: 'free',
+      subscriptionStatus: 'none',
+      stripeCustomerId: 'cus_test',
     });
   });
 
@@ -352,6 +361,9 @@ describe("Phase 4 - Backend Refactor", () => {
         slug: "test-author",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: 'free',
+        subscriptionStatus: 'none',
+        stripeCustomerId: 'cus_test',
       });
     });
 
@@ -427,6 +439,9 @@ describe("Phase 4 - Backend Refactor", () => {
         slug: "test-author",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: 'free',
+        subscriptionStatus: 'none',
+        stripeCustomerId: 'cus_test',
       });
     });
 
@@ -528,6 +543,9 @@ describe("Phase 4 - Backend Refactor", () => {
         slug: "test-author",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: 'free',
+        subscriptionStatus: 'none',
+        stripeCustomerId: 'cus_test',
       });
     });
 
@@ -541,6 +559,9 @@ describe("Phase 4 - Backend Refactor", () => {
         slug: "other-user",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: 'free',
+        subscriptionStatus: 'none',
+        stripeCustomerId: 'cus_test',
       });
     });
 
@@ -642,6 +663,9 @@ describe("Multi-attachment support", () => {
         slug: 'test-user',
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: 'free',
+        subscriptionStatus: 'none',
+        stripeCustomerId: 'cus_test',
       });
     });
 
@@ -745,6 +769,9 @@ describe("Multi-attachment support", () => {
         slug: 'test-user',
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: 'free',
+        subscriptionStatus: 'none',
+        stripeCustomerId: 'cus_test',
       });
     });
 
@@ -825,6 +852,9 @@ describe("Multi-attachment support", () => {
         slug: 'test-user',
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: 'free',
+        subscriptionStatus: 'none',
+        stripeCustomerId: 'cus_test',
       });
     });
 
@@ -925,6 +955,9 @@ describe("Multi-attachment support", () => {
         slug: 'test-user',
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: 'free',
+        subscriptionStatus: 'none',
+        stripeCustomerId: 'cus_test',
       });
     });
 

@@ -1,0 +1,56 @@
+import { headers } from "next/headers";
+import { NextResponse } from "next/server";
+import Stripe from "stripe";
+import { api } from "../../../../convex/_generated/api";
+import { ConvexHttpClient } from "convex/browser";
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+export async function POST(request: Request) {
+  const body = await request.text();
+  const headersList = await headers();
+  const signature = headersList.get("stripe-signature");
+
+  if (!signature) {
+    return NextResponse.json(
+      { error: "Missing signature" },
+      { status: 400 }
+    );
+  }
+
+  let event: Stripe.Event;
+
+  try {
+    event = stripe.webhooks.constructEvent(
+      body,
+      signature,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+  } catch (err) {
+    console.error("Webhook signature verification failed:", err);
+    return NextResponse.json(
+      { error: "Invalid signature" },
+      { status: 400 }
+    );
+  }
+
+  try {
+    // Process the event in Convex
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await convex.mutation((api as any)["stripe/webhooks"].processWebhookEvent, {
+      stripeEventId: event.id,
+      type: event.type,
+      data: event.data.object,
+    });
+
+    return NextResponse.json({ received: true });
+  } catch (error) {
+    console.error("Error processing webhook:", error);
+    return NextResponse.json(
+      { error: "Webhook processing failed" },
+      { status: 500 }
+    );
+  }
+}

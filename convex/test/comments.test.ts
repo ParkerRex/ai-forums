@@ -55,6 +55,9 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         slug: "test-commenter",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
         externalId: `user_${Date.now()}`, // Add externalId for Clerk authentication
       });
     });
@@ -141,6 +144,9 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         slug: "test-commenter",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
       });
     });
 
@@ -235,6 +241,9 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         slug: "test-author",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
         externalId: `user_${Date.now()}`, // Clerk integration
       });
     });
@@ -249,6 +258,9 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         slug: "other-user",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
         externalId: `user_other_${Date.now()}`, // Different Clerk ID
       });
     });
@@ -353,6 +365,9 @@ describe("Comments - Phase 4 Backend Refactor", () => {
         slug: "test-commenter",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free",
+        subscriptionStatus: "none",
+        stripeCustomerId: "cus_test",
         externalId: `user_${Date.now()}`, // Clerk authentication
       });
     });

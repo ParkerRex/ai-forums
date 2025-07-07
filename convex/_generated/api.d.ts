@@ -39,6 +39,10 @@ import type * as resources from "../resources.js";
 import type * as search from "../search.js";
 import type * as stats from "../stats.js";
 import type * as storage from "../storage.js";
+import type * as stripe_checkout from "../stripe/checkout.js";
+import type * as stripe_getSubscriptionInfo from "../stripe/getSubscriptionInfo.js";
+import type * as stripe_portal from "../stripe/portal.js";
+import type * as stripe_webhooks from "../stripe/webhooks.js";
 import type * as topics from "../topics.js";
 import type * as votes from "../votes.js";
 
@@ -77,6 +81,10 @@ declare const fullApi: ApiFromModules<{
   search: typeof search;
   stats: typeof stats;
   storage: typeof storage;
+  "stripe/checkout": typeof stripe_checkout;
+  "stripe/getSubscriptionInfo": typeof stripe_getSubscriptionInfo;
+  "stripe/portal": typeof stripe_portal;
+  "stripe/webhooks": typeof stripe_webhooks;
   topics: typeof topics;
   votes: typeof votes;
 }>;

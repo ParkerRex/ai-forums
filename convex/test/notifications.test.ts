@@ -26,7 +26,6 @@ import { convexTest } from "convex-test";
 import { expect, test, describe } from "vitest";
 import { api } from "../_generated/api";
 import schema from "../schema";
-import { Id } from "../_generated/dataModel";
 
 /**
  * Test suite for Notifications System
@@ -68,6 +67,9 @@ describe("Notifications System", () => {
           slug: "comment-author",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_author_${Date.now()}`, // Clerk authentication
         });
       });
@@ -82,6 +84,9 @@ describe("Notifications System", () => {
           slug: "mentioned-user", // This slug will be used in @mention
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_mentioned_${Date.now()}`,
         });
       });
@@ -123,7 +128,7 @@ describe("Notifications System", () => {
 
       // Create comment with mention using the authenticated API
       // This tests the complete mention detection and notification pipeline
-      const commentId = await t.withIdentity({ 
+      const _firstCommentId = await t.withIdentity({ 
         subject: `user_author_${authorId}`,
         email: "author@example.com"
       }).mutation(api.comments.createComment, {
@@ -144,7 +149,7 @@ describe("Notifications System", () => {
       expect(notifications).toHaveLength(1); // Single notification created
       expect(notifications[0].type).toBe("mention"); // Correct notification type
       expect(notifications[0].entityType).toBe("comment"); // Comment-based notification
-      expect(notifications[0].entityId).toBe(commentId); // Links to triggering comment
+      expect(notifications[0].entityId).toBe(_firstCommentId); // Links to triggering comment
       expect(notifications[0].actorId).toBe(authorId); // Author who created mention
       expect(notifications[0].message).toBe("Comment Author mentioned you in a comment");
       expect(notifications[0].read).toBe(false); // New notifications start unread
@@ -175,6 +180,9 @@ describe("Notifications System", () => {
           slug: "self-mentioner",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_self_${Date.now()}`,
         });
       });
@@ -270,6 +278,9 @@ describe("Notifications System", () => {
           slug: "original-author",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_original_${Date.now()}`,
         });
       });
@@ -284,6 +295,9 @@ describe("Notifications System", () => {
           slug: "reply-author",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_replier_${Date.now()}`,
         });
       });
@@ -324,7 +338,7 @@ describe("Notifications System", () => {
       });
 
       // Create original comment that will receive a reply
-      const originalCommentId = await t.withIdentity({ 
+      const _firstCommentId = await t.withIdentity({ 
         subject: `user_original_${originalAuthorId}`,
         email: "original@example.com"
       }).mutation(api.comments.createComment, {
@@ -333,13 +347,13 @@ describe("Notifications System", () => {
       });
 
       // Create reply comment targeting the original comment
-      const replyCommentId = await t.withIdentity({ 
+      const _secondCommentId = await t.withIdentity({ 
         subject: `user_replier_${replierId}`,
         email: "replier@example.com"
       }).mutation(api.comments.createComment, {
         content: "This is a reply to the original comment",
         postId,
-        parentCommentId: originalCommentId, // Creates parent-child relationship
+        parentCommentId: _firstCommentId, // Creates parent-child relationship
       });
 
       // Verify that notification was created for the original comment author
@@ -354,7 +368,7 @@ describe("Notifications System", () => {
       expect(notifications).toHaveLength(1); // One reply notification
       expect(notifications[0].type).toBe("reply"); // Reply notification type
       expect(notifications[0].entityType).toBe("comment"); // Comment-based
-      expect(notifications[0].entityId).toBe(replyCommentId); // Links to reply comment
+      expect(notifications[0].entityId).toBe(_secondCommentId); // Links to reply comment
       expect(notifications[0].actorId).toBe(replierId); // User who replied
       expect(notifications[0].message).toBe("Reply Author replied to your comment");
       expect(notifications[0].read).toBe(false); // Starts unread
@@ -385,6 +399,9 @@ describe("Notifications System", () => {
           slug: "self-replier",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_selfreplier_${Date.now()}`,
         });
       });
@@ -425,7 +442,7 @@ describe("Notifications System", () => {
       });
 
       // Create original comment by the user
-      const originalCommentId = await t.withIdentity({ 
+      const _firstCommentId = await t.withIdentity({ 
         subject: `user_selfreplier_${memberId}`,
         email: "selfreplier@example.com"
       }).mutation(api.comments.createComment, {
@@ -440,7 +457,7 @@ describe("Notifications System", () => {
       }).mutation(api.comments.createComment, {
         content: "This is a reply to my own comment",
         postId,
-        parentCommentId: originalCommentId, // Self-reply
+        parentCommentId: _firstCommentId, // Self-reply
       });
 
       // Verify that no notification was created (self-reply prevention)
@@ -489,6 +506,9 @@ describe("Notifications System", () => {
           slug: "post-author",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_postauthor_${Date.now()}`,
         });
       });
@@ -503,6 +523,9 @@ describe("Notifications System", () => {
           slug: "mentioned-in-post", // Slug for @mention targeting
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_mentionedpost_${Date.now()}`,
         });
       });
@@ -575,6 +598,9 @@ describe("Notifications System", () => {
           slug: "self-post-mentioner",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_selfpostmention_${Date.now()}`,
         });
       });
@@ -649,6 +675,9 @@ describe("Notifications System", () => {
           slug: "duplicate-tester",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_duplicate_${Date.now()}`,
         });
       });
@@ -663,6 +692,9 @@ describe("Notifications System", () => {
           slug: "mentioned-twice",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
+          tier: "free",
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_test",
           externalId: `user_mentionedtwice_${Date.now()}`,
         });
       });
@@ -703,7 +735,7 @@ describe("Notifications System", () => {
       });
 
       // Create first comment with mention
-      const firstCommentId = await t.withIdentity({
+      const _firstCommentId = await t.withIdentity({
         subject: `user_duplicate_${authorId}`,
         email: "duplicate@example.com"
       }).mutation(api.comments.createComment, {
@@ -713,7 +745,7 @@ describe("Notifications System", () => {
       });
 
       // Create second comment with same mention (tests deduplication logic)
-      const secondCommentId = await t.withIdentity({
+      const _secondCommentId = await t.withIdentity({
         subject: `user_duplicate_${authorId}`,
         email: "duplicate@example.com"
       }).mutation(api.comments.createComment, {

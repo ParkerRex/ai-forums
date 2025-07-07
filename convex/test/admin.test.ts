@@ -50,6 +50,9 @@ describe("Admin Dashboard", () => {
         slug: "regular-user",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free", // Added required payment tier
+        subscriptionStatus: "none", // Added required subscription status
+        stripeCustomerId: "cus_test", // Dummy Stripe customer ID for tests
         externalId: `user_regular_${Date.now()}`,
         role: "user", // Explicitly set as regular user role
       });
@@ -94,6 +97,9 @@ describe("Admin Dashboard", () => {
         slug: "admin-user",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
+        tier: "free", // Added required payment tier
+        subscriptionStatus: "none", // Added required subscription status
+        stripeCustomerId: "cus_test", // Dummy Stripe customer ID for tests
         externalId: `user_admin_${Date.now()}`,
         role: "admin", // Critical: admin role for privileged access
       });
