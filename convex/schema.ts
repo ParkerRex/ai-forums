@@ -122,6 +122,37 @@ const members = defineTable({
   commentCount: v.optional(v.number()),     // Total comments made by member
   netVoteCount: v.optional(v.number()),     // Net votes received on all content
   
+  // Payment tier tracking
+  tier: v.union(
+    v.literal("free"),
+    v.literal("scholarship"),
+    v.literal("founding_member"),
+    v.literal("early_bird"),
+    v.literal("member")
+  ),
+  
+  // Subscription management
+  subscriptionStatus: v.union(
+    v.literal("active"),
+    v.literal("cancelled"),
+    v.literal("past_due"),
+    v.literal("expired"),
+    v.literal("none")          // For free tier or no subscription
+  ),
+  subscriptionEndDate: v.optional(v.number()), // Unix timestamp
+  billingInterval: v.optional(v.union(
+    v.literal("monthly"),
+    v.literal("yearly")
+  )),
+  
+  // Stripe integration
+  stripeCustomerId: v.string(),
+  stripeSubscriptionId: v.optional(v.string()),
+  
+  // Payment history tracking
+  lastPaymentDate: v.optional(v.number()),
+  amountCents: v.optional(v.number()),
+  
   // Access control and permissions
   role: v.optional(v.union(
     v.literal("user"),      // Regular member (default)
@@ -791,6 +822,98 @@ const events = defineTable({
   });
 
 /**
+ * Subscriptions table - Stripe subscription tracking and management
+ * 
+ * Tracks active and historical subscriptions for members with full Stripe integration.
+ * Maintains subscription lifecycle, billing intervals, and tier information.
+ * Enables subscription management, renewal tracking, and churn analysis.
+ */
+const subscriptions = defineTable({
+  memberId: v.id("members"),
+  stripeCustomerId: v.string(),
+  stripeSubscriptionId: v.string(),
+  stripePriceId: v.string(),
+  status: v.union(
+    v.literal("active"),
+    v.literal("cancelled"),
+    v.literal("past_due"),
+    v.literal("expired")
+  ),
+  currentPeriodEnd: v.number(),
+  cancelAtPeriodEnd: v.boolean(),
+  tier: v.union(
+    v.literal("founding_member"),
+    v.literal("early_bird"),
+    v.literal("member")
+  ),
+  billingInterval: v.union(
+    v.literal("monthly"),
+    v.literal("yearly")
+  ),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+})
+  .index("by_memberId", ["memberId"])
+  .index("by_stripeSubscriptionId", ["stripeSubscriptionId"])
+  .index("by_status", ["status"]);
+
+/**
+ * Payments table - Transaction history and payment records
+ * 
+ * Records all payment transactions including successful payments, refunds, and failures.
+ * Stores detailed payment information for financial reporting and customer service.
+ * Integrates with Stripe for payment processing and reconciliation.
+ */
+const payments = defineTable({
+  memberId: v.id("members"),
+  subscriptionId: v.optional(v.id("subscriptions")),
+  stripePaymentIntentId: v.string(),
+  stripeInvoiceId: v.optional(v.string()),
+  amount: v.number(), // in cents
+  currency: v.string(),
+  status: v.union(
+    v.literal("succeeded"),
+    v.literal("pending"),
+    v.literal("failed"),
+    v.literal("refunded"),
+    v.literal("partially_refunded")
+  ),
+  description: v.string(),
+  paymentMethod: v.object({
+    type: v.string(),
+    brand: v.optional(v.string()),
+    last4: v.string(),
+  }),
+  transactionFee: v.optional(v.number()),
+  netAmount: v.optional(v.number()),
+  failureReason: v.optional(v.string()),
+  refundedAmount: v.optional(v.number()),
+  createdAt: v.number(),
+})
+  .index("by_memberId", ["memberId"])
+  .index("by_stripePaymentIntentId", ["stripePaymentIntentId"])
+  .index("by_status", ["status"])
+  .index("by_createdAt", ["createdAt"]);
+
+/**
+ * Stripe Webhook Events table - Webhook processing and idempotency
+ * 
+ * Tracks Stripe webhook events to ensure idempotent processing and prevent duplicates.
+ * Records processing status and errors for debugging and monitoring.
+ * Essential for reliable webhook handling in distributed systems.
+ */
+const stripeWebhookEvents = defineTable({
+  stripeEventId: v.string(),
+  type: v.string(),
+  processed: v.boolean(),
+  error: v.optional(v.string()),
+  createdAt: v.number(),
+  processedAt: v.optional(v.number()),
+})
+  .index("by_stripeEventId", ["stripeEventId"])
+  .index("by_processed", ["processed"]);
+
+/**
  * Complete database schema export for the VAI community platform.
  * 
  * This schema defines a comprehensive social platform with:
@@ -820,4 +943,7 @@ export default defineSchema({
   pollVotes,       // Interactive poll participation
   commentReports,  // Content moderation system
   events,          // Community event management
+  subscriptions,    // Stripe subscription tracking
+  payments,         // Payment transaction history
+  stripeWebhookEvents, // Webhook event processing
 });

@@ -1,12 +1,16 @@
 Complete Payment System & Admin Member Management Plan
 =====================================================
 
-**CURRENT STATUS**: Phase 0 ✅ Complete | Ready to begin Phase 1
+**CURRENT STATUS**: Phase 1 ✅ Complete | Ready to begin Phase 2
+
+**COMPLETED**:
+- Phase 0: Data preparation and validation
+- Phase 1: Database schema updates and migration
 
 **NEXT STEPS**:
-1. Update schema.ts with payment fields and new tables
-2. Create Todd and Jonathan's member accounts in Convex (after schema update)
-3. Create and run migration to populate billing data
+1. Set up Stripe account and create price IDs for all tiers
+2. Implement Stripe checkout and webhook integration
+3. Create access control and paywall components
 
 Overview
 --------
@@ -53,14 +57,17 @@ Summary of Changes
 5. Missing Convex IDs for 2 new members: Todd Bonnewell, Jonathan Stokkland
 
 
-Phase 1 – Database Schema Updates
-=================================
+Phase 1 – Database Schema Updates ✅ COMPLETE
+==============================================
+
+**Completed on**: July 7, 2025
 
 Affected Files
 --------------
-* ``convex/schema.ts`` – add payment fields to members table, create 3 new tables
-* ``convex/migrations/setupPaymentSystem.ts`` – **new** migration to populate billing data
-* ``convex/members.ts`` – **new** mutations to create Todd and Jonathan's accounts
+* ``convex/schema.ts`` – ✅ added payment fields to members table, created 3 new tables
+* ``convex/migrations/setupPaymentSystem.ts`` – ✅ created migration to populate billing data
+* ``convex/auth.ts`` – ✅ updated to handle new member creation with payment fields
+* ``package.json`` – ✅ added typecheck script for future use
 
 Summary of Changes
 ------------------
@@ -263,6 +270,14 @@ Summary of Changes
       payments,         // Add this
       stripeWebhookEvents, // Add this
     });
+
+**Implementation Notes**:
+
+1. **Schema Design Decision**: Made payment fields required (tier, subscriptionStatus, stripeCustomerId) to ensure all members are ready for future purchases
+2. **Migration Strategy**: Temporarily made fields optional during deployment, ran migration, then made them required again
+3. **Stripe Customer IDs**: Generated temporary IDs in format `cus_temp_{email}_{timestamp}` - will be replaced with real Stripe IDs in Phase 2
+4. **New Members**: Todd Bonnewell and Jonathan Stokkland successfully created with early_bird tier
+5. **Data Verification**: All 112 members now have payment fields populated correctly
 
 
 Phase 2 – Stripe Integration
@@ -610,17 +625,17 @@ Phase 0 – Data Preparation ✅
 ☑ Transform data to members-billing-final.json
 ☑ Validate all member tiers and statuses
 
-Phase 1 – Database Schema & Migration
--------------------------------------
-☐ Add payment fields to members table (tier, subscriptionStatus, etc.)
-☐ Create subscriptions table with Stripe tracking
-☐ Create payments table for transaction history
-☐ Create stripeWebhookEvents table for idempotency
-☐ Update schema export to include new tables
-☐ Create setupPaymentSystem.ts migration script
-☐ Create Convex accounts for Todd Bonnewell and Jonathan Stokkland (in migration)
-☐ Run migration to populate billing data for all 112 members
-☐ Verify all members have correct tiers assigned
+Phase 1 – Database Schema & Migration ✅
+-----------------------------------------
+☑ Add payment fields to members table (tier, subscriptionStatus, etc.)
+☑ Create subscriptions table with Stripe tracking
+☑ Create payments table for transaction history
+☑ Create stripeWebhookEvents table for idempotency
+☑ Update schema export to include new tables
+☑ Create setupPaymentSystem.ts migration script
+☑ Create Convex accounts for Todd Bonnewell and Jonathan Stokkland (in migration)
+☑ Run migration to populate billing data for all 112 members
+☑ Verify all members have correct tiers assigned
 
 Phase 2 – Stripe Integration
 ----------------------------
@@ -633,6 +648,7 @@ Phase 2 – Stripe Integration
 ☐ Add customer portal integration in convex/stripe/portal.ts
 ☐ Handle subscription lifecycle events
 ☐ Process payment success/failure webhooks
+☐ Create subscription info query in convex/stripe/getSubscriptionInfo.ts and expose it in the member profile UI
 
 Phase 3 – Access Control & Paywall
 -----------------------------------
@@ -661,3 +677,27 @@ Phase 5 – Admin Member Management
 ☐ Build payment history table
 ☐ Add payment details modal with refund capability
 ☐ Display subscription management actions
+
+Phase 6 – Admin Components
+--------------------------
+☐ Create components/admin/member-card.tsx
+☐ Create components/admin/member-status-filter.tsx
+☐ Create components/admin/member-details-modal.tsx
+☐ Create components/admin/payment-history.tsx
+☐ Create components/admin/payment-details-modal.tsx
+☐ Integrate new components into /admin/members page
+☐ Add Payments link to admin layout navigation
+☐ Write unit tests for component rendering and interactions
+
+Phase 7 – Testing & Monitoring
+------------------------------
+☐ Write schema migration unit tests
+☐ Write canViewFullContent helper tests
+☐ Write payment calculation unit tests
+☐ Integration tests for Stripe webhook processing
+☐ Integration tests for checkout flow
+☐ Integration tests for payment history tracking
+☐ E2E tests: signup → payment, admin member management, paywall interaction
+☐ Implement webhook monitoring and alerting
+☐ Implement payment metrics collection dashboards
+☐ Add error tracking for Stripe API failures and database consistency

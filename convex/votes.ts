@@ -1,9 +1,51 @@
+/**
+ * @fileoverview Votes Module - Content voting and ranking system
+ * 
+ * This module manages the voting system that powers content ranking and community
+ * engagement metrics. It handles upvotes and downvotes on posts, comments, and
+ * resources with vote switching, deduplication, and real-time score updates.
+ * 
+ * Key features:
+ * - Upvote/downvote functionality for all content types
+ * - Vote switching (change from upvote to downvote and vice versa)
+ * - One vote per user per content item enforcement
+ * - Real-time score calculation and caching
+ * - Vote history tracking and analytics
+ * - Integration with ranking algorithms
+ * - Performance optimization for high-traffic content
+ * 
+ * The system ensures data integrity while providing fast vote lookups
+ * and real-time updates for community-driven content curation.
+ * 
+ * @author VAI Development Team
+ * @version 1.0.0
+ */
+
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
 
-// Check if user has voted on a target (post or comment)
+/**
+ * Retrieves the current user's vote on a specific piece of content.
+ * 
+ * Returns the user's vote type (upvote/downvote) for the specified content,
+ * or null if not voted. Used to show vote state in UI components and
+ * enable vote switching functionality.
+ * 
+ * @param targetId - ID of the content being checked
+ * @param targetType - Type of content (post, comment, or resource)
+ * @returns Vote type ("upvote" or "downvote") or null if not voted
+ * 
+ * @example
+ * ```typescript
+ * const userVote = await getUserVote({
+ *   targetId: "post123",
+ *   targetType: "post"
+ * });
+ * // Returns: "upvote", "downvote", or null
+ * ```
+ */
 export const getUserVote = query({
   args: {
     targetId: v.string(),
@@ -56,7 +98,26 @@ export const getVoteCounts = query({
   },
 });
 
-// Vote on a post
+/**
+ * Casts or removes a vote on a post with real-time score updates.
+ * 
+ * Handles upvoting and vote removal with automatic score recalculation.
+ * Prevents duplicate votes and manages vote switching. Updates both the
+ * votes table and the post's cached vote counts for performance.
+ * 
+ * @param postId - ID of the post to vote on
+ * @param voteType - "upvote" to vote positively, "remove" to remove vote
+ * @returns Success status and updated vote counts
+ * 
+ * @example
+ * ```typescript
+ * await voteOnPost({
+ *   postId: "post123",
+ *   voteType: "upvote"
+ * });
+ * // Post score increases and UI updates reflect new state
+ * ```
+ */
 export const voteOnPost = mutation({
   args: {
     postId: v.id("posts"),

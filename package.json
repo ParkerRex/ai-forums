@@ -11,6 +11,7 @@
     "start": "next start",
     "lint": "next lint",
     "lint:theme": "tsx scripts/audit-theme.ts",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:visual": "playwright test",
     "export:members": "tsx scripts/export-members.ts",

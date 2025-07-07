@@ -1,3 +1,27 @@
+/**
+ * @fileoverview Notifications Module - Real-time user engagement and alert system
+ * 
+ * This module manages the notification system that keeps users engaged and informed
+ * about community activity. It handles mentions, replies, votes, reports, and other
+ * social interactions with intelligent deduplication and delivery optimization.
+ * 
+ * Key features:
+ * - Real-time notification delivery
+ * - Intelligent deduplication to prevent spam
+ * - Multiple notification types (mentions, replies, votes, etc.)
+ * - Read/unread state management
+ * - Batch operations for performance
+ * - Self-notification suppression
+ * - Notification cleanup and archival
+ * - Integration with all social features
+ * 
+ * The system is designed for high throughput and provides the foundation
+ * for building notification centers and real-time engagement features.
+ * 
+ * @author VAI Development Team
+ * @version 1.0.0
+ */
+
 import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
@@ -5,8 +29,33 @@ import { getAuthenticatedMember } from "./auth";
 import type { MutationCtx } from "./_generated/server";
 
 /**
- * Internal helper function to create notifications from other modules.
- * This function handles deduplication and self-mention suppression.
+ * Creates a new notification with intelligent deduplication and validation.
+ * 
+ * This internal helper is called by other modules (posts, comments, votes) to
+ * create notifications. It handles deduplication to prevent spam, suppresses
+ * self-notifications, and manages the notification lifecycle.
+ * 
+ * @param ctx - Mutation context for database operations
+ * @param args - Notification parameters
+ * @param args.recipientId - Member receiving the notification
+ * @param args.type - Type of notification (mention, reply, upvote, etc.)
+ * @param args.entityType - Type of entity (post or comment)
+ * @param args.entityId - ID of the related entity
+ * @param args.actorId - Member who triggered the notification
+ * @param args.message - Human-readable notification message
+ * @returns Notification ID if created, null if suppressed
+ * 
+ * @example
+ * ```typescript
+ * const notificationId = await insertNotification(ctx, {
+ *   recipientId: "user123",
+ *   type: "mention",
+ *   entityType: "post",
+ *   entityId: "post456",
+ *   actorId: "user789",
+ *   message: "John mentioned you in a post"
+ * });
+ * ```
  */
 export async function insertNotification(
   ctx: MutationCtx,
@@ -61,6 +110,22 @@ export async function insertNotification(
   });
 }
 
+/**
+ * Retrieves paginated notifications for the current authenticated user.
+ * 
+ * Returns notifications sorted by creation time (newest first) with complete
+ * context including actor information and related content references.
+ * Used for building notification centers and activity feeds.
+ * 
+ * @param limit - Maximum number of notifications to return (default: 50)
+ * @returns Array of enriched notification objects with actor details
+ * 
+ * @example
+ * ```typescript
+ * const notifications = await getNotifications({ limit: 20 });
+ * // Returns notifications with actor names and content context
+ * ```
+ */
 export const getNotifications = query({
   args: {
     limit: v.optional(v.number()),

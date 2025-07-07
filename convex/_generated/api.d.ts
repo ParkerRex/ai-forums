@@ -29,6 +29,7 @@ import type * as migrations_add_member_slug from "../migrations/add_member_slug.
 import type * as migrations_add_post_media_fields from "../migrations/add_post_media_fields.js";
 import type * as migrations_fix_member_status from "../migrations/fix_member_status.js";
 import type * as migrations_migrate_post_attachments from "../migrations/migrate_post_attachments.js";
+import type * as migrations_setupPaymentSystem from "../migrations/setupPaymentSystem.js";
 import type * as news from "../news.js";
 import type * as notifications from "../notifications.js";
 import type * as polls from "../polls.js";
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/add_post_media_fields": typeof migrations_add_post_media_fields;
   "migrations/fix_member_status": typeof migrations_fix_member_status;
   "migrations/migrate_post_attachments": typeof migrations_migrate_post_attachments;
+  "migrations/setupPaymentSystem": typeof migrations_setupPaymentSystem;
   news: typeof news;
   notifications: typeof notifications;
   polls: typeof polls;
