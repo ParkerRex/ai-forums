@@ -1,16 +1,17 @@
 Complete Payment System & Admin Member Management Plan
 =====================================================
 
-**CURRENT STATUS**: Phase 2 ✅ Complete | Phase 3 ⏳ In Progress
+**CURRENT STATUS**: Phase 3 ✅ Complete | Phase 4 🚀 Next Up
 
 **COMPLETED**:
 - Phase 0: Data preparation and validation
-- Phase 1: Database schema updates and migration
+- Phase 1: Database schema updates and migration  
 - Phase 2: Stripe integration and webhook setup
+- Phase 3: Access control and paywall implementation
 
 **NEXT STEPS**:
-1. Complete access control & paywall implementation (Phase 3)
-2. Finalize membership CTA modal and in-content paywalls (Phase 4)
+1. Finalize membership CTA modal with tier selection (Phase 4)
+2. Display subscription status in member profile (Phase 4)
 3. Begin admin member management UI (Phase 5)
 4. Expand automated tests & monitoring (Phase 7)
 
@@ -665,15 +666,15 @@ Phase 2 – Stripe Integration ✅ COMPLETE
 ☑ Implement tier-specific checkout flows
 ☑ Create subscription info query with renewal calculations
 
-Phase 3 – Access Control & Paywall
------------------------------------
-☐ Create canViewFullContent helper in convex/helpers/access.ts
-☐ Update post queries to check member tier
-☐ Implement paywall logic for free tier members
-☐ Restrict guarded content on/after due date for unpaid members (uses getSubscriptionInfo)
-☐ Surface JoinVaiProModal when content is restricted to prompt upgrade
-☐ Create paywall component with upgrade CTA
-☐ Test content access for each tier
+Phase 3 – Access Control & Paywall ✅ COMPLETE
+-----------------------------------------------
+☑ Create canViewFullContent helper in convex/helpers/access.ts
+☑ Update post queries to check member tier  
+☑ Implement paywall logic for free tier members (50 char preview)
+☑ Restrict guarded content on/after due date for unpaid members
+☑ Surface JoinVaiProModal when content is restricted to prompt upgrade
+☑ Create paywall component with upgrade CTA
+☑ Test content access for each tier
 
 Phase 4 – UI Components
 -----------------------
@@ -681,7 +682,7 @@ Phase 4 – UI Components
 ☑ Add monthly/yearly billing toggle (PricingPage)
 ☐ Display subscription status in member profile
 ☑ Update pricing/page.tsx with current tier pricing and “Activate Pro” CTA
-☐ Integrate ReactivateBannerTop and ReactivateBannerInline personalized with member name
+☑ Integrate ReactivateBannerInline personalized with member name and tier status
 ☑ Wire “Activate Pro” CTA to checkout mutation (member tier Payment Link)
 ☐ Create pricing comparison table
 ☑ Implement Stripe checkout flow
@@ -833,10 +834,38 @@ Summary of Phase 2 Accomplishments
 - Robust handling of edge cases (cancellations, expirations)
 - Clean separation between tiers with future flexibility
 
+Summary of Phase 3 Accomplishments
+===================================
+
+1. **Access Control Infrastructure**:
+   - Created `canViewFullContent` helper that validates member subscription status
+   - Handles all tier types including scholarship members
+   - Supports grace period for cancelled subscriptions until end date
+   - Returns false for expired, past_due, or free tier members
+
+2. **Post Query Updates**:
+   - Modified `getPostById` and `getPostBySlug` to check member access
+   - Truncates content to 50 characters for non-subscribers
+   - Adds `isPaywalled` and `fullContentRequiresTier` flags to response
+   - Uses `getAuthenticatedMemberOrNull` for optional authentication
+
+3. **Paywall Component**:
+   - Professional paywall UI with content preview and gradient fade
+   - Dynamic messaging based on tier requirements
+   - Integrated sign-in flow for unauthenticated users
+   - Launches JoinVaiProModal for subscription upgrade
+   - Responsive design with clear call-to-action
+
+4. **Integration**:
+   - Updated PostDetail component to conditionally render paywall
+   - Added paywall properties to Post interface
+   - Seamless integration with existing post rendering logic
+   - All TypeScript types properly defined and validated
+
 Open Questions
 --------------
 
-* What preview length should paywalled posts expose (current hard-coded 200 chars)?
+* ✅ Preview length for paywalled posts: 50 characters (updated from 200)
 * Should members with `past_due` status be fully paywalled or receive a grace period?
 * Confirm placement/usage of **ReactivateBannerInline** component.
 * Do scholarship members need distinct badge/messaging inside paywalls?

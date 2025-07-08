@@ -171,4 +171,20 @@ export const current = query({
   handler: async (ctx) => {
     return await getAuthenticatedMember(ctx);
   },
-}); 
+});
+
+/**
+ * Helper function to get the authenticated member or null from the current context.
+ * Unlike getAuthenticatedMember, this function returns null instead of throwing
+ * when no identity is found. Useful for optional authentication scenarios.
+ * 
+ * @param ctx - The Convex context with auth and database access
+ * @returns The authenticated member document or null if not authenticated
+ */
+export async function getAuthenticatedMemberOrNull(ctx: QueryCtx | MutationCtx) {
+  try {
+    return await getAuthenticatedMember(ctx);
+  } catch {
+    return null;
+  }
+} 

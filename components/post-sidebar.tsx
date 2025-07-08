@@ -17,8 +17,8 @@ export default function PostSidebar() {
 
       {/* About VAI Card */}
       <div className="bg-card border rounded-lg p-4">
-        <h3 className="text-sm font-medium mb-3">About VAI</h3>
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <h3 className="text-sm font-medium mb-3 select-none">About VAI</h3>
+        <p className="text-xs text-muted-foreground leading-relaxed select-none">
           A community platform for AI professionals to share workflows, prompts, insights, and connect with like-minded practitioners.
         </p>
       </div>

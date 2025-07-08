@@ -1,88 +1,169 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 
 /**
- * ReactivateBanner component displays a banner prompting users to reactivate their account.
- * This banner appears when a user's subscription has been cancelled or expired and they
- * need to take action to restore their access to premium content.
- *
- * The banner includes:
- * - A warning message about account status
- * - A call-to-action button to reactivate
- * - A dismiss button to hide the banner temporarily
- *
- * @returns JSX.Element - The reactivate banner component
+ * ReactivateBannerInline component displays a subtle banner prompting users to reactivate their account.
+ * This banner appears when a user's subscription has been cancelled, expired, or they're on the free tier.
+ * 
+ * The banner is positioned:
+ * - Above posts on the home page
+ * - Above post details on the post detail page
+ * 
+ * Features:
+ * - Dynamically renders based on user's tier
+ * - Shows only if the user isn't paying
+ * - Displays the user's name when available
+ * - Subtle, beautiful styling inspired by the design mockup
+ * 
+ * @returns JSX.Element | null - The reactivate banner component or null if not needed
  */
-export function ReactivateBanner() {
-  // State to control banner visibility - allows users to dismiss the banner
-  // This could be enhanced to persist dismissal state in localStorage or user preferences
-  const [isVisible, setIsVisible] = useState(true);
+export function ReactivateBannerInline() {
+  const router = useRouter();
+  const currentMember = useQuery(api.auth.current);
+  const createCheckoutSession = useMutation(api.stripe.checkout.createCheckoutSession);
+  const [isCreatingSession, setIsCreatingSession] = useState(false);
+  
+  // Track if banner has been dismissed in this session
+  const [isDismissed, setIsDismissed] = useState(false);
+  
+  // Check if banner was dismissed in localStorage
+  useEffect(() => {
+    const dismissedUntil = localStorage.getItem('reactivateBannerDismissedUntil');
+    if (dismissedUntil && new Date(dismissedUntil) > new Date()) {
+      setIsDismissed(true);
+    }
+  }, []);
 
-  /**
-   * Handles the reactivation process when user clicks the "Reactivate Account" button.
-   * This should redirect to the billing portal or checkout flow to restore subscription.
-   * Currently placeholder - needs integration with Stripe customer portal or checkout.
-   */
-  const handleReactivate = () => {
-    // TODO: Integrate with Stripe customer portal or checkout flow
-    // This should redirect to billing management or subscription renewal
-    console.log("Redirecting to reactivation flow...");
+  // Check if member has full access (client-side version of canViewFullContent)
+  const hasFullAccess = () => {
+    if (!currentMember) return false;
+    
+    // Check subscription status first
+    if (currentMember.subscriptionStatus !== "active") {
+      // If subscription is not active, check if it's cancelled but still within the period
+      if (currentMember.subscriptionStatus === "cancelled" && currentMember.subscriptionEndDate) {
+        const now = Date.now();
+        return currentMember.subscriptionEndDate > now;
+      }
+      return false;
+    }
+    
+    // Check tier - all paid tiers and scholarship have full access
+    const fullAccessTiers = ["scholarship", "founding_member", "early_bird", "member"];
+    return currentMember.tier ? fullAccessTiers.includes(currentMember.tier) : false;
   };
 
-  /**
-   * Handles dismissing the banner when user clicks the X button.
-   * Sets visibility to false to hide the banner from view.
-   * In production, this might also track dismissal analytics or set user preferences.
-   */
-  const handleDismiss = () => {
-    setIsVisible(false);
-  };
-
-  // Don't render anything if banner has been dismissed
-  // This prevents the component from taking up space in the DOM
-  if (!isVisible) {
+  // Don't show banner if:
+  // 1. No member data yet
+  // 2. Member has full access (paying member)
+  // 3. Banner has been dismissed
+  if (!currentMember || hasFullAccess() || isDismissed) {
     return null;
   }
 
+  /**
+   * Handles the reactivation process when user clicks the "Reactivate Pro" link.
+   * Creates a Stripe checkout session and redirects to the payment flow.
+   */
+  const handleReactivate = async () => {
+    try {
+      setIsCreatingSession(true);
+      
+      // Determine the appropriate price ID based on previous tier or default to member tier
+      const priceId = process.env.NEXT_PUBLIC_STRIPE_MEMBER_MONTHLY_PRICE_ID!;
+      
+      const result = await createCheckoutSession({
+        priceId,
+        tier: "member",
+        billingInterval: "monthly",
+      });
+      
+      if (result.checkoutUrl) {
+        router.push(result.checkoutUrl);
+      }
+    } catch (error) {
+      console.error("Failed to create checkout session:", error);
+    } finally {
+      setIsCreatingSession(false);
+    }
+  };
+
+  /**
+   * Handles dismissing the banner for 24 hours
+   */
+  const handleDismiss = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    localStorage.setItem('reactivateBannerDismissedUntil', tomorrow.toISOString());
+    setIsDismissed(true);
+  };
+
+  // Get personalized message based on member status
+  const getMessage = () => {
+    const firstName = currentMember.firstName || "there";
+    
+    if (currentMember.tier === "free") {
+      return `Hey ${firstName}! Upgrade for full access to Shop and 1,000 other apps`;
+    } else if (currentMember.subscriptionStatus === "cancelled") {
+      return `Welcome back ${firstName}! Your Pro access has expired`;
+    } else if (currentMember.subscriptionStatus === "past_due") {
+      return `${firstName}, please update your payment method to restore Pro access`;
+    }
+    
+    return "Upgrade for full access to Shop and 1,000 other apps";
+  };
+
   return (
-    <div className="flex items-center justify-between gap-8 rounded-12 p-12 light:bg-background-tertiary dark:bg-background-tertiary">
-      {/* Main content container with message and CTA button */}
-      {/* Uses flex layout to align message and button horizontally */}
-      <div className="flex items-center gap-4">
-        {/* Warning message text explaining the account status */}
-        {/* Uses semantic text styling for accessibility and consistency */}
-        <p className="text-sm font-medium text-foreground">
-          Your account has been deactivated. Reactivate to continue accessing
-          premium content.
-        </p>
-
-        {/* Primary call-to-action button for reactivation */}
-        {/* Uses the design system's Button component for consistency */}
-        <Button
-          onClick={handleReactivate}
-          size="sm"
-          className="whitespace-nowrap"
-        >
-          Reactivate Account
-        </Button>
+    <div className="relative w-full bg-muted/30 border-b">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between py-3">
+          {/* Left side: Badge and message */}
+          <div className="flex items-center gap-3">
+            <Badge variant="secondary" className="bg-foreground text-background font-medium">
+              PRO
+            </Badge>
+            <p className="text-sm text-muted-foreground">
+              {getMessage()} —{" "}
+              <button
+                onClick={handleReactivate}
+                disabled={isCreatingSession}
+                className="font-medium text-foreground underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCreatingSession ? "Loading..." : "Reactivate Pro"}
+              </button>
+            </p>
+          </div>
+          
+          {/* Right side: Dismiss button */}
+          <button
+            onClick={handleDismiss}
+            className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            aria-label="Dismiss banner for 24 hours"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-3.5 w-3.5"
+            >
+              <path
+                d="M13 1L1 13M1 1L13 13"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+        </div>
       </div>
-
-      {/* Dismiss button positioned on the right side */}
-      {/* Allows users to temporarily hide the banner if they're not ready to act */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={handleDismiss}
-        className="h-6 w-6 p-0 hover:bg-background-secondary"
-        aria-label="Dismiss banner"
-      >
-        {/* X icon for closing/dismissing the banner */}
-        {/* Uses lucide-react icon for consistency with design system */}
-        <X className="h-4 w-4" />
-      </Button>
     </div>
   );
 }

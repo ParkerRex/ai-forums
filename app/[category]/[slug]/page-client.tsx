@@ -24,6 +24,7 @@ import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { PostEditModal } from "@/components/post-edit-modal";
 import { PostDeleteModal } from "@/components/post-delete-modal";
 import { PostHistoryModal } from "@/components/post-history-modal";
+import { ReactivateBannerInline } from "@/components/reactivate-banner-inline";
 import { Button } from "@/components/ui/button";
 import { Lock, Eye, MessageSquare } from "lucide-react";
 import React from "react";
@@ -190,7 +191,9 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+    <>
+      <ReactivateBannerInline />
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       {/* Authenticated User Experience - Full access to posts and interactions */}
       <Authenticated>
         {/* Full post detail with all interactive features */}
@@ -245,7 +248,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 </span>
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-4">
+            <h1 className="text-3xl font-bold mb-4">
               {post.title}
             </h1>
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -316,6 +319,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
           </div>
         </div>
       </Unauthenticated>
-    </div>
+      </div>
+    </>
   );
 }

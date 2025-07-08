@@ -37,6 +37,7 @@ import { YouTubeEmbed } from "@/components/youtube-embed";
 import { PollDisplay } from "@/components/poll-display";
 import { AttachmentGrid } from "@/components/attachment-grid";
 import { toast } from "sonner";
+import { Paywall } from "@/components/paywall";
 
 interface Post {
   _id: Id<"posts">;
@@ -71,6 +72,8 @@ interface Post {
   }>;
   pollEndsAt?: number;
   totalPollVotes?: number;
+  isPaywalled?: boolean;
+  fullContentRequiresTier?: string;
   member?: {
     _id: Id<"members">;
     firstName: string;
@@ -328,7 +331,7 @@ export default function PostDetail({
             </Link>
           </div>
 
-          <h1 className="text-2xl font-bold text-foreground mb-6">
+          <h1 className="text-2xl font-bold mb-6">
             {post.title}
           </h1>
 
@@ -443,9 +446,16 @@ export default function PostDetail({
             </div>
           )}
 
-          {/* Rich Text Content */}
+          {/* Rich Text Content or Paywall */}
           <div className="mb-6" data-testid="post-content">
-            <RenderTipTapContent content={post.content} />
+            {post.isPaywalled ? (
+              <Paywall 
+                previewContent={post.content}
+                tier={post.fullContentRequiresTier}
+              />
+            ) : (
+              <RenderTipTapContent content={post.content} />
+            )}
           </div>
 
           {/* Additional Attachments Grid */}

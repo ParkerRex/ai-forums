@@ -79,23 +79,23 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
   const proFeatures = [
     {
       icon: <Zap className="h-5 w-5" />,
-      title: "Lightning Fast AI",
-      description: "Priority processing with 10x faster response times",
+      title: "Full Community Access",
+      description: "Unlimited access to all posts, discussions, and resources",
     },
     {
       icon: <Sparkles className="h-5 w-5" />,
-      title: "Advanced AI Models",
-      description: "Access to GPT-4, Claude 3, and other premium models",
+      title: "Exclusive Content",
+      description: "Member-only posts, tutorials, and insider updates",
     },
     {
       icon: <Crown className="h-5 w-5" />,
-      title: "Unlimited Generations",
-      description: "No daily limits on AI conversations and content creation",
+      title: "Direct Messaging",
+      description: "Connect directly with other VAI community members",
     },
     {
       icon: <Star className="h-5 w-5" />,
       title: "Priority Support",
-      description: "24/7 premium support with dedicated success manager",
+      description: "Get help faster with priority community support",
     },
   ];
 
@@ -106,39 +106,39 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
    */
   const featureComparison = [
     {
-      feature: "AI Conversations per day",
-      free: "10",
+      feature: "Post Access",
+      free: "Preview only",
+      pro: "Full content",
+      highlight: true,
+    },
+    {
+      feature: "Community Features",
+      free: "Read only",
+      pro: "Full participation",
+      highlight: true,
+    },
+    {
+      feature: "Direct Messages",
+      free: "Not available",
       pro: "Unlimited",
       highlight: true,
     },
     {
-      feature: "Response Speed",
+      feature: "Resource Downloads",
+      free: "Limited",
+      pro: "Unlimited",
+      highlight: false,
+    },
+    {
+      feature: "Event Access",
+      free: "Public only",
+      pro: "All events",
+      highlight: false,
+    },
+    {
+      feature: "Support Priority",
       free: "Standard",
-      pro: "10x Faster",
-      highlight: true,
-    },
-    {
-      feature: "AI Models",
-      free: "Basic GPT-3.5",
-      pro: "GPT-4, Claude 3, Gemini Pro",
-      highlight: true,
-    },
-    {
-      feature: "File Uploads",
-      free: "5 MB",
-      pro: "100 MB",
-      highlight: false,
-    },
-    {
-      feature: "Export Options",
-      free: "Basic",
-      pro: "PDF, Word, Markdown",
-      highlight: false,
-    },
-    {
-      feature: "Priority Support",
-      free: "Community",
-      pro: "24/7 Premium",
+      pro: "Priority",
       highlight: true,
     },
   ];
@@ -147,14 +147,14 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] p-0 overflow-hidden">
         {/* Modal header with premium branding and close button */}
-        {/* Uses gradient background to convey premium feel and exclusivity */}
-        <DialogHeader className="relative bg-gradient-to-r from-purple-600 via-blue-600 to-indigo-600 text-white p-6">
+        {/* Monochromatic design with subtle depth */}
+        <DialogHeader className="relative bg-muted/50 border-b p-6">
           {/* Close button positioned absolutely for better visual hierarchy */}
           <Button
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="absolute right-4 top-4 h-8 w-8 p-0 text-white/80 hover:text-white hover:bg-white/10"
+            className="absolute right-4 top-4 h-8 w-8 p-0 hover:bg-accent"
             aria-label="Close modal"
           >
             <X className="h-4 w-4" />
@@ -162,24 +162,25 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
 
           {/* Main header content with title and premium badge */}
           <div className="flex items-center gap-3">
-            {/* Crown icon to reinforce premium positioning */}
-            <Crown className="h-8 w-8 text-yellow-300" />
+            {/* Crown icon with subtle styling */}
+            <div className="p-2 rounded-lg bg-foreground/5">
+              <Crown className="h-6 w-6 text-foreground" />
+            </div>
 
-            {/* Modal title with premium styling */}
+            {/* Modal title with clean typography */}
             <DialogTitle className="text-2xl font-bold">
               Upgrade to VAI Pro
             </DialogTitle>
 
-            {/* Premium badge to highlight exclusivity */}
-            <Badge className="bg-yellow-400 text-yellow-900 hover:bg-yellow-400">
-              Premium
+            {/* Premium badge with monochromatic styling */}
+            <Badge variant="secondary" className="bg-foreground text-background">
+              PRO
             </Badge>
           </div>
 
           {/* Subtitle explaining the value proposition */}
-          <p className="text-white/90 mt-2">
-            Unlock the full power of AI with unlimited access and premium
-            features
+          <p className="text-muted-foreground mt-2">
+            Unlock the full power of AI with unlimited access and premium features
           </p>
         </DialogHeader>
 
@@ -200,8 +201,8 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
                     key={index}
                     className="flex items-start gap-3 p-4 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
                   >
-                    {/* Feature icon with premium purple styling */}
-                    <div className="flex-shrink-0 p-2 rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400">
+                    {/* Feature icon with monochromatic styling */}
+                    <div className="flex-shrink-0 p-2 rounded-lg bg-accent">
                       {feature.icon}
                     </div>
 
@@ -233,7 +234,7 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
                   <div className="p-3 font-medium text-sm text-center border-l">
                     Free
                   </div>
-                  <div className="p-3 font-medium text-sm text-center border-l bg-purple-50 dark:bg-purple-900/10">
+                  <div className="p-3 font-medium text-sm text-center border-l bg-muted">
                     VAI Pro
                   </div>
                 </div>
@@ -244,7 +245,7 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
                     key={index}
                     className={`grid grid-cols-3 border-t ${
                       item.highlight
-                        ? "bg-purple-50/50 dark:bg-purple-900/5"
+                        ? "bg-muted/30"
                         : ""
                     }`}
                   >
@@ -257,16 +258,16 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
                     <div className="p-3 text-sm text-center border-l text-muted-foreground">
                       <div className="flex items-center justify-center gap-1">
                         {item.highlight && (
-                          <X className="h-3 w-3 text-red-500" />
+                          <X className="h-3 w-3 text-muted-foreground" />
                         )}
                         {item.free}
                       </div>
                     </div>
 
                     {/* Pro tier value with check icon for benefits */}
-                    <div className="p-3 text-sm text-center border-l bg-purple-50/50 dark:bg-purple-900/10">
-                      <div className="flex items-center justify-center gap-1 font-medium text-purple-700 dark:text-purple-300">
-                        <Check className="h-3 w-3 text-green-500" />
+                    <div className="p-3 text-sm text-center border-l bg-muted/50">
+                      <div className="flex items-center justify-center gap-1 font-medium">
+                        <Check className="h-3 w-3 text-green-600 dark:text-green-500" />
                         {item.pro}
                       </div>
                     </div>
@@ -281,12 +282,12 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
                 Simple, Transparent Pricing
               </h3>
 
-              {/* Pricing card with prominent styling */}
-              <div className="p-6 rounded-lg border-2 border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/10 dark:to-indigo-900/10 dark:border-purple-800">
+              {/* Pricing card with clean monochromatic styling */}
+              <div className="p-6 rounded-lg border-2 border-border bg-muted/30">
                 <div className="text-center space-y-2">
                   {/* Price display with large, prominent styling */}
-                  <div className="text-3xl font-bold text-purple-700 dark:text-purple-300">
-                    $29
+                  <div className="text-3xl font-bold">
+                    $99
                     <span className="text-lg font-normal text-muted-foreground">
                       /month
                     </span>
@@ -307,16 +308,16 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
         {/* Fixed at bottom to ensure call-to-action is always visible */}
         <div className="p-6 border-t bg-background">
           <div className="space-y-4">
-            {/* Primary upgrade button with loading state */}
+            {/* Primary upgrade button with monochromatic styling and subtle green accent on hover */}
             <Button
               onClick={handleUpgrade}
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium py-3"
+              className="w-full bg-foreground text-background hover:bg-foreground/90 font-medium py-6 transition-all hover:shadow-lg"
               size="lg"
             >
               {isLoading ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent mr-2" />
                   Processing...
                 </>
               ) : (

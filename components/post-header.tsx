@@ -13,6 +13,7 @@ import { SquareStackIcon } from "@/components/ui/square-stack";
 import { FlaskIcon } from "@/components/ui/flask";
 import { FlameIcon } from "@/components/ui/flame";
 import { PartyPopperIcon } from "@/components/ui/party-popper";
+import { SortPopover } from "@/components/sort-popover";
 
 interface PostHeaderProps {
   sortBy?: "newest" | "popular" | "trending";
@@ -128,17 +129,11 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
 
         {/* Sort Options */}
         {onSortChange && (
-          <div className="flex items-center space-x-2 pr-2">
-            <span className="text-sm text-muted-foreground">Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e) => onSortChange(e.target.value as "newest" | "popular" | "trending")}
-              className="text-sm border border-border rounded px-2 py-1 bg-background text-foreground"
-            >
-              <option value="newest">Newest</option>
-              <option value="popular">Popular</option>
-              <option value="trending">Trending</option>
-            </select>
+          <div className="pr-2">
+            <SortPopover
+              sortBy={sortBy}
+              onSortChange={onSortChange}
+            />
           </div>
         )}
       </div>

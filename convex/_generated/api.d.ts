@@ -23,6 +23,7 @@ import type * as crons from "../crons.js";
 import type * as deduplication from "../deduplication.js";
 import type * as events from "../events.js";
 import type * as github from "../github.js";
+import type * as helpers_access from "../helpers/access.js";
 import type * as linkPreview from "../linkPreview.js";
 import type * as linkPreviews from "../linkPreviews.js";
 import type * as members from "../members.js";
@@ -67,6 +68,7 @@ declare const fullApi: ApiFromModules<{
   deduplication: typeof deduplication;
   events: typeof events;
   github: typeof github;
+  "helpers/access": typeof helpers_access;
   linkPreview: typeof linkPreview;
   linkPreviews: typeof linkPreviews;
   members: typeof members;

@@ -22,6 +22,8 @@ const buttonVariants = cva(
         link: "text-[#ADADAD] underline-offset-4 hover:underline hover:text-black transition-colors duration-200 ease-out dark:text-[#707070] dark:hover:text-white",
         accent:
           "bg-accent text-accent-foreground border border-[rgb(207,207,207)] hover:bg-accent/90 active:bg-accent/80 dark:bg-accent dark:text-accent-foreground dark:border-input dark:hover:bg-accent/90 dark:active:bg-accent/80",
+        cta:
+          "bg-cta text-cta-foreground border-0 hover:bg-cta-hover active:bg-cta-active focus-visible:ring-cta/20 dark:focus-visible:ring-cta/40",
       },
       size: {
         default: "h-8 px-3 py-1.5",

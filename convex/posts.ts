@@ -23,8 +23,9 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
-import { getAuthenticatedMember } from "./auth";
+import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
 import { insertNotification } from "./notifications";
+import { canViewFullContent } from "./helpers/access";
 
 /**
  * Checks if a member is the author of a post for authorization purposes.
@@ -207,14 +208,26 @@ export const getPosts = query({
  * and all metadata. Used for post detail pages and editing interfaces.
  * Only returns active posts - deleted or hidden posts return null.
  * 
+ * This function implements content access control based on user authentication:
+ * - Authenticated users with active memberships see full content
+ * - Unauthenticated or inactive users see truncated content (50 chars preview)
+ * - The `isPaywalled` flag indicates whether content was truncated
+ * - `fullContentRequiresTier` specifies the required membership level for full access
+ * 
  * @param postId - Unique identifier of the post to retrieve
  * @returns Complete post object with member and category data, or null if not found/inactive
+ *          Returns paywalled version with truncated content for users without access
  * 
  * @example
  * ```typescript
  * const post = await getPostById({ postId: "post123" });
  * if (post) {
- *   console.log(`${post.title} by ${post.member?.firstName}`);
+ *   if (post.isPaywalled) {
+ *     console.log("Content preview:", post.content); // Truncated to 50 chars
+ *     console.log("Requires tier:", post.fullContentRequiresTier); // "member"
+ *   } else {
+ *     console.log("Full content:", post.content);
+ *   }
  * }
  * ```
  */
@@ -226,14 +239,61 @@ export const getPostById = query({
       return null;
     }
 
+    // Get the authenticated member to check access
+    // Uses getAuthenticatedMemberOrNull to allow both authenticated and unauthenticated access
+    const currentMember = await getAuthenticatedMemberOrNull(ctx);
+    // Check if the user has an active membership tier that grants full content access
+    const hasFullAccess = canViewFullContent(currentMember);
+
     // Get member and category data
     const [member, category] = await Promise.all([
       ctx.db.get(post.memberId),
       ctx.db.get(post.categoryId),
     ]);
 
+    // If user doesn't have full access, return paywalled version
+    if (!hasFullAccess) {
+      // Truncate content to a preview length to encourage membership signup
+      const PREVIEW_LENGTH = 50;
+      const preview = post.content.substring(0, PREVIEW_LENGTH);
+      const needsEllipsis = post.content.length > PREVIEW_LENGTH;
+      
+      return {
+        ...post,
+        content: needsEllipsis ? preview + "..." : preview,
+        // Flag to indicate the content has been truncated due to access restrictions
+        isPaywalled: true,
+        // Specify which membership tier is required for full content access
+        fullContentRequiresTier: "member",
+        member: member ? {
+          _id: member._id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          email: member.email,
+          username: member.email.split('@')[0],
+          bio: member.bio,
+          location: member.location,
+          linkGithub: member.linkGithub,
+          linkX: member.linkX,
+          linkYouTube: member.linkYouTube,
+          slug: member.slug || "",
+          avatarUrl: member.avatarUrl,
+        } : null,
+        category: category ? {
+          _id: category._id,
+          name: category.name,
+          displayName: category.displayName,
+          description: category.description,
+          icon: category.icon,
+        } : null,
+      };
+    }
+
+    // Full access - return complete post
     return {
       ...post,
+      // No paywall - user has full access to content
+      isPaywalled: false,
       member: member ? {
         _id: member._id,
         firstName: member.firstName,
@@ -266,12 +326,27 @@ export const getPostById = query({
  * information as getPostById but queries by slug instead of ID.
  * Essential for public post URLs and social sharing.
  * 
+ * This function implements the same content access control as getPostById:
+ * - Authenticated users with active memberships see full content
+ * - Unauthenticated or inactive users see truncated content (50 chars preview)
+ * - The `isPaywalled` flag indicates whether content was truncated
+ * - `fullContentRequiresTier` specifies the required membership level for full access
+ * 
  * @param slug - URL-friendly post identifier
  * @returns Complete post object with member and category data, or null if not found
+ *          Returns paywalled version with truncated content for users without access
  * 
  * @example
  * ```typescript
  * const post = await getPostBySlug({ slug: "my-awesome-post" });
+ * if (post) {
+ *   if (post.isPaywalled) {
+ *     console.log("Content preview:", post.content); // Truncated to 50 chars
+ *     console.log("Requires tier:", post.fullContentRequiresTier); // "member"
+ *   } else {
+ *     console.log("Full content:", post.content);
+ *   }
+ * }
  * // Used in: /category/posts/my-awesome-post
  * ```
  */
@@ -288,14 +363,58 @@ export const getPostBySlug = query({
       return null;
     }
 
+    // Get the authenticated member to check access
+    const currentMember = await getAuthenticatedMemberOrNull(ctx);
+    const hasFullAccess = canViewFullContent(currentMember);
+
     // Get member and category data
     const [member, category] = await Promise.all([
       ctx.db.get(post.memberId),
       ctx.db.get(post.categoryId),
     ]);
 
+    // If user doesn't have full access, return paywalled version
+    if (!hasFullAccess) {
+      const PREVIEW_LENGTH = 50;
+      const preview = post.content.substring(0, PREVIEW_LENGTH);
+      const needsEllipsis = post.content.length > PREVIEW_LENGTH;
+      
+      return {
+        ...post,
+        content: needsEllipsis ? preview + "..." : preview,
+        // Flag to indicate the content has been truncated due to access restrictions
+        isPaywalled: true,
+        // Specify which membership tier is required for full content access
+        fullContentRequiresTier: "member",
+        member: member ? {
+          _id: member._id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          email: member.email,
+          username: member.email.split('@')[0],
+          bio: member.bio,
+          location: member.location,
+          linkGithub: member.linkGithub,
+          linkX: member.linkX,
+          linkYouTube: member.linkYouTube,
+          slug: member.slug || "",
+          avatarUrl: member.avatarUrl,
+        } : null,
+        category: category ? {
+          _id: category._id,
+          name: category.name,
+          displayName: category.displayName,
+          description: category.description,
+          icon: category.icon,
+        } : null,
+      };
+    }
+
+    // Full access - return complete post
     return {
       ...post,
+      // No paywall - user has full access to content
+      isPaywalled: false,
       member: member ? {
         _id: member._id,
         firstName: member.firstName,
