@@ -582,11 +582,13 @@ const notifications = defineTable({
     v.literal("reply"),        // Reply to user's content
     v.literal("upvote"),       // Content received upvote
     v.literal("follow"),       // New follower (future feature)
-    v.literal("comment_report") // Comment reported (admin)
+    v.literal("comment_report"), // Comment reported (admin)
+    v.literal("payment_reminder") // Subscription renewal reminder
   ),
   entityType: v.union(
     v.literal("post"),         // Notification relates to post
-    v.literal("comment")       // Notification relates to comment
+    v.literal("comment"),      // Notification relates to comment
+    v.literal("payment")       // Notification relates to payment/subscription
   ),
   entityId: v.string(),                    // ID of related content
   actorId: v.id("members"),                // Member who triggered notification

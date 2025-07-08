@@ -1,27 +1,27 @@
-import * as React from "react"
+import * as React from "react";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-export type CardSize = "default" | "compact"
+export type CardSize = "default" | "compact";
 
 export function cardSizeClass(size: CardSize = "default"): string {
   switch (size) {
     case "compact":
-      return "py-3 px-4 gap-3"
+      return "py-3 px-4 gap-3";
     case "default":
     default:
-      return "py-6 px-6 gap-6"
+      return "py-4 px-4 gap-4";
   }
 }
 
 interface CardProps extends React.ComponentProps<"div"> {
-  size?: CardSize
+  size?: CardSize;
 }
 
 function Card({ size = "default", className, ...props }: CardProps) {
-  const sizeClasses = size === "compact" ? "gap-3" : "gap-6"
-  const paddingClasses = size === "compact" ? "py-3" : "py-6"
-  
+  const sizeClasses = size === "compact" ? "gap-3" : "gap-6";
+  const paddingClasses = size === "compact" ? "py-3" : "py-6";
+
   return (
     <div
       data-slot="card"
@@ -30,11 +30,11 @@ function Card({ size = "default", className, ...props }: CardProps) {
         "bg-card text-card-foreground flex flex-col rounded-xl border shadow-sm",
         sizeClasses,
         paddingClasses,
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
@@ -45,11 +45,11 @@ function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
         "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-1.5 has-data-[slot=card-action]:grid-cols-[1fr_auto]",
         "[*[data-size=default]_&]:px-6 [*[data-size=default]_&.border-b]:pb-6",
         "[*[data-size=compact]_&]:px-4 [*[data-size=compact]_&.border-b]:pb-3",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
@@ -59,7 +59,7 @@ function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("leading-none font-semibold", className)}
       {...props}
     />
-  )
+  );
 }
 
 function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
@@ -69,7 +69,7 @@ function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
       className={cn("text-muted-foreground text-sm", className)}
       {...props}
     />
-  )
+  );
 }
 
 function CardAction({ className, ...props }: React.ComponentProps<"div">) {
@@ -78,11 +78,11 @@ function CardAction({ className, ...props }: React.ComponentProps<"div">) {
       data-slot="card-action"
       className={cn(
         "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CardContent({ className, ...props }: React.ComponentProps<"div">) {
@@ -92,11 +92,11 @@ function CardContent({ className, ...props }: React.ComponentProps<"div">) {
       className={cn(
         "[*[data-size=default]_&]:px-6",
         "[*[data-size=compact]_&]:px-4",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
@@ -107,11 +107,11 @@ function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
         "flex items-center",
         "[*[data-size=default]_&]:px-6 [*[data-size=default]_&.border-t]:pt-6",
         "[*[data-size=compact]_&]:px-4 [*[data-size=compact]_&.border-t]:pt-3",
-        className
+        className,
       )}
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -122,4 +122,4 @@ export {
   CardAction,
   CardDescription,
   CardContent,
-}
+};

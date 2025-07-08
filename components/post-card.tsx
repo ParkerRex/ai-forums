@@ -153,7 +153,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
   };
 
   return (
-    <div className="bg-card border border-border/30 rounded-md hover:bg-muted/30 transition-all duration-200 group">
+    <div className="bg-card border rounded-lg hover:bg-muted/30 transition-all duration-200 group">
       {/* Main content - Reddit style full width */}
       <div
         className="cursor-pointer py-2 px-3"

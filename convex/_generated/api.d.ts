@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as admin_grantScholarship from "../admin/grantScholarship.js";
 import type * as admin from "../admin.js";
 import type * as auth from "../auth.js";
 import type * as bookmarks from "../bookmarks.js";
@@ -42,6 +43,7 @@ import type * as storage from "../storage.js";
 import type * as stripe_checkout from "../stripe/checkout.js";
 import type * as stripe_getSubscriptionInfo from "../stripe/getSubscriptionInfo.js";
 import type * as stripe_portal from "../stripe/portal.js";
+import type * as stripe_renewalReminders from "../stripe/renewalReminders.js";
 import type * as stripe_webhooks from "../stripe/webhooks.js";
 import type * as topics from "../topics.js";
 import type * as votes from "../votes.js";
@@ -55,6 +57,7 @@ import type * as votes from "../votes.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  "admin/grantScholarship": typeof admin_grantScholarship;
   admin: typeof admin;
   auth: typeof auth;
   bookmarks: typeof bookmarks;
@@ -84,6 +87,7 @@ declare const fullApi: ApiFromModules<{
   "stripe/checkout": typeof stripe_checkout;
   "stripe/getSubscriptionInfo": typeof stripe_getSubscriptionInfo;
   "stripe/portal": typeof stripe_portal;
+  "stripe/renewalReminders": typeof stripe_renewalReminders;
   "stripe/webhooks": typeof stripe_webhooks;
   topics: typeof topics;
   votes: typeof votes;

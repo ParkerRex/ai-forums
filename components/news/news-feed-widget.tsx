@@ -1,11 +1,10 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp } from "lucide-react";
-import { NewsCard } from "./news-card";
 import { useCurrentMember } from "@/hooks/use-current-member";
-import { useEffect, useState } from "react";
-import Link from "next/link";
+import { useEffect, useState, useRef } from "react";
+import { RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 interface NewsItem {
   title: string;
@@ -16,13 +15,35 @@ interface NewsItem {
   source: string;
 }
 
+const CACHE_KEY = "vai_news_cache";
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+const RATE_LIMIT_DURATION = 30 * 1000; // 30 seconds
+
 export function NewsFeedWidget() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<number>(0);
   const { member } = useCurrentMember();
+  const hasLoadedRef = useRef(false);
 
-  useEffect(() => {
-    const loadNews = async () => {
+  const loadNews = async (skipCache = false) => {
+    // Try to load from cache first
+    if (!skipCache) {
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < CACHE_DURATION) {
+            setNews(data);
+            setLoading(false);
+            return;
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load from cache:", error);
+      }
+    }
       try {
         const defaultSources = [
           {
@@ -127,63 +148,136 @@ export function NewsFeedWidget() {
           .slice(0, 5);
 
         setNews(sortedNews);
+        
+        // Cache the results
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify({
+            data: sortedNews,
+            timestamp: Date.now()
+          }));
+        } catch (error) {
+          console.error("Failed to cache news:", error);
+        }
       } catch (error) {
         console.error("Failed to load news:", error);
+        toast.error("Failed to load news");
       } finally {
         setLoading(false);
+        setRefreshing(false);
       }
     };
 
-    loadNews();
-  }, [member?.newsPreferences]);
+  const handleRefresh = async () => {
+    const now = Date.now();
+    if (now - lastRefresh < RATE_LIMIT_DURATION) {
+      toast.error("Woah, you're doing that too much! Please wait a moment.");
+      return;
+    }
+    
+    setRefreshing(true);
+    setLastRefresh(now);
+    await loadNews(true);
+  };
 
-  if (loading) {
+  useEffect(() => {
+    // Only load once when component mounts
+    if (!hasLoadedRef.current) {
+      hasLoadedRef.current = true;
+      loadNews();
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const formatTimeAgo = (dateString?: string) => {
+    if (!dateString) return "";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) {
+      const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+      if (diffHours === 0) {
+        const diffMinutes = Math.floor(diffMs / (1000 * 60));
+        return `${diffMinutes}m ago`;
+      }
+      return `${diffHours}h ago`;
+    } else if (diffDays === 1) {
+      return "1d ago";
+    } else if (diffDays < 7) {
+      return `${diffDays}d ago`;
+    } else {
+      return date.toLocaleDateString();
+    }
+  };
+
+  if (loading && news.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2" />
-            Recent AI News
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="animate-pulse">
-                <div className="h-4 bg-muted rounded mb-2"></div>
-                <div className="h-3 bg-muted rounded w-3/4 mb-1"></div>
-                <div className="h-3 bg-muted rounded w-1/2"></div>
+      <div className="bg-card border rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium">Top</h3>
+        </div>
+        <div className="text-xs space-y-1">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="animate-pulse">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <div className="h-3 bg-muted rounded flex-1"></div>
+                <div className="h-3 bg-muted rounded w-12"></div>
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              <div className="flex items-center gap-2">
+                <div className="h-2 bg-muted rounded w-10"></div>
+                <div className="h-2 bg-muted rounded w-24"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center justify-between">
-          <div className="flex items-center">
-            <TrendingUp className="w-5 h-5 mr-2" />
-            Recent AI News
-          </div>
-          <Link
-            href="/news"
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            View all
-          </Link>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {news.map((item, index) => (
-            <NewsCard key={index} item={item} compact />
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+    <div className="bg-card border rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium">Top</h3>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-5 w-5 hover:bg-accent/50"
+          onClick={handleRefresh}
+          disabled={refreshing}
+        >
+          <RefreshCw className={`h-3 w-3 transition-transform ${refreshing ? 'animate-[spin_0.5s_linear_infinite]' : ''}`} />
+        </Button>
+      </div>
+      <div className={`text-xs space-y-1 transition-all ${refreshing ? 'blur-sm opacity-50' : ''}`}>
+        {news.map((item, index) => {
+          const domain = item.url
+            ? new URL(item.url).hostname.replace("www.", "")
+            : item.source;
+          return (
+            <div key={index} className="group">
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block hover:text-blue-600 transition-colors"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="flex-1 leading-tight">{item.title}</span>
+                  <span className="text-muted-foreground whitespace-nowrap flex-shrink-0">
+                    {formatTimeAgo(item.publishedDate)}
+                  </span>
+                </div>
+                <div className="text-muted-foreground mt-0.5">
+                  <span className="text-[10px]">[Article]</span>
+                  <span className="ml-2">{item.author || domain}</span>
+                </div>
+              </a>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

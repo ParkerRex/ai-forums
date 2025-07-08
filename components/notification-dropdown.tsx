@@ -23,8 +23,8 @@ interface NotificationData {
   _id: Id<"notifications">;
   _creationTime: number;
   recipientId: Id<"members">;
-  type: "mention" | "reply" | "upvote" | "follow" | "comment_report";
-  entityType: "post" | "comment";
+  type: "mention" | "reply" | "upvote" | "follow" | "comment_report" | "payment_reminder";
+  entityType: "post" | "comment" | "payment";
   entityId: string;
   actorId: Id<"members">;
   message: string;

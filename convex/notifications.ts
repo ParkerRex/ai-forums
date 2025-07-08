@@ -61,8 +61,8 @@ export async function insertNotification(
   ctx: MutationCtx,
   args: {
     recipientId: Id<"members">;
-    type: "mention" | "reply" | "upvote" | "follow" | "comment_report";
-    entityType: "post" | "comment";
+    type: "mention" | "reply" | "upvote" | "follow" | "comment_report" | "payment_reminder";
+    entityType: "post" | "comment" | "payment";
     entityId: string;
     actorId: Id<"members">;
     message: string;
@@ -139,11 +139,13 @@ export const getNotifications = query({
       v.literal("reply"),
       v.literal("upvote"),
       v.literal("follow"),
-      v.literal("comment_report")
+      v.literal("comment_report"),
+      v.literal("payment_reminder")
     ),
     entityType: v.union(
       v.literal("post"),
-      v.literal("comment")
+      v.literal("comment"),
+      v.literal("payment")
     ),
     entityId: v.string(),
     actorId: v.id("members"),
@@ -246,11 +248,13 @@ export const createNotification = mutation({
       v.literal("reply"),
       v.literal("upvote"),
       v.literal("follow"),
-      v.literal("comment_report")
+      v.literal("comment_report"),
+      v.literal("payment_reminder")
     ),
     entityType: v.union(
       v.literal("post"),
-      v.literal("comment")
+      v.literal("comment"),
+      v.literal("payment")
     ),
     entityId: v.string(),
     actorId: v.id("members"),
@@ -333,6 +337,63 @@ export const markAllNotificationsAsRead = mutation({
     );
 
     return null;
+  },
+});
+
+export const sendRenewalReminder = internalMutation({
+  args: {
+    memberId: v.id("members"),
+    daysUntilRenewal: v.number(),
+    subscriptionEndDate: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const member = await ctx.db.get(args.memberId);
+    if (!member) return;
+
+    // Check if we already sent a reminder for this period
+    const existingReminder = await ctx.db
+      .query("notifications")
+      .withIndex("by_recipient", (q) => q.eq("recipientId", args.memberId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("type"), "payment_reminder"),
+          q.eq(q.field("entityType"), "payment"),
+          q.gte(q.field("createdAt"), Date.now() - 24 * 60 * 60 * 1000) // Within last 24 hours
+        )
+      )
+      .first();
+
+    if (existingReminder) {
+      return; // Don't send duplicate reminders
+    }
+
+    const formattedDate = new Date(args.subscriptionEndDate).toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+
+    let message: string;
+    if (args.daysUntilRenewal === 7) {
+      message = `Your subscription will renew in 7 days on ${formattedDate}`;
+    } else if (args.daysUntilRenewal === 3) {
+      message = `Your subscription will renew in 3 days on ${formattedDate}`;
+    } else if (args.daysUntilRenewal === 1) {
+      message = `Your subscription will renew tomorrow on ${formattedDate}`;
+    } else {
+      message = `Your subscription will renew on ${formattedDate}`;
+    }
+
+    await ctx.db.insert("notifications", {
+      recipientId: args.memberId,
+      type: "payment_reminder",
+      entityType: "payment",
+      entityId: member.stripeSubscriptionId || "subscription",
+      actorId: args.memberId, // System notification, use member as actor
+      message,
+      read: false,
+      createdAt: Date.now(),
+    });
   },
 });
 

@@ -3,6 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import { useState } from "react";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import Link from "next/link";
 
 /**
  * ReactivateBannerTop component displays a prominent banner at the top of the page
@@ -19,36 +22,65 @@ import { useState } from "react";
  * @returns JSX.Element - The top reactivate banner component
  */
 export function ReactivateBannerTop() {
-  // State to control banner visibility - allows users to dismiss the banner
-  // This provides a way for users to hide the banner if they're not ready to reactivate
-  // In a production environment, this dismissal state could be persisted
   const [isVisible, setIsVisible] = useState(true);
+  const subscriptionInfo = useQuery(api.stripe.getSubscriptionInfo.getSubscriptionInfo);
 
-
-  /**
-   * Handles dismissing the banner when user clicks the close button.
-   * Sets the visibility state to false, effectively hiding the banner from view.
-   * This provides users with control over their interface while still maintaining
-   * the urgency of the reactivation message through other UI elements.
-   */
   const handleDismiss = () => {
-    // Hide the banner by updating state
-    // Consider adding analytics tracking for dismissal rates
     setIsVisible(false);
   };
 
-  // Early return if banner has been dismissed to prevent rendering
-  // This keeps the DOM clean and prevents layout shifts
-  if (!isVisible) {
+  // Don't show banner if:
+  // - User has active subscription
+  // - User has never had a subscription (free tier)
+  // - Banner was dismissed
+  // - Still loading subscription info
+  if (!isVisible || !subscriptionInfo || subscriptionInfo.isActive || subscriptionInfo.tier === "free") {
     return null;
   }
+
+  // Only show for expired/cancelled subscriptions
+  if (!subscriptionInfo.isExpired && !subscriptionInfo.isCancelled) {
+    return null;
+  }
+
+  // Get personalized pricing based on their previous tier
+  const getTierPricing = () => {
+    switch (subscriptionInfo.tier) {
+      case "founding_member":
+        return { 
+          name: "Founding Member", 
+          monthly: "$39/mo", 
+          yearly: "$375/yr",
+          savings: "Save $93 with yearly"
+        };
+      case "early_bird":
+        return { 
+          name: "Early Bird", 
+          monthly: "$50/mo", 
+          yearly: "$480/yr",
+          savings: "Save $120 with yearly"
+        };
+      default:
+        return { 
+          name: "Pro", 
+          monthly: "$99/mo", 
+          yearly: "$950/yr",
+          savings: "Save $238 with yearly"
+        };
+    }
+  };
+
+  const tierInfo = getTierPricing();
 
   return (
     <div className="w-full bg-black dark:bg-[#272727] h-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-center gap-4 h-12 relative">
           <p className="text-sm font-medium text-white">
-            Your Plan Pro has expired — <span className="underline">Reactivate Pro</span>
+            Your {tierInfo.name} plan has expired — 
+            <Link href="/reactivate" className="underline hover:no-underline">
+              Reactivate for {tierInfo.monthly}
+            </Link>
           </p>
 
           <Button

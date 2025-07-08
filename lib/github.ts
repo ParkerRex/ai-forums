@@ -41,7 +41,7 @@ export function useLastCommit() {
 }
 
 export function useGitHubIssues(page = 1) {
-  const { data, error, isLoading } = useSWR<GitHubIssue[]>(
+  const { data, error, isLoading, mutate } = useSWR<GitHubIssue[]>(
     `/api/github/issues?page=${page}`,
     fetcher,
     {
@@ -54,5 +54,6 @@ export function useGitHubIssues(page = 1) {
     issues: data || [],
     isLoading,
     error,
+    refetch: mutate,
   }
 }
