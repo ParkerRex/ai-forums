@@ -160,6 +160,11 @@ function MemberDetailContent({ slug }: { slug: string }) {
         skills: memberData.skills || [], // Ensure skills is always an array
         // Include slug for potential future routing needs
         slug: memberData.slug,
+        // Subscription fields
+        tier: memberData.tier,
+        subscriptionStatus: memberData.subscriptionStatus,
+        subscriptionEndDate: memberData.subscriptionEndDate,
+        billingInterval: memberData.billingInterval,
       }
     : null;
 
@@ -259,12 +264,9 @@ function MemberDetailContent({ slug }: { slug: string }) {
                     {/* Activity metadata with post link */}
                     <p className="text-xs text-muted-foreground mt-1">
                       {activity.timeAgo} on{" "}
-                      <Link
-                        href={`#`} // TODO: Link to actual post
-                        className="text-green-700 hover:underline"
-                      >
+                      <span className="text-green-700">
                         {activity.postTitle}
-                      </Link>
+                      </span>
                     </p>
                   </div>
                 ))}

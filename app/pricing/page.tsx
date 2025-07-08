@@ -11,6 +11,7 @@ import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { useAuth } from "@clerk/nextjs";
+import { PricingComparisonTable } from "@/components/pricing-comparison-table";
 
 /**
  * PricingPage Component
@@ -378,6 +379,12 @@ export default function PricingPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Feature Comparison Table */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <h2 className="text-3xl font-bold text-center mb-8">Compare Plans</h2>
+          <PricingComparisonTable />
         </div>
 
         {/* Enterprise & Student Sections - Additional plan options */}

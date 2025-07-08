@@ -65,6 +65,26 @@ const MemberUIValidator = v.object({
   slug: v.string(),
   // Role
   role: v.optional(v.union(v.literal("user"), v.literal("admin"))),
+  // Subscription fields
+  tier: v.union(
+    v.literal("free"),
+    v.literal("scholarship"),
+    v.literal("founding_member"),
+    v.literal("early_bird"),
+    v.literal("member")
+  ),
+  subscriptionStatus: v.union(
+    v.literal("active"),
+    v.literal("cancelled"),
+    v.literal("past_due"),
+    v.literal("expired"),
+    v.literal("none")
+  ),
+  subscriptionEndDate: v.optional(v.number()),
+  billingInterval: v.optional(v.union(
+    v.literal("monthly"),
+    v.literal("yearly")
+  )),
 });
 
 // Helper to backfill missing cached stats for a member with background caching
@@ -163,6 +183,11 @@ function transformMemberForUI(member: Doc<"members">) {
     lastOnlineRelative: getTimeAgo(member.lastOnline),
     // URL slug
     slug: member.slug,
+    // Subscription fields
+    tier: member.tier,
+    subscriptionStatus: member.subscriptionStatus,
+    subscriptionEndDate: member.subscriptionEndDate,
+    billingInterval: member.billingInterval,
   };
 }
 

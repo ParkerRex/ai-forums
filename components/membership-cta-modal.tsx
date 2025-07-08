@@ -1,118 +1,239 @@
 "use client";
 
 import { useState } from "react";
-import { SignUpButton } from "@clerk/nextjs";
+import { useAuth } from "@clerk/nextjs";
+import { useMutation } from "convex/react";
+import { api } from "@/convex/_generated/api";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Users, Zap, MessageSquare, BookOpen, CheckCircle } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { CheckCircle, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { SignInModal } from "./sign-in-modal";
+import { toast } from "sonner";
+import { getStripeConfig, isStripeConfigured } from "@/lib/stripe-config";
+import { formatCurrency } from "@/lib/format";
+import { checkoutAnalytics } from "@/lib/analytics";
 
 interface MembershipCTAModalProps {
-  children: React.ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
   title?: string;
   description?: string;
+  source?: string; // Track where the modal was opened from
 }
 
 export function MembershipCTAModal({
-  children,
-  title = "Join VAI Community",
-  description = "Unlock exclusive content and connect with AI engineers"
+  isOpen,
+  onClose,
+  title = "Upgrade to VAI Pro",
+  description = "Get unlimited access to all posts and community features",
+  source = "unknown"
 }: MembershipCTAModalProps) {
-  const [isOpen, setIsOpen] = useState(false);
+  const { isSignedIn } = useAuth();
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("monthly");
+  const [isLoading, setIsLoading] = useState(false);
+  const [showSignInModal, setShowSignInModal] = useState(false);
+  const createCheckoutSession = useMutation(api.stripe.checkout.createCheckoutSession);
+
+  // Track modal open
+  React.useEffect(() => {
+    if (isOpen) {
+      checkoutAnalytics.modalOpened(source);
+    }
+  }, [isOpen, source]);
+
+  // Get Stripe configuration with validation
+  const stripeConfig = isStripeConfigured() ? getStripeConfig() : null;
 
   const features = [
-    {
-      icon: MessageSquare,
-      title: "Full Discussion Access",
-      description: "Read complete posts and join conversations"
-    },
-    {
-      icon: Users,
-      title: "Community Network",
-      description: "Connect with engineers from top companies"
-    },
-    {
-      icon: BookOpen,
-      title: "Learning Resources",
-      description: "Access workflows, prompts, and tutorials"
-    },
-    {
-      icon: Zap,
-      title: "Early Access",
-      description: "Get first access to new features and content"
-    }
+    "Full access to all posts and discussions",
+    "Connect with AI engineers from top companies",
+    "Access exclusive tutorials and resources",
+    "Direct messaging with community members",
+    "Priority support and early access to features",
+    "Cancel anytime, no questions asked"
   ];
 
+  const handleCheckout = async () => {
+    if (!isSignedIn) {
+      setShowSignInModal(true);
+      return;
+    }
+
+    if (!stripeConfig) {
+      console.error("Stripe configuration not found");
+      toast.error("Payment system is not properly configured. Please contact support.");
+      return;
+    }
+
+    // Track checkout initiation
+    const price = billingInterval === "monthly" ? monthlyPrice : yearlyPrice;
+    checkoutAnalytics.checkoutInitiated("member", billingInterval, price);
+
+    setIsLoading(true);
+    try {
+      const priceId = billingInterval === "monthly" 
+        ? stripeConfig.memberMonthlyPriceId 
+        : stripeConfig.memberYearlyPriceId;
+      const result = await createCheckoutSession({
+        priceId,
+        tier: "member",
+        billingInterval,
+      });
+
+      if (result.checkoutUrl) {
+        checkoutAnalytics.checkoutSessionCreated(result.sessionId || "unknown");
+        window.location.href = result.checkoutUrl;
+      } else {
+        checkoutAnalytics.checkoutFailed("No checkout URL returned");
+        toast.error("Unable to create checkout session. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error creating checkout session:", error);
+      const message = error instanceof Error ? error.message : "Payment setup failed. Please try again.";
+      checkoutAnalytics.checkoutFailed(message);
+      toast.error(message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const monthlyPrice = stripeConfig?.monthlyPrice || 99;
+  const yearlyPrice = stripeConfig?.yearlyPrice || 990;
+  const yearlySavings = (monthlyPrice * 12) - yearlyPrice;
+  const yearlySavingsPercent = Math.round((yearlySavings / (monthlyPrice * 12)) * 100);
+
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-            <Sparkles className="w-6 h-6 text-primary" />
-          </div>
-          <DialogTitle className="text-xl font-bold">
-            {title}
-          </DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            {description}
-          </DialogDescription>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader className="text-center">
+            <div className="mx-auto w-12 h-12 bg-accent rounded-full flex items-center justify-center mb-4">
+              <Sparkles className="w-6 h-6" />
+            </div>
+            <DialogTitle className="text-2xl font-bold">
+              {title}
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              {description}
+            </DialogDescription>
+          </DialogHeader>
 
-        <div className="space-y-4 my-6">
-          <div className="flex items-center justify-center space-x-2 mb-4">
-            <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
-              ✨ Free to Join
-            </Badge>
-            <Badge variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
-              🚀 Instant Access
-            </Badge>
+          <div className="space-y-6 my-6">
+            {/* Billing toggle */}
+            <div className="space-y-3">
+              <ToggleGroup
+                type="single"
+                value={billingInterval}
+                onValueChange={(value) => {
+                  if (value && value !== billingInterval) {
+                    checkoutAnalytics.billingToggled(billingInterval, value as "monthly" | "yearly");
+                    setBillingInterval(value as "monthly" | "yearly");
+                  }
+                }}
+                className="grid grid-cols-2 gap-2"
+                aria-label="Choose billing frequency"
+              >
+                <ToggleGroupItem
+                  value="monthly"
+                  className={cn(
+                    "relative h-auto py-3 px-4",
+                    "data-[state=on]:bg-accent data-[state=on]:border-foreground"
+                  )}
+                >
+                  <div className="space-y-1">
+                    <div className="font-medium">Monthly</div>
+                    <div className="text-2xl font-bold">{formatCurrency(monthlyPrice)}</div>
+                    <div className="text-xs text-muted-foreground">per month</div>
+                  </div>
+                </ToggleGroupItem>
+
+                <ToggleGroupItem
+                  value="yearly"
+                  className={cn(
+                    "relative h-auto py-3 px-4",
+                    "data-[state=on]:bg-accent data-[state=on]:border-foreground"
+                  )}
+                >
+                  <Badge 
+                    variant="secondary" 
+                    className="absolute -top-2 -right-2 bg-green-600 text-white hover:bg-green-600"
+                  >
+                    Save {yearlySavingsPercent}%
+                  </Badge>
+                  <div className="space-y-1">
+                    <div className="font-medium">Yearly</div>
+                    <div className="text-2xl font-bold">{formatCurrency(yearlyPrice)}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {formatCurrency(yearlyPrice / 12)}/month
+                    </div>
+                  </div>
+                </ToggleGroupItem>
+              </ToggleGroup>
+
+              {billingInterval === "yearly" && (
+                <p className="text-sm text-center text-green-600 dark:text-green-500">
+                  Save {formatCurrency(yearlySavings)} per year
+                </p>
+              )}
+            </div>
+
+            {/* Features list */}
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-muted-foreground">WHAT'S INCLUDED</h4>
+              <ul className="space-y-2.5">
+                {features.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-600 dark:text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-3">
-            {features.map((feature, index) => (
-              <div key={index} className="flex items-start space-x-3 p-3 rounded-lg bg-muted/50">
-                <div className="flex-shrink-0">
-                  <feature.icon className="w-4 h-4 text-primary mt-0.5" />
-                </div>
-                <div>
-                  <h4 className="text-sm font-medium text-foreground">{feature.title}</h4>
-                  <p className="text-xs text-muted-foreground">{feature.description}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <SignUpButton mode="modal">
+          <div className="space-y-3">
             <Button 
               className="w-full"
-              onClick={() => setIsOpen(false)}
+              size="lg"
+              onClick={handleCheckout}
+              disabled={isLoading}
             >
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Join VAI Community
+              {isLoading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-background border-t-transparent mr-2" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Upgrade to VAI Pro
+                  {billingInterval === "monthly" 
+                    ? ` - ${formatCurrency(monthlyPrice)}/mo` 
+                    : ` - ${formatCurrency(yearlyPrice)}/yr`}
+                </>
+              )}
             </Button>
-          </SignUpButton>
-          <Button 
-            variant="ghost" 
-            className="w-full text-muted-foreground"
-            onClick={() => setIsOpen(false)}
-          >
-            Maybe later
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+            <p className="text-xs text-center text-muted-foreground">
+              Secure payment via Stripe • Cancel anytime
+            </p>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <SignInModal
+        isOpen={showSignInModal}
+        onClose={() => setShowSignInModal(false)}
+        redirectTo="/membership"
+      />
+    </>
   );
 }
 
@@ -127,12 +248,10 @@ export function useMembershipCTA() {
     isOpen,
     openModal,
     closeModal,
-    MembershipCTAModal: ({ children, ...props }: Omit<MembershipCTAModalProps, 'children'> & { children?: React.ReactNode }) => (
-      <MembershipCTAModal {...props}>
-        {children || <></>}
-      </MembershipCTAModal>
+    MembershipCTAModal: (props: Omit<MembershipCTAModalProps, 'isOpen' | 'onClose'>) => (
+      <MembershipCTAModal {...props} isOpen={isOpen} onClose={closeModal} />
     )
   };
 }
 
-export default MembershipCTAModal; 
+export default MembershipCTAModal;

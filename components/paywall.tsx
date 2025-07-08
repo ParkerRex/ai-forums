@@ -14,11 +14,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Lock } from "lucide-react";
-import { useState } from "react";
-import { JoinVaiProModal } from "./join-vai-pro";
+import { useState, useEffect } from "react";
+import { MembershipCTAModal } from "./membership-cta-modal";
 import { useAuth } from "@clerk/nextjs";
 import { SignIn } from "@clerk/nextjs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { paywallAnalytics } from "@/lib/analytics";
 
 /**
  * Props for the Paywall component
@@ -34,6 +35,12 @@ interface PaywallProps {
 
   /** Custom message to display explaining the content restriction */
   message?: string;
+
+  /** Optional post ID for analytics */
+  postId?: string;
+
+  /** Optional post title for analytics */
+  postTitle?: string;
 }
 
 /**
@@ -53,6 +60,8 @@ export function Paywall({
   previewContent,
   tier = "member",
   message = "This content is available exclusively to VAI Pro members.",
+  postId,
+  postTitle,
 }: PaywallProps) {
   // Check authentication status to determine which modal flow to show
   const { isSignedIn } = useAuth();
@@ -61,12 +70,19 @@ export function Paywall({
   const [showJoinModal, setShowJoinModal] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
 
+  // Track paywall shown
+  useEffect(() => {
+    paywallAnalytics.shown(postId, postTitle);
+  }, [postId, postTitle]);
+
   /**
    * Handles the upgrade button click based on authentication status.
    * Routes unauthenticated users to sign in first, then upgrade.
    * Authenticated users go directly to the upgrade modal.
    */
   const handleUpgradeClick = () => {
+    paywallAnalytics.upgradeClicked(postId, postTitle);
+    
     if (!isSignedIn) {
       // Unauthenticated path: Sign in -> then upgrade
       setShowSignInModal(true);
@@ -133,17 +149,16 @@ export function Paywall({
       </Card>
 
       {/* Modal for authenticated users to upgrade their membership */}
-      <JoinVaiProModal
+      <MembershipCTAModal
         isOpen={showJoinModal}
         onClose={() => setShowJoinModal(false)}
+        source="paywall"
       />
 
       {/* Modal for unauthenticated users to sign in */}
       <Dialog open={showSignInModal} onOpenChange={setShowSignInModal}>
         <DialogContent className="sm:max-w-md">
           <SignIn
-            // Redirect back to current page after successful sign in
-            afterSignInUrl={window.location.pathname}
             // Custom styling to integrate with our design system
             appearance={{
               elements: {

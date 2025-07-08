@@ -16,6 +16,25 @@ import {
 } from "@/components/ui/tooltip";
 import { useSortHotkey, type SortOption } from "@/hooks/use-sort-hotkey";
 
+// Constants for sort options
+const SORT_OPTIONS = [
+  {
+    option: "newest" as SortOption,
+    label: "Newest",
+    shortcut: "1"
+  },
+  {
+    option: "popular" as SortOption,
+    label: "Popular",
+    shortcut: "2"
+  },
+  {
+    option: "trending" as SortOption,
+    label: "Trending",
+    shortcut: "3"
+  }
+] as const;
+
 interface SortPopoverProps {
   sortBy?: SortOption;
   onSortChange?: (sort: SortOption) => void;
@@ -30,7 +49,13 @@ interface SortItemProps {
   onClick: () => void;
 }
 
-function SortItem({ option, label, shortcut, isSelected, onClick }: SortItemProps) {
+const SortItem = React.memo(function SortItem({ 
+  option, 
+  label, 
+  shortcut, 
+  isSelected, 
+  onClick 
+}: SortItemProps) {
   return (
     <button
       onClick={onClick}
@@ -41,51 +66,35 @@ function SortItem({ option, label, shortcut, isSelected, onClick }: SortItemProp
       )}
       role="menuitem"
       aria-selected={isSelected}
+      aria-label={`Sort by ${label}`}
     >
       <span>{label}</span>
-      <kbd className="ml-auto text-[11px] text-muted-foreground bg-background/80 px-1.5 py-0.5 rounded-sm font-mono">
+      <kbd className="ml-auto text-[11px] text-muted-foreground bg-background/80 px-1.5 py-0.5 rounded-sm font-mono" aria-label={`Keyboard shortcut: ${shortcut}`}>
         {shortcut}
       </kbd>
     </button>
   );
-}
+});
 
 export function SortPopover({ sortBy = "newest", onSortChange, className }: SortPopoverProps) {
   const [open, setOpen] = React.useState(false);
-  const { isOpen, setIsOpen } = useSortHotkey({ 
+  
+  // Use the custom hook for keyboard shortcuts
+  useSortHotkey({ 
     onSortChange,
     isOpen: open,
     setIsOpen: setOpen
   });
 
-  const handleSortChange = (sort: SortOption) => {
+  const handleSortChange = React.useCallback((sort: SortOption) => {
     onSortChange?.(sort);
     setOpen(false);
-  };
+  }, [onSortChange]);
 
-  const sortOptions: Array<{
-    option: SortOption;
-    label: string;
-    shortcut: string;
-  }> = [
-    {
-      option: "newest",
-      label: "Newest",
-      shortcut: "1"
-    },
-    {
-      option: "popular",
-      label: "Popular",
-      shortcut: "2"
-    },
-    {
-      option: "trending",
-      label: "Trending",
-      shortcut: "3"
-    }
-  ];
-  
-  const currentSortLabel = sortOptions.find(opt => opt.option === sortBy)?.label || "Newest";
+  const currentSortLabel = React.useMemo(
+    () => SORT_OPTIONS.find(opt => opt.option === sortBy)?.label || "Newest",
+    [sortBy]
+  );
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -101,11 +110,11 @@ export function SortPopover({ sortBy = "newest", onSortChange, className }: Sort
                 "data-[state=open]:bg-muted data-[state=open]:text-foreground",
                 className
               )}
-              aria-label="Sort options"
+              aria-label={`Sort by ${currentSortLabel}. Press S to open sort menu`}
               aria-haspopup="menu"
               aria-expanded={open}
             >
-              <ArrowDownWideNarrow className="h-4 w-4" />
+              <ArrowDownWideNarrow className="h-4 w-4" aria-hidden="true" />
               <span>{currentSortLabel}</span>
             </Button>
           </PopoverTrigger>
@@ -120,8 +129,8 @@ export function SortPopover({ sortBy = "newest", onSortChange, className }: Sort
         align="end"
         sideOffset={4}
       >
-        <div className="py-1" role="menu">
-          {sortOptions.map((option) => (
+        <div className="py-1" role="menu" aria-label="Sort options">
+          {SORT_OPTIONS.map((option) => (
             <SortItem
               key={option.option}
               {...option}
