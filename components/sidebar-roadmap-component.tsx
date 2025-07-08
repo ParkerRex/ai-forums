@@ -2,7 +2,6 @@
 import React from "react";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -83,10 +82,13 @@ export function SidebarRoadmapComponent() {
     if (issues.length > 0) {
       setCachedIssues(issues);
       try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify({
-          data: issues,
-          timestamp: Date.now()
-        }));
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            data: issues,
+            timestamp: Date.now(),
+          }),
+        );
       } catch (error) {
         console.error("Failed to cache issues:", error);
       }
@@ -107,7 +109,7 @@ export function SidebarRoadmapComponent() {
       toast.error("Woah, you're doing that too much! Please wait a moment.");
       return;
     }
-    
+
     setRefreshing(true);
     setLastRefresh(now);
     await refetch();
@@ -130,7 +132,9 @@ export function SidebarRoadmapComponent() {
                 onClick={handleRefresh}
                 disabled={refreshing || isLoading}
               >
-                <RefreshCw className={`h-3 w-3 transition-transform ${refreshing ? 'animate-[spin_0.5s_linear_infinite]' : ''}`} />
+                <RefreshCw
+                  className={`h-3 w-3 transition-transform ${refreshing ? "animate-[spin_0.5s_linear_infinite]" : ""}`}
+                />
               </Button>
               <Button
                 variant="ghost"
@@ -222,7 +226,9 @@ export function SidebarRoadmapComponent() {
               onClick={handleRefresh}
               disabled={refreshing || isLoading}
             >
-              <RefreshCw className={`h-3 w-3 transition-transform ${refreshing ? 'animate-[spin_0.5s_linear_infinite]' : ''}`} />
+              <RefreshCw
+                className={`h-3 w-3 transition-transform ${refreshing ? "animate-[spin_0.5s_linear_infinite]" : ""}`}
+              />
             </Button>
             <Button
               variant="ghost"
@@ -236,7 +242,9 @@ export function SidebarRoadmapComponent() {
             </Button>
           </div>
         </div>
-        <div className={`space-y-3 transition-all ${refreshing ? 'blur-sm opacity-50' : ''}`}>
+        <div
+          className={`space-y-3 transition-all ${refreshing ? "blur-sm opacity-50" : ""}`}
+        >
           {isLoading ? (
             <div
               className="flex items-center justify-center py-4"
@@ -245,7 +253,9 @@ export function SidebarRoadmapComponent() {
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <div className={`text-xs space-y-1 transition-all ${refreshing ? 'blur-sm opacity-50' : ''}`}>
+            <div
+              className={`text-xs space-y-1 transition-all ${refreshing ? "blur-sm opacity-50" : ""}`}
+            >
               {displayIssues.slice(0, 5).map((issue) => (
                 <div key={issue.id} className="group">
                   <a
@@ -255,7 +265,9 @@ export function SidebarRoadmapComponent() {
                     className="block hover:text-blue-600 transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <span className="flex-1 leading-tight">{issue.title}</span>
+                      <span className="flex-1 leading-tight">
+                        {issue.title}
+                      </span>
                       <span className="text-muted-foreground whitespace-nowrap flex-shrink-0">
                         #{issue.number}
                       </span>
@@ -272,12 +284,11 @@ export function SidebarRoadmapComponent() {
 
           <div className="pt-1 flex gap-2">
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               className="flex-1 w-full h-7 text-xs text-muted-foreground hover:text-foreground"
               onClick={() => setIsBugReportOpen(true)}
             >
-              <Bug className="h-3 w-3 mr-1.5" />
               Report Bug
             </Button>
             <FeatureRequestButton />

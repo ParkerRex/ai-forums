@@ -10,12 +10,12 @@ export function FeatureRequestButton() {
   return (
     <>
       <Button
-        variant="ghost"
+        variant="secondary"
         size="sm"
-        className="text-xs"
+        className="flex-1 w-full h-7 text-xs text-muted-foreground hover:text-foreground"
         onClick={() => setOpen(true)}
       >
-        Request Feature
+        Add Feature
       </Button>
       {open && (
         <FeatureRequestModal isOpen={open} onClose={() => setOpen(false)} />

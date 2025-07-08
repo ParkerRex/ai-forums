@@ -1,7 +1,7 @@
 Complete Payment System & Admin Member Management Plan
 =====================================================
 
-**CURRENT STATUS**: Phase 2 ✅ Complete | Ready to begin Phase 3
+**CURRENT STATUS**: Phase 2 ✅ Complete | Phase 3 ⏳ In Progress
 
 **COMPLETED**:
 - Phase 0: Data preparation and validation
@@ -9,9 +9,10 @@ Complete Payment System & Admin Member Management Plan
 - Phase 2: Stripe integration and webhook setup
 
 **NEXT STEPS**:
-1. Create access control and paywall components
-2. Update membership CTA modal with tier selection
-3. Begin admin member management implementation
+1. Complete access control & paywall implementation (Phase 3)
+2. Finalize membership CTA modal and in-content paywalls (Phase 4)
+3. Begin admin member management UI (Phase 5)
+4. Expand automated tests & monitoring (Phase 7)
 
 Overview
 --------
@@ -677,14 +678,14 @@ Phase 3 – Access Control & Paywall
 Phase 4 – UI Components
 -----------------------
 ☐ Rewrite membership CTA modal with tier selection
-☐ Add monthly/yearly billing toggle
+☑ Add monthly/yearly billing toggle (PricingPage)
 ☐ Display subscription status in member profile
-☐ Update pricing/page.tsx with current tier pricing and “Activate Pro” CTA
+☑ Update pricing/page.tsx with current tier pricing and “Activate Pro” CTA
 ☐ Integrate ReactivateBannerTop and ReactivateBannerInline personalized with member name
-☐ Wire “Activate Pro” CTA to checkout mutation (member tier Payment Link)
+☑ Wire “Activate Pro” CTA to checkout mutation (member tier Payment Link)
 ☐ Create pricing comparison table
-☐ Implement Stripe checkout flow
-☐ Add subscription management via customer portal
+☑ Implement Stripe checkout flow
+☑ Add subscription management via customer portal
 
 Phase 5 – Admin Member Management
 ---------------------------------
@@ -831,3 +832,12 @@ Summary of Phase 2 Accomplishments
 - Personalized experiences based on subscription history
 - Robust handling of edge cases (cancellations, expirations)
 - Clean separation between tiers with future flexibility
+
+Open Questions
+--------------
+
+* What preview length should paywalled posts expose (current hard-coded 200 chars)?
+* Should members with `past_due` status be fully paywalled or receive a grace period?
+* Confirm placement/usage of **ReactivateBannerInline** component.
+* Do scholarship members need distinct badge/messaging inside paywalls?
+* Any additional analytics required before launch?

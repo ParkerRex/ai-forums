@@ -44,128 +44,131 @@ export function NewsFeedWidget() {
         console.error("Failed to load from cache:", error);
       }
     }
-      try {
-        const defaultSources = [
-          {
-            type: "repository" as const,
-            url: "https://github.com/microsoft/chat-copilot",
-            name: "Microsoft Copilot",
-          },
-          {
-            type: "website" as const,
-            url: "https://x.ai/news",
-            name: "x.ai News",
-          },
-        ];
+    try {
+      const defaultSources = [
+        {
+          type: "repository" as const,
+          url: "https://github.com/microsoft/chat-copilot",
+          name: "Microsoft Copilot",
+        },
+        {
+          type: "website" as const,
+          url: "https://x.ai/news",
+          name: "x.ai News",
+        },
+      ];
 
-        const customSources =
-          member?.newsPreferences?.customSources || defaultSources;
-        const results: NewsItem[] = [];
+      const customSources =
+        member?.newsPreferences?.customSources || defaultSources;
+      const results: NewsItem[] = [];
 
-        const mainResponse = await fetch("/api/news", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            query:
-              "latest AI developments machine learning artificial intelligence",
-            numResults: 3,
-          }),
-        });
+      const mainResponse = await fetch("/api/news", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          query:
+            "latest AI developments machine learning artificial intelligence",
+          numResults: 3,
+        }),
+      });
 
-        if (mainResponse.ok) {
-          const mainNews = await mainResponse.json();
-          for (const item of mainNews.results || []) {
-            results.push({
-              title: item.title,
-              url: item.url,
-              publishedDate: item.publishedDate,
-              author: item.author,
-              summary: item.summary,
-              source: "AI News",
-            });
-          }
+      if (mainResponse.ok) {
+        const mainNews = await mainResponse.json();
+        for (const item of mainNews.results || []) {
+          results.push({
+            title: item.title,
+            url: item.url,
+            publishedDate: item.publishedDate,
+            author: item.author,
+            summary: item.summary,
+            source: "AI News",
+          });
         }
-
-        if (customSources.length > 0) {
-          const source = customSources[0];
-          try {
-            const customResponse = await fetch("/api/news", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                query: `${source.name} latest updates`,
-                numResults: 2,
-                includeDomains: (() => {
-                  if (source.type !== "website") return undefined;
-                  try {
-                    const host = new URL(source.url).hostname;
-                    return host ? [host] : undefined;
-                  } catch {
-                    return undefined;
-                  }
-                })(),
-              }),
-            });
-
-            if (customResponse.ok) {
-              const customNews = await customResponse.json();
-              for (const item of customNews.results || []) {
-                results.push({
-                  title: item.title,
-                  url: item.url,
-                  publishedDate: item.publishedDate,
-                  author: item.author,
-                  summary: item.summary,
-                  source: source.name,
-                });
-              }
-            }
-          } catch (error) {
-            console.error(`Failed to fetch news from ${source.name}:`, error);
-          }
-        }
-
-        const getTimestamp = (date?: string) => {
-          if (!date) return null;
-          const ts = new Date(date).getTime();
-          return isNaN(ts) ? null : ts;
-        };
-
-        const sortedNews = results
-          .sort((a, b) => {
-            const tsA = getTimestamp(a.publishedDate);
-            const tsB = getTimestamp(b.publishedDate);
-
-            if (tsA === null && tsB === null) return 0;
-            if (tsA === null) return 1;
-            if (tsB === null) return -1;
-            return tsB - tsA; // newest first
-          })
-          .slice(0, 5);
-
-        setNews(sortedNews);
-        
-        // Cache the results
-        try {
-          localStorage.setItem(CACHE_KEY, JSON.stringify({
-            data: sortedNews,
-            timestamp: Date.now()
-          }));
-        } catch (error) {
-          console.error("Failed to cache news:", error);
-        }
-      } catch (error) {
-        console.error("Failed to load news:", error);
-        toast.error("Failed to load news");
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
       }
-    };
+
+      if (customSources.length > 0) {
+        const source = customSources[0];
+        try {
+          const customResponse = await fetch("/api/news", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              query: `${source.name} latest updates`,
+              numResults: 2,
+              includeDomains: (() => {
+                if (source.type !== "website") return undefined;
+                try {
+                  const host = new URL(source.url).hostname;
+                  return host ? [host] : undefined;
+                } catch {
+                  return undefined;
+                }
+              })(),
+            }),
+          });
+
+          if (customResponse.ok) {
+            const customNews = await customResponse.json();
+            for (const item of customNews.results || []) {
+              results.push({
+                title: item.title,
+                url: item.url,
+                publishedDate: item.publishedDate,
+                author: item.author,
+                summary: item.summary,
+                source: source.name,
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to fetch news from ${source.name}:`, error);
+        }
+      }
+
+      const getTimestamp = (date?: string) => {
+        if (!date) return null;
+        const ts = new Date(date).getTime();
+        return isNaN(ts) ? null : ts;
+      };
+
+      const sortedNews = results
+        .sort((a, b) => {
+          const tsA = getTimestamp(a.publishedDate);
+          const tsB = getTimestamp(b.publishedDate);
+
+          if (tsA === null && tsB === null) return 0;
+          if (tsA === null) return 1;
+          if (tsB === null) return -1;
+          return tsB - tsA; // newest first
+        })
+        .slice(0, 5);
+
+      setNews(sortedNews);
+
+      // Cache the results
+      try {
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            data: sortedNews,
+            timestamp: Date.now(),
+          }),
+        );
+      } catch (error) {
+        console.error("Failed to cache news:", error);
+      }
+    } catch (error) {
+      console.error("Failed to load news:", error);
+      toast.error("Failed to load news");
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   const handleRefresh = async () => {
     const now = Date.now();
@@ -173,7 +176,7 @@ export function NewsFeedWidget() {
       toast.error("Woah, you're doing that too much! Please wait a moment.");
       return;
     }
-    
+
     setRefreshing(true);
     setLastRefresh(now);
     await loadNews(true);
@@ -216,7 +219,7 @@ export function NewsFeedWidget() {
     return (
       <div className="bg-card border rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
-          <h3 className="text-sm font-medium">Top</h3>
+          <h3 className="text-sm font-medium">Top AI Stories</h3>
         </div>
         <div className="text-xs space-y-1">
           {[...Array(5)].map((_, i) => (
@@ -247,10 +250,14 @@ export function NewsFeedWidget() {
           onClick={handleRefresh}
           disabled={refreshing}
         >
-          <RefreshCw className={`h-3 w-3 transition-transform ${refreshing ? 'animate-[spin_0.5s_linear_infinite]' : ''}`} />
+          <RefreshCw
+            className={`h-3 w-3 transition-transform ${refreshing ? "animate-[spin_0.5s_linear_infinite]" : ""}`}
+          />
         </Button>
       </div>
-      <div className={`text-xs space-y-1 transition-all ${refreshing ? 'blur-sm opacity-50' : ''}`}>
+      <div
+        className={`text-xs space-y-1 transition-all ${refreshing ? "blur-sm opacity-50" : ""}`}
+      >
         {news.map((item, index) => {
           const domain = item.url
             ? new URL(item.url).hostname.replace("www.", "")
