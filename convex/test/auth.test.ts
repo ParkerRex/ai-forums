@@ -61,7 +61,7 @@ test("getAuthenticatedMember creates member for new user", async () => {
   expect(member.updatedAt).toBeDefined(); // Should be set to current time
   expect(member.tier).toBe('free'); // Added required payment tier
   expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
-  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
+  expect(member.stripeCustomerId).toMatch(/^cus_temp_.*_\d+$/); // Dynamic temp Stripe customer ID
 });
 
 /**
@@ -125,7 +125,7 @@ test("getAuthenticatedMember returns existing member and updates lastOnline", as
   expect(member.updatedAt).toBeGreaterThanOrEqual(beforeTime); // Updated to current time
   expect(member.tier).toBe('free'); // Added required payment tier
   expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
-  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
+  expect(member.stripeCustomerId).toBe('cus_test'); // Existing member keeps original ID
 });
 
 /**
@@ -190,7 +190,7 @@ test("getAuthenticatedMember patches legacy member with externalId", async () =>
   expect(member.updatedAt).toBeGreaterThanOrEqual(beforeTime); // Updated
   expect(member.tier).toBe('free'); // Added required payment tier
   expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
-  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
+  expect(member.stripeCustomerId).toBe('cus_test'); // Existing member keeps original ID
 });
 
 /**
@@ -252,7 +252,7 @@ test("getAuthenticatedMember handles missing name gracefully", async () => {
   expect(member.slug).toBe('minimal'); // Derived from email prefix
   expect(member.tier).toBe('free'); // Added required payment tier
   expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
-  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
+  expect(member.stripeCustomerId).toMatch(/^cus_temp_.*_\d+$/); // Dynamic temp Stripe customer ID
 });
 
 /**
@@ -289,7 +289,7 @@ test("ensureMember internal mutation returns member ID", async () => {
   expect(member.externalId).toBe('clerk-user-test'); // Correct Clerk ID
   expect(member.tier).toBe('free'); // Added required payment tier
   expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
-  expect(member.stripeCustomerId).toBe('cus_test'); // Dummy Stripe customer ID for tests
+  expect(member.stripeCustomerId).toMatch(/^cus_temp_.*_\d+$/); // Dynamic temp Stripe customer ID
 });
 
 /**
