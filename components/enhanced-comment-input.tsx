@@ -10,7 +10,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { LinkIcon } from "@/components/ui/link";
+import { MediaUploadIcon } from "@/components/ui/media-upload";
 import { GifIcon } from "@/components/ui/gif";
 import { SmileIcon } from "@/components/ui/smile";
 import { toast } from "sonner";
@@ -467,7 +467,7 @@ export function EnhancedCommentInput({
             onClick={() => fileInputRef.current?.click()}
             disabled={attachments.length >= 5}
           >
-            <LinkIcon size={16} />
+            <MediaUploadIcon size={16} />
           </Button>
 
           <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>

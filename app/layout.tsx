@@ -9,6 +9,7 @@ import { NetworkStatusIndicator } from "@/components/error-display";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GlobalSearch } from "@/components/global-search";
 import { Footer } from "@/components/footer";
+import { ReactivateBannerTop } from "@/components/reactivate-banner-top";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -47,6 +48,7 @@ export default function RootLayout({
         >
           <ClerkProvider dynamic>
             <ConvexClientProvider>
+              <ReactivateBannerTop />
               <Header />
               <div className="pb-[24px]">{children}</div>
               <Footer />

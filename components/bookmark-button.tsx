@@ -77,7 +77,7 @@ export function BookmarkButton({
     }
   };
 
-  const iconSize = size === "sm" ? 14 : size === "lg" ? 20 : 16;
+  // Using fixed icon size of 12 for Reddit-style design
   const buttonSize = size === "sm" ? "sm" : "sm";
 
   return (
@@ -86,12 +86,12 @@ export function BookmarkButton({
         <Button
           variant={variant}
           size={buttonSize}
-          className={`p-2 h-auto hover:bg-muted ${className}`}
+          className={`px-2 py-1 h-auto hover:bg-muted/50 rounded-sm ${className}`}
           onClick={handleToggle}
           disabled={isBookmarking}
         >
           <Bookmark
-            size={iconSize}
+            size={12}
             className={`transition-colors ${
               isBookmarked
                 ? "text-blue-500 fill-blue-500"
@@ -99,7 +99,7 @@ export function BookmarkButton({
             }`}
           />
           {shouldShowLabel && (
-            <span className="ml-1 text-xs">{displayLabel}</span>
+            <span className="ml-1 text-xs font-medium">{displayLabel}</span>
           )}
         </Button>
       </Authenticated>
@@ -111,13 +111,13 @@ export function BookmarkButton({
           <Button
             variant={variant}
             size={buttonSize}
-            className={`p-2 h-auto hover:bg-muted ${className}`}
+            className={`px-2 py-1 h-auto hover:bg-muted/50 rounded-sm ${className}`}
           >
             <Bookmark
-              size={iconSize}
+              size={12}
               className="text-muted-foreground hover:text-blue-500"
             />
-            {shouldShowLabel && <span className="ml-1 text-xs">save</span>}
+            {shouldShowLabel && <span className="ml-1 text-xs font-medium">save</span>}
           </Button>
         </MembershipCTAModal>
       </Unauthenticated>

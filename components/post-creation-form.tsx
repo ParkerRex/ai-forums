@@ -33,10 +33,10 @@ import {
   Loader2,
   Send,
   FileText,
-  Image as ImageIcon,
   Link,
   BarChart3,
 } from "lucide-react";
+import { MediaUploadIcon } from "@/components/ui/media-upload";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -495,7 +495,7 @@ export function PostCreationForm({
                 Text
               </TabsTrigger>
               <TabsTrigger value="image" className="flex items-center gap-2">
-                <ImageIcon className="h-4 w-4" />
+                <MediaUploadIcon className="h-4 w-4" />
                 Image/Video
               </TabsTrigger>
               <TabsTrigger value="link" className="flex items-center gap-2">

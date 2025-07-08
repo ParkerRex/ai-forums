@@ -1,9 +1,9 @@
 /**
  * Post Page Client Component
- * 
+ *
  * Complex client component that handles individual post display with full interactivity.
  * Manages authentication states, modal interactions, post validation, and comments.
- * 
+ *
  * Features:
  * - Dual authentication UI (authenticated vs unauthenticated views)
  * - Modal management (edit, delete, history)
@@ -12,7 +12,7 @@
  * - Navigation with animated back button
  * - Responsive loading states
  * - Error handling and graceful redirects
- * 
+ *
  * @see PostPage - Server component that handles SEO and routing
  */
 
@@ -26,7 +26,6 @@ import { PostDeleteModal } from "@/components/post-delete-modal";
 import { PostHistoryModal } from "@/components/post-history-modal";
 import { Button } from "@/components/ui/button";
 import { Lock, Eye, MessageSquare } from "lucide-react";
-import { ArrowLeftIcon } from "@/components/ui/arrow-left";
 import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -37,7 +36,7 @@ import { notFound, useSearchParams, useRouter } from "next/navigation";
 
 /**
  * Props for the PostPageClient component
- * 
+ *
  * Contains both category and slug for nested dynamic routing
  * and post validation against the URL structure.
  */
@@ -53,30 +52,24 @@ interface PostPageClientProps {
 
 /**
  * Post Page Client Component
- * 
+ *
  * Renders individual post pages with full interactivity and dual authentication states.
  * Handles complex post validation, modal management, and comment deep linking.
- * 
+ *
  * @param params - Promise containing the dynamic route parameters
  * @returns JSX element rendering the post page with authentication-specific content
- * 
+ *
  * @example
  * // Used by server component:
  * <PostPageClient params={Promise.resolve({ category: "workflows", slug: "automate-content" })} />
  */
 export default function PostPageClient({ params }: PostPageClientProps) {
   const router = useRouter();
-  
-  // Ref for controlling animated back button icon
-  const backIconRef = React.useRef<{
-    startAnimation: () => void;
-    stopAnimation: () => void;
-  }>(null);
 
   // Unwrap the params promise using React's use() hook (Next.js 15 behavior)
   const resolvedParams = use(params);
   const { category, slug } = resolvedParams;
-  
+
   // Get search params for comment deep linking
   const searchParams = useSearchParams();
   const commentId = searchParams.get("commentId");
@@ -114,7 +107,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   );
 
   // Modal event handlers for post management actions
-  
+
   /** Open the edit modal */
   const handleEdit = () => {
     setIsEditModalOpen(true);
@@ -197,20 +190,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Back Navigation with animated icon */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => router.back()}
-        className="mb-6"
-        onMouseEnter={() => backIconRef.current?.startAnimation()}
-        onMouseLeave={() => backIconRef.current?.stopAnimation()}
-      >
-        <ArrowLeftIcon ref={backIconRef} size={16} className="mr-2" />
-        Back
-      </Button>
-
+    <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
       {/* Authenticated User Experience - Full access to posts and interactions */}
       <Authenticated>
         {/* Full post detail with all interactive features */}
@@ -220,14 +200,12 @@ export default function PostPageClient({ params }: PostPageClientProps) {
           onDelete={handleDelete}
           onViewHistory={handleViewHistory}
         />
-        
+
         {/* Comment section with deep linking support */}
-        <div className="mt-8">
-          <CommentSection
-            postId={post._id as Id<"posts">}
-            targetCommentId={commentId ?? undefined}
-          />
-        </div>
+        <CommentSection
+          postId={post._id as Id<"posts">}
+          targetCommentId={commentId ?? undefined}
+        />
 
         {/* Post Management Modals - Only available to authenticated users */}
         {post && (
@@ -302,7 +280,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
             <p className="text-muted-foreground mb-4">
               Get access to the complete discussion and join the conversation
             </p>
-            
+
             {/* Feature highlights to encourage signup */}
             <div className="flex items-center justify-center space-x-6 text-sm text-muted-foreground mb-6">
               <div className="flex items-center">
@@ -314,7 +292,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 {post.commentCount} comments
               </div>
             </div>
-            
+
             {/* Membership signup modal trigger */}
             <MembershipCTAModal
               title="Unlock Full Post Access"

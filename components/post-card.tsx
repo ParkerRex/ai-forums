@@ -153,29 +153,47 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
   };
 
   return (
-    <div className="bg-card border border-border/50 rounded-lg hover:border-border hover:shadow-md transition-all duration-200 group">
-      <div className="flex">
-        {/* Voting panel back on the left */}
-        <div className="flex flex-col items-center p-3 space-y-1 bg-muted/20 rounded-l-lg">
+    <div className="bg-card border border-border/30 rounded-md hover:bg-muted/30 transition-all duration-200 group">
+      {/* Main content - Reddit style full width */}
+      <div
+        className="cursor-pointer py-2 px-3"
+        onClick={handleClick}
+      >
+        <PostPreview
+          post={post as PostData}
+          size={size}
+          showStats={false}
+          showCategory={true}
+          showMember={true}
+          className="border-0 shadow-none hover:shadow-none hover:scale-100 p-0"
+        />
+        
+        {/* Actions bar with voting - Reddit style */}
+        <div className="flex items-center space-x-3 mt-2 text-xs text-muted-foreground">
+          {/* Vote button moved here */}
           <Authenticated>
             <Button
               variant="ghost"
               size="sm"
-              className="p-2 h-auto hover:bg-muted rounded-full"
-              onClick={handleUpvote}
+              className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleUpvote(e);
+              }}
               disabled={isVoting}
               onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
               onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
             >
               <ArrowBigUpIcon
                 ref={upvoteIconRef}
-                size={20}
-                className={`transition-colors ${
+                size={12}
+                className={`mr-1 transition-colors ${
                   currentUserVote === "upvote"
                     ? "text-orange-500 fill-orange-500"
                     : "text-muted-foreground hover:text-orange-500"
                 }`}
               />
+              <span className="font-medium">{optimisticNetVotes}</span>
             </Button>
           </Authenticated>
           <Unauthenticated>
@@ -186,47 +204,26 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="p-2 h-auto hover:bg-muted rounded-full"
+                className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
                 onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
                 onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
               >
                 <ArrowBigUpIcon
                   ref={upvoteIconRef}
-                  size={20}
-                  className="text-muted-foreground hover:text-orange-500"
+                  size={12}
+                  className="mr-1 text-muted-foreground hover:text-orange-500"
                 />
+                <span className="font-medium">{optimisticNetVotes}</span>
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
-          <span className="text-sm font-bold text-foreground">
-            {optimisticNetVotes}
-          </span>
-        </div>
-
-        {/* Main content using PostPreview */}
-        <div
-          className="flex-1 cursor-pointer group-hover:bg-muted/5 transition-colors duration-200"
-          onClick={handleClick}
-        >
-          <PostPreview
-            post={post as PostData}
-            size={size}
-            showStats={false}
-            showCategory={true}
-            showMember={true}
-            className="border-0 shadow-none hover:shadow-none hover:scale-100"
-          />
-        </div>
-      </div>
-
-      {/* Actions bar */}
-      <div className="border-t border-border/30 px-4 py-2 bg-muted/10">
-        <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+          
+          {/* Comments */}
           <Authenticated>
             <Button
               variant="ghost"
               size="sm"
-              className="px-3 py-1.5 h-auto hover:bg-muted hover:text-foreground rounded-full transition-colors"
+              className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 handleClick();
@@ -236,8 +233,8 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
             >
               <MessageSquareIcon
                 ref={commentIconRef}
-                size={16}
-                className="mr-1.5"
+                size={12}
+                className="mr-1"
               />
               <span className="font-medium">{post.commentCount}</span>
             </Button>
@@ -250,30 +247,34 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="px-3 py-1.5 h-auto hover:bg-muted hover:text-foreground rounded-full transition-colors"
+                className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
                 onMouseEnter={() => commentIconRef.current?.startAnimation()}
                 onMouseLeave={() => commentIconRef.current?.stopAnimation()}
               >
                 <MessageSquareIcon
                   ref={commentIconRef}
-                  size={16}
-                  className="mr-1.5"
+                  size={12}
+                  className="mr-1"
                 />
                 <span className="font-medium">{post.commentCount}</span>
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
+          
+          {/* Bookmark and Share */}
           <BookmarkButton targetId={post._id} targetType="post" size="sm" />
-
           <Button
             variant="ghost"
             size="sm"
-            className="px-3 py-1.5 h-auto hover:bg-muted hover:text-foreground rounded-full transition-colors"
-            onClick={handleShare}
+            className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleShare(e);
+            }}
             onMouseEnter={() => shareIconRef.current?.startAnimation()}
             onMouseLeave={() => shareIconRef.current?.stopAnimation()}
           >
-            <UploadIcon ref={shareIconRef} size={16} className="mr-1.5" />
+            <UploadIcon ref={shareIconRef} size={12} className="mr-1" />
             <span className="font-medium">share</span>
           </Button>
         </div>

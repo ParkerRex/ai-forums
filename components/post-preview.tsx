@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   getPostPreviewAsset,
   getContentExcerpt,
@@ -106,41 +105,43 @@ export default function PostPreview({
   const postUrl = `/post/${post._id}`;
 
   return (
-    <Card
+    <div
       className={cn(
-        "overflow-hidden transition-all duration-200 hover:shadow-lg hover:scale-[1.02] cursor-pointer",
+        "overflow-hidden transition-all duration-200",
         className
       )}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onClick={handleClick}
     >
-      <CardContent className="p-0">
-        <div className={cn("flex flex-col", size !== "large" && "p-3")}>
+      <div className="flex flex-col space-y-1">
           {/* Content */}
           <div className={cn(
             "flex-1 min-w-0",
             (hasMedia(post) || isLinkPost(post) || isPollPost(post)) && "mb-3"
           )}>
-            {/* Header */}
-            <div className="flex items-start justify-between gap-2 mb-2">
+            {/* Header - Reddit style */}
+            <div className="flex items-start justify-between gap-2 mb-1">
               <div className="flex-1 min-w-0">
                 {showCategory && post.category && (
-                  <div className="flex items-center gap-2 mb-1">
-                    <Badge variant="secondary" className="text-xs">
-                      {post.category.icon} {post.category.displayName}
-                    </Badge>
+                  <div className="flex items-center gap-1 mb-1">
+                    <span className="text-xs text-muted-foreground">
+                      /{post.category.displayName}
+                    </span>
                     {post.type !== "text" && (
-                      <Badge variant="outline" className="text-xs">
+                      <span className="text-xs text-muted-foreground">•</span>
+                    )}
+                    {post.type !== "text" && (
+                      <span className="text-xs text-muted-foreground">
                         {getPostTypeLabel(post)}
-                      </Badge>
+                      </span>
                     )}
                   </div>
                 )}
                 <Link href={postUrl} className="group">
                   <h3 className={cn(
-                    "font-semibold line-clamp-2 group-hover:text-primary transition-colors",
-                    size === "small" ? "text-base" : "text-lg"
+                    "font-medium line-clamp-2 group-hover:text-primary transition-colors",
+                    size === "small" ? "text-sm" : "text-base"
                   )}>
                     {post.title}
                   </h3>
@@ -164,9 +165,9 @@ export default function PostPreview({
               )}
             </div>
 
-            {/* Author and excerpt */}
+            {/* Author and excerpt - Reddit style */}
             {shouldShowMember && post.member && (
-              <div className="text-sm text-muted-foreground mb-2">
+              <div className="text-xs text-muted-foreground mb-1">
                 by{" "}
                 <Link
                   href={`/members/${post.member?.slug || post.member?.username}`}
@@ -180,11 +181,11 @@ export default function PostPreview({
               </div>
             )}
 
-            {/* Content excerpt */}
+            {/* Content excerpt - Reddit style */}
             {excerpt && (
               <p className={cn(
-                "text-muted-foreground line-clamp-3 leading-relaxed",
-                size === "small" ? "text-sm" : "text-base"
+                "text-foreground line-clamp-3 leading-relaxed",
+                size === "small" ? "text-xs" : "text-sm"
               )}>
                 {excerpt}
               </p>
@@ -205,11 +206,11 @@ export default function PostPreview({
             )}
           </div>
 
-          {/* Media/Link/Poll Preview */}
+          {/* Media/Link/Poll Preview - Reddit style */}
           {(hasMedia(post) || isLinkPost(post) || isPollPost(post)) && (
             <div 
               className={cn(
-                "relative overflow-hidden bg-muted rounded-lg",
+                "relative overflow-hidden bg-muted rounded-md mt-2",
                 previewClasses.wrapper,
                 previewClasses.aspectRatio
               )}
@@ -350,8 +351,7 @@ export default function PostPreview({
               )}
             </div>
           )}
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }                        

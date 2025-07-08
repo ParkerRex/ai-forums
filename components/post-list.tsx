@@ -63,7 +63,7 @@ export default function PostList({ categoryId, sortBy = "newest" }: PostListProp
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       {posts.map((post) => (
         <PostCard key={post._id} post={post} size="small" />
       ))}

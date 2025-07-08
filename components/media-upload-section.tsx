@@ -6,7 +6,8 @@ import { MediaPreviewGrid } from "./media-preview-grid";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
-import { Upload, Link, X, Plus } from "lucide-react";
+import { Link, X, Plus } from "lucide-react";
+import { MediaUploadIcon } from "@/components/ui/media-upload";
 import { toast } from "sonner";
 import { validateMediaFile } from "@/lib/upload-media";
 import { extractYouTubeId, getYouTubeThumbnail } from "@/lib/youtube-utils";
@@ -191,7 +192,7 @@ export function MediaUploadSection({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <Upload className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+          <MediaUploadIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
           <p className="text-sm text-muted-foreground mb-4">
             Drag and drop files here, or click to browse
           </p>
@@ -202,7 +203,7 @@ export function MediaUploadSection({
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled}
             >
-              <Upload className="h-4 w-4 mr-2" />
+              <MediaUploadIcon className="h-4 w-4 mr-2" />
               Choose Files
             </Button>
           </div>

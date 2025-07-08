@@ -647,8 +647,13 @@ Phase 2 – Stripe Integration
 ☑ Add customer portal integration in convex/stripe/portal.ts
 ☑ Handle subscription lifecycle events
 ☑ Process payment success/failure webhooks
-☑ Create checkout session (now Payment Link) mutation in convex/stripe/checkout.ts
+☑ Process refund and partial_refund events – update payments table with refundedAmount and status
+☐ Create checkout session (now Payment Link) mutation in convex/stripe/checkout.ts
 ☐ Generate & store Payment Links for each tier (STRIPE_…_PAYMENT_LINK env vars)
+☐ Send renewal reminder notification 3 days before subscription end via notifications.sendRenewalReminder (convex/notifications.ts)
+☐ Banner component (components/payment-reminder-banner.tsx) shown 3 days before due
+☐ Expose getSubscriptionInfo query (backend)  ❯ UI wiring in Phase 4
+☐ Default “Activate Pro” checkout link on pricing/page.tsx triggers member tier Payment Link (calls convex/stripe/checkout.ts)
 ☐ Cron job to send renewal reminders 7 days before due date (convex/crons.ts)
 ☐ Banner component (components/payment-reminder-banner.tsx) shown X days before due
 ☐ Restrict guarded content on/after due date for unpaid members
@@ -659,6 +664,8 @@ Phase 3 – Access Control & Paywall
 ☐ Create canViewFullContent helper in convex/helpers/access.ts
 ☐ Update post queries to check member tier
 ☐ Implement paywall logic for free tier members
+☐ Restrict guarded content on/after due date for unpaid members (uses getSubscriptionInfo)
+☐ Surface JoinVaiProModal when content is restricted to prompt upgrade
 ☐ Create paywall component with upgrade CTA
 ☐ Test content access for each tier
 
@@ -667,6 +674,9 @@ Phase 4 – UI Components
 ☐ Rewrite membership CTA modal with tier selection
 ☐ Add monthly/yearly billing toggle
 ☐ Display subscription status in member profile
+☐ Update pricing/page.tsx with current tier pricing and “Activate Pro” CTA
+☐ Integrate ReactivateBannerTop and ReactivateBannerInline personalized with member name
+☐ Wire “Activate Pro” CTA to checkout mutation (member tier Payment Link)
 ☐ Create pricing comparison table
 ☐ Implement Stripe checkout flow
 ☐ Add subscription management via customer portal
@@ -679,6 +689,9 @@ Phase 5 – Admin Member Management
 ☐ Implement member search and sorting
 ☐ Create member details modal
 ☐ Build payment history table
+☐ Ensure refunds appear in payment history table with negative amounts and status badge
+☐ Implement refundSubscription mutation (convex/stripe/refund.ts) and secure Stripe refund call
+☐ Refund mutation inserts payment record with status "refunded" (or updates existing) and logs admin actorId
 ☐ Add payment details modal with refund capability
 ☐ Display subscription management actions
 

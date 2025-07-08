@@ -96,10 +96,9 @@ export default function CommentActionsMenu({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 w-8 p-0 hover:bg-muted"
+            className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
           >
-            <MoreHorizontal className="h-4 w-4" />
-            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-3.5 w-3.5 group-hover:text-foreground transition-colors" />
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
