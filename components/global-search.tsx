@@ -164,7 +164,7 @@ function SearchResultItem({
                   slug: result.member.slug,
                   _id: result.member._id as Id<"members">,
                 })}
-                className="text-sm font-medium hover:text-primary transition-colors"
+                className="text-sm font-medium"
                 data-testid="member-link"
               >
                 {result.member.username}
@@ -207,7 +207,7 @@ function SearchResultItem({
               : ""
       }
       onSelect={handleSelect}
-      className={`flex items-center gap-3 p-3 ${result.restricted ? "opacity-60" : ""}`}
+      className={`flex items-center gap-3 p-3 data-[selected=true]:bg-muted data-[selected=true]:text-foreground ${result.restricted ? "opacity-60" : ""}`}
     >
       <div className="flex-shrink-0">{getIcon(result.type)}</div>
 

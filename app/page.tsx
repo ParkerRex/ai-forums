@@ -3,20 +3,16 @@ import PostHeader from '@/components/post-header';
 import PostList from '@/components/post-list';
 import PostSidebar from '@/components/post-sidebar';
 import React, { useState } from 'react';
-import { Id } from '@/convex/_generated/dataModel';
 
 export default function Home() {
-  const [selectedCategoryId, setSelectedCategoryId] = useState<Id<"categories"> | undefined>(undefined);
+  const [sortBy, setSortBy] = useState<"newest" | "popular" | "trending">("newest");
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
-      <PostHeader
-        selectedCategoryId={selectedCategoryId}
-        onCategorySelect={setSelectedCategoryId}
-      />
+      <PostHeader sortBy={sortBy} onSortChange={setSortBy} />
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
         <div className="lg:col-span-3">
-          <PostList categoryId={selectedCategoryId} />
+          <PostList sortBy={sortBy} />
         </div>
         <div className="lg:col-span-1">
           <PostSidebar />

@@ -262,7 +262,7 @@ export function SidebarRoadmapComponent() {
                     href={issue.html_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="block hover:text-blue-600 transition-colors"
+                    className="block transition-colors"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <span className="flex-1 leading-tight">
@@ -271,10 +271,6 @@ export function SidebarRoadmapComponent() {
                       <span className="text-muted-foreground whitespace-nowrap flex-shrink-0">
                         #{issue.number}
                       </span>
-                    </div>
-                    <div className="text-muted-foreground mt-0.5">
-                      <span className="text-[10px]">[Issue]</span>
-                      <span className="ml-2">github.com</span>
                     </div>
                   </a>
                 </div>

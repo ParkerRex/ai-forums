@@ -37,7 +37,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-  --radius-sm: calc(var(--radius) - 4px);
+  --radius-sm: 5px;
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
@@ -57,14 +57,14 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
+  --primary: rgb(255 255 255);
+  --primary-foreground: rgb(0 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: rgb(91 205 5);
+  --accent-foreground: rgb(255 255 255);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -76,8 +76,8 @@
   --chart-5: oklch(0.769 0.188 70.08);
   --sidebar: oklch(0.985 0 0);
   --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: rgb(255 255 255);
+  --sidebar-primary-foreground: rgb(0 0 0);
   --sidebar-accent: oklch(0.97 0 0);
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
@@ -94,14 +94,14 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --primary: rgb(0 0 0);
+  --primary-foreground: rgb(255 255 255);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  --accent: rgb(147 211 52);
+  --accent-foreground: rgb(0 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
   --input: oklch(1 0 0 / 15%);
@@ -113,8 +113,8 @@
   --chart-5: oklch(0.645 0.246 16.439);
   --sidebar: oklch(0.205 0 0);
   --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-primary: rgb(0 0 0);
+  --sidebar-primary-foreground: rgb(255 255 255);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
@@ -130,6 +130,23 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Custom link styles */
+  a {
+    @apply text-[#ADADAD] transition-colors duration-200 ease-out;
+  }
+  
+  a:hover {
+    @apply text-black;
+  }
+  
+  .dark a {
+    @apply text-[#707070];
+  }
+  
+  .dark a:hover {
+    @apply text-white;
   }
 }
 
@@ -192,13 +209,19 @@
 }
 
 .prose-editor .ProseMirror a {
-  color: hsl(var(--primary));
-  text-decoration: underline;
+  @apply text-[#ADADAD] transition-colors duration-200 ease-out no-underline;
 }
 
 .prose-editor .ProseMirror a:hover {
-  color: hsl(var(--primary));
-  opacity: 0.8;
+  @apply text-black underline;
+}
+
+.dark .prose-editor .ProseMirror a {
+  @apply text-[#707070];
+}
+
+.dark .prose-editor .ProseMirror a:hover {
+  @apply text-white;
 }
 
 .prose-editor .ProseMirror p.is-editor-empty:first-child::before {

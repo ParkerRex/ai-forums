@@ -259,26 +259,19 @@ export function NewsFeedWidget() {
         className={`text-xs space-y-1 transition-all ${refreshing ? "blur-sm opacity-50" : ""}`}
       >
         {news.map((item, index) => {
-          const domain = item.url
-            ? new URL(item.url).hostname.replace("www.", "")
-            : item.source;
           return (
             <div key={index} className="group">
               <a
                 href={item.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="block hover:text-blue-600 transition-colors"
+                className="block transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="flex-1 leading-tight">{item.title}</span>
                   <span className="text-muted-foreground whitespace-nowrap flex-shrink-0">
                     {formatTimeAgo(item.publishedDate)}
                   </span>
-                </div>
-                <div className="text-muted-foreground mt-0.5">
-                  <span className="text-[10px]">[Article]</span>
-                  <span className="ml-2">{item.author || domain}</span>
                 </div>
               </a>
             </div>

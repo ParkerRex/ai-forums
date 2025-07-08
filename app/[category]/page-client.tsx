@@ -123,8 +123,6 @@ export default function CategoryPageClient({
 
       {/* Post Header with sorting controls */}
       <PostHeader
-        selectedCategoryId={category._id}
-        onCategorySelect={() => {}} // Disabled: no category switching on category pages
         sortBy={sortBy}
         onSortChange={setSortBy}
       />

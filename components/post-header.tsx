@@ -3,7 +3,6 @@ import React from "react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePathname } from "next/navigation";
 import PostHeaderSkeleton from "@/components/post-header-skeleton";
@@ -16,8 +15,6 @@ import { FlameIcon } from "@/components/ui/flame";
 import { PartyPopperIcon } from "@/components/ui/party-popper";
 
 interface PostHeaderProps {
-  selectedCategoryId?: Id<"categories">;
-  onCategorySelect?: (categoryId: Id<"categories"> | undefined) => void;
   sortBy?: "newest" | "popular" | "trending";
   onSortChange?: (sort: "newest" | "popular" | "trending") => void;
 }
@@ -28,14 +25,11 @@ type CategoryIconRef = {
   stopAnimation: () => void;
 };
 
-export default function PostHeader({ selectedCategoryId, onCategorySelect, sortBy = "newest", onSortChange }: PostHeaderProps) {
+export default function PostHeader({ sortBy = "newest", onSortChange }: PostHeaderProps) {
   const homeIconRef = React.useRef<HomeIconHandle>(null);
   const categoryIconRefs = React.useRef<{[key: string]: CategoryIconRef | null}>({});
   const categories = useQuery(api.categories.getCategories);
   const pathname = usePathname();
-
-  // Check if we're on a category page
-  const isOnCategoryPage = pathname.startsWith('/') && pathname !== '/' && !pathname.startsWith('/members') && !pathname.startsWith('/create') && !pathname.startsWith('/post');
 
   // Show skeleton while categories are loading
   if (categories === undefined) {
@@ -82,33 +76,19 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
       <div className="flex items-center justify-between mb-6">
         <div className="flex space-x-6 overflow-x-auto pb-2">
           {/* All Posts Tab */}
-          {isOnCategoryPage ? (
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`px-2 ${!selectedCategoryId ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              onMouseEnter={() => homeIconRef.current?.startAnimation()}
-              onMouseLeave={() => homeIconRef.current?.stopAnimation()}
-              asChild
-            >
-              <Link href="/" className="flex items-center gap-1" prefetch={true}>
-                <HomeIcon ref={homeIconRef} size={16} />
-                <span>all posts</span>
-              </Link>
-            </Button>
-          ) : (
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`px-2 ${!selectedCategoryId ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
-              onClick={() => onCategorySelect?.(undefined)}
-              onMouseEnter={() => homeIconRef.current?.startAnimation()}
-              onMouseLeave={() => homeIconRef.current?.stopAnimation()}
-            >
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`px-2 ${pathname === '/' ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+            onMouseEnter={() => homeIconRef.current?.startAnimation()}
+            onMouseLeave={() => homeIconRef.current?.stopAnimation()}
+            asChild
+          >
+            <Link href="/" className="flex items-center gap-1" prefetch={true}>
               <HomeIcon ref={homeIconRef} size={16} />
               <span>all posts</span>
-            </Button>
-          )}
+            </Link>
+          </Button>
 
           {/* Category Tabs */}
           {categories === undefined ? (
@@ -120,16 +100,14 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
             <span className="text-muted-foreground text-sm">No categories available</span>
           ) : (
             categories?.map((category) => {
-              const isActive = isOnCategoryPage ? 
-                pathname === `/${category.name}` : 
-                selectedCategoryId === category._id;
+              const isActive = pathname === `/${category.name}`;
 
-              return isOnCategoryPage ? (
+              return (
                 <Button
                   key={category._id}
                   variant="ghost"
                   size="sm"
-                  className={`px-2 ${isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                  className={`px-2 ${isActive ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
                   asChild
                 >
                   <Link 
@@ -143,19 +121,6 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
                     <span>/{category.name}</span>
                   </Link>
                 </Button>
-              ) : (
-                <Button
-                  key={category._id}
-                  variant="ghost"
-                  size="sm"
-                  className={`px-2 ${isActive ? "bg-accent text-accent-foreground" : "text-muted-foreground hover:text-foreground"}`}
-                  onClick={() => onCategorySelect?.(category._id)}
-                  onMouseEnter={() => handleCategoryIconAnimation(category._id, true)}
-                  onMouseLeave={() => handleCategoryIconAnimation(category._id, false)}
-                >
-                  {getCategoryIcon(category.name, isActive, category._id)}
-                  <span>/{category.name}</span>
-                </Button>
               );
             })
           )}
@@ -163,7 +128,7 @@ export default function PostHeader({ selectedCategoryId, onCategorySelect, sortB
 
         {/* Sort Options */}
         {onSortChange && (
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 pr-2">
             <span className="text-sm text-muted-foreground">Sort by:</span>
             <select
               value={sortBy}

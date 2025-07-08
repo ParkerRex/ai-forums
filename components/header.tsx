@@ -178,10 +178,7 @@ export default function Header() {
                   variant="default"
                   size="default"
                   className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
-                  onMouseEnter={() => plusIconRef.current?.startAnimation()}
-                  onMouseLeave={() => plusIconRef.current?.stopAnimation()}
                 >
-                  <PlusIcon ref={plusIconRef} size={16} className="mr-2" />
                   Create Post
                 </Button>
               </Link>

@@ -5,27 +5,29 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm text-sm font-medium transition-all cursor-pointer disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive select-none",
+  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-sm text-sm font-medium transition-all cursor-pointer disabled:cursor-not-allowed disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive select-none min-w-[24px] min-h-[24px]",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-xs hover:bg-primary/80 active:bg-primary/70",
+          "bg-white text-black border border-[rgb(207,207,207)] hover:bg-white/90 active:bg-white/80 dark:bg-black dark:text-white dark:border-input dark:hover:bg-black/90 dark:active:bg-black/80",
         destructive:
-          "bg-destructive text-white shadow-xs hover:bg-destructive/80 active:bg-destructive/70 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+          "bg-destructive text-white border border-[rgb(207,207,207)] hover:bg-destructive/90 active:bg-destructive/80 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40",
         outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground/20 dark:bg-input/30 dark:border-input dark:hover:bg-accent/30 dark:hover:border-accent/50 active:scale-[0.98]",
+          "border border-[rgb(207,207,207)] bg-white text-neutral-900 hover:bg-neutral-50 active:bg-neutral-100 dark:border-input dark:bg-neutral-900 dark:text-white dark:hover:bg-neutral-800 dark:active:bg-neutral-700",
         secondary:
-          "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/70 active:bg-secondary/60",
+          "bg-white text-neutral-900 border border-[rgb(207,207,207)] hover:bg-neutral-50 active:bg-neutral-100 dark:bg-neutral-900 dark:text-white dark:border-input dark:hover:bg-neutral-800 dark:active:bg-neutral-700",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/30 active:bg-accent/50 dark:active:bg-accent/40",
-        link: "text-primary underline-offset-4 hover:underline hover:text-primary/80",
+          "text-neutral-900 hover:bg-neutral-100 active:bg-neutral-200 dark:text-white dark:hover:bg-neutral-800 dark:active:bg-neutral-700",
+        link: "text-[#ADADAD] underline-offset-4 hover:underline hover:text-black transition-colors duration-200 ease-out dark:text-[#707070] dark:hover:text-white",
+        accent:
+          "bg-accent text-accent-foreground border border-[rgb(207,207,207)] hover:bg-accent/90 active:bg-accent/80 dark:bg-accent dark:text-accent-foreground dark:border-input dark:hover:bg-accent/90 dark:active:bg-accent/80",
       },
       size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-sm gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-sm px-2 has-[>svg]:px-4",
-        icon: "size-9",
+        default: "h-8 px-3 py-1.5",
+        sm: "h-7 px-2.5 py-1 text-xs gap-1",
+        lg: "h-9 px-4 py-2",
+        icon: "size-8 min-w-[24px] min-h-[24px]",
       },
     },
     defaultVariants: {

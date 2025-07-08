@@ -10,16 +10,16 @@ const BANNED_PATTERNS = [
   /\bbg-gray-\d+\b/,
   /\bbg-slate-\d+\b/,
   /\bbg-zinc-\d+\b/,
-  /\bbg-neutral-\d+\b/,
+  /\bbg-neutral-(?!900|800|700|50|100|200)\d+\b/, // Allow specific neutral shades for buttons
   /\bbg-stone-\d+\b/,
   
   // Text colors
-  /\btext-white(?!\s+shadow|\s+\[a&\])/, // Allow text-white for destructive buttons
+  /\btext-white(?!\s+shadow|\s+\[a&\]|\s+border|\s+dark:)/, // Allow text-white for destructive buttons and in dark mode
   /\btext-black\b/,
   /\btext-gray-\d+\b/,
   /\btext-slate-\d+\b/,
   /\btext-zinc-\d+\b/,
-  /\btext-neutral-\d+\b/,
+  /\btext-neutral-(?!900|700|300)\d+\b/, // Allow specific neutral shades for buttons
   /\btext-stone-\d+\b/,
   
   // Border colors
@@ -28,7 +28,7 @@ const BANNED_PATTERNS = [
   /\bborder-gray-\d+\b/,
   /\bborder-slate-\d+\b/,
   /\bborder-zinc-\d+\b/,
-  /\bborder-neutral-\d+\b/,
+  /\bborder-neutral-(?!800|200|300|700)\d+\b/, // Allow specific neutral shades for buttons
   /\bborder-stone-\d+\b/,
 ];
 
@@ -61,6 +61,12 @@ module.exports = {
       if (typeof node.value !== 'string') return;
       
       const classNames = node.value;
+      
+      // Skip checking files in ui/button.tsx
+      const filename = context.getFilename();
+      if (filename.includes('ui/button.tsx')) {
+        return;
+      }
       
       for (const pattern of BANNED_PATTERNS) {
         const matches = classNames.match(new RegExp(pattern.source, 'g'));

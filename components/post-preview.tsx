@@ -107,7 +107,7 @@ export default function PostPreview({
   return (
     <div
       className={cn(
-        "overflow-hidden transition-all duration-200",
+        "overflow-hidden transition-all duration-200 group",
         className
       )}
       onMouseEnter={() => setIsHovering(true)}
@@ -138,9 +138,9 @@ export default function PostPreview({
                     )}
                   </div>
                 )}
-                <Link href={postUrl} className="group">
+                <Link href={postUrl} className="group-hover:text-black dark:group-hover:text-white transition-colors duration-200 ease-out">
                   <h3 className={cn(
-                    "font-medium line-clamp-2 group-hover:text-primary transition-colors",
+                    "font-medium line-clamp-2",
                     size === "small" ? "text-sm" : "text-base"
                   )}>
                     {post.title}
@@ -171,7 +171,7 @@ export default function PostPreview({
                 by{" "}
                 <Link
                   href={`/members/${post.member?.slug || post.member?.username}`}
-                  className="hover:text-foreground transition-colors font-medium"
+                  className="font-medium"
                   onClick={(e) => e.stopPropagation()}
                 >
                   {post.member?.firstName} {post.member?.lastName}
