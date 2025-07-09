@@ -176,12 +176,14 @@ By thinking through edge cases like expired memberships, manual role changes, an
 
 **Sources:** Discord Developer Documentation (API and OAuth guides); Convex Documentation (Triggers, Cron Jobs, Scheduling, Environment Variables).
 
-OPEN QUESTIONS
-==============
+DECISIONS (resolved)
+====================
 
-1. **Role IDs & Guild ID** – Need the exact Discord *guild ID* and **role IDs** for each membership tier (*early_bird*, *founding_member*, *member*, *scholarship*, *free*).  
-2. **Automatic guild join?** – Should the backend attempt to auto-add members to the guild (requires `guilds.join` scope) or simply report an error when the user hasn’t joined yet?  
-3. **Grace-period policy** – Confirm whether users in *cancelled* status but still within `subscriptionEndDate` keep their paid role until the date passes.
+* **Guild ID:** ``1355280592962453585`` (constant ``DISCORD_GUILD_ID``)
+* **Paid‐member role ID:** ``1387242935992713216`` (constant ``DISCORD_ROLE_MEMBER_ID``)
+* **Observer (free) role ID:** ``1392614035261751387`` (constant ``DISCORD_ROLE_OBSERVER_ID``)
+* **Auto-join:** YES – backend will attempt to join members to the guild via ``guilds.join`` immediately after account linking and before role sync.
+* **Grace period:** Users in *cancelled* status retain their paid role until ``subscriptionEndDate``.
 
 
 TASK CHECKLIST
@@ -192,13 +194,14 @@ Phase 1 – Foundation
 ☐ add `discordId` field to ``convex/schema.ts`` and run codegen  
 ☐ create migration script ``convex/migrations/add_discord_id.ts``  
 ☐ extend validators in ``convex/members.ts`` (UI + server)  
-☐ commit env vars: ``DISCORD_BOT_TOKEN``, ``DISCORD_GUILD_ID``, ``DISCORD_ROLE_*``  
+☐ commit env vars: ``DISCORD_BOT_TOKEN``, ``DISCORD_GUILD_ID``, ``DISCORD_ROLE_MEMBER_ID``, ``DISCORD_ROLE_OBSERVER_ID``  
 ☐ unit test schema update (ensure read/write with `discordId`)
 
 Phase 2 – Backend Sync
 ----------------------
 ☐ new file ``convex/discord/actions.ts`` – low-level REST helpers  
 ☐ new internal action ``internal.discord.syncRoles``  
+☐ new internal action ``internal.discord.joinGuild`` (auto-add user using `guilds.join`)  
 ☐ helper ``getTargetRolesForMember()`` with exhaustive tier/status mapping  
 ☐ update ``stripe/webhooks.ts`` + membership mutations to `ctx.scheduler.runAfter(0, internal.discord.syncRoles, …)`  
 ☐ register trigger on ``members`` (tier/status change) using *convex-helpers*  
@@ -240,7 +243,8 @@ PHASE 2 – BACKEND SYNC
   * `putRole(userId, roleId)`
   * `deleteRole(userId, roleId)`
   * `getMemberRoles(userId)` (optional cache)
-``convex/discord/roleMappings.ts`` (NEW) – exports constant ``TIER_TO_ROLE_ID`` sourced from env.
+  * `joinGuild(userId, accessToken)` – uses `PUT /guilds/{guild.id}/members/{user.id}` with user token.
+``convex/discord/roleMappings.ts`` (NEW) – exports constant ``TIER_TO_ROLE_ID`` + ``FREE_ROLE_ID``.
 ``convex/discord/sync.ts`` (NEW internal action) – exports:
   * ``syncRoles(memberId)`` – calculate desired roles vs current and issue add/remove calls (idempotent).
   * ``syncAllRoles()`` – iterate active members in batches of 100, throttled.
@@ -251,16 +255,17 @@ PHASE 2 – BACKEND SYNC
 **Code Changes**
 * ``actions.ts`` uses ``fetch`` with ``Authorization: Bot ${token}``; handles 429 with retry-after.
 * ``getTargetRolesForMember(member)`` logic table:
-  * status == *active* → paid tier role.
-  * status in (*past_due*, *cancelled*) && ``subscriptionEndDate`` future → keep paid role.
-  * else → remove paid roles, add FREE role.
+  * status == *active* → ``DISCORD_ROLE_MEMBER_ID``.
+  * status in (*past_due*, *cancelled*) && ``subscriptionEndDate`` future → keep ``DISCORD_ROLE_MEMBER_ID``.
+  * else → remove paid role, add ``DISCORD_ROLE_OBSERVER_ID``.
+* ``joinGuild`` uses user access token (from OAuth) + bot token as reason header; called immediately after linking.
 * `syncRoles`:
   1. Skip if `discordId` absent.
-  2. Fetch current roles (or assume unknown and always PUT/DELETE managed roles).
-  3. Compare to target; batch REST calls; log failures to ``roleSyncLog`` table.
-  4. Patch member doc ``discordRoleSyncedAt`` timestamp for UI feedback.
-* Triggers & webhooks call ``ctx.scheduler.runAfter(0, internal.discord.syncRoles, { memberId })`` to keep pure.
-* ``syncAllRoles`` selects members with `discordId != null` and loops with same helper.
+  2. Ensure member is in guild (optionally call `joinGuild` if not and access token stored <15 min old).
+  3. Fetch current roles vs target; PUT/DELETE accordingly; log failures to ``roleSyncLog``.
+  4. Patch member doc ``discordRoleSyncedAt``.
+* Triggers & webhooks call ``ctx.scheduler.runAfter(0, internal.discord.syncRoles, { memberId })``.
+* ``syncAllRoles`` same logic in batch.
 
 **Unit Tests**
 * ``convex/test/discordSync.test.ts`` mocks global ``fetch``; asserts correct PUT/DELETE payloads given sample member states.
@@ -271,8 +276,8 @@ PHASE 3 – ACCOUNT LINKING & UI
 ==============================
 
 **Affected Files & New Files**
-``app/api/discord/oauth/route.ts`` (NEW) – handles OAuth callback, exchanges code for access token, fetches Discord user (`/users/@me`) and returns `discordId`.
-``convex/discord/linkAccount.ts`` (NEW mutation) – persists `discordId` on member, schedules immediate role sync.
+``app/api/discord/oauth/route.ts`` (NEW) – handles OAuth callback, exchanges code for access token (`identify`, `guilds.join`), fetches Discord user (`/users/@me`), **calls internal.discord.joinGuild** then returns `discordId`.
+``convex/discord/linkAccount.ts`` (NEW mutation) – persists `discordId` + `discordAccessToken` (TTL 15 min) on member, schedules immediate role sync.
 ``components/ConnectDiscordButton.tsx`` (NEW) – opens OAuth URL; after callback, shows success toast.
 ``components/settings/DiscordSection.tsx`` – renders connect button when `currentMember.discordId` missing.
 ``lib/discord.ts`` – add `getDiscordOAuthUrl()` helper.
