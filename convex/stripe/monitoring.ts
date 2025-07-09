@@ -228,6 +228,7 @@ export const getWebhookHealth = query({
         failureRate: metrics.failureRate,
         avgProcessingTime: metrics.avgProcessingTime,
         duplicateRate: metrics.duplicateRate,
+        eventTypeMetrics: metrics.eventTypeMetrics,
       },
       lastChecked: Date.now(),
     };

@@ -183,6 +183,11 @@ export default function ReactivatePage() {
     setIsLoading(true);
 
     try {
+      // Ensure subscription info has a tier
+      if (!subscriptionInfo?.tier) {
+        throw new Error("No subscription tier found");
+      }
+
       // Construct the environment variable key for the specific tier and billing period
       // Format: NEXT_PUBLIC_STRIPE_FOUNDING_MEMBER_YEARLY_PRICE_ID
       const priceIdKey = `NEXT_PUBLIC_STRIPE_${subscriptionInfo.tier.toUpperCase()}_${billingPeriod.toUpperCase()}_PRICE_ID`;

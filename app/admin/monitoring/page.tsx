@@ -211,8 +211,9 @@ export default function MonitoringPage() {
           <div className="space-y-4">
             {Object.entries(webhookHealth.metrics.eventTypeMetrics || {}).map(
               ([eventType, metrics]) => {
-                const successRate = metrics.total > 0
-                  ? (metrics.processed / metrics.total) * 100
+                const metricsData = metrics as { total: number; processed: number; failed: number };
+                const successRate = metricsData.total > 0
+                  ? (metricsData.processed / metricsData.total) * 100
                   : 0;
                 
                 return (
@@ -220,7 +221,7 @@ export default function MonitoringPage() {
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">{eventType}</span>
                       <span className="text-sm text-muted-foreground">
-                        {metrics.processed}/{metrics.total}
+                        {metricsData.processed}/{metricsData.total}
                       </span>
                     </div>
                     <Progress value={successRate} />

@@ -184,8 +184,8 @@ function transformMemberForUI(member: Doc<"members">) {
     // URL slug
     slug: member.slug,
     // Subscription fields
-    tier: member.tier,
-    subscriptionStatus: member.subscriptionStatus,
+    tier: member.tier || "free",
+    subscriptionStatus: member.subscriptionStatus || "none",
     subscriptionEndDate: member.subscriptionEndDate,
     billingInterval: member.billingInterval,
   };

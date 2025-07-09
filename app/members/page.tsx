@@ -82,7 +82,8 @@ function MembersPageContent() {
   // Transform server data to match MembersDisplay interface
   // This transformation layer allows us to adapt server data structure to component needs
   const members =
-    membersData?.map((member) => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    membersData?.map((member: any) => ({
       id: member._id, // Convert Convex _id to generic id for component
       firstName: member.firstName,
       lastName: member.lastName,

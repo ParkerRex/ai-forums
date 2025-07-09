@@ -178,7 +178,7 @@ export default function BillingPage() {
           <div className="flex items-center justify-between">
             <CardTitle>Current Plan</CardTitle>
             {/* Tier badge with dynamic colors based on subscription level */}
-            <Badge className={getTierBadgeColor(subscriptionInfo.tier)}>
+            <Badge className={getTierBadgeColor(subscriptionInfo.tier || "free")}>
               {subscriptionInfo.tierDisplay}
             </Badge>
           </div>
