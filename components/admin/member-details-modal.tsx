@@ -6,6 +6,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import type { MemberDetailsResponse } from "@/types/admin";
 import { format, formatDistanceToNow } from "date-fns";
+import Image from "next/image";
 import {
   Mail,
   CreditCard,
@@ -94,9 +95,11 @@ export function MemberDetailsModal({
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-xl font-medium text-gray-700">
                     {member.avatarUrl ? (
-                      <img
+                      <Image
                         src={member.avatarUrl}
                         alt={fullName}
+                        width={64}
+                        height={64}
                         className="w-full h-full rounded-full object-cover"
                       />
                     ) : (
