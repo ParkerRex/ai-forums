@@ -11,7 +11,23 @@
 import { v } from "convex/values";
 import { query } from "../_generated/server";
 import { Doc } from "../_generated/dataModel";
-import { requireAdmin } from "../admin";
+
+// Helper to check if user is admin
+async function requireAdmin(ctx: any) {
+  const user = await ctx.auth.getUserIdentity();
+  if (!user) throw new Error("Not authenticated");
+  
+  const member = await ctx.db
+    .query("members")
+    .filter((q: any) => q.eq(q.field("email"), user.email))
+    .first();
+    
+  if (!member || member.role !== "admin") {
+    throw new Error("Not authorized");
+  }
+  
+  return member;
+}
 
 /**
  * Get comprehensive payment metrics for dashboard

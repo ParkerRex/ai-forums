@@ -124,22 +124,22 @@ const members = defineTable({
   netVoteCount: v.optional(v.number()),     // Net votes received on all content
   
   // Payment tier tracking
-  tier: v.union(
+  tier: v.optional(v.union(
     v.literal("free"),
     v.literal("scholarship"),
     v.literal("founding_member"),
     v.literal("early_bird"),
     v.literal("member")
-  ),
+  )),
   
   // Subscription management
-  subscriptionStatus: v.union(
+  subscriptionStatus: v.optional(v.union(
     v.literal("active"),
     v.literal("cancelled"),
     v.literal("past_due"),
     v.literal("expired"),
     v.literal("none")          // For free tier or no subscription
-  ),
+  )),
   subscriptionEndDate: v.optional(v.number()), // Unix timestamp
   billingInterval: v.optional(v.union(
     v.literal("monthly"),
@@ -147,7 +147,7 @@ const members = defineTable({
   )),
   
   // Stripe integration
-  stripeCustomerId: v.string(),
+  stripeCustomerId: v.optional(v.string()),
   stripeSubscriptionId: v.optional(v.string()),
   
   // Payment history tracking
@@ -915,7 +915,8 @@ const stripeWebhookEvents = defineTable({
   processedAt: v.optional(v.number()),
 })
   .index("by_stripeEventId", ["stripeEventId"])
-  .index("by_processed", ["processed"]);
+  .index("by_processed", ["processed"])
+  .index("by_createdAt", ["createdAt"]);
 
 /**
  * Complete database schema export for the VAI community platform.

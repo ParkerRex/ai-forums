@@ -20,6 +20,7 @@
 import { v } from "convex/values";
 import { query, internalMutation, internalQuery } from "../_generated/server";
 import { Doc } from "../_generated/dataModel";
+import { api } from "../_generated/api";
 
 /**
  * Webhook monitoring configuration
@@ -76,32 +77,31 @@ export const trackWebhookEvent = internalMutation({
 });
 
 /**
- * Get webhook processing metrics for the monitoring window
+ * Helper function to calculate webhook metrics
  */
-export const getWebhookMetrics = internalQuery({
-  handler: async (ctx) => {
-    const cutoffTime = Date.now() - MONITORING_CONFIG.MONITORING_WINDOW;
+async function calculateMetrics(ctx: any) {
+  const cutoffTime = Date.now() - MONITORING_CONFIG.MONITORING_WINDOW;
     
     // Get all events in the monitoring window
     const events = await ctx.db
       .query("stripeWebhookEvents")
       .withIndex("by_createdAt")
-      .filter((q) => q.gte(q.field("createdAt"), cutoffTime))
+      .filter((q: any) => q.gte(q.field("createdAt"), cutoffTime))
       .collect();
     
     // Calculate metrics
     const totalEvents = events.length;
-    const processedEvents = events.filter(e => e.processed).length;
-    const failedEvents = events.filter(e => !e.processed && e.error).length;
-    const duplicateEvents = events.filter(e => e.error?.includes("duplicate")).length;
+    const processedEvents = events.filter((e: any) => e.processed).length;
+    const failedEvents = events.filter((e: any) => !e.processed && e.error).length;
+    const duplicateEvents = events.filter((e: any) => e.error?.includes("duplicate")).length;
     
     // Calculate processing times for successful events
     const processingTimes = events
-      .filter(e => e.processed && e.processedAt)
-      .map(e => (e.processedAt! - e.createdAt));
+      .filter((e: any) => e.processed && e.processedAt)
+      .map((e: any) => (e.processedAt! - e.createdAt));
     
     const avgProcessingTime = processingTimes.length > 0
-      ? processingTimes.reduce((sum, time) => sum + time, 0) / processingTimes.length
+      ? processingTimes.reduce((sum: number, time: number) => sum + time, 0) / processingTimes.length
       : 0;
     
     const maxProcessingTime = processingTimes.length > 0
@@ -109,7 +109,7 @@ export const getWebhookMetrics = internalQuery({
       : 0;
     
     // Group by event type
-    const eventTypeMetrics = events.reduce((acc, event) => {
+    const eventTypeMetrics = events.reduce((acc: any, event: any) => {
       if (!acc[event.type]) {
         acc[event.type] = {
           total: 0,
@@ -145,6 +145,14 @@ export const getWebhookMetrics = internalQuery({
       eventTypeMetrics,
       monitoringWindow: MONITORING_CONFIG.MONITORING_WINDOW,
     };
+}
+
+/**
+ * Get webhook processing metrics for the monitoring window
+ */
+export const getWebhookMetrics = internalQuery({
+  handler: async (ctx) => {
+    return await calculateMetrics(ctx);
   },
 });
 
@@ -179,7 +187,7 @@ export const getRecentFailures = query({
  */
 export const getWebhookHealth = query({
   handler: async (ctx) => {
-    const metrics = await getWebhookMetrics(ctx, {});
+    const metrics = await calculateMetrics(ctx);
     
     // Determine health status
     let status: "healthy" | "warning" | "critical" = "healthy";
@@ -231,7 +239,7 @@ export const getWebhookHealth = query({
  */
 async function checkForAlerts(ctx: any, eventType: string, error: string) {
   // Get recent metrics
-  const metrics = await getWebhookMetrics(ctx, {});
+  const metrics = await calculateMetrics(ctx);
   
   // Check if we should send an alert
   const shouldAlert = 
@@ -270,7 +278,7 @@ export const generateDailyReport = internalQuery({
     const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
     
     // Get today's metrics
-    const todayMetrics = await getWebhookMetrics(ctx, {});
+    const todayMetrics = await calculateMetrics(ctx);
     
     // Get last week's events for comparison
     const lastWeekEvents = await ctx.db

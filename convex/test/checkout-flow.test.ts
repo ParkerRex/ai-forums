@@ -50,7 +50,7 @@ describe("Checkout Flow Integration Tests", () => {
       const t = convexTest(schema);
       
       // Price ID to tier mapping
-      const priceToTier = {
+      const priceToTier: Record<string, string> = {
         "price_founding_monthly": "founding_member",
         "price_founding_yearly": "founding_member",
         "price_early_monthly": "early_bird",
