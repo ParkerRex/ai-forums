@@ -68,7 +68,7 @@ export default function AdminLayout({
         <div className="text-center">
           <Shield className="w-16 h-16 mx-auto text-gray-400 mb-4" />
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600 mb-6">You don't have permission to access this area.</p>
+          <p className="text-gray-600 mb-6">You don&apos;t have permission to access this area.</p>
           <Link 
             href="/" 
             className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800"

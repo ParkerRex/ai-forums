@@ -4,12 +4,17 @@ import {
   render,
   screen,
   fireEvent,
-  waitFor,
 } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
 import { MemberCard } from "../member-card";
 import { Id } from "@/convex/_generated/dataModel";
+
+type MockComponentProps = {
+  children?: React.ReactNode;
+  className?: string;
+  [key: string]: unknown;
+};
 
 // Mock the convex hooks with a simple implementation
 vi.mock("convex/react", () => ({
@@ -18,13 +23,13 @@ vi.mock("convex/react", () => ({
 
 // Mock the UI components
 vi.mock("@/components/ui/badge", () => ({
-  Badge: ({ children, className }: any) => (
+  Badge: ({ children, className }: { children: React.ReactNode; className?: string }) => (
     <span className={className}>{children}</span>
   ),
 }));
 
 vi.mock("@/components/ui/button", () => ({
-  Button: ({ children, onClick, disabled, ...props }: any) => (
+  Button: ({ children, onClick, disabled, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
     <button onClick={onClick} disabled={disabled} {...props}>
       {children}
     </button>
@@ -32,7 +37,7 @@ vi.mock("@/components/ui/button", () => ({
 }));
 
 vi.mock("@/components/ui/checkbox", () => ({
-  Checkbox: ({ checked, onCheckedChange }: any) => (
+  Checkbox: ({ checked, onCheckedChange }: { checked?: boolean; onCheckedChange?: (checked: boolean) => void }) => (
     <input
       type="checkbox"
       checked={checked}
@@ -42,32 +47,32 @@ vi.mock("@/components/ui/checkbox", () => ({
 }));
 
 vi.mock("@/components/ui/card", () => ({
-  Card: ({ children, className }: any) => (
+  Card: ({ children, className }: MockComponentProps) => (
     <div className={className}>{children}</div>
   ),
-  CardHeader: ({ children, className }: any) => (
+  CardHeader: ({ children, className }: MockComponentProps) => (
     <div className={className}>{children}</div>
   ),
-  CardContent: ({ children }: any) => <div>{children}</div>,
-  CardFooter: ({ children, className }: any) => (
+  CardContent: ({ children }: MockComponentProps) => <div>{children}</div>,
+  CardFooter: ({ children, className }: MockComponentProps) => (
     <div className={className}>{children}</div>
   ),
-  CardTitle: ({ children, className }: any) => (
+  CardTitle: ({ children, className }: MockComponentProps) => (
     <h3 className={className}>{children}</h3>
   ),
-  CardDescription: ({ children }: any) => <p>{children}</p>,
+  CardDescription: ({ children }: MockComponentProps) => <p>{children}</p>,
 }));
 
 vi.mock("@/components/ui/avatar", () => ({
-  Avatar: ({ children, className }: any) => (
+  Avatar: ({ children, className }: MockComponentProps) => (
     <div className={className}>{children}</div>
   ),
-  AvatarImage: ({ src, alt }: any) => <img src={src} alt={alt} />,
-  AvatarFallback: ({ children }: any) => <span>{children}</span>,
+  AvatarImage: ({ src, alt }: { src?: string; alt?: string }) => <img src={src} alt={alt} />,
+  AvatarFallback: ({ children }: MockComponentProps) => <span>{children}</span>,
 }));
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
-  DropdownMenu: ({ children }: any) => <div>{children}</div>,
+  DropdownMenu: ({ children }: MockComponentProps) => <div>{children}</div>,
   DropdownMenuTrigger: ({ children, asChild }: any) => (
     <div>{children}</div>
   ),

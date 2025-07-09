@@ -15,9 +15,15 @@ import {
 } from "../payment-history";
 import { Id } from "@/convex/_generated/dataModel";
 
+type MockComponentProps = {
+  children?: React.ReactNode;
+  className?: string;
+  [key: string]: unknown;
+};
+
 // Mock the PaymentDetailsModal component
 vi.mock("../payment-details-modal", () => ({
-  PaymentDetailsModal: ({ paymentId, onClose }: any) => (
+  PaymentDetailsModal: ({ paymentId, onClose }: { paymentId: string; onClose: () => void }) => (
     <div data-testid="payment-details-modal" data-payment-id={paymentId}>
       <button onClick={onClose}>Close</button>
     </div>
@@ -26,7 +32,7 @@ vi.mock("../payment-details-modal", () => ({
 
 // Mock UI components
 vi.mock("@/components/ui/badge", () => ({
-  Badge: ({ children, className, variant }: any) => (
+  Badge: ({ children, className, variant }: MockComponentProps & { variant?: string }) => (
     <span className={className} data-variant={variant}>
       {children}
     </span>
@@ -34,7 +40,7 @@ vi.mock("@/components/ui/badge", () => ({
 }));
 
 vi.mock("@/components/ui/button", () => ({
-  Button: ({ children, onClick, ...props }: any) => (
+  Button: ({ children, onClick, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
     <button onClick={onClick} {...props}>
       {children}
     </button>
@@ -42,29 +48,29 @@ vi.mock("@/components/ui/button", () => ({
 }));
 
 vi.mock("@/components/ui/table", () => ({
-  Table: ({ children }: any) => <table>{children}</table>,
-  TableHeader: ({ children }: any) => <thead>{children}</thead>,
-  TableBody: ({ children }: any) => <tbody>{children}</tbody>,
-  TableRow: ({ children, onClick, className }: any) => (
+  Table: ({ children }: MockComponentProps) => <table>{children}</table>,
+  TableHeader: ({ children }: MockComponentProps) => <thead>{children}</thead>,
+  TableBody: ({ children }: MockComponentProps) => <tbody>{children}</tbody>,
+  TableRow: ({ children, onClick, className }: MockComponentProps & { onClick?: () => void }) => (
     <tr onClick={onClick} className={className}>
       {children}
     </tr>
   ),
-  TableHead: ({ children, className }: any) => (
+  TableHead: ({ children, className }: MockComponentProps) => (
     <th className={className}>{children}</th>
   ),
-  TableCell: ({ children, className }: any) => (
+  TableCell: ({ children, className }: MockComponentProps) => (
     <td className={className}>{children}</td>
   ),
 }));
 
 vi.mock("@/components/ui/card", () => ({
-  Card: ({ children }: any) => <div>{children}</div>,
-  CardHeader: ({ children, className }: any) => (
+  Card: ({ children }: MockComponentProps) => <div>{children}</div>,
+  CardHeader: ({ children, className }: MockComponentProps) => (
     <div className={className}>{children}</div>
   ),
-  CardContent: ({ children }: any) => <div>{children}</div>,
-  CardTitle: ({ children, className }: any) => (
+  CardContent: ({ children }: MockComponentProps) => <div>{children}</div>,
+  CardTitle: ({ children, className }: MockComponentProps) => (
     <h3 className={className}>{children}</h3>
   ),
 }));

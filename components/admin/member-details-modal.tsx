@@ -5,14 +5,9 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import type { MemberDetailsResponse } from "@/types/admin";
-import { Doc } from "@/convex/_generated/dataModel";
 import { format, formatDistanceToNow } from "date-fns";
 import {
-  X,
-  User,
   Mail,
-  Calendar,
-  Clock,
   CreditCard,
   Shield,
   FileText,
@@ -32,7 +27,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Separator } from "@/components/ui/separator";
 import {
   Table,
   TableBody,

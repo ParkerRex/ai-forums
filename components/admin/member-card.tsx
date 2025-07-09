@@ -42,7 +42,6 @@ import {
   shouldShowBilling,
   formatTierPrice 
 } from "@/lib/admin-utils";
-import { formatCentsAsCurrency } from "@/lib/format";
 
 interface MemberCardProps {
   member: {

@@ -9,7 +9,6 @@ import { format, subDays, startOfDay, endOfDay } from "date-fns";
 import {
   DollarSign,
   TrendingUp,
-  TrendingDown,
   CreditCard,
   RefreshCw,
   Download,
@@ -31,7 +30,6 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -79,7 +77,7 @@ export default function AdminPaymentsPage() {
       : startOfDay(subDays(endDate, parseInt(dateRange))).getTime();
 
   const payments = useQuery(api.admin.payments.getAllPayments, {
-    status: statusFilter === "all" ? undefined : (statusFilter as any),
+    status: statusFilter === "all" ? undefined : statusFilter,
     startDate,
     endDate: endOfDay(endDate).getTime(),
     limit: 100,
@@ -288,7 +286,6 @@ export default function AdminPaymentsPage() {
                   payment.status as keyof typeof paymentStatusConfig
                 ];
               const StatusIcon = statusInfo.icon;
-              const netAmount = payment.amount - (payment.refundedAmount || 0);
 
               return (
                 <TableRow key={payment._id} className="hover:bg-gray-50">

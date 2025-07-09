@@ -4,7 +4,6 @@ import {
   render,
   screen,
   fireEvent,
-  waitFor,
 } from "@testing-library/react";
 import { vi, describe, it, expect, beforeEach } from "vitest";
 import "@testing-library/jest-dom";
@@ -15,9 +14,17 @@ import {
   type TierFilter,
 } from "../member-status-filter";
 
+type MockComponentProps = {
+  children?: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+  variant?: string;
+  [key: string]: unknown;
+};
+
 // Mock UI components
 vi.mock("@/components/ui/badge", () => ({
-  Badge: ({ children, className, onClick, variant }: any) => (
+  Badge: ({ children, className, onClick, variant }: MockComponentProps) => (
     <span className={className} onClick={onClick} data-variant={variant}>
       {children}
     </span>
@@ -25,7 +32,7 @@ vi.mock("@/components/ui/badge", () => ({
 }));
 
 vi.mock("@/components/ui/button", () => ({
-  Button: ({ children, onClick, ...props }: any) => (
+  Button: ({ children, onClick, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => (
     <button onClick={onClick} {...props}>
       {children}
     </button>
@@ -33,7 +40,7 @@ vi.mock("@/components/ui/button", () => ({
 }));
 
 vi.mock("@/components/ui/input", () => ({
-  Input: ({ value, onChange, placeholder, className, ...props }: any) => (
+  Input: ({ value, onChange, placeholder, className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) => (
     <input
       value={value}
       onChange={onChange}
@@ -44,8 +51,15 @@ vi.mock("@/components/ui/input", () => ({
   ),
 }));
 
+type SelectMockProps = {
+  children?: React.ReactNode;
+  value?: string;
+  onValueChange?: (value: string) => void;
+  placeholder?: string;
+};
+
 vi.mock("@/components/ui/select", () => ({
-  Select: ({ children, value, onValueChange }: any) => (
+  Select: ({ children, value, onValueChange }: SelectMockProps) => (
     <select
       value={value}
       onChange={(e) => onValueChange?.(e.target.value)}
@@ -54,10 +68,10 @@ vi.mock("@/components/ui/select", () => ({
       {children}
     </select>
   ),
-  SelectTrigger: ({ children }: any) => <>{children}</>,
-  SelectValue: ({ placeholder }: any) => <>{placeholder}</>,
-  SelectContent: ({ children }: any) => <>{children}</>,
-  SelectItem: ({ value, children }: any) => (
+  SelectTrigger: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  SelectValue: ({ placeholder }: { placeholder?: string }) => <>{placeholder}</>,
+  SelectContent: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
+  SelectItem: ({ value, children }: { value: string; children?: React.ReactNode }) => (
     <option value={value}>{children}</option>
   ),
 }));

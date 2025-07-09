@@ -3,9 +3,9 @@
 import { useState, useMemo } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import { Id } from "@/convex/_generated/dataModel";
 import type { MemberWithStatus, MembershipStats } from "@/types/admin";
-import { formatDistanceToNow, format } from "date-fns";
+import { format } from "date-fns";
 import {
   Search,
   ChevronDown,
@@ -155,7 +155,7 @@ export default function AdminMembersPage() {
 
     // Sort
     filtered.sort((a, b) => {
-      let aVal: any, bVal: any;
+      let aVal: string | number | undefined, bVal: string | number | undefined;
 
       switch (sortField) {
         case "name":
@@ -396,7 +396,7 @@ export default function AdminMembersPage() {
             {/* Status Filter */}
             <Select
               value={statusFilter}
-              onValueChange={(value: any) => setStatusFilter(value)}
+              onValueChange={(value) => setStatusFilter(value as "all" | "active" | "cancelled" | "churned")}
             >
               <SelectTrigger className="w-[140px]">
                 <Filter className="w-4 h-4 mr-2" />

@@ -304,7 +304,7 @@ export default function ReactivatePage() {
                 {billingPeriod === "yearly" ? (
                   // Message for users who selected yearly billing
                   <>
-                    You'll save{" "}
+                    You&apos;ll save{" "}
                     <span className="font-bold text-green-600">${savings}</span>{" "}
                     per year with annual billing
                   </>
