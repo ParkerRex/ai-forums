@@ -4,11 +4,18 @@ import Stripe from "stripe";
 import { api } from "../../../../convex/_generated/api";
 import { ConvexHttpClient } from "convex/browser";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(request: Request) {
+  if (!process.env.STRIPE_SECRET_KEY) {
+    console.error("STRIPE_SECRET_KEY is not configured");
+    return NextResponse.json(
+      { error: "Server configuration error" },
+      { status: 500 }
+    );
+  }
+
+  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
   const body = await request.text();
   const headersList = await headers();
   const signature = headersList.get("stripe-signature");
