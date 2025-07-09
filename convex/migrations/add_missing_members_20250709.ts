@@ -107,20 +107,20 @@ const LEGACY_MEMBERS: LegacyMemberInput[] = [
 // The mutation takes no args to keep it simple & idempotent.                                       
 // -------------------------------------------------------------------------------------------------
 
-export const addMissingMembers7_9 = mutation({                                                   
-  // We don’t expect external arguments; validate with an empty object.                            
-  args: {},                                                                                       
-  /**                                                                                             
-   * Handler: iterate through `LEGACY_MEMBERS`, inserting any that are absent                      
-   * in the database.                                                                             
-   */                                                                                            
-  handler: async (ctx) => {                                                                      
-    const results: Record<string, string> = {};                                                  
+export const addMissingMembers7_9 = mutation({
+  // We don’t expect external arguments; validate with an empty object.
+  args: {},
+  /**
+   * Handler: iterate through `LEGACY_MEMBERS`, inserting any that are absent
+   * in the database.
+   */
+  handler: async (ctx) => {
+    const results: Record<string, string> = {};
 
-    // Pre-fetch all existing member emails into a Set for O(1) lookup.                           
-    const existingEmails = new Set(                                                              
-      (await ctx.db.query("members").collect()).map((m) => m.email.toLowerCase())               
-    );                                                                                           
+    // Pre-fetch all existing member emails into a Set for O(1) lookup.
+    const existingEmails = new Set(
+      (await ctx.db.query("members").collect()).map((m) => m.email.toLowerCase())
+    );
 
     for (const legacy of LEGACY_MEMBERS) {                                                       
       // If member already exists, skip and mark as such.                                         
