@@ -29,7 +29,7 @@
 // Import authentication hook to access user preferences and news source configuration
 import { useCurrentMember } from "@/hooks/use-current-member";
 // Import React hooks for state management and side effects
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 // Import news card component for displaying individual articles
 import { NewsCard } from "@/components/news/news-card";
 // Import UI components for interactive elements
@@ -138,7 +138,7 @@ export default function NewsPage() {
    * await loadNews(true);
    * ```
    */
-  const loadNews = async (showRefreshing = false) => {
+  const loadNews = useCallback(async (showRefreshing = false) => {
     // Set refreshing state if this is a manual refresh operation
     // This enables the spinning animation on the refresh button
     if (showRefreshing) setRefreshing(true);
@@ -317,13 +317,13 @@ export default function NewsPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, [member?.newsPreferences]);
 
   // Effect hook to load news when component mounts or user preferences change
   // This ensures fresh content when users update their news source preferences
   useEffect(() => {
     loadNews();
-  }, [member?.newsPreferences, loadNews]); // Re-run when news preferences change
+  }, [loadNews]); // Re-run when loadNews changes
 
   // Render skeleton loading state during initial data fetch
   // This provides immediate visual feedback while API requests are in progress

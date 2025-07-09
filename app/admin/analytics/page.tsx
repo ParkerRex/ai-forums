@@ -79,7 +79,7 @@ export default function AnalyticsPage() {
             Revenue, membership, and growth metrics
           </p>
         </div>
-        <Select value={timeRange} onValueChange={(value) => setTimeRange(value)}>
+        <Select value={timeRange} onValueChange={(value) => setTimeRange(value as "7d" | "30d" | "90d" | "1y" | "all")}>
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
