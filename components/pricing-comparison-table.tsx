@@ -1,8 +1,7 @@
 "use client";
 
-import { Check, X, Star } from "lucide-react";
+import { Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/components/ui/badge";
 
 interface Feature {
   name: string;
@@ -18,77 +17,77 @@ const features: Feature[] = [
     free: "Preview only (50 chars)",
     foundingMember: "Full access",
     member: "Full access",
-    description: "Read complete posts and discussions"
+    description: "Read complete posts and discussions",
   },
   {
     name: "Community participation",
     free: false,
     foundingMember: true,
     member: true,
-    description: "Comment, vote, and engage with the community"
+    description: "Comment, vote, and engage with the community",
   },
   {
     name: "Direct messaging",
     free: false,
     foundingMember: true,
     member: true,
-    description: "Connect directly with other members"
+    description: "Connect directly with other members",
   },
   {
     name: "Resource downloads",
     free: "Limited",
     foundingMember: "Unlimited",
     member: "Unlimited",
-    description: "Download tutorials, templates, and guides"
+    description: "Download tutorials, templates, and guides",
   },
   {
     name: "Search & discovery",
     free: "Basic",
     foundingMember: "Advanced",
     member: "Advanced",
-    description: "Find relevant content and members"
+    description: "Find relevant content and members",
   },
   {
     name: "Event access",
     free: "Public only",
     foundingMember: "All events",
     member: "All events",
-    description: "Join workshops, meetups, and AMAs"
+    description: "Join workshops, meetups, and AMAs",
   },
   {
     name: "Profile customization",
     free: true,
     foundingMember: true,
     member: true,
-    description: "Personalize your member profile"
+    description: "Personalize your member profile",
   },
   {
     name: "Bookmarks",
     free: "5 max",
     foundingMember: "Unlimited",
     member: "Unlimited",
-    description: "Save posts for later reference"
+    description: "Save posts for later reference",
   },
   {
     name: "API access",
     free: false,
     foundingMember: true,
     member: true,
-    description: "Integrate with your tools and workflows"
+    description: "Integrate with your tools and workflows",
   },
   {
     name: "Support",
     free: "Community",
     foundingMember: "Priority",
     member: "Priority",
-    description: "Get help when you need it"
+    description: "Get help when you need it",
   },
   {
     name: "Price lock guarantee",
     free: false,
     foundingMember: "Forever",
     member: false,
-    description: "Keep your pricing rate permanently"
+    description: "Keep your pricing rate permanently",
   },
 ];
 
@@ -98,30 +97,23 @@ export function PricingComparisonTable() {
       <table className="w-full border-collapse">
         <thead className="sticky top-0 bg-background z-10">
           <tr className="border-b">
-            <th className="text-left p-4 font-medium min-w-[200px]">Features</th>
+            <th className="text-left p-4 font-medium min-w-[200px]">
+              Features
+            </th>
             <th className="text-center p-4 font-medium min-w-[140px]">
               <div className="space-y-1">
                 <div className="text-lg">Free</div>
-                <div className="text-sm text-muted-foreground font-normal">$0/month</div>
-              </div>
-            </th>
-            <th className="text-center p-4 font-medium bg-primary/5 min-w-[140px] relative">
-              <Badge 
-                variant="default" 
-                className="absolute -top-3 left-1/2 transform -translate-x-1/2 flex items-center gap-1"
-              >
-                <Star className="w-3 h-3" />
-                Best Value
-              </Badge>
-              <div className="space-y-1 mt-2">
-                <div className="text-lg">Founding Member</div>
-                <div className="text-sm text-muted-foreground font-normal">$39/month</div>
+                <div className="text-sm text-muted-foreground font-normal">
+                  $0/month
+                </div>
               </div>
             </th>
             <th className="text-center p-4 font-medium min-w-[140px]">
               <div className="space-y-1">
                 <div className="text-lg">Member</div>
-                <div className="text-sm text-muted-foreground font-normal">$99/month</div>
+                <div className="text-sm text-muted-foreground font-normal">
+                  $99/month
+                </div>
               </div>
             </th>
           </tr>
@@ -152,19 +144,6 @@ export function PricingComparisonTable() {
                   </span>
                 )}
               </td>
-              <td className="text-center p-4 bg-primary/5">
-                {typeof feature.foundingMember === "boolean" ? (
-                  feature.foundingMember ? (
-                    <Check className="w-5 h-5 text-green-600 dark:text-green-500 mx-auto" />
-                  ) : (
-                    <X className="w-5 h-5 text-muted-foreground mx-auto" />
-                  )
-                ) : (
-                  <span className="text-sm font-medium">
-                    {feature.foundingMember}
-                  </span>
-                )}
-              </td>
               <td className="text-center p-4">
                 {typeof feature.member === "boolean" ? (
                   feature.member ? (
@@ -173,9 +152,7 @@ export function PricingComparisonTable() {
                     <X className="w-5 h-5 text-muted-foreground mx-auto" />
                   )
                 ) : (
-                  <span className="text-sm font-medium">
-                    {feature.member}
-                  </span>
+                  <span className="text-sm font-medium">{feature.member}</span>
                 )}
               </td>
             </tr>
@@ -190,8 +167,10 @@ interface CompactPricingComparisonProps {
   className?: string;
 }
 
-export function CompactPricingComparison({ className }: CompactPricingComparisonProps) {
-  const keyFeatures = features.slice(0, 6); // Show only first 6 features in compact view
+export function CompactPricingComparison({
+  className,
+}: CompactPricingComparisonProps) {
+  const keyFeatures = features.slice(0, 6);
 
   return (
     <div className={cn("bg-card border rounded-lg p-6", className)}>
@@ -217,22 +196,7 @@ export function CompactPricingComparison({ className }: CompactPricingComparison
                   </span>
                 )}
               </div>
-              <div className="text-center min-w-[50px]">
-                <div className="text-xs text-muted-foreground mb-1">
-                  <Star className="w-3 h-3 inline" />
-                </div>
-                {typeof feature.foundingMember === "boolean" ? (
-                  feature.foundingMember ? (
-                    <Check className="w-4 h-4 text-green-600 dark:text-green-500 mx-auto" />
-                  ) : (
-                    <X className="w-4 h-4 text-muted-foreground mx-auto" />
-                  )
-                ) : (
-                  <span className="text-xs font-medium">
-                    {feature.foundingMember}
-                  </span>
-                )}
-              </div>
+              {/* Removed Founding Member column */}
               <div className="text-center min-w-[50px]">
                 <div className="text-xs text-muted-foreground mb-1">Member</div>
                 {typeof feature.member === "boolean" ? (
@@ -242,9 +206,7 @@ export function CompactPricingComparison({ className }: CompactPricingComparison
                     <X className="w-4 h-4 text-muted-foreground mx-auto" />
                   )
                 ) : (
-                  <span className="text-xs font-medium">
-                    {feature.member}
-                  </span>
+                  <span className="text-xs font-medium">{feature.member}</span>
                 )}
               </div>
             </div>

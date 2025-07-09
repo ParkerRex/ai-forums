@@ -62,7 +62,8 @@ interface MembershipCTAModalProps {
   children?: React.ReactNode;
 }
 
-type TierType = "founding_member" | "member";
+// Only the currently available membership tier.
+type TierType = "member";
 
 export function MembershipCTAModal({
   /**
@@ -90,7 +91,8 @@ export function MembershipCTAModal({
   };
 
   const { isSignedIn } = useAuth();
-  const [selectedTier, setSelectedTier] = useState<TierType>("founding_member");
+  // Default to the single available tier.
+  const [selectedTier, setSelectedTier] = useState<TierType>("member");
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(
     "yearly",
   );
@@ -119,15 +121,8 @@ export function MembershipCTAModal({
     "Cancel anytime, no questions asked",
   ];
 
+  // Pricing details for the active "Member" tier.
   const tiers = {
-    founding_member: {
-      name: "Founding Member",
-      description: "Early supporter pricing, locked forever",
-      monthlyPrice: stripeConfig?.foundingMemberMonthlyPrice || 39,
-      yearlyPrice: stripeConfig?.foundingMemberYearlyPrice || 375,
-      badge: "Best Value",
-      badgeVariant: "default" as const,
-    },
     member: {
       name: "Member",
       description: "Standard membership pricing",
@@ -136,7 +131,7 @@ export function MembershipCTAModal({
       badge: null,
       badgeVariant: null,
     },
-  };
+  } as const;
 
   const selectedTierData = tiers[selectedTier];
   const monthlyPrice = selectedTierData.monthlyPrice;
@@ -166,18 +161,10 @@ export function MembershipCTAModal({
 
     setIsLoading(true);
     try {
-      let priceId: string;
-      if (selectedTier === "founding_member") {
-        priceId =
-          billingInterval === "monthly"
-            ? stripeConfig.foundingMemberMonthlyPriceId
-            : stripeConfig.foundingMemberYearlyPriceId;
-      } else {
-        priceId =
-          billingInterval === "monthly"
-            ? stripeConfig.memberMonthlyPriceId
-            : stripeConfig.memberYearlyPriceId;
-      }
+      const priceId =
+        billingInterval === "monthly"
+          ? stripeConfig.memberMonthlyPriceId
+          : stripeConfig.memberYearlyPriceId;
 
       const result = await createCheckoutSession({
         priceId,
@@ -347,11 +334,10 @@ export function MembershipCTAModal({
                 })}
               </div>
 
+              {/* Display yearly savings using dynamic prices */}
               {billingInterval === "yearly" && (
                 <p className="text-sm text-center text-green-600 dark:text-green-500">
-                  {selectedTier === "founding_member"
-                    ? `Save ${formatCurrency(39 * 12 - 375)} per year with Founding Member`
-                    : `Save ${formatCurrency(yearlySavings)} per year`}
+                  Save {formatCurrency(yearlySavings)} per year
                 </p>
               )}
             </div>

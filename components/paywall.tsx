@@ -58,7 +58,6 @@ interface PaywallProps {
  */
 export function Paywall({
   previewContent,
-  tier = "member",
   message = "This content is available exclusively to VAI Pro members.",
   postId,
   postTitle,
@@ -82,7 +81,7 @@ export function Paywall({
    */
   const handleUpgradeClick = () => {
     paywallAnalytics.upgradeClicked(postId, postTitle);
-    
+
     if (!isSignedIn) {
       // Unauthenticated path: Sign in -> then upgrade
       setShowSignInModal(true);
@@ -132,9 +131,7 @@ export function Paywall({
               {/* Primary CTA button - text changes based on auth status */}
               <Button onClick={handleUpgradeClick} className="w-full" size="lg">
                 {/* Dynamic button text: "Sign In" for guests, "Upgrade" for authenticated users */}
-                {isSignedIn
-                  ? `Upgrade to ${tier === "founding_member" ? "Founding Member" : "VAI Pro"}`
-                  : "Sign In to Continue"}
+                {isSignedIn ? "Upgrade to VAI Pro" : "Sign In to Continue"}
               </Button>
 
               {/* Helper text for unauthenticated users who might already have accounts */}
