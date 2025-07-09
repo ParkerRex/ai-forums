@@ -42,7 +42,6 @@ interface SortPopoverProps {
 }
 
 interface SortItemProps {
-  option: SortOption;
   label: string;
   shortcut: string;
   isSelected: boolean;
@@ -50,7 +49,6 @@ interface SortItemProps {
 }
 
 const SortItem = React.memo(function SortItem({ 
-  option, 
   label, 
   shortcut, 
   isSelected, 

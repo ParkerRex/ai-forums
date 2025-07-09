@@ -172,46 +172,6 @@ export function SidebarRoadmapComponent() {
     );
   }
 
-  const IssuesList = ({
-    issues: tableIssues,
-    showCaption = true,
-  }: {
-    issues: { id: number; number: number; title: string; html_url: string }[];
-    showCaption?: boolean;
-  }) => (
-    <div className="w-full overflow-hidden">
-      {tableIssues.map((issue) => (
-        <div
-          key={issue.id}
-          className="flex items-start gap-2 pb-2 last:pb-0 border-b last:border-b-0 border-border/30"
-        >
-          <a
-            href={issue.html_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-start gap-1 hover:underline w-full"
-          >
-            <span className="break-words whitespace-normal flex-1 min-w-0 text-xs leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
-              {issue.title}
-            </span>
-            <ExternalLink className="h-2.5 w-2.5 flex-shrink-0 text-muted-foreground/40 mt-0.5 group-hover:text-muted-foreground/60 transition-colors opacity-0 group-hover:opacity-100" />
-          </a>
-        </div>
-      ))}
-      {showCaption && (
-        <div className="mt-6 flex flex-col items-center gap-2">
-          <a
-            href="https://github.com/joinvai/vai-vex/issues"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            View all issues on GitHub
-          </a>
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <>

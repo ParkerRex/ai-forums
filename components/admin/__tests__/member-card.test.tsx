@@ -73,18 +73,18 @@ vi.mock("@/components/ui/avatar", () => ({
 
 vi.mock("@/components/ui/dropdown-menu", () => ({
   DropdownMenu: ({ children }: MockComponentProps) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children, asChild }: any) => (
+  DropdownMenuTrigger: ({ children }: MockComponentProps) => (
     <div>{children}</div>
   ),
-  DropdownMenuContent: ({ children }: any) => (
+  DropdownMenuContent: ({ children }: MockComponentProps) => (
     <div role="menu">{children}</div>
   ),
-  DropdownMenuItem: ({ children, onClick }: any) => (
+  DropdownMenuItem: ({ children, onClick }: MockComponentProps & { onClick?: () => void }) => (
     <div role="menuitem" onClick={onClick}>
       {children}
     </div>
   ),
-  DropdownMenuLabel: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuLabel: ({ children }: MockComponentProps) => <div>{children}</div>,
   DropdownMenuSeparator: () => <hr />,
 }));
 

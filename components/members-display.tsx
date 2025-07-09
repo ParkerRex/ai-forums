@@ -18,7 +18,6 @@ import { MemberHoverCardWrapper } from "@/components/member-hover-card";
 import Link from "next/link";
 import { memberProfileUrl } from "@/lib/utils";
 import { Id } from "@/convex/_generated/dataModel";
-import { cn } from "@/lib/utils";
 
 type SortField = "name" | "joinedDate" | "lastActive" | "posts" | "tier";
 type SortDirection = "asc" | "desc";
@@ -205,8 +204,8 @@ export default function MembersDisplay({ members, isLoading }: MembersDisplayPro
 
   // Sort members based on current sort field and direction
   const sortedMembers = [...members].sort((a, b) => {
-    let aValue: any;
-    let bValue: any;
+    let aValue: string | number;
+    let bValue: string | number;
 
     switch (sortField) {
       case "name":

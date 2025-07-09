@@ -66,7 +66,7 @@ const paymentStatusConfig = {
 export default function AdminPaymentsPage() {
   const [selectedPaymentId, setSelectedPaymentId] =
     useState<Id<"payments"> | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "succeeded" | "failed" | "refunded" | "partially_refunded">("all");
   const [dateRange, setDateRange] = useState("30");
 
   // Calculate date range
@@ -248,7 +248,7 @@ export default function AdminPaymentsPage() {
           </Select>
 
           {/* Status Filter */}
-          <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | "pending" | "succeeded" | "failed" | "refunded" | "partially_refunded")}>
             <SelectTrigger className="w-[180px]">
               <Filter className="w-4 h-4 mr-2" />
               <SelectValue placeholder="Filter by status" />

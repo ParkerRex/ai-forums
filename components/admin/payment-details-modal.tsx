@@ -1,17 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import type { PaymentDetailsResponse, RefundEligibility } from "@/types/admin";
 import { format } from "date-fns";
 import {
-  X,
-  DollarSign,
   CreditCard,
-  Calendar,
-  User,
   Copy,
   Loader2,
   RefreshCw,
@@ -81,7 +77,7 @@ export function PaymentDetailsModal({
     );
   }
 
-  const { payment, member, subscription } = paymentDetails;
+  const { payment, member } = paymentDetails;
   const statusInfo =
     paymentStatusConfig[payment.status as keyof typeof paymentStatusConfig];
   const StatusIcon = statusInfo.icon;
@@ -105,10 +101,10 @@ export function PaymentDetailsModal({
         ? Math.round(parseFloat(refundAmount) * 100)
         : payment.amount;
 
-      const result = await refundPayment({
+      await refundPayment({
         paymentId,
         amount: amountInCents,
-        reason: refundReason as any,
+        reason: refundReason as "requested_by_customer" | "duplicate" | "fraudulent" | "other",
         notes: refundNotes,
       });
 
@@ -118,10 +114,10 @@ export function PaymentDetailsModal({
 
       setShowRefundForm(false);
       onClose();
-    } catch (error: any) {
+    } catch (error) {
       toast.error("Refund Failed", {
         description:
-          error.message || "An error occurred while processing the refund",
+          error instanceof Error ? error.message : "An error occurred while processing the refund",
       });
     } finally {
       setIsProcessing(false);

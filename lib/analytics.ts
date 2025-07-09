@@ -8,14 +8,14 @@
 
 type AnalyticsEvent = {
   event: string;
-  properties?: Record<string, any>;
+  properties?: Record<string, unknown>;
   timestamp?: Date;
 };
 
 /**
  * Track a generic analytics event
  */
-export function trackEvent(event: string, properties?: Record<string, any>) {
+export function trackEvent(event: string, properties?: Record<string, unknown>) {
   const analyticsEvent: AnalyticsEvent = {
     event,
     properties,
