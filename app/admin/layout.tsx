@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { Users, Receipt, BarChart3, FileText, Shield, ChevronLeft } from "lucide-react";
+import { Users, Receipt, BarChart3, FileText, Shield, ChevronLeft, Activity } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface AdminNavItem {
@@ -32,6 +32,12 @@ const navItems: AdminNavItem[] = [
     href: "/admin/analytics",
     icon: BarChart3,
     description: "View membership and revenue analytics"
+  },
+  {
+    title: "Monitoring",
+    href: "/admin/monitoring",
+    icon: Activity,
+    description: "Monitor webhook health and processing"
   },
   {
     title: "Reported Comments",
