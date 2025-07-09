@@ -4,7 +4,7 @@
  * Common utility functions for admin components
  */
 
-import { Doc } from "@/convex/_generated/dataModel";
+import type { Doc } from "../convex/_generated/dataModel";
 
 /**
  * Get display name for a member
