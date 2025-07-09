@@ -1,12 +1,14 @@
 "use client";
 
-import { Check, X } from "lucide-react";
+import { Check, X, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 interface Feature {
   name: string;
   free: boolean | string;
-  pro: boolean | string;
+  foundingMember: boolean | string;
+  member: boolean | string;
   description?: string;
 }
 
@@ -14,62 +16,79 @@ const features: Feature[] = [
   {
     name: "Access to posts",
     free: "Preview only (50 chars)",
-    pro: "Full access",
+    foundingMember: "Full access",
+    member: "Full access",
     description: "Read complete posts and discussions"
   },
   {
     name: "Community participation",
     free: false,
-    pro: true,
+    foundingMember: true,
+    member: true,
     description: "Comment, vote, and engage with the community"
   },
   {
     name: "Direct messaging",
     free: false,
-    pro: true,
+    foundingMember: true,
+    member: true,
     description: "Connect directly with other members"
   },
   {
     name: "Resource downloads",
     free: "Limited",
-    pro: "Unlimited",
+    foundingMember: "Unlimited",
+    member: "Unlimited",
     description: "Download tutorials, templates, and guides"
   },
   {
     name: "Search & discovery",
     free: "Basic",
-    pro: "Advanced",
+    foundingMember: "Advanced",
+    member: "Advanced",
     description: "Find relevant content and members"
   },
   {
     name: "Event access",
     free: "Public only",
-    pro: "All events",
+    foundingMember: "All events",
+    member: "All events",
     description: "Join workshops, meetups, and AMAs"
   },
   {
     name: "Profile customization",
     free: true,
-    pro: true,
+    foundingMember: true,
+    member: true,
     description: "Personalize your member profile"
   },
   {
     name: "Bookmarks",
     free: "5 max",
-    pro: "Unlimited",
+    foundingMember: "Unlimited",
+    member: "Unlimited",
     description: "Save posts for later reference"
   },
   {
     name: "API access",
     free: false,
-    pro: true,
+    foundingMember: true,
+    member: true,
     description: "Integrate with your tools and workflows"
   },
   {
     name: "Support",
     free: "Community",
-    pro: "Priority",
+    foundingMember: "Priority",
+    member: "Priority",
     description: "Get help when you need it"
+  },
+  {
+    name: "Price lock guarantee",
+    free: false,
+    foundingMember: "Forever",
+    member: false,
+    description: "Keep your pricing rate permanently"
   },
 ];
 
@@ -80,15 +99,28 @@ export function PricingComparisonTable() {
         <thead className="sticky top-0 bg-background z-10">
           <tr className="border-b">
             <th className="text-left p-4 font-medium min-w-[200px]">Features</th>
-            <th className="text-center p-4 font-medium min-w-[120px]">
+            <th className="text-center p-4 font-medium min-w-[140px]">
               <div className="space-y-1">
                 <div className="text-lg">Free</div>
                 <div className="text-sm text-muted-foreground font-normal">$0/month</div>
               </div>
             </th>
-            <th className="text-center p-4 font-medium bg-accent/5 min-w-[120px]">
+            <th className="text-center p-4 font-medium bg-primary/5 min-w-[140px] relative">
+              <Badge 
+                variant="default" 
+                className="absolute -top-3 left-1/2 transform -translate-x-1/2 flex items-center gap-1"
+              >
+                <Star className="w-3 h-3" />
+                Best Value
+              </Badge>
+              <div className="space-y-1 mt-2">
+                <div className="text-lg">Founding Member</div>
+                <div className="text-sm text-muted-foreground font-normal">$39/month</div>
+              </div>
+            </th>
+            <th className="text-center p-4 font-medium min-w-[140px]">
               <div className="space-y-1">
-                <div className="text-lg">VAI Pro</div>
+                <div className="text-lg">Member</div>
                 <div className="text-sm text-muted-foreground font-normal">$99/month</div>
               </div>
             </th>
@@ -120,16 +152,29 @@ export function PricingComparisonTable() {
                   </span>
                 )}
               </td>
-              <td className="text-center p-4 bg-accent/5">
-                {typeof feature.pro === "boolean" ? (
-                  feature.pro ? (
+              <td className="text-center p-4 bg-primary/5">
+                {typeof feature.foundingMember === "boolean" ? (
+                  feature.foundingMember ? (
                     <Check className="w-5 h-5 text-green-600 dark:text-green-500 mx-auto" />
                   ) : (
                     <X className="w-5 h-5 text-muted-foreground mx-auto" />
                   )
                 ) : (
                   <span className="text-sm font-medium">
-                    {feature.pro}
+                    {feature.foundingMember}
+                  </span>
+                )}
+              </td>
+              <td className="text-center p-4">
+                {typeof feature.member === "boolean" ? (
+                  feature.member ? (
+                    <Check className="w-5 h-5 text-green-600 dark:text-green-500 mx-auto" />
+                  ) : (
+                    <X className="w-5 h-5 text-muted-foreground mx-auto" />
+                  )
+                ) : (
+                  <span className="text-sm font-medium">
+                    {feature.member}
                   </span>
                 )}
               </td>
@@ -150,15 +195,16 @@ export function CompactPricingComparison({ className }: CompactPricingComparison
 
   return (
     <div className={cn("bg-card border rounded-lg p-6", className)}>
-      <h3 className="text-lg font-semibold mb-4">Free vs Pro Comparison</h3>
+      <h3 className="text-lg font-semibold mb-4">Plan Comparison</h3>
       <div className="space-y-3">
         {keyFeatures.map((feature, index) => (
           <div key={index} className="flex items-center justify-between">
             <div className="flex-1">
               <div className="text-sm font-medium">{feature.name}</div>
             </div>
-            <div className="flex items-center gap-6">
-              <div className="text-center min-w-[60px]">
+            <div className="flex items-center gap-4">
+              <div className="text-center min-w-[50px]">
+                <div className="text-xs text-muted-foreground mb-1">Free</div>
                 {typeof feature.free === "boolean" ? (
                   feature.free ? (
                     <Check className="w-4 h-4 text-green-600 dark:text-green-500 mx-auto" />
@@ -171,16 +217,33 @@ export function CompactPricingComparison({ className }: CompactPricingComparison
                   </span>
                 )}
               </div>
-              <div className="text-center min-w-[60px]">
-                {typeof feature.pro === "boolean" ? (
-                  feature.pro ? (
+              <div className="text-center min-w-[50px]">
+                <div className="text-xs text-muted-foreground mb-1">
+                  <Star className="w-3 h-3 inline" />
+                </div>
+                {typeof feature.foundingMember === "boolean" ? (
+                  feature.foundingMember ? (
                     <Check className="w-4 h-4 text-green-600 dark:text-green-500 mx-auto" />
                   ) : (
                     <X className="w-4 h-4 text-muted-foreground mx-auto" />
                   )
                 ) : (
                   <span className="text-xs font-medium">
-                    {feature.pro}
+                    {feature.foundingMember}
+                  </span>
+                )}
+              </div>
+              <div className="text-center min-w-[50px]">
+                <div className="text-xs text-muted-foreground mb-1">Member</div>
+                {typeof feature.member === "boolean" ? (
+                  feature.member ? (
+                    <Check className="w-4 h-4 text-green-600 dark:text-green-500 mx-auto" />
+                  ) : (
+                    <X className="w-4 h-4 text-muted-foreground mx-auto" />
+                  )
+                ) : (
+                  <span className="text-xs font-medium">
+                    {feature.member}
                   </span>
                 )}
               </div>

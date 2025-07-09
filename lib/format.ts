@@ -16,9 +16,20 @@ export function formatCurrency(
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
-    minimumFractionDigits: 0,
+    minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
+}
+
+/**
+ * Format currency values from cents
+ */
+export function formatCentsAsCurrency(
+  amountInCents: number,
+  currency: string = "USD",
+  locale: string = "en-US"
+): string {
+  return formatCurrency(amountInCents / 100, currency, locale);
 }
 
 /**

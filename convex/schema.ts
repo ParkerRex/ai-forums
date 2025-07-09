@@ -89,6 +89,7 @@ const members = defineTable({
   // Member status and lifecycle
   status: v.union(
     v.literal("active"),     // Active paying or engaged member
+    v.literal("cancelled"),  // Subscription cancelled but still in grace period
     v.literal("churned"),    // Previously active, now inactive
     v.literal("free"),       // Free tier member
     v.literal("duplicate")   // Duplicate account marked for cleanup

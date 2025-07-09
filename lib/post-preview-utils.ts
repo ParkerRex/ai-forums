@@ -27,10 +27,12 @@ export interface PostData {
   commentCount: number;
   viewCount: number;
   member?: {
+    _id: Id<"members">;
     firstName: string;
     lastName: string;
     username?: string;
     slug?: string;
+    avatarUrl?: string | null;
   };
   category?: {
     name: string;

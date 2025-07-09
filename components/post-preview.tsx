@@ -21,6 +21,7 @@ import {
 } from "@/lib/post-preview-utils";
 import { MessageSquare, Eye, ChevronUp, Play, ExternalLink, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MemberHoverCardWrapper } from "@/components/member-hover-card";
 
 interface PostPreviewProps {
   post: PostData;
@@ -169,13 +170,15 @@ export default function PostPreview({
             {shouldShowMember && post.member && (
               <div className="text-xs text-muted-foreground mb-1">
                 by{" "}
-                <Link
-                  href={`/members/${post.member?.slug || post.member?.username}`}
-                  className="font-medium"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {post.member?.firstName} {post.member?.lastName}
-                </Link>
+                <MemberHoverCardWrapper member={post.member}>
+                  <Link
+                    href={`/members/${post.member?.slug || post.member?.username}`}
+                    className="font-medium"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    {post.member?.firstName} {post.member?.lastName}
+                  </Link>
+                </MemberHoverCardWrapper>
                 {" • "}
                 {new Date(post.createdAt).toLocaleDateString()}
               </div>

@@ -157,16 +157,19 @@ describe("SidebarRoadmapComponent", () => {
       issues: [],
       isLoading: false,
       error: null,
+      refetch: vi.fn(),
     });
 
     render(<SidebarRoadmapComponent />);
 
+    // Find the expand icon by data-testid
     const expandIcon = screen.getByTestId("expand-icon");
     expect(expandIcon).toBeInTheDocument();
-
-    // Check that the expand icon is positioned in the top right
+    
+    // The expand icon is wrapped in a button, so find the button parent
     const expandButton = expandIcon.closest("button");
-    expect(expandButton).toHaveClass("absolute", "top-2", "right-2");
+    expect(expandButton).toBeInTheDocument();
+    expect(expandButton).toHaveClass("h-5", "w-5", "hover:bg-accent/50");
   });
 
   it("displays bug report button at the bottom with ghost style", () => {

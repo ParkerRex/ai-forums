@@ -169,7 +169,7 @@ export const ensureMember = internalMutation({
 export const current = query({
   args: {},
   handler: async (ctx) => {
-    return await getAuthenticatedMember(ctx);
+    return await getAuthenticatedMemberOrNull(ctx);
   },
 });
 

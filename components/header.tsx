@@ -173,15 +173,22 @@ export default function Header() {
                   <p>bookmarks</p>
                 </TooltipContent>
               </Tooltip>
-              <Link href="/create">
-                <Button
-                  variant="default"
-                  size="default"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
-                >
-                  Create Post
-                </Button>
-              </Link>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link href="/create">
+                    <Button
+                      variant="default"
+                      size="default"
+                      className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                    >
+                      Create Post
+                    </Button>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Create post</p>
+                </TooltipContent>
+              </Tooltip>
             </Authenticated>
             <Unauthenticated>
               <SignUpButton mode="modal">

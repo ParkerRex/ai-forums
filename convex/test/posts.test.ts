@@ -510,7 +510,7 @@ describe("Phase 4 - Backend Refactor", () => {
 
     // Validate multiple posts returned correctly
     expect(posts).toHaveLength(2); // Both posts found
-    const postIds = posts.map(p => p._id);
+    const postIds = posts.map((p: any) => p._id);
     expect(postIds).toContain(firstPostId); // First post included
     expect(postIds).toContain(secondPostId); // Second post included
     

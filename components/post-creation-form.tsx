@@ -512,9 +512,7 @@ export function PostCreationForm({
             <div className="space-y-6 mt-6">
               {/* Title Field */}
               <div className="space-y-2">
-                <Label htmlFor="title">
-                  Title
-                </Label>
+                <Label htmlFor="title">Title</Label>
                 <Input
                   id="title"
                   type="text"
@@ -527,7 +525,9 @@ export function PostCreationForm({
                 <div className="flex justify-between items-center text-sm">
                   <div>
                     {errors.title && touchedFields.has("title") && (
-                      <span className="text-muted-foreground text-xs">{errors.title}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {errors.title}
+                      </span>
                     )}
                   </div>
                   <div
@@ -546,9 +546,7 @@ export function PostCreationForm({
 
               {/* Category Field */}
               <div className="space-y-2">
-                <Label>
-                  Category
-                </Label>
+                <Label>Category</Label>
                 <CategoryToggleGroup
                   categories={
                     categories?.map((cat) => ({
@@ -576,9 +574,7 @@ export function PostCreationForm({
             {/* Type-specific content */}
             <TabsContent value="text" className="mt-6">
               <div className="space-y-2">
-                <Label htmlFor="content">
-                  Content
-                </Label>
+                <Label htmlFor="content">Content</Label>
                 <Tabs defaultValue="edit" className="w-full">
                   <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="edit">Edit</TabsTrigger>
@@ -612,6 +608,7 @@ export function PostCreationForm({
                           viewCount: 0,
                           type: "text",
                           member: {
+                            _id: "preview" as unknown as Id<"members">,
                             firstName: "You",
                             lastName: "",
                             username: "you",
@@ -625,7 +622,9 @@ export function PostCreationForm({
                 <div className="flex justify-between items-center text-sm">
                   <div>
                     {errors.content && touchedFields.has("content") && (
-                      <span className="text-muted-foreground text-xs">{errors.content}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {errors.content}
+                      </span>
                     )}
                   </div>
                   <div
@@ -713,9 +712,7 @@ export function PostCreationForm({
             <TabsContent value="link" className="mt-6 space-y-6">
               {/* Link URL */}
               <div className="space-y-2">
-                <Label htmlFor="link-url">
-                  Link URL
-                </Label>
+                <Label htmlFor="link-url">Link URL</Label>
                 <Input
                   id="link-url"
                   type="url"
@@ -758,9 +755,7 @@ export function PostCreationForm({
 
               {/* Description for link posts */}
               <div className="space-y-2">
-                <Label htmlFor="link-content">
-                  Description
-                </Label>
+                <Label htmlFor="link-content">Description</Label>
                 <Suspense fallback={<RichTextEditorSkeleton />}>
                   <RichTextEditor
                     content={formData.content}
@@ -776,7 +771,9 @@ export function PostCreationForm({
                 <div className="flex justify-between items-center text-sm">
                   <div>
                     {errors.content && touchedFields.has("content") && (
-                      <span className="text-muted-foreground text-xs">{errors.content}</span>
+                      <span className="text-muted-foreground text-xs">
+                        {errors.content}
+                      </span>
                     )}
                   </div>
                   <div
@@ -797,9 +794,7 @@ export function PostCreationForm({
             <TabsContent value="poll" className="mt-6 space-y-6">
               {/* Poll Options */}
               <div className="space-y-2">
-                <Label>
-                  Poll Options
-                </Label>
+                <Label>Poll Options</Label>
                 {formData.pollData ? (
                   <Card>
                     <CardContent className="p-4">

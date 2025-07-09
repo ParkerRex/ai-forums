@@ -38,6 +38,7 @@ import { PollDisplay } from "@/components/poll-display";
 import { AttachmentGrid } from "@/components/attachment-grid";
 import { toast } from "sonner";
 import { Paywall } from "@/components/paywall";
+import { MemberHoverCardWrapper } from "@/components/member-hover-card";
 
 interface Post {
   _id: Id<"posts">;
@@ -315,25 +316,25 @@ export default function PostDetail({
           {/* Post metadata */}
           <div className="flex items-center text-sm text-muted-foreground mb-4">
             <span>posted by</span>
-            <Link
-              href={
-                post.member
-                  ? memberProfileUrl({
-                      slug: post.member!.slug!,
-                      _id: post.member!._id,
-                    })
-                  : "#"
-              }
-              className="ml-1 text-primary hover:underline"
-              data-testid="member-link"
-            >
-              /u/{post.member?.username || "unknown"}
-            </Link>
+            <MemberHoverCardWrapper member={post.member ?? null}>
+              <Link
+                href={
+                  post.member
+                    ? memberProfileUrl({
+                        slug: post.member!.slug!,
+                        _id: post.member!._id,
+                      })
+                    : "#"
+                }
+                className="ml-1 text-primary hover:underline"
+                data-testid="member-link"
+              >
+                /u/{post.member?.username || "unknown"}
+              </Link>
+            </MemberHoverCardWrapper>
           </div>
 
-          <h1 className="text-2xl font-bold mb-6">
-            {post.title}
-          </h1>
+          <h1 className="text-2xl font-bold mb-6">{post.title}</h1>
 
           {/* Media Content Rendering */}
           {postType === "image" && post.mediaUrl && (
@@ -449,7 +450,7 @@ export default function PostDetail({
           {/* Rich Text Content or Paywall */}
           <div className="mb-6" data-testid="post-content">
             {post.isPaywalled ? (
-              <Paywall 
+              <Paywall
                 previewContent={post.content}
                 tier={post.fullContentRequiresTier}
               />
@@ -512,7 +513,11 @@ export default function PostDetail({
               onMouseEnter={() => shareIconRef.current?.startAnimation()}
               onMouseLeave={() => shareIconRef.current?.stopAnimation()}
             >
-              <UploadIcon ref={shareIconRef} size={14} className="mr-1.5 group-hover:text-foreground transition-colors" />
+              <UploadIcon
+                ref={shareIconRef}
+                size={14}
+                className="mr-1.5 group-hover:text-foreground transition-colors"
+              />
               Share
             </Button>
 

@@ -16,7 +16,6 @@ interface SignInModalProps {
   onClose: () => void;
   title?: string;
   description?: string;
-  redirectTo?: string;
 }
 
 export function SignInModal({
@@ -24,30 +23,27 @@ export function SignInModal({
   onClose,
   title = "Sign in to continue",
   description = "Please sign in to access this feature",
-  redirectTo
 }: SignInModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center">
-          <DialogTitle className="text-xl font-bold">
-            {title}
-          </DialogTitle>
+          <DialogTitle className="text-xl font-bold">{title}</DialogTitle>
           <DialogDescription className="text-muted-foreground">
             {description}
           </DialogDescription>
         </DialogHeader>
 
         <div className="mt-6 space-y-4">
-          <SignInButton mode="modal" redirectUrl={redirectTo}>
+          <SignInButton mode="modal">
             <Button className="w-full" size="lg">
               <LogIn className="w-4 h-4 mr-2" />
               Sign In
             </Button>
           </SignInButton>
-          
+
           <p className="text-center text-sm text-muted-foreground">
-            Don't have an account? Sign in to create one.
+            Don&apos;t have an account? Sign in to create one.
           </p>
         </div>
       </DialogContent>

@@ -19,14 +19,13 @@
  * @version 1.0.0
  */
 
-import MemberCard from "@/components/member-card";
-import { MemberCardSkeletonGrid } from "@/components/member-skeleton";
 import { Input } from "@/components/ui/input";
 import { Search, X, Loader2 } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect } from "react";
 import { PageErrorBoundary } from "@/components/error-boundary";
+import MembersDisplay from "@/components/members-display";
 
 /**
  * Main content component for the Members Directory page.
@@ -80,11 +79,11 @@ function MembersPageContent() {
   const hasSearchTerm = searchTerm.length > 0; // True when user has typed something
   const isTyping = searchTerm !== debouncedSearchTerm; // True during debounce period
 
-  // Transform server data to match MemberCard interface
+  // Transform server data to match MembersDisplay interface
   // This transformation layer allows us to adapt server data structure to component needs
   const members =
     membersData?.map((member) => ({
-      id: member._id, // Convert Convex _id to generic id for MemberCard component
+      id: member._id, // Convert Convex _id to generic id for component
       firstName: member.firstName,
       lastName: member.lastName,
       status: member.status, // Member status: active, churned, or free
@@ -107,6 +106,8 @@ function MembersPageContent() {
       lastOnlineRelative: member.lastOnlineRelative,
       // URL slug for member profile routing
       slug: member.slug,
+      // Membership tier for badges
+      tier: member.tier,
     })) || [];
 
   // Clear search function - resets both immediate and debounced search states
@@ -145,8 +146,8 @@ function MembersPageContent() {
             </div>
           </div>
 
-          {/* Skeleton grid showing 6 cards for initial load */}
-          <MemberCardSkeletonGrid count={6} />
+          {/* Skeleton grid showing for initial load */}
+          <MembersDisplay members={[]} isLoading={true} />
         </div>
       </div>
     );
@@ -217,21 +218,11 @@ function MembersPageContent() {
           </div>
         )}
 
-        {/* Results grid with enhanced loading states and smooth transitions */}
-        {isLoading ? (
-          <div className="transition-opacity duration-300">
-            {/* Adaptive skeleton count - fewer for search results */}
-            <MemberCardSkeletonGrid count={isSearching ? 3 : 6} />
-          </div>
-        ) : members.length > 0 ? (
-          /* Responsive grid layout: 1 column on mobile, 2 on tablet, 3 on desktop */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 transition-opacity duration-300">
-            {members.map((member) => (
-              <MemberCard key={member.id} member={member} />
-            ))}
-          </div>
-        ) : isSearching ? (
-          /* Empty search state with helpful action */
+        {/* Results display with both grid and table views */}
+        <MembersDisplay members={members} isLoading={isLoading} />
+        
+        {/* Empty search state */}
+        {!isLoading && members.length === 0 && isSearching && (
           <div className="text-center py-12 transition-opacity duration-300">
             <div className="text-muted-foreground text-lg mb-2">No members found</div>
             <p className="text-muted-foreground/70">
@@ -244,7 +235,7 @@ function MembersPageContent() {
               </button>
             </p>
           </div>
-        ) : null}
+        )}
       </div>
     </div>
   );

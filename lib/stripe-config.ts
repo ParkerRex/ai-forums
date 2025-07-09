@@ -9,8 +9,12 @@ interface StripeConfig {
   publishableKey: string;
   memberMonthlyPriceId: string;
   memberYearlyPriceId: string;
-  monthlyPrice: number;
-  yearlyPrice: number;
+  foundingMemberMonthlyPriceId: string;
+  foundingMemberYearlyPriceId: string;
+  memberMonthlyPrice: number;
+  memberYearlyPrice: number;
+  foundingMemberMonthlyPrice: number;
+  foundingMemberYearlyPrice: number;
 }
 
 /**
@@ -21,8 +25,11 @@ export function getStripeConfig(): StripeConfig {
   const publishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
   const memberMonthlyPriceId = process.env.NEXT_PUBLIC_STRIPE_MEMBER_MONTHLY_PRICE_ID;
   const memberYearlyPriceId = process.env.NEXT_PUBLIC_STRIPE_MEMBER_YEARLY_PRICE_ID;
+  const foundingMemberMonthlyPriceId = process.env.NEXT_PUBLIC_STRIPE_FOUNDING_MONTHLY_PRICE_ID;
+  const foundingMemberYearlyPriceId = process.env.NEXT_PUBLIC_STRIPE_FOUNDING_YEARLY_PRICE_ID;
   
-  if (!publishableKey || !memberMonthlyPriceId || !memberYearlyPriceId) {
+  if (!publishableKey || !memberMonthlyPriceId || !memberYearlyPriceId || 
+      !foundingMemberMonthlyPriceId || !foundingMemberYearlyPriceId) {
     throw new Error("Stripe configuration is incomplete. Please check environment variables.");
   }
   
@@ -30,8 +37,12 @@ export function getStripeConfig(): StripeConfig {
     publishableKey,
     memberMonthlyPriceId,
     memberYearlyPriceId,
-    monthlyPrice: 99,
-    yearlyPrice: 990,
+    foundingMemberMonthlyPriceId,
+    foundingMemberYearlyPriceId,
+    memberMonthlyPrice: 99,
+    memberYearlyPrice: 990,
+    foundingMemberMonthlyPrice: 39,
+    foundingMemberYearlyPrice: 375,
   };
 }
 

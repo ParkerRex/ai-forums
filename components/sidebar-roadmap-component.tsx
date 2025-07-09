@@ -142,7 +142,7 @@ export function SidebarRoadmapComponent() {
                 className="h-5 w-5 hover:bg-accent/50"
                 onClick={() => setIsDialogOpen(true)}
               >
-                <ExpandIcon size={12} />
+                <ExpandIcon size={12} data-testid="expand-icon" />
               </Button>
             </div>
           </div>
@@ -238,7 +238,7 @@ export function SidebarRoadmapComponent() {
               onMouseEnter={() => expandIconRef.current?.startAnimation()}
               onMouseLeave={() => expandIconRef.current?.stopAnimation()}
             >
-              <ExpandIcon ref={expandIconRef} size={12} />
+              <ExpandIcon ref={expandIconRef} size={12} data-testid="expand-icon" />
             </Button>
           </div>
         </div>

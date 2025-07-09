@@ -40,6 +40,7 @@ import CommentActionsMenu from "./comment-actions-menu";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { UploadIcon } from "@/components/ui/upload";
+import { MemberHoverCardWrapper } from "@/components/member-hover-card";
 
 type AttachmentType = {
   id: string;
@@ -250,25 +251,29 @@ function CommentItem({
         }
       >
         <div className="flex items-start space-x-3">
-          <Avatar className="w-7 h-7">
-            <AvatarFallback className="bg-muted text-muted-foreground text-xs">
-              {comment.member?.username?.[0]?.toUpperCase() || comment.member?.firstName?.[0]?.toUpperCase() || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <MemberHoverCardWrapper member={comment.member}>
+            <Avatar className="w-7 h-7 cursor-pointer">
+              <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                {comment.member?.username?.[0]?.toUpperCase() || comment.member?.firstName?.[0]?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+          </MemberHoverCardWrapper>
           <div className="flex-1 space-y-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2 text-xs">
                 {comment.member ? (
-                  <Link
-                    href={memberProfileUrl({
-                      slug: comment.member.slug,
-                      _id: comment.member._id,
-                    })}
-                    className="font-medium text-foreground hover:underline"
-                    data-testid="member-link"
-                  >
-                    {comment.member.username || `${comment.member.firstName} ${comment.member.lastName}`}
-                  </Link>
+                  <MemberHoverCardWrapper member={comment.member}>
+                    <Link
+                      href={memberProfileUrl({
+                        slug: comment.member.slug,
+                        _id: comment.member._id,
+                      })}
+                      className="font-medium text-foreground hover:underline"
+                      data-testid="member-link"
+                    >
+                      {comment.member.username || `${comment.member.firstName} ${comment.member.lastName}`}
+                    </Link>
+                  </MemberHoverCardWrapper>
                 ) : (
                   <span className="font-medium text-foreground">
                     [deleted]
