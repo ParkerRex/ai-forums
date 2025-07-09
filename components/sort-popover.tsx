@@ -63,7 +63,6 @@ const SortItem = React.memo(function SortItem({
         isSelected && "bg-accent text-accent-foreground font-medium"
       )}
       role="menuitem"
-      aria-selected={isSelected}
       aria-label={`Sort by ${label}`}
     >
       <span>{label}</span>

@@ -8,14 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
-  AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
+  AreaChart, Area, PieChart, Pie, Cell,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
 import { 
-  DollarSign, Users, TrendingUp, TrendingDown, CreditCard, 
-  Calendar, ArrowUpRight, ArrowDownRight
+  DollarSign, Users, TrendingUp, TrendingDown, 
+  ArrowUpRight, ArrowDownRight
 } from "lucide-react";
-import { format } from "date-fns";
 
 const CHART_COLORS = {
   primary: "#000000",
@@ -80,7 +79,7 @@ export default function AnalyticsPage() {
             Revenue, membership, and growth metrics
           </p>
         </div>
-        <Select value={timeRange} onValueChange={(value: any) => setTimeRange(value)}>
+        <Select value={timeRange} onValueChange={(value) => setTimeRange(value)}>
           <SelectTrigger className="w-40">
             <SelectValue />
           </SelectTrigger>
@@ -183,7 +182,7 @@ export default function AnalyticsPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                    <Tooltip formatter={(value: any) => formatCurrency(value)} />
+                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
                     <Area 
                       type="monotone" 
                       dataKey="mrr" 
@@ -206,7 +205,7 @@ export default function AnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {Object.entries(metrics.tiers).map(([tier, data]: [string, any]) => (
+                  {Object.entries(metrics.tiers).map(([tier, data]) => (
                     <div key={tier} className="space-y-2">
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium capitalize">
@@ -325,7 +324,7 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="space-y-2">
                   <p className="text-sm font-medium mb-2">Churn by Tier</p>
-                  {Object.entries(churnAnalysis.churnByTier).map(([tier, data]: [string, any]) => (
+                  {Object.entries(churnAnalysis.churnByTier).map(([tier, data]) => (
                     <div key={tier} className="flex items-center justify-between">
                       <span className="text-sm capitalize">{tier.replace(/_/g, " ")}</span>
                       <Badge variant="secondary">{data.count}</Badge>
@@ -345,7 +344,7 @@ export default function AnalyticsPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
-                {Object.entries(metrics.paymentMethods).map(([brand, data]: [string, any]) => (
+                {Object.entries(metrics.paymentMethods).map(([brand, data]) => (
                   <div key={brand} className="flex items-center justify-between">
                     <span className="text-sm font-medium capitalize">{brand}</span>
                     <div className="flex items-center gap-4">

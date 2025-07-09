@@ -323,7 +323,7 @@ export default function NewsPage() {
   // This ensures fresh content when users update their news source preferences
   useEffect(() => {
     loadNews();
-  }, [member?.newsPreferences]); // Re-run when news preferences change
+  }, [member?.newsPreferences, loadNews]); // Re-run when news preferences change
 
   // Render skeleton loading state during initial data fetch
   // This provides immediate visual feedback while API requests are in progress

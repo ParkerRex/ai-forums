@@ -210,7 +210,7 @@ export default function MonitoringPage() {
         <CardContent>
           <div className="space-y-4">
             {Object.entries(webhookHealth.metrics.eventTypeMetrics || {}).map(
-              ([eventType, metrics]: [string, any]) => {
+              ([eventType, metrics]) => {
                 const successRate = metrics.total > 0
                   ? (metrics.processed / metrics.total) * 100
                   : 0;
