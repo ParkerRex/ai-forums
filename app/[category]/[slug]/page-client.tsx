@@ -1,3 +1,21 @@
+/**
+ * Post Page Client Component
+ *
+ * Complex client component that handles individual post display with full interactivity.
+ * Manages authentication states, modal interactions, post validation, and comments.
+ *
+ * Features:
+ * - Dual authentication UI (authenticated vs unauthenticated views)
+ * - Modal management (edit, delete, history)
+ * - Post validation and category matching
+ * - Comment section with deep linking
+ * - Navigation with animated back button
+ * - Responsive loading states
+ * - Error handling and graceful redirects
+ *
+ * @see PostPage - Server component that handles SEO and routing
+ */
+
 "use client";
 
 import { Authenticated, Unauthenticated } from "convex/react";
@@ -6,9 +24,9 @@ import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { PostEditModal } from "@/components/post-edit-modal";
 import { PostDeleteModal } from "@/components/post-delete-modal";
 import { PostHistoryModal } from "@/components/post-history-modal";
+import { ReactivateBannerInline } from "@/components/reactivate-banner-inline";
 import { Button } from "@/components/ui/button";
 import { Lock, Eye, MessageSquare } from "lucide-react";
-import { ArrowLeftIcon } from "@/components/ui/arrow-left";
 import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -17,32 +35,53 @@ import CommentSection from "@/components/comment-section";
 import { use, useState, useEffect } from "react";
 import { notFound, useSearchParams, useRouter } from "next/navigation";
 
+/**
+ * Props for the PostPageClient component
+ *
+ * Contains both category and slug for nested dynamic routing
+ * and post validation against the URL structure.
+ */
 interface PostPageClientProps {
+  /** Promise containing the dynamic route parameters */
   params: Promise<{
+    /** The category name from the URL path */
     category: string;
+    /** The post slug from the URL path */
     slug: string;
   }>;
 }
 
+/**
+ * Post Page Client Component
+ *
+ * Renders individual post pages with full interactivity and dual authentication states.
+ * Handles complex post validation, modal management, and comment deep linking.
+ *
+ * @param params - Promise containing the dynamic route parameters
+ * @returns JSX element rendering the post page with authentication-specific content
+ *
+ * @example
+ * // Used by server component:
+ * <PostPageClient params={Promise.resolve({ category: "workflows", slug: "automate-content" })} />
+ */
 export default function PostPageClient({ params }: PostPageClientProps) {
   const router = useRouter();
-  const backIconRef = React.useRef<{
-    startAnimation: () => void;
-    stopAnimation: () => void;
-  }>(null);
 
-  // Unwrap the params promise (Next.js 15 behavior)
+  // Unwrap the params promise using React's use() hook (Next.js 15 behavior)
   const resolvedParams = use(params);
   const { category, slug } = resolvedParams;
+
+  // Get search params for comment deep linking
   const searchParams = useSearchParams();
   const commentId = searchParams.get("commentId");
 
-  // Modal states
+  // Modal states for post management actions
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
-  // Check if we have valid parameters
+  // Validate URL parameters to prevent invalid queries
+  // Both category and slug must be non-empty strings
   const hasValidParams =
     category &&
     slug &&
@@ -51,12 +90,14 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     typeof slug === "string" &&
     slug.trim() !== "";
 
-  // Query for the post by slug
+  // Query for the post by slug from Convex database
+  // Uses conditional query - skips if parameters are invalid
   const post = useQuery(
     api.posts.getPostBySlug,
     hasValidParams ? { slug } : "skip",
   );
 
+  // Debug logging for development (consider removing in production)
   console.log(
     "PostPageClient - category:",
     category,
@@ -66,29 +107,34 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     hasValidParams,
   );
 
-  // Modal handlers
+  // Modal event handlers for post management actions
+
+  /** Open the edit modal */
   const handleEdit = () => {
     setIsEditModalOpen(true);
   };
 
+  /** Open the delete confirmation modal */
   const handleDelete = () => {
     setIsDeleteModalOpen(true);
   };
 
+  /** Open the post history modal */
   const handleViewHistory = () => {
     setIsHistoryModalOpen(true);
   };
 
+  /** Handle successful post edit - refresh data without full page reload */
   const handleEditSuccess = () => {
-    // Refresh data without full page reload
     router.refresh();
   };
 
+  /** Handle successful post deletion - navigate back to home page */
   const handleDeleteSuccess = () => {
-    // Navigate back to the home page after successful deletion
     router.push("/");
   };
 
+  // Handle post deletion redirect
   // If the post no longer exists (e.g., it was just deleted), redirect the
   // user to the home page instead of showing a 404. We still show a 404 for
   // mismatched categories (malformed URL).
@@ -98,7 +144,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     }
   }, [post, router]);
 
-  // If the URL parameters are invalid, show a friendly message.
+  // Early return for invalid URL parameters
+  // Show user-friendly error message instead of breaking the app
   if (!hasValidParams) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -112,7 +159,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     );
   }
 
-  // While loading the post, render a skeleton.
+  // Show loading skeleton while fetching post data
+  // In Convex, undefined means loading, null means not found
   if (post === undefined) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
@@ -126,6 +174,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     );
   }
 
+  // Handle post not found - redirect instead of showing 404
   // If the post no longer exists (e.g., it was just deleted), redirect the
   // user to the home page instead of showing a 404. We still show a 404 for
   // mismatched categories (malformed URL).
@@ -134,42 +183,34 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     return null;
   }
 
+  // Validate category/slug consistency
   // Show 404 for a category/slug mismatch where the post exists but the
-  // category in the URL is wrong.
+  // category in the URL is wrong (indicates malformed or outdated URL)
   if (post.category?.name !== category) {
     notFound();
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Back Navigation */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => router.back()}
-        className="mb-6"
-        onMouseEnter={() => backIconRef.current?.startAnimation()}
-        onMouseLeave={() => backIconRef.current?.stopAnimation()}
-      >
-        <ArrowLeftIcon ref={backIconRef} size={16} className="mr-2" />
-        Back
-      </Button>
-
+    <>
+      <ReactivateBannerInline />
+      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      {/* Authenticated User Experience - Full access to posts and interactions */}
       <Authenticated>
+        {/* Full post detail with all interactive features */}
         <PostDetail
           post={post}
           onEdit={handleEdit}
           onDelete={handleDelete}
           onViewHistory={handleViewHistory}
         />
-        <div className="mt-8">
-          <CommentSection
-            postId={post._id as Id<"posts">}
-            targetCommentId={commentId ?? undefined}
-          />
-        </div>
 
-        {/* Modals */}
+        {/* Comment section with deep linking support */}
+        <CommentSection
+          postId={post._id as Id<"posts">}
+          targetCommentId={commentId ?? undefined}
+        />
+
+        {/* Post Management Modals - Only available to authenticated users */}
         {post && (
           <>
             <PostEditModal
@@ -194,12 +235,11 @@ export default function PostPageClient({ params }: PostPageClientProps) {
         )}
       </Authenticated>
 
+      {/* Unauthenticated User Experience - Preview with membership CTA */}
       <Unauthenticated>
-        {/* Unauthenticated preview section */}
-
-        {/* Show preview for unauthenticated users */}
+        {/* Limited preview to encourage membership signup */}
         <div className="space-y-6">
-          {/* Post Header */}
+          {/* Post Header - Same as authenticated but no interaction */}
           <div className="border-b pb-6">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
@@ -208,7 +248,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 </span>
               </div>
             </div>
-            <h1 className="text-3xl font-bold text-foreground mb-4">
+            <h1 className="text-3xl font-bold mb-4">
               {post.title}
             </h1>
             <div className="flex items-center space-x-4 text-sm text-muted-foreground">
@@ -222,15 +262,15 @@ export default function PostPageClient({ params }: PostPageClientProps) {
             </div>
           </div>
 
-          {/* Preview Content */}
+          {/* Preview Content - Truncated to encourage signup */}
           <div className="prose prose-lg max-w-none">
             <div className="text-muted-foreground leading-relaxed">
-              {/* Show first 200 characters */}
+              {/* Show first 200 characters as teaser */}
               {post.content?.substring(0, 200)}...
             </div>
           </div>
 
-          {/* Membership CTA */}
+          {/* Membership CTA - Conversion-focused design */}
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-6 text-center">
             <div className="flex justify-center mb-4">
               <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
@@ -243,6 +283,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
             <p className="text-muted-foreground mb-4">
               Get access to the complete discussion and join the conversation
             </p>
+
+            {/* Feature highlights to encourage signup */}
             <div className="flex items-center justify-center space-x-6 text-sm text-muted-foreground mb-6">
               <div className="flex items-center">
                 <Eye className="w-4 h-4 mr-1" />
@@ -253,6 +295,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 {post.commentCount} comments
               </div>
             </div>
+
+            {/* Membership signup modal trigger */}
             <MembershipCTAModal
               title="Unlock Full Post Access"
               description="Join VAI to read complete posts and engage with the AI community"
@@ -261,7 +305,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
             </MembershipCTAModal>
           </div>
 
-          {/* Action Buttons (Disabled for Anonymous) */}
+          {/* Action Buttons - Disabled to show what's available after signup */}
           <div className="flex items-center space-x-4 pt-6 border-t">
             <Button variant="outline" disabled className="opacity-50">
               👍 {post.upvotes}
@@ -275,6 +319,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
           </div>
         </div>
       </Unauthenticated>
-    </div>
+      </div>
+    </>
   );
 }

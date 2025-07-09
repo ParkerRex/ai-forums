@@ -1,16 +1,62 @@
+/**
+ * @fileoverview Posts Module - Core content management system for community posts
+ * 
+ * This module handles all post-related operations including creation, editing, deletion,
+ * and retrieval. It supports rich content types including text, images, videos, links,
+ * and polls with comprehensive media attachment support.
+ * 
+ * Key features:
+ * - Multi-media post creation with attachment support
+ * - Post editing with version history tracking
+ * - URL validation and security for shared links
+ * - Voting and engagement metrics
+ * - Category-based organization
+ * - Search functionality across titles and content
+ * - View tracking and analytics
+ * - Mention notifications and social features
+ * 
+ * @author VAI Development Team
+ * @version 1.0.0
+ */
+
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
-import { getAuthenticatedMember } from "./auth";
+import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
 import { insertNotification } from "./notifications";
+import { canViewFullContent } from "./helpers/access";
 
-// Helper function to check if a member is the author of a post
+/**
+ * Checks if a member is the author of a post for authorization purposes.
+ * 
+ * @param post - Post object containing memberId
+ * @param memberId - Member ID to check against
+ * @returns True if the member is the post author
+ */
 function isPostAuthor(post: { memberId: Id<"members"> }, memberId: Id<"members">): boolean {
   return post.memberId === memberId;
 }
 
-// Helper function to validate URLs in content
+/**
+ * Validates and sanitizes URLs found in post content for security.
+ * 
+ * Scans content for both bare URLs and markdown-formatted links, then validates
+ * each URL against security policies. Blocks dangerous schemes, private/localhost
+ * addresses, and malformed URLs to prevent XSS and SSRF attacks.
+ * 
+ * @param content - Post content to scan for URLs
+ * @throws Error when dangerous or invalid URLs are detected
+ * 
+ * @example
+ * ```typescript
+ * validateContentUrls("Check out https://example.com and [GitHub](https://github.com)");
+ * // No error - valid public URLs
+ * 
+ * validateContentUrls("Don't visit javascript:alert('xss')");
+ * // Throws error - dangerous scheme blocked
+ * ```
+ */
 function validateContentUrls(content: string): void {
   // Match URLs and markdown links
   const urlRegex = /https?:\/\/[^\s)]+/g;
@@ -64,7 +110,31 @@ function validateContentUrls(content: string): void {
   }
 }
 
-// Get all posts with pagination and filtering
+/**
+ * Retrieves paginated posts with filtering and sorting options.
+ * 
+ * Supports filtering by category and sorting by newest, popular, or trending.
+ * Returns enriched posts with member and category information for display.
+ * Uses database indexes for efficient querying at scale.
+ * 
+ * @param categoryId - Optional category filter
+ * @param limit - Maximum number of posts to return (default: 20)
+ * @param sortBy - Sort order: "newest", "popular", or "trending" (default: "newest")
+ * @returns Array of enriched post objects with member and category data
+ * 
+ * @example
+ * ```typescript
+ * // Get latest posts from all categories
+ * const latestPosts = await getPosts({});
+ * 
+ * // Get popular posts from specific category
+ * const popularInCategory = await getPosts({
+ *   categoryId: "category123",
+ *   sortBy: "popular",
+ *   limit: 10
+ * });
+ * ```
+ */
 export const getPosts = query({
   args: {
     categoryId: v.optional(v.id("categories")),
@@ -131,7 +201,36 @@ export const getPosts = query({
   },
 });
 
-// Get single post by ID with full details
+/**
+ * Retrieves a single post by ID with complete details and related data.
+ * 
+ * Returns full post information including author profile, category details,
+ * and all metadata. Used for post detail pages and editing interfaces.
+ * Only returns active posts - deleted or hidden posts return null.
+ * 
+ * This function implements content access control based on user authentication:
+ * - Authenticated users with active memberships see full content
+ * - Unauthenticated or inactive users see truncated content (50 chars preview)
+ * - The `isPaywalled` flag indicates whether content was truncated
+ * - `fullContentRequiresTier` specifies the required membership level for full access
+ * 
+ * @param postId - Unique identifier of the post to retrieve
+ * @returns Complete post object with member and category data, or null if not found/inactive
+ *          Returns paywalled version with truncated content for users without access
+ * 
+ * @example
+ * ```typescript
+ * const post = await getPostById({ postId: "post123" });
+ * if (post) {
+ *   if (post.isPaywalled) {
+ *     console.log("Content preview:", post.content); // Truncated to 50 chars
+ *     console.log("Requires tier:", post.fullContentRequiresTier); // "member"
+ *   } else {
+ *     console.log("Full content:", post.content);
+ *   }
+ * }
+ * ```
+ */
 export const getPostById = query({
   args: { postId: v.id("posts") },
   handler: async (ctx, { postId }) => {
@@ -140,14 +239,61 @@ export const getPostById = query({
       return null;
     }
 
+    // Get the authenticated member to check access
+    // Uses getAuthenticatedMemberOrNull to allow both authenticated and unauthenticated access
+    const currentMember = await getAuthenticatedMemberOrNull(ctx);
+    // Check if the user has an active membership tier that grants full content access
+    const hasFullAccess = canViewFullContent(currentMember);
+
     // Get member and category data
     const [member, category] = await Promise.all([
       ctx.db.get(post.memberId),
       ctx.db.get(post.categoryId),
     ]);
 
+    // If user doesn't have full access, return paywalled version
+    if (!hasFullAccess) {
+      // Truncate content to a preview length to encourage membership signup
+      const PREVIEW_LENGTH = 50;
+      const preview = post.content.substring(0, PREVIEW_LENGTH);
+      const needsEllipsis = post.content.length > PREVIEW_LENGTH;
+      
+      return {
+        ...post,
+        content: needsEllipsis ? preview + "..." : preview,
+        // Flag to indicate the content has been truncated due to access restrictions
+        isPaywalled: true,
+        // Specify which membership tier is required for full content access
+        fullContentRequiresTier: "member",
+        member: member ? {
+          _id: member._id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          email: member.email,
+          username: member.email.split('@')[0],
+          bio: member.bio,
+          location: member.location,
+          linkGithub: member.linkGithub,
+          linkX: member.linkX,
+          linkYouTube: member.linkYouTube,
+          slug: member.slug || "",
+          avatarUrl: member.avatarUrl,
+        } : null,
+        category: category ? {
+          _id: category._id,
+          name: category.name,
+          displayName: category.displayName,
+          description: category.description,
+          icon: category.icon,
+        } : null,
+      };
+    }
+
+    // Full access - return complete post
     return {
       ...post,
+      // No paywall - user has full access to content
+      isPaywalled: false,
       member: member ? {
         _id: member._id,
         firstName: member.firstName,
@@ -173,7 +319,37 @@ export const getPostById = query({
   },
 });
 
-// Get single post by slug
+/**
+ * Retrieves a single post by its URL slug with complete details.
+ * 
+ * Used for SEO-friendly URLs and post routing. Returns the same detailed
+ * information as getPostById but queries by slug instead of ID.
+ * Essential for public post URLs and social sharing.
+ * 
+ * This function implements the same content access control as getPostById:
+ * - Authenticated users with active memberships see full content
+ * - Unauthenticated or inactive users see truncated content (50 chars preview)
+ * - The `isPaywalled` flag indicates whether content was truncated
+ * - `fullContentRequiresTier` specifies the required membership level for full access
+ * 
+ * @param slug - URL-friendly post identifier
+ * @returns Complete post object with member and category data, or null if not found
+ *          Returns paywalled version with truncated content for users without access
+ * 
+ * @example
+ * ```typescript
+ * const post = await getPostBySlug({ slug: "my-awesome-post" });
+ * if (post) {
+ *   if (post.isPaywalled) {
+ *     console.log("Content preview:", post.content); // Truncated to 50 chars
+ *     console.log("Requires tier:", post.fullContentRequiresTier); // "member"
+ *   } else {
+ *     console.log("Full content:", post.content);
+ *   }
+ * }
+ * // Used in: /category/posts/my-awesome-post
+ * ```
+ */
 export const getPostBySlug = query({
   args: { slug: v.string() },
   handler: async (ctx, { slug }) => {
@@ -187,14 +363,58 @@ export const getPostBySlug = query({
       return null;
     }
 
+    // Get the authenticated member to check access
+    const currentMember = await getAuthenticatedMemberOrNull(ctx);
+    const hasFullAccess = canViewFullContent(currentMember);
+
     // Get member and category data
     const [member, category] = await Promise.all([
       ctx.db.get(post.memberId),
       ctx.db.get(post.categoryId),
     ]);
 
+    // If user doesn't have full access, return paywalled version
+    if (!hasFullAccess) {
+      const PREVIEW_LENGTH = 50;
+      const preview = post.content.substring(0, PREVIEW_LENGTH);
+      const needsEllipsis = post.content.length > PREVIEW_LENGTH;
+      
+      return {
+        ...post,
+        content: needsEllipsis ? preview + "..." : preview,
+        // Flag to indicate the content has been truncated due to access restrictions
+        isPaywalled: true,
+        // Specify which membership tier is required for full content access
+        fullContentRequiresTier: "member",
+        member: member ? {
+          _id: member._id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          email: member.email,
+          username: member.email.split('@')[0],
+          bio: member.bio,
+          location: member.location,
+          linkGithub: member.linkGithub,
+          linkX: member.linkX,
+          linkYouTube: member.linkYouTube,
+          slug: member.slug || "",
+          avatarUrl: member.avatarUrl,
+        } : null,
+        category: category ? {
+          _id: category._id,
+          name: category.name,
+          displayName: category.displayName,
+          description: category.description,
+          icon: category.icon,
+        } : null,
+      };
+    }
+
+    // Full access - return complete post
     return {
       ...post,
+      // No paywall - user has full access to content
+      isPaywalled: false,
       member: member ? {
         _id: member._id,
         firstName: member.firstName,
@@ -220,7 +440,44 @@ export const getPostBySlug = query({
   },
 });
 
-// Create new post
+/**
+ * Creates a new post with rich content support and validation.
+ * 
+ * Handles creation of posts with various content types including text, images,
+ * videos, links, and multi-media attachments. Performs content validation,
+ * URL safety checks, and generates unique slugs. Also handles mention
+ * notifications and category post count updates.
+ * 
+ * @param title - Post title/headline
+ * @param content - Post body content (markdown supported)
+ * @param categoryId - Category to post in
+ * @param type - Content type: "text", "image", "video", "link"
+ * @param mediaUrl - Primary media URL for legacy compatibility
+ * @param thumbnailUrl - Thumbnail/preview image URL
+ * @param aspectRatio - Media aspect ratio for layout
+ * @param mediaWidth - Original media width in pixels
+ * @param mediaHeight - Original media height in pixels
+ * @param linkUrl - Shared link URL for link posts
+ * @param linkTitle - Extracted link title
+ * @param linkDescription - Extracted link description
+ * @param linkImage - Link preview image URL
+ * @param mentions - Array of mentioned member IDs
+ * @param attachments - Array of multimedia attachments with metadata
+ * @returns Object with created post ID and slug
+ * 
+ * @example
+ * ```typescript
+ * const result = await createPost({
+ *   title: "Check out this amazing tool!",
+ *   content: "I found this great resource for learning AI...",
+ *   categoryId: "workflows-category-id",
+ *   type: "link",
+ *   linkUrl: "https://example.com",
+ *   mentions: ["user123"]
+ * });
+ * console.log(`Created post: ${result.slug}`);
+ * ```
+ */
 export const createPost = mutation({
   args: {
     title: v.string(),
@@ -806,7 +1063,23 @@ export const editPost = mutation({
   },
 });
 
-// Delete post (soft delete)
+/**
+ * Soft deletes a post by changing its status to "deleted".
+ * 
+ * Only the post author can delete their own posts. The post data is preserved
+ * but hidden from public view. Updates the category post count and maintains
+ * referential integrity for comments and other related data.
+ * 
+ * @param postId - ID of the post to delete
+ * @returns The ID of the deleted post
+ * @throws Error if user is not the post author or post not found
+ * 
+ * @example
+ * ```typescript
+ * await deletePost({ postId: "post123" });
+ * // Post is now hidden but data preserved
+ * ```
+ */
 export const deletePost = mutation({
   args: { postId: v.id("posts") },
   handler: async (ctx, { postId }) => {
@@ -842,7 +1115,28 @@ export const deletePost = mutation({
   },
 });
 
-// Track post view
+/**
+ * Records a post view for analytics and engagement tracking.
+ * 
+ * Implements deduplication logic to prevent inflated view counts from the same
+ * user within 24 hours. Supports both authenticated and anonymous users.
+ * Used for trending algorithms and content performance metrics.
+ * 
+ * @param postId - ID of the post being viewed
+ * @param ipAddress - IP address for anonymous user deduplication
+ * @param userAgent - Browser user agent for analytics
+ * @returns Object indicating whether a new view was recorded
+ * 
+ * @example
+ * ```typescript
+ * const result = await trackPostView({
+ *   postId: "post123",
+ *   ipAddress: "192.168.1.1",
+ *   userAgent: "Mozilla/5.0..."
+ * });
+ * console.log(`New view recorded: ${result.viewRecorded}`);
+ * ```
+ */
 export const trackPostView = mutation({
   args: {
     postId: v.id("posts"),

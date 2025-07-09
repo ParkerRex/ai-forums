@@ -2,7 +2,6 @@
 import React from "react";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -14,8 +13,13 @@ import { Button } from "@/components/ui/button";
 import { BugReportModal } from "@/components/bug-report-modal";
 import { FeatureRequestButton } from "@/components/feature-request-button";
 import { useGitHubIssues } from "@/lib/github";
-import { ExternalLink, Loader2, Bug } from "lucide-react";
+import { ExternalLink, Loader2, Bug, RefreshCw } from "lucide-react";
 import { ExpandIcon, type ExpandIconHandle } from "@/components/ui/expand";
+import { toast } from "sonner";
+
+const CACHE_KEY = "vai_roadmap_cache";
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+const RATE_LIMIT_DURATION = 30 * 1000; // 30 seconds
 
 export function SidebarRoadmapComponent() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -25,9 +29,13 @@ export function SidebarRoadmapComponent() {
   >([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [cachedIssues, setCachedIssues] = useState<typeof issues>([]);
+  const [refreshing, setRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState<number>(0);
+  const [hasLoadedCache, setHasLoadedCache] = useState(false);
   const expandIconRef = useRef<ExpandIconHandle>(null);
 
-  const { issues, isLoading, error } = useGitHubIssues(1);
+  const { issues, isLoading, error, refetch } = useGitHubIssues(1);
 
   // Fetch additional GitHub issues beyond the first page.
   const loadMoreIssues = useCallback(async () => {
@@ -51,6 +59,42 @@ export function SidebarRoadmapComponent() {
     }
   }, [currentPage]);
 
+  // Load cached issues on mount
+  useEffect(() => {
+    if (!hasLoadedCache) {
+      try {
+        const cached = localStorage.getItem(CACHE_KEY);
+        if (cached) {
+          const { data, timestamp } = JSON.parse(cached);
+          if (Date.now() - timestamp < CACHE_DURATION) {
+            setCachedIssues(data);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load from cache:", error);
+      }
+      setHasLoadedCache(true);
+    }
+  }, [hasLoadedCache]);
+
+  // Cache issues when they update
+  useEffect(() => {
+    if (issues.length > 0) {
+      setCachedIssues(issues);
+      try {
+        localStorage.setItem(
+          CACHE_KEY,
+          JSON.stringify({
+            data: issues,
+            timestamp: Date.now(),
+          }),
+        );
+      } catch (error) {
+        console.error("Failed to cache issues:", error);
+      }
+    }
+  }, [issues]);
+
   // Load more issues when dialog opens
   useEffect(() => {
     if (isDialogOpen && allIssues.length === 0 && issues.length > 0) {
@@ -59,24 +103,50 @@ export function SidebarRoadmapComponent() {
     }
   }, [isDialogOpen, issues, allIssues.length, loadMoreIssues]);
 
+  const handleRefresh = async () => {
+    const now = Date.now();
+    if (now - lastRefresh < RATE_LIMIT_DURATION) {
+      toast.error("Woah, you're doing that too much! Please wait a moment.");
+      return;
+    }
+
+    setRefreshing(true);
+    setLastRefresh(now);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  const displayIssues = cachedIssues.length > 0 ? cachedIssues : issues;
+
   if (error) {
     return (
       <>
-        <Card size="compact" className="border-muted/50">
-          <CardHeader className="relative pb-2 pt-3">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Roadmap
-            </CardTitle>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="absolute top-2 right-2 h-5 w-5"
-              onClick={() => setIsDialogOpen(true)}
-            >
-              <ExpandIcon size={14} />
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-3 pt-2 pb-3">
+        <div className="bg-card border rounded-lg p-4">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-medium">Roadmap</h3>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 hover:bg-accent/50"
+                onClick={handleRefresh}
+                disabled={refreshing || isLoading}
+              >
+                <RefreshCw
+                  className={`h-3 w-3 transition-transform ${refreshing ? "animate-[spin_0.5s_linear_infinite]" : ""}`}
+                />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-5 w-5 hover:bg-accent/50"
+                onClick={() => setIsDialogOpen(true)}
+              >
+                <ExpandIcon size={12} data-testid="expand-icon" />
+              </Button>
+            </div>
+          </div>
+          <div className="space-y-3">
             <p className="text-xs text-muted-foreground">
               Failed to load roadmap items.
             </p>
@@ -92,8 +162,8 @@ export function SidebarRoadmapComponent() {
               </Button>
               <FeatureRequestButton />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
         <BugReportModal
           isOpen={isBugReportOpen}
           onClose={() => setIsBugReportOpen(false)}
@@ -102,66 +172,39 @@ export function SidebarRoadmapComponent() {
     );
   }
 
-  const IssuesList = ({
-    issues: tableIssues,
-    showCaption = true,
-  }: {
-    issues: { id: number; number: number; title: string; html_url: string }[];
-    showCaption?: boolean;
-  }) => (
-    <div className="w-full overflow-hidden">
-      {tableIssues.map((issue) => (
-        <div
-          key={issue.id}
-          className="flex items-start gap-2 pb-2 last:pb-0 border-b last:border-b-0 border-border/30"
-        >
-          <a
-            href={issue.html_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="group inline-flex items-start gap-1 hover:underline w-full"
-          >
-            <span className="break-words whitespace-normal flex-1 min-w-0 text-xs leading-relaxed text-muted-foreground group-hover:text-foreground transition-colors">
-              {issue.title}
-            </span>
-            <ExternalLink className="h-2.5 w-2.5 flex-shrink-0 text-muted-foreground/40 mt-0.5 group-hover:text-muted-foreground/60 transition-colors opacity-0 group-hover:opacity-100" />
-          </a>
-        </div>
-      ))}
-      {showCaption && (
-        <div className="mt-6 flex flex-col items-center gap-2">
-          <a
-            href="https://github.com/joinvai/vai-vex/issues"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-sm text-muted-foreground hover:underline"
-          >
-            View all issues on GitHub
-          </a>
-        </div>
-      )}
-    </div>
-  );
 
   return (
     <>
-      <Card size="compact" className="border-muted/50">
-        <CardHeader className="relative pb-2 pt-3">
-          <CardTitle className="text-sm font-medium text-muted-foreground">
-            Roadmap
-          </CardTitle>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-2 right-2 h-5 w-5 hover:bg-accent/50"
-            onClick={() => setIsDialogOpen(true)}
-            onMouseEnter={() => expandIconRef.current?.startAnimation()}
-            onMouseLeave={() => expandIconRef.current?.stopAnimation()}
-          >
-            <ExpandIcon ref={expandIconRef} size={14} />
-          </Button>
-        </CardHeader>
-        <CardContent className="space-y-3 pt-2 pb-3">
+      <div className="bg-card border rounded-lg p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-sm font-medium">Roadmap</h3>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 hover:bg-accent/50"
+              onClick={handleRefresh}
+              disabled={refreshing || isLoading}
+            >
+              <RefreshCw
+                className={`h-3 w-3 transition-transform ${refreshing ? "animate-[spin_0.5s_linear_infinite]" : ""}`}
+              />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 hover:bg-accent/50"
+              onClick={() => setIsDialogOpen(true)}
+              onMouseEnter={() => expandIconRef.current?.startAnimation()}
+              onMouseLeave={() => expandIconRef.current?.stopAnimation()}
+            >
+              <ExpandIcon ref={expandIconRef} size={12} data-testid="expand-icon" />
+            </Button>
+          </div>
+        </div>
+        <div
+          className={`space-y-3 transition-all ${refreshing ? "blur-sm opacity-50" : ""}`}
+        >
           {isLoading ? (
             <div
               className="flex items-center justify-center py-4"
@@ -170,23 +213,44 @@ export function SidebarRoadmapComponent() {
               <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
             </div>
           ) : (
-            <IssuesList issues={issues.slice(0, 3)} showCaption={false} />
+            <div
+              className={`text-xs space-y-1 transition-all ${refreshing ? "blur-sm opacity-50" : ""}`}
+            >
+              {displayIssues.slice(0, 5).map((issue) => (
+                <div key={issue.id} className="group">
+                  <a
+                    href={issue.html_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block transition-colors"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="flex-1 leading-tight">
+                        {issue.title}
+                      </span>
+                      <span className="text-muted-foreground whitespace-nowrap flex-shrink-0">
+                        #{issue.number}
+                      </span>
+                    </div>
+                  </a>
+                </div>
+              ))}
+            </div>
           )}
 
           <div className="pt-1 flex gap-2">
             <Button
-              variant="ghost"
+              variant="secondary"
               size="sm"
               className="flex-1 w-full h-7 text-xs text-muted-foreground hover:text-foreground"
               onClick={() => setIsBugReportOpen(true)}
             >
-              <Bug className="h-3 w-3 mr-1.5" />
               Report Bug
             </Button>
             <FeatureRequestButton />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col">

@@ -1,9 +1,48 @@
+/**
+ * @fileoverview Categories Module - Post organization and classification system
+ * 
+ * This module manages the category system that organizes posts into themed discussions.
+ * Categories provide structure for content discovery, moderation boundaries, and
+ * community organization. Each category has its own rules, visual branding, and
+ * usage statistics.
+ * 
+ * Key features:
+ * - Category creation and management
+ * - Post count tracking and statistics
+ * - Category-specific rules and moderation
+ * - Visual branding with icons and banners
+ * - Search functionality for category discovery
+ * - Access control (public, private, inactive states)
+ * - Default category initialization
+ * - Category deletion with content cleanup
+ * 
+ * The system supports hierarchical organization and provides efficient querying
+ * for category feeds and content discovery.
+ * 
+ * @author VAI Development Team
+ * @version 1.0.0
+ */
+
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
 
-// Get all active categories
+/**
+ * Retrieves all active categories with post counts.
+ * 
+ * Returns a filtered list of active categories excluding legacy import categories.
+ * Each category includes metadata like post count, description, and visual elements.
+ * Used for category navigation, post creation forms, and directory pages.
+ * 
+ * @returns Array of active category objects with post counts
+ * 
+ * @example
+ * ```typescript
+ * const categories = await getCategories();
+ * // Returns: [{ name: "workflows", displayName: "Workflows", postCount: 42, ... }]
+ * ```
+ */
 export const getCategories = query({
   args: {},
   handler: async (ctx) => {
@@ -23,7 +62,23 @@ export const getCategories = query({
   },
 });
 
-// Get category by ID
+/**
+ * Retrieves a single category by its unique identifier.
+ * 
+ * Returns complete category information if the category exists and is active.
+ * Used for category detail pages and validation during post operations.
+ * 
+ * @param categoryId - Unique identifier of the category
+ * @returns Category object or null if not found/inactive
+ * 
+ * @example
+ * ```typescript
+ * const category = await getCategoryById({ categoryId: "cat123" });
+ * if (category) {
+ *   console.log(`Category: ${category.displayName}`);
+ * }
+ * ```
+ */
 export const getCategoryById = query({
   args: { categoryId: v.id("categories") },
   handler: async (ctx, { categoryId }) => {
@@ -35,7 +90,21 @@ export const getCategoryById = query({
   },
 });
 
-// Get category by name (for routing)
+/**
+ * Retrieves a category by its URL-friendly name for routing.
+ * 
+ * Used for SEO-friendly category URLs and navigation. Handles special cases
+ * like legacy category filtering. Essential for category-based routing.
+ * 
+ * @param name - URL-safe category name identifier
+ * @returns Category object or null if not found
+ * 
+ * @example
+ * ```typescript
+ * const category = await getCategoryByName({ name: "workflows" });
+ * // Used in: /workflows/posts
+ * ```
+ */
 export const getCategoryByName = query({
   args: { name: v.string() },
   handler: async (ctx, { name }) => {
@@ -92,7 +161,21 @@ export const getCategoryStats = query({
   },
 });
 
-// Initialize default categories (run once)
+/**
+ * Initializes the default category structure for a new community.
+ * 
+ * Creates the standard set of categories used by the VAI community including
+ * Announcements, Workflows, Prompts, Connect, and Content. Only creates categories
+ * that don't already exist. Requires authentication.
+ * 
+ * @returns Object with creation summary and new category IDs
+ * 
+ * @example
+ * ```typescript
+ * const result = await initializeCategories();
+ * console.log(`Created ${result.categoryIds.length} new categories`);
+ * ```
+ */
 export const initializeCategories = mutation({
   args: {},
   handler: async (ctx) => {
@@ -188,7 +271,25 @@ export const updateCategoryPostCount = mutation({
   },
 });
 
-// Search categories (for future use)
+/**
+ * Searches categories by display name with fuzzy matching.
+ * 
+ * Provides search functionality for category discovery and selection.
+ * Uses full-text search indexes for efficient querying across category names.
+ * 
+ * @param searchTerm - Text to search for in category names
+ * @param limit - Maximum number of results to return (default: 10)
+ * @returns Array of matching category objects
+ * 
+ * @example
+ * ```typescript
+ * const results = await searchCategories({ 
+ *   searchTerm: "work", 
+ *   limit: 5 
+ * });
+ * // Might return categories like "Workflows", "Networking", etc.
+ * ```
+ */
 export const searchCategories = query({
   args: {
     searchTerm: v.string(),

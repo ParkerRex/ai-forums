@@ -1,3 +1,27 @@
+/**
+ * @fileoverview Comments Module - Threaded discussion system with rich content support
+ * 
+ * This module manages the hierarchical comment system that enables threaded discussions
+ * on posts. It supports unlimited nesting depth, rich media attachments, edit history,
+ * voting, moderation, and real-time collaboration features.
+ * 
+ * Key features:
+ * - Threaded comment system with unlimited nesting
+ * - Rich media attachments (images, documents, GIFs)
+ * - Edit history tracking and transparency
+ * - Vote/reputation system for comments
+ * - Mention notifications and social features
+ * - Comment reordering and moderation tools
+ * - Duplicate detection and spam prevention
+ * - Content reporting and safety features
+ * 
+ * The system is designed for high-performance rendering of large comment threads
+ * with efficient database queries and optimized data structures.
+ * 
+ * @author VAI Development Team
+ * @version 1.0.0
+ */
+
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
@@ -5,12 +29,37 @@ import { getAuthenticatedMember } from "./auth";
 import { insertNotification } from "./notifications";
 import { api } from "./_generated/api";
 
-// Helper function to check if a member is the author of a comment
+/**
+ * Checks if a member is the author of a comment for authorization purposes.
+ * 
+ * @param comment - Comment object containing memberId
+ * @param memberId - Member ID to check against
+ * @returns True if the member is the comment author
+ */
 function isCommentAuthor(comment: { memberId: Id<"members"> }, memberId: Id<"members">): boolean {
   return comment.memberId === memberId;
 }
 
-// Get comments for a post with nested structure
+/**
+ * Retrieves and builds hierarchical comment tree for a post.
+ * 
+ * Fetches all comments for a post and constructs a nested tree structure
+ * with proper parent-child relationships. Comments are enriched with author
+ * information and sorted by creation time and custom order.
+ * 
+ * @param postId - ID of the post to get comments for
+ * @param limit - Maximum number of comments to retrieve (default: 50)
+ * @returns Nested array of comments with replies as children
+ * 
+ * @example
+ * ```typescript
+ * const comments = await getCommentsByPost({ 
+ *   postId: "post123",
+ *   limit: 100
+ * });
+ * // Returns tree structure: [{ comment, replies: [{ comment, replies: [...] }] }]
+ * ```
+ */
 export const getCommentsByPost = query({
   args: {
     postId: v.id("posts"),
@@ -110,7 +159,31 @@ export const getCommentById = query({
   },
 });
 
-// Create new comment
+/**
+ * Creates a new comment with threading and notification support.
+ * 
+ * Handles comment creation with validation, duplicate detection, threading logic,
+ * and notification delivery. Supports rich content including attachments, link
+ * previews, and mentions. Updates parent comment counts and triggers notifications.
+ * 
+ * @param content - Comment text content
+ * @param postId - ID of post being commented on
+ * @param parentCommentId - Optional parent comment for replies
+ * @param attachments - Optional array of media attachments
+ * @param linkPreviews - Optional link preview data
+ * @param mentions - Optional array of mentioned member IDs
+ * @returns ID of the created comment
+ * 
+ * @example
+ * ```typescript
+ * const commentId = await createComment({
+ *   content: "Great post! @username what do you think?",
+ *   postId: "post123",
+ *   parentCommentId: "comment456", // Reply to existing comment
+ *   mentions: ["user789"]
+ * });
+ * ```
+ */
 export const createComment = mutation({
   args: {
     content: v.string(),
@@ -333,7 +406,27 @@ export const updateComment = mutation({
   },
 });
 
-// Edit comment (new name to match the API)
+/**
+ * Edits an existing comment with history tracking and attachment management.
+ * 
+ * Allows comment authors to edit their comments while preserving edit history
+ * for transparency. Handles attachment updates including cleanup of removed
+ * files from storage. Only the comment author can edit their own comments.
+ * 
+ * @param commentId - ID of comment to edit
+ * @param content - Updated comment content
+ * @param attachments - Updated attachment array (replaces existing)
+ * @returns ID of the edited comment
+ * 
+ * @example
+ * ```typescript
+ * await editComment({
+ *   commentId: "comment123",
+ *   content: "Updated comment text",
+ *   attachments: [{ id: "new-attachment", ... }]
+ * });
+ * ```
+ */
 export const editComment = mutation({
   args: {
     commentId: v.id("comments"),
@@ -412,7 +505,23 @@ export const editComment = mutation({
   },
 });
 
-// Delete comment (soft delete)
+/**
+ * Soft deletes a comment by changing its status to "deleted".
+ * 
+ * Only the comment author can delete their own comments. The comment data
+ * is preserved but hidden from public view. Updates post and parent comment
+ * counts while maintaining thread structure for remaining comments.
+ * 
+ * @param commentId - ID of comment to delete
+ * @returns ID of the deleted comment
+ * @throws Error if user is not the comment author or comment not found
+ * 
+ * @example
+ * ```typescript
+ * await deleteComment({ commentId: "comment123" });
+ * // Comment is now hidden but thread structure preserved
+ * ```
+ */
 export const deleteComment = mutation({
   args: { commentId: v.id("comments") },
   handler: async (ctx, { commentId }) => {

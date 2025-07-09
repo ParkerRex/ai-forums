@@ -23,7 +23,15 @@
       "Bash(gh issue:*)",
       "Bash(npm run lint:*)",
       "Bash(npm test)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(npm run build:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(npm run:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm run:*)",
+      "Bash(mkdir:*)",
+      "mcp__convex__data"
     ],
     "deny": []
   }

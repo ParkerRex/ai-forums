@@ -43,6 +43,7 @@
     "**/*.spec.ts",
     "**/*.spec.tsx",
     "playwright/**",
-    "**/__tests__/**"
+    "**/__tests__/**",
+    "scripts/**"
   ]
 }

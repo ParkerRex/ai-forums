@@ -4,7 +4,6 @@ import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users } from "lucide-react";
 import Link from "next/link";
 import { memberProfileUrl } from "@/lib/slug-utils";
@@ -17,50 +16,52 @@ export function OnlineUsers() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center">
-          <Users className="w-5 h-5 mr-2" />
+    <div className="bg-card border rounded-lg p-4">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="text-sm font-medium flex items-center">
+          <Users className="w-4 h-4 mr-1.5" />
           Online Now ({onlineMembers.length})
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex flex-col space-y-2">
-          {onlineMembers.map((member) => {
-            const memberUrl = memberProfileUrl({ 
-              slug: member.slug, 
-              _id: member._id 
-            });
-            
-            return (
+        </h3>
+      </div>
+      <div className="text-xs space-y-1">
+        {onlineMembers.map((member) => {
+          const memberUrl = memberProfileUrl({ 
+            slug: member.slug, 
+            _id: member._id 
+          });
+          
+          return (
+            <div key={member._id} className="group">
               <Link 
-                key={member._id} 
                 href={memberUrl} 
-                className="flex items-center space-x-3 p-2 rounded-md hover:bg-muted/50 transition-colors group"
+                className="flex items-center space-x-2 hover:text-blue-600 transition-colors"
               >
-                <Avatar className="h-[46px] w-[46px] border-2 border-background shadow-sm">
+                <Avatar className="h-6 w-6">
                   <AvatarImage
                     src={member.avatarUrl || ""}
                     alt={member.fullName}
                   />
-                  <AvatarFallback className="bg-primary/10 text-primary font-medium">
+                  <AvatarFallback className="text-[10px]">
                     {member.initials}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground group-hover:text-primary transition-colors truncate">
-                    {member.fullName}
-                  </p>
-                  <div className="flex items-center">
-                    <div className="w-2 h-2 bg-green-500 rounded-full mr-2"></div>
-                    <span className="text-xs text-muted-foreground">Online</span>
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="flex-1 leading-tight truncate">{member.fullName}</span>
+                    <div className="flex items-center">
+                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
+                    </div>
+                  </div>
+                  <div className="text-muted-foreground mt-0.5">
+                    <span className="text-[10px]">[Member]</span>
+                    <span className="ml-2">Online</span>
                   </div>
                 </div>
               </Link>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }

@@ -1,9 +1,51 @@
+/**
+ * @fileoverview Votes Module - Content voting and ranking system
+ *
+ * This module manages the voting system that powers content ranking and community
+ * engagement metrics. It handles upvotes on posts, comments, and resources with
+ * vote removal, deduplication, and real-time score updates.
+ *
+ * Key features:
+ * - Upvote-only functionality for all content types
+ * - Vote removal (toggle upvote on/off)
+ * - One vote per user per content item enforcement
+ * - Real-time score calculation and caching
+ * - Vote history tracking and analytics
+ * - Integration with ranking algorithms
+ * - Performance optimization for high-traffic content
+ *
+ * The system ensures data integrity while providing fast vote lookups
+ * and real-time updates for community-driven content curation.
+ *
+ * @author VAI Development Team
+ * @version 1.0.0
+ */
+
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
 
-// Check if user has voted on a target (post or comment)
+/**
+ * Retrieves the current user's vote on a specific piece of content.
+ *
+ * Returns the user's vote type (upvote) for the specified content,
+ * or null if not voted. Used to show vote state in UI components and
+ * enable vote removal functionality.
+ *
+ * @param targetId - ID of the content being checked
+ * @param targetType - Type of content (post, comment, or resource)
+ * @returns Vote type ("upvote") or null if not voted
+ *
+ * @example
+ * ```typescript
+ * const userVote = await getUserVote({
+ *   targetId: "post123",
+ *   targetType: "post"
+ * });
+ * // Returns: "upvote" or null
+ * ```
+ */
 export const getUserVote = query({
   args: {
     targetId: v.string(),
@@ -46,17 +88,34 @@ export const getVoteCounts = query({
       .collect();
 
     const upvotes = votes.filter(vote => vote.voteType === "upvote").length;
-    const downvotes = votes.filter(vote => vote.voteType === "downvote").length;
 
     return {
       upvotes,
-      downvotes,
-      netVotes: upvotes - downvotes,
+      netVotes: upvotes,
     };
   },
 });
 
-// Vote on a post
+/**
+ * Casts or removes a vote on a post with real-time score updates.
+ * 
+ * Handles upvoting and vote removal with automatic score recalculation.
+ * Prevents duplicate votes and manages vote switching. Updates both the
+ * votes table and the post's cached vote counts for performance.
+ * 
+ * @param postId - ID of the post to vote on
+ * @param voteType - "upvote" to vote positively, "remove" to remove vote
+ * @returns Success status and updated vote counts
+ * 
+ * @example
+ * ```typescript
+ * await voteOnPost({
+ *   postId: "post123",
+ *   voteType: "upvote"
+ * });
+ * // Post score increases and UI updates reflect new state
+ * ```
+ */
 export const voteOnPost = mutation({
   args: {
     postId: v.id("posts"),
@@ -122,7 +181,7 @@ export const voteOnPost = mutation({
     // Update post vote counts
     if (upvoteDelta !== 0) {
       const newUpvotes = Math.max(0, (post.upvotes || 0) + upvoteDelta);
-      const newNetVotes = newUpvotes - (post.downvotes || 0);
+      const newNetVotes = newUpvotes;
 
       await ctx.db.patch(postId, {
         upvotes: newUpvotes,
@@ -135,7 +194,7 @@ export const voteOnPost = mutation({
       success: true,
       newVoteType: voteType === "remove" ? null : voteType,
       upvotes: Math.max(0, (post.upvotes || 0) + upvoteDelta),
-      netVotes: Math.max(0, (post.upvotes || 0) + upvoteDelta) - (post.downvotes || 0),
+      netVotes: Math.max(0, (post.upvotes || 0) + upvoteDelta),
     };
   },
 });
@@ -206,7 +265,7 @@ export const voteOnComment = mutation({
     // Update comment vote counts
     if (upvoteDelta !== 0) {
       const newUpvotes = Math.max(0, (comment.upvotes || 0) + upvoteDelta);
-      const newNetVotes = newUpvotes - (comment.downvotes || 0);
+      const newNetVotes = newUpvotes;
 
       await ctx.db.patch(commentId, {
         upvotes: newUpvotes,
@@ -219,7 +278,7 @@ export const voteOnComment = mutation({
       success: true,
       newVoteType: voteType === "remove" ? null : voteType,
       upvotes: Math.max(0, (comment.upvotes || 0) + upvoteDelta),
-      netVotes: Math.max(0, (comment.upvotes || 0) + upvoteDelta) - (comment.downvotes || 0),
+      netVotes: Math.max(0, (comment.upvotes || 0) + upvoteDelta),
     };
   },
 });
@@ -386,7 +445,7 @@ export const voteOnResource = mutation({
 
     if (upvoteDelta !== 0) {
       const newUpvotes = Math.max(0, (resource.upvotes || 0) + upvoteDelta);
-      const newNetVotes = newUpvotes - (resource.downvotes || 0);
+      const newNetVotes = newUpvotes;
 
       await ctx.db.patch(resourceId, {
         upvotes: newUpvotes,
@@ -399,7 +458,7 @@ export const voteOnResource = mutation({
       success: true,
       newVoteType: voteType === "remove" ? null : voteType,
       upvotes: Math.max(0, (resource.upvotes || 0) + upvoteDelta),
-      netVotes: Math.max(0, (resource.upvotes || 0) + upvoteDelta) - (resource.downvotes || 0),
+      netVotes: Math.max(0, (resource.upvotes || 0) + upvoteDelta),
     };
   },
 });   

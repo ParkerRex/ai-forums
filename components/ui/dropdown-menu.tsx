@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
-import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
+import { CheckIcon, CircleIcon } from "lucide-react"
+import { DownChevronIcon } from "@/components/icons/down-chevron"
 
 import { cn } from "@/lib/utils"
 
@@ -21,13 +22,41 @@ function DropdownMenuPortal({
 }
 
 function DropdownMenuTrigger({
+  className,
+  children,
+  asChild,
   ...props
 }: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>) {
+  if (asChild) {
+    return (
+      <DropdownMenuPrimitive.Trigger
+        data-slot="dropdown-menu-trigger"
+        asChild
+        {...props}
+      >
+        {children}
+      </DropdownMenuPrimitive.Trigger>
+    )
+  }
+
   return (
     <DropdownMenuPrimitive.Trigger
       data-slot="dropdown-menu-trigger"
+      className={cn(
+        "inline-flex items-center justify-between h-6 min-w-[22px] px-2 pr-[18px] pl-2 rounded",
+        "text-[lch(9.821_0_282.863)] bg-[lch(100_0_282.863)] border border-[lch(84.025_0_282.863)]",
+        "dark:text-[lch(100_0_272)] dark:bg-[lch(18.133_4.867_272)] dark:border-[lch(24.833_4.707_272)]",
+        "transition-colors duration-150 ease-in-out",
+        "hover:bg-[#F6F6F6] dark:hover:bg-[lch(20_5_272)]",
+        "focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-ring",
+        "disabled:pointer-events-none disabled:opacity-50",
+        className
+      )}
       {...props}
-    />
+    >
+      <span className="flex-1">{children}</span>
+      <DownChevronIcon size={12} className="ml-1 -mr-[10px] flex-shrink-0" />
+    </DropdownMenuPrimitive.Trigger>
   )
 }
 
@@ -217,7 +246,7 @@ function DropdownMenuSubTrigger({
       {...props}
     >
       {children}
-      <ChevronRightIcon className="ml-auto size-4" />
+      <DownChevronIcon size={16} className="ml-auto" />
     </DropdownMenuPrimitive.SubTrigger>
   )
 }

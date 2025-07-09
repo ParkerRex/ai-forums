@@ -24,10 +24,13 @@ import { SignInButton } from "@clerk/nextjs";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronDown, ChevronRight, GripVertical } from "lucide-react";
-import { ArrowBigUpIcon } from "@/components/ui/arrow-big-up";
 import { MessageSquareIcon } from "@/components/ui/message-square";
 import { LinkIcon } from "@/components/ui/link";
-import { MembershipCTAModal } from "@/components/membership-cta-modal";
+import { VoteButton } from "@/components/ui/vote-button";
+import {
+  CommentThreadContainer,
+  isLastChildComment,
+} from "@/components/ui/comment-thread-line";
 import Link from "next/link";
 import Image from "next/image";
 import { memberProfileUrl } from "@/lib/utils";
@@ -35,6 +38,9 @@ import { EnhancedCommentInput } from "./enhanced-comment-input";
 import { motion } from "framer-motion";
 import CommentActionsMenu from "./comment-actions-menu";
 import { useParams } from "next/navigation";
+import { toast } from "sonner";
+import { UploadIcon } from "@/components/ui/upload";
+import { MemberHoverCardWrapper } from "@/components/member-hover-card";
 
 type AttachmentType = {
   id: string;
@@ -120,6 +126,7 @@ interface CommentItemProps {
     [key: string]: unknown;
   };
   isDragging?: boolean;
+  isLastChild?: boolean;
 }
 
 function CommentItem({
@@ -134,6 +141,7 @@ function CommentItem({
   categoryName,
   isAdmin,
   dragHandleProps,
+  isLastChild = false,
 }: CommentItemProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVoting, setIsVoting] = useState(false);
@@ -146,10 +154,6 @@ function CommentItem({
   );
 
   // Refs for animated icons
-  const upvoteIconRef = useRef<{
-    startAnimation: () => void;
-    stopAnimation: () => void;
-  }>(null);
   const replyIconRef = useRef<{
     startAnimation: () => void;
     stopAnimation: () => void;
@@ -168,9 +172,7 @@ function CommentItem({
   const currentUserVote =
     optimisticUserVote !== null ? optimisticUserVote : userVote;
 
-  // Calculate indentation based on depth (max 3 levels)
-  const indentLevel = Math.min(comment.depth, 3);
-  const marginLeft = indentLevel * 24; // 24px per level
+  // Threading is now handled by CommentThreadContainer
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -231,10 +233,14 @@ function CommentItem({
   };
 
   return (
-    <div className="space-y-3" style={{ marginLeft: `${marginLeft}px` }}>
+    <CommentThreadContainer
+      depth={comment.depth}
+      isLastChild={isLastChild}
+      className="space-y-3"
+    >
       <motion.div
         id={`comment-${comment._id}`}
-        className="border border-border rounded-lg p-4 bg-card transition-all duration-300"
+        className="py-4 transition-all duration-300"
         variants={highlightVariants}
         initial={isNewlyCreated ? "initial" : false}
         animate={isNewlyCreated ? "animate" : false}
@@ -245,41 +251,42 @@ function CommentItem({
         }
       >
         <div className="flex items-start space-x-3">
-          <Avatar className="w-8 h-8">
-            <AvatarFallback className="bg-muted text-muted-foreground">
-              pr {comment.member?.firstName?.[0] || "U"}
-            </AvatarFallback>
-          </Avatar>
+          <MemberHoverCardWrapper member={comment.member}>
+            <Avatar className="w-7 h-7 cursor-pointer">
+              <AvatarFallback className="bg-muted text-muted-foreground text-xs">
+                {comment.member?.username?.[0]?.toUpperCase() || comment.member?.firstName?.[0]?.toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
+          </MemberHoverCardWrapper>
           <div className="flex-1 space-y-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 text-xs">
                 {comment.member ? (
-                  <Link
-                    href={memberProfileUrl({
-                      slug: comment.member.slug,
-                      _id: comment.member._id,
-                    })}
-                    className="font-medium text-foreground hover:text-primary transition-colors"
-                    data-testid="member-link"
-                  >
-                    {comment.member.firstName} {comment.member.lastName}
-                  </Link>
+                  <MemberHoverCardWrapper member={comment.member}>
+                    <Link
+                      href={memberProfileUrl({
+                        slug: comment.member.slug,
+                        _id: comment.member._id,
+                      })}
+                      className="font-medium text-foreground hover:underline"
+                      data-testid="member-link"
+                    >
+                      {comment.member.username || `${comment.member.firstName} ${comment.member.lastName}`}
+                    </Link>
+                  </MemberHoverCardWrapper>
                 ) : (
                   <span className="font-medium text-foreground">
-                    Unknown User
+                    [deleted]
                   </span>
                 )}
-                <span className="text-sm text-muted-foreground">
-                  {formatDistanceToNow(new Date(comment.createdAt), {
-                    addSuffix: true,
-                  })}
+                <span className="text-muted-foreground">•</span>
+                <span className="text-muted-foreground">
+                  {formatDistanceToNow(new Date(comment.createdAt))
+                    .replace('about ', '')
+                    .replace('less than a', '1')
+                    .replace(' ago', '')}
                   {comment.editedAt && " (edited)"}
                 </span>
-                {comment.depth > 0 && (
-                  <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
-                    Reply
-                  </span>
-                )}
               </div>
               <div className="flex items-center space-x-1">
                 {comment.depth > 0 && dragHandleProps && (
@@ -290,19 +297,6 @@ function CommentItem({
                   >
                     <GripVertical className="h-3 w-3 text-muted-foreground" />
                   </button>
-                )}
-                {comment.member && (
-                  <Authenticated>
-                    <CommentActionsMenu
-                      commentId={comment._id}
-                      authorId={comment.member._id}
-                      postSlug={postSlug}
-                      categoryName={categoryName}
-                      onEditClick={() => setIsEditing(true)}
-                      isAdmin={isAdmin}
-                      commentCreatedAt={comment.createdAt}
-                    />
-                  </Authenticated>
                 )}
               </div>
             </div>
@@ -337,7 +331,7 @@ function CommentItem({
                 </Button>
               </div>
             ) : (
-              <p className="text-foreground whitespace-pre-wrap">
+              <p className="text-sm text-foreground whitespace-pre-wrap">
                 {comment.content}
               </p>
             )}
@@ -345,7 +339,7 @@ function CommentItem({
             {comment.attachments && comment.attachments.length > 0 && (
               <div className="mt-3 space-y-2">
                 {comment.attachments!.map((attachment) => (
-                  <div key={attachment.id} className="border rounded p-2">
+                  <div key={attachment.id} className="rounded p-2 bg-muted/30">
                     {attachment.type === "image" ||
                     attachment.type === "gif" ? (
                       <div className="relative">
@@ -385,7 +379,7 @@ function CommentItem({
 
             {comment.linkPreviews &&
               Object.entries(comment.linkPreviews!).map(([url, preview]) => (
-                <div key={url} className="mt-3 border rounded p-3 bg-muted/50">
+                <div key={url} className="mt-3 rounded p-3 bg-muted/50">
                   <div className="text-sm font-medium">{preview.title}</div>
                   <div className="text-xs text-muted-foreground">
                     {preview.description}
@@ -401,97 +395,91 @@ function CommentItem({
                 </div>
               ))}
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <Authenticated>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onReply(comment._id)}
-                    className="text-muted-foreground hover:text-foreground"
-                    onMouseEnter={() => replyIconRef.current?.startAnimation()}
-                    onMouseLeave={() => replyIconRef.current?.stopAnimation()}
-                  >
-                    <MessageSquareIcon
-                      ref={replyIconRef}
-                      size={14}
-                      className="mr-1"
-                    />
-                    Reply
-                  </Button>
-                </Authenticated>
-                {hasReplies && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsExpanded(!isExpanded)}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    {isExpanded ? (
-                      <ChevronDown className="w-4 h-4 mr-1" />
-                    ) : (
-                      <ChevronRight className="w-4 h-4 mr-1" />
-                    )}
-                    {comment.replies.length}{" "}
-                    {comment.replies.length === 1 ? "reply" : "replies"}
-                  </Button>
-                )}
-              </div>
+            {/* Comment Actions Bar - Reddit Style */}
+            <div className="flex items-center space-x-3 -ml-1 mt-1">
+              {/* Vote Button - First */}
+              <VoteButton
+                targetId={comment._id}
+                targetType="comment"
+                voteCount={optimisticNetVotes}
+                isVoted={currentUserVote === "upvote"}
+                isVoting={isVoting}
+                onVote={handleUpvote}
+                size="sm"
+                showHoverCard={false}
+              />
 
-              {/* Voting moved to bottom right */}
-              <div className="flex items-center space-x-2">
+              {/* Reply Button */}
+              <Authenticated>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onReply(comment._id)}
+                  className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
+                  onMouseEnter={() => replyIconRef.current?.startAnimation()}
+                  onMouseLeave={() => replyIconRef.current?.stopAnimation()}
+                >
+                  <MessageSquareIcon
+                    ref={replyIconRef}
+                    size={14}
+                    className="mr-1.5 group-hover:text-foreground transition-colors"
+                  />
+                  Reply
+                </Button>
+              </Authenticated>
+
+
+              {/* Share Button */}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
+                onClick={async () => {
+                  const commentUrl = `${window.location.origin}${window.location.pathname}?commentId=${comment._id}`;
+                  try {
+                    await navigator.clipboard.writeText(commentUrl);
+                    toast.success("Comment link copied!");
+                  } catch {
+                    toast.error("Failed to copy link");
+                  }
+                }}
+              >
+                <UploadIcon size={14} className="mr-1.5 group-hover:text-foreground transition-colors" />
+                Share
+              </Button>
+
+              {/* Show replies button if has replies */}
+              {hasReplies && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
+                >
+                  {isExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5 mr-1 group-hover:text-foreground transition-colors" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 mr-1 group-hover:text-foreground transition-colors" />
+                  )}
+                  {comment.replies.length}{" "}
+                  {comment.replies.length === 1 ? "reply" : "replies"}
+                </Button>
+              )}
+
+              {/* More Options Menu */}
+              {comment.member && (
                 <Authenticated>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="p-1 h-auto hover:bg-muted flex items-center space-x-1"
-                    onClick={handleUpvote}
-                    disabled={isVoting}
-                    onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
-                    onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
-                  >
-                    <ArrowBigUpIcon
-                      ref={upvoteIconRef}
-                      size={14}
-                      className={`transition-colors ${
-                        currentUserVote === "upvote"
-                          ? "text-orange-500"
-                          : "text-muted-foreground hover:text-orange-500"
-                      }`}
-                    />
-                    <span className="text-xs font-medium text-foreground">
-                      {optimisticNetVotes}
-                    </span>
-                  </Button>
+                  <CommentActionsMenu
+                    commentId={comment._id}
+                    authorId={comment.member._id}
+                    postSlug={postSlug}
+                    categoryName={categoryName}
+                    onEditClick={() => setIsEditing(true)}
+                    isAdmin={isAdmin}
+                    commentCreatedAt={comment.createdAt}
+                  />
                 </Authenticated>
-                <Unauthenticated>
-                  <MembershipCTAModal
-                    title="Upvote Great Comments"
-                    description="Join VAI to upvote comments and help surface the best discussions in the community"
-                  >
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="p-1 h-auto hover:bg-muted flex items-center space-x-1"
-                      onMouseEnter={() =>
-                        upvoteIconRef.current?.startAnimation()
-                      }
-                      onMouseLeave={() =>
-                        upvoteIconRef.current?.stopAnimation()
-                      }
-                    >
-                      <ArrowBigUpIcon
-                        ref={upvoteIconRef}
-                        size={14}
-                        className="text-muted-foreground hover:text-orange-500"
-                      />
-                      <span className="text-xs font-medium text-foreground">
-                        {optimisticNetVotes}
-                      </span>
-                    </Button>
-                  </MembershipCTAModal>
-                </Unauthenticated>
-              </div>
+              )}
             </div>
           </div>
         </div>
@@ -535,7 +523,7 @@ function CommentItem({
           isAdmin={isAdmin}
         />
       )}
-    </div>
+    </CommentThreadContainer>
   );
 }
 
@@ -605,7 +593,7 @@ function ReplyDragContext({
   if (!canReorder) {
     return (
       <div className="space-y-3">
-        {replies.map((reply) => (
+        {replies.map((reply, index) => (
           <CommentItem
             key={reply._id}
             comment={reply}
@@ -618,6 +606,7 @@ function ReplyDragContext({
             postSlug={postSlug}
             categoryName={categoryName}
             isAdmin={isAdmin}
+            isLastChild={isLastChildComment(index, replies.length)}
           />
         ))}
       </div>
@@ -635,7 +624,7 @@ function ReplyDragContext({
         strategy={verticalListSortingStrategy}
       >
         <div className="space-y-3">
-          {replies.map((reply) => (
+          {replies.map((reply, index) => (
             <SortableCommentItem
               key={reply._id}
               comment={reply}
@@ -652,6 +641,7 @@ function ReplyDragContext({
                 postSlug={postSlug}
                 categoryName={categoryName}
                 isAdmin={isAdmin}
+                isLastChild={isLastChildComment(index, replies.length)}
               />
             </SortableCommentItem>
           ))}
@@ -696,9 +686,13 @@ export default function CommentSection({
       const expandParentComments = () => {
         let currentElement = element;
         while (currentElement) {
-          const parentComment = currentElement.closest('[data-comment-collapsed="true"]');
+          const parentComment = currentElement.closest(
+            '[data-comment-collapsed="true"]',
+          );
           if (parentComment) {
-            const expandButton = parentComment.querySelector('[data-expand-button]');
+            const expandButton = parentComment.querySelector(
+              "[data-expand-button]",
+            );
             if (expandButton) {
               (expandButton as HTMLElement).click();
             }
@@ -711,11 +705,12 @@ export default function CommentSection({
 
       const headerOffset = 100;
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+      const offsetPosition =
+        elementPosition + window.pageYOffset - headerOffset;
 
       window.scrollTo({
         top: offsetPosition,
-        behavior: "smooth"
+        behavior: "smooth",
       });
 
       element.classList.add("comment-highlight");
@@ -836,8 +831,8 @@ export default function CommentSection({
 
   return (
     <div className="mt-8">
-      <div className="bg-card border border-border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-foreground mb-4">
+      <div className="space-y-6">
+        <h3 className="text-lg font-semibold text-foreground">
           Comments ({totalComments})
         </h3>
 
@@ -852,7 +847,7 @@ export default function CommentSection({
         </Authenticated>
 
         <Unauthenticated>
-          <div className="mb-6 p-4 bg-muted/50 border border-border rounded-lg text-center">
+          <div className="mb-6 p-4 bg-muted/50 rounded-lg text-center">
             <p className="text-muted-foreground mb-4">
               Join the conversation! Sign in to post comments.
             </p>
@@ -866,7 +861,7 @@ export default function CommentSection({
           {comments === undefined ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
-                <div key={i} className="border border-border rounded-lg p-4">
+                <div key={i} className="py-4">
                   <div className="animate-pulse space-y-3">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-muted rounded-full"></div>
@@ -888,7 +883,7 @@ export default function CommentSection({
             </div>
           ) : (
             <div className="space-y-4">
-              {comments?.map((comment) => (
+              {comments?.map((comment, index) => (
                 <CommentItem
                   key={comment._id}
                   comment={comment}
@@ -901,6 +896,7 @@ export default function CommentSection({
                   postSlug={postSlug}
                   categoryName={categoryName}
                   isAdmin={isAdmin}
+                  isLastChild={isLastChildComment(index, comments?.length || 0)}
                 />
               ))}
             </div>

@@ -1,3 +1,21 @@
+/**
+ * @fileoverview Bookmark button component for saving and unsaving posts and resources.
+ * This component provides a unified interface for users to bookmark content across the application.
+ * It handles authentication states, loading states, and provides visual feedback for bookmark actions.
+ * 
+ * Key Features:
+ * - Toggle bookmark functionality (save/unsave)
+ * - Authentication-aware rendering
+ * - Visual feedback with filled/unfilled bookmark icon
+ * - Configurable size, label, and styling options
+ * - Membership CTA for unauthenticated users
+ * - Toast notifications for user feedback
+ * - Loading states during API calls
+ * 
+ * @author VAI Team
+ * @since 1.0.0
+ */
+
 import React, { useState } from "react";
 import { Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -59,7 +77,7 @@ export function BookmarkButton({
     }
   };
 
-  const iconSize = size === "sm" ? 14 : size === "lg" ? 20 : 16;
+  // Using fixed icon size of 12 for Reddit-style design
   const buttonSize = size === "sm" ? "sm" : "sm";
 
   return (
@@ -68,12 +86,12 @@ export function BookmarkButton({
         <Button
           variant={variant}
           size={buttonSize}
-          className={`p-2 h-auto hover:bg-muted ${className}`}
+          className={`px-2 py-1 h-auto hover:bg-muted/50 rounded-sm ${className}`}
           onClick={handleToggle}
           disabled={isBookmarking}
         >
           <Bookmark
-            size={iconSize}
+            size={12}
             className={`transition-colors ${
               isBookmarked
                 ? "text-blue-500 fill-blue-500"
@@ -81,7 +99,7 @@ export function BookmarkButton({
             }`}
           />
           {shouldShowLabel && (
-            <span className="ml-1 text-xs">{displayLabel}</span>
+            <span className="ml-1 text-xs font-medium">{displayLabel}</span>
           )}
         </Button>
       </Authenticated>
@@ -93,16 +111,22 @@ export function BookmarkButton({
           <Button
             variant={variant}
             size={buttonSize}
-            className={`p-2 h-auto hover:bg-muted ${className}`}
+            className={`px-2 py-1 h-auto hover:bg-muted/50 rounded-sm ${className}`}
           >
             <Bookmark
-              size={iconSize}
+              size={12}
               className="text-muted-foreground hover:text-blue-500"
             />
-            {shouldShowLabel && <span className="ml-1 text-xs">save</span>}
+            {shouldShowLabel && <span className="ml-1 text-xs font-medium">save</span>}
           </Button>
         </MembershipCTAModal>
       </Unauthenticated>
     </>
   );
 }
+
+/**
+ * Export the BookmarkButton component as the default export.
+ * This allows for easier imports throughout the application.
+ */
+export default BookmarkButton;

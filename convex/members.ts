@@ -1,3 +1,27 @@
+/**
+ * @fileoverview Members Module - User profile management and community statistics
+ * 
+ * This module handles all member-related operations including profile management,
+ * statistics calculation, search functionality, and community engagement tracking.
+ * It supports both legacy email-based authentication and modern Clerk integration.
+ * 
+ * Key features:
+ * - Member profile management with rich metadata
+ * - Cached statistics for performance (posts, comments, votes)
+ * - Advanced search with skill-based filtering
+ * - Pagination support for large member lists
+ * - Real-time online presence tracking
+ * - Social links and professional information
+ * - Member activity feeds and engagement metrics
+ * - Profile validation and URL slug management
+ * 
+ * The module includes comprehensive caching strategies to maintain performance
+ * while providing real-time data for member directories and profiles.
+ * 
+ * @author VAI Development Team
+ * @version 1.0.0
+ */
+
 import { query, mutation, type QueryCtx } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
@@ -41,6 +65,26 @@ const MemberUIValidator = v.object({
   slug: v.string(),
   // Role
   role: v.optional(v.union(v.literal("user"), v.literal("admin"))),
+  // Subscription fields
+  tier: v.union(
+    v.literal("free"),
+    v.literal("scholarship"),
+    v.literal("founding_member"),
+    v.literal("early_bird"),
+    v.literal("member")
+  ),
+  subscriptionStatus: v.union(
+    v.literal("active"),
+    v.literal("cancelled"),
+    v.literal("past_due"),
+    v.literal("expired"),
+    v.literal("none")
+  ),
+  subscriptionEndDate: v.optional(v.number()),
+  billingInterval: v.optional(v.union(
+    v.literal("monthly"),
+    v.literal("yearly")
+  )),
 });
 
 // Helper to backfill missing cached stats for a member with background caching
@@ -139,6 +183,11 @@ function transformMemberForUI(member: Doc<"members">) {
     lastOnlineRelative: getTimeAgo(member.lastOnline),
     // URL slug
     slug: member.slug,
+    // Subscription fields
+    tier: member.tier || "free",
+    subscriptionStatus: member.subscriptionStatus || "none",
+    subscriptionEndDate: member.subscriptionEndDate,
+    billingInterval: member.billingInterval,
   };
 }
 

@@ -11,8 +11,14 @@
     "start": "next start",
     "lint": "next lint",
     "lint:theme": "tsx scripts/audit-theme.ts",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:visual": "playwright test"
+    "test:visual": "playwright test",
+    "export:members": "tsx scripts/export-members.ts",
+    "billing:template": "tsx scripts/generate-billing-template.ts",
+    "billing:transform": "tsx scripts/transform-billing-data.ts",
+    "billing:transform-actual": "tsx scripts/transform-billing-actual.ts",
+    "billing:validate": "tsx scripts/validate-billing-data.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.839.0",
@@ -61,6 +67,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "convex": "^1.23.0",
+    "csv-parse": "^5.6.0",
     "date-fns": "^4.1.0",
     "dompurify": "^3.2.6",
     "dotenv": "^17.0.0",
@@ -82,7 +89,7 @@
     "react-resizable-panels": "^3.0.3",
     "recharts": "^3.0.0",
     "sonner": "^2.0.5",
-    "stripe": "^12.12.0",
+    "stripe": "^18.3.0",
     "swr": "^2.3.3",
     "tailwind-merge": "^3.3.1",
     "tippy.js": "^6.3.7",

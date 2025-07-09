@@ -1,3 +1,26 @@
+/**
+ * @fileoverview Authentication Module - Unified user authentication and member management
+ * 
+ * This module provides the core authentication system that bridges Clerk authentication
+ * with the internal member management system. It handles both legacy email-based
+ * authentication and modern Clerk-based authentication with automatic migration.
+ * 
+ * Key features:
+ * - Unified authentication flow supporting multiple auth providers
+ * - Automatic member creation and profile updates
+ * - Legacy auth system migration (email-based to Clerk)
+ * - Real-time presence tracking (lastOnline updates)
+ * - Context-aware behavior (query vs mutation operations)
+ * - Unique slug generation for member profiles
+ * - Error handling and authentication validation
+ * 
+ * The system is designed to be flexible and maintainable while providing
+ * a consistent authentication experience across the entire application.
+ * 
+ * @author VAI Development Team
+ * @version 1.0.0
+ */
+
 import { query, internalMutation, QueryCtx, MutationCtx } from "./_generated/server";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 
@@ -111,6 +134,10 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     slug,
     updatedAt: now,
     lastOnline: now,
+    // Payment fields - new members start as free tier
+    tier: "free" as const,
+    subscriptionStatus: "none" as const,
+    stripeCustomerId: `cus_temp_${email.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`, // TODO: Replace with Stripe API call
   });
 
   // Return the newly created member
@@ -142,6 +169,22 @@ export const ensureMember = internalMutation({
 export const current = query({
   args: {},
   handler: async (ctx) => {
-    return await getAuthenticatedMember(ctx);
+    return await getAuthenticatedMemberOrNull(ctx);
   },
-}); 
+});
+
+/**
+ * Helper function to get the authenticated member or null from the current context.
+ * Unlike getAuthenticatedMember, this function returns null instead of throwing
+ * when no identity is found. Useful for optional authentication scenarios.
+ * 
+ * @param ctx - The Convex context with auth and database access
+ * @returns The authenticated member document or null if not authenticated
+ */
+export async function getAuthenticatedMemberOrNull(ctx: QueryCtx | MutationCtx) {
+  try {
+    return await getAuthenticatedMember(ctx);
+  } catch {
+    return null;
+  }
+} 

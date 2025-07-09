@@ -48,11 +48,14 @@ graph TB
     ConvexDB --> Votes[👍 Votes]
     ConvexDB --> Bookmarks[🔖 Bookmarks]
     ConvexDB --> Notifications[🔔 Notifications]
+    ConvexDB --> Subscriptions[💳 Subscriptions]
+    ConvexDB --> Payments[💰 Payments]
 
     %% External Services
     ConvexBackend --> R2Storage[☁️ Cloudflare R2 Storage]
     ConvexBackend --> GitHub[🐙 GitHub API]
     ConvexBackend --> Discord[💬 Discord API]
+    ConvexBackend --> Stripe[💳 Stripe API]
 
     %% File Storage
     R2Storage --> Images[🖼️ Images]
@@ -77,8 +80,8 @@ graph TB
 
     class NextJS,React,ShadCN,Tailwind,TipTap frontend
     class ConvexBackend,ConvexClient backend
-    class ConvexDB,Members,Posts,Comments,Categories,Votes,Bookmarks,Notifications database
-    class R2Storage,GitHub,Discord,Images,Videos,PDFs,Attachments external
+    class ConvexDB,Members,Posts,Comments,Categories,Votes,Bookmarks,Notifications,Subscriptions,Payments database
+    class R2Storage,GitHub,Discord,Stripe,Images,Videos,PDFs,Attachments external
     class Clerk,ClerkDB auth
 ```
 
@@ -86,9 +89,11 @@ graph TB
 - **Frontend**: Next.js 15 + React 19 + TypeScript
 - **Backend**: Convex (real-time database + serverless functions)
 - **Authentication**: Clerk
+- **Payments**: Stripe (subscriptions, webhooks, customer portal)
 - **UI Framework**: Tailwind CSS + shadcn/ui components
 - **Rich Text**: TipTap editor
 - **Testing**: Vitest + Playwright
+- **Monitoring**: Custom webhook monitoring & analytics dashboards
 
 ### **Project Structure**
 ```
@@ -98,7 +103,9 @@ vai-vex/
 │   ├── page.tsx           # Homepage (post feed)
 │   ├── members/           # Member directory & profiles  
 │   ├── create/            # Post creation
-│   └── api/               # API routes (Discord, GitHub integration)
+│   ├── admin/             # Admin dashboards (members, payments, analytics)
+│   ├── pricing/           # Pricing and subscription pages
+│   └── api/               # API routes (Discord, GitHub, Stripe webhooks)
 ├── components/             # React components
 │   ├── ui/                # shadcn/ui components
 │   ├── header.tsx         # Global navigation
@@ -109,7 +116,10 @@ vai-vex/
 │   ├── posts.ts           # Post CRUD operations
 │   ├── members.ts         # User management
 │   ├── auth.ts            # Authentication helpers
-│   └── ...                # Other backend modules
+│   ├── stripe/            # Payment processing & webhooks
+│   ├── admin/             # Admin queries and mutations
+│   ├── helpers/           # Shared utilities (access control)
+│   └── test/              # Backend test files
 ├── lib/                    # Utility functions & helpers
 ├── hooks/                  # Custom React hooks
 └── types/                  # TypeScript type definitions
@@ -186,6 +196,9 @@ graph TD
 - Cached statistics (post count, comment count, net votes)
 - Rich profile data (bio, links, skills, location)
 - Support for legacy email-based and new externalId-based auth
+- Payment tier tracking (free, scholarship, founding_member, early_bird, member)
+- Subscription status and billing information
+- Stripe customer integration
 
 **Posts Table**
 - Multiple content types: text, image, video, link
@@ -201,6 +214,23 @@ graph TD
 **Categories Table**
 - Post organization and filtering
 - Admin controls and rules
+
+**Subscriptions Table**
+- Active subscription tracking
+- Stripe subscription management
+- Billing interval and tier information
+- Renewal and cancellation tracking
+
+**Payments Table**
+- Complete payment history
+- Transaction fees and net amounts
+- Refund tracking
+- Payment method information
+
+**StripeWebhookEvents Table**
+- Webhook event idempotency
+- Processing status tracking
+- Error logging for failed events
 
 ### **Data Flow Architecture**
 
@@ -282,6 +312,12 @@ npx convex dev
 
 # Configure environment variables
 # Add your Clerk keys to .env.local
+# Add your Stripe keys to .env.local:
+# STRIPE_SECRET_KEY=sk_...
+# STRIPE_WEBHOOK_SECRET=whsec_...
+# NEXT_PUBLIC_STRIPE_FOUNDING_MEMBER_PRICE_ID=price_...
+# NEXT_PUBLIC_STRIPE_EARLY_BIRD_PRICE_ID=price_...
+# NEXT_PUBLIC_STRIPE_MEMBER_PRICE_ID=price_...
 
 # Start development servers
 npm run dev
@@ -342,6 +378,15 @@ npm run lint            # Code quality checks
 - Real-time voting and comment updates
 - Instant search results
 
+### **Payment System**
+- 5-tier membership structure (Free, Scholarship, Founding Member, Early Bird, Member)
+- Stripe integration for subscriptions
+- Content paywall for premium posts
+- Admin tools for payment management
+- Webhook monitoring and analytics
+- Automated renewal reminders
+- Customer portal for self-service
+
 ## 📋 **Development Status**
 
 ### **Completed ✅**
@@ -351,6 +396,11 @@ npm run lint            # Code quality checks
 - [x] Reddit-style voting system
 - [x] Authentication with Clerk
 - [x] Real-time post feed
+- [x] Stripe payments integration (7 phases completed)
+- [x] Content paywall system
+- [x] Admin dashboards (members, payments, analytics)
+- [x] Webhook monitoring and alerting
+- [x] Comprehensive test suite (102+ tests)
 
 ### **In Progress 🔄**
 - [ ] Component connections (post-sidebar, post-detail, etc.)
@@ -359,11 +409,11 @@ npm run lint            # Code quality checks
 - [ ] Comment system
 
 ### **Planned 📋**
-- [ ] Stripe payments integration
 - [ ] Discord bot for membership tracking
 - [ ] AI chatbot for community Q&A
 - [ ] 3D/AI rotating object
 - [ ] Automated channel summaries
+- [ ] Mobile app
 
 ## 🛠️ **Contributing**
 

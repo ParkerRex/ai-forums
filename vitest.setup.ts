@@ -1,5 +1,9 @@
 import '@testing-library/jest-dom'
 import { vi } from 'vitest'
+import React from 'react'
+
+// Make React available globally for JSX
+global.React = React
 
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {

@@ -4,12 +4,16 @@ import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Globe, Github, Youtube, Edit, ExternalLink, Linkedin } from "lucide-react";
+import { CalendarDays, MapPin, Globe, Github, Youtube, Edit, ExternalLink, Linkedin, CreditCard } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useConvexAuth } from "convex/react";
 import MemberEditModal from "@/components/member-edit-modal";
+import { useRouter } from "next/navigation";
+import { formatDate, formatTierName } from "@/lib/format";
+import { SubscriptionStatusSkeleton } from "@/components/subscription-status-skeleton";
+import { subscriptionAnalytics } from "@/lib/analytics";
 
 interface MemberProfileProps {
   member: {
@@ -30,22 +34,31 @@ interface MemberProfileProps {
     websiteUrl?: string;
     linkedinUrl?: string;
     skills?: string[];
+    // Subscription fields
+    tier: "free" | "scholarship" | "founding_member" | "early_bird" | "member";
+    subscriptionStatus: "active" | "cancelled" | "past_due" | "expired" | "none";
+    subscriptionEndDate?: number;
+    billingInterval?: "monthly" | "yearly";
   };
 }
 
-// Updated status colors with dark mode support
-const statusVariants = {
-  active: "bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary",
-  inactive: "bg-muted text-muted-foreground border-border",
-  pending: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800",
-  churned: "bg-red-100 text-red-800 border-red-300 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800",
-  free: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
+
+// Tier badge colors
+const tierVariants = {
+  free: "bg-muted text-muted-foreground border-border",
+  scholarship: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800",
+  founding_member: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800",
+  early_bird: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
+  member: "bg-foreground text-background border-foreground",
 };
+
 
 export default function MemberProfile({ member }: MemberProfileProps) {
   const { isAuthenticated } = useConvexAuth();
   const currentMember = useQuery(api.members.getCurrentMember);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(false);
+  const router = useRouter();
 
   const initials = member.initials;
   const joinedDateFormatted = member.joinedDate;
@@ -81,12 +94,6 @@ export default function MemberProfile({ member }: MemberProfileProps) {
               {member.firstName} {member.lastName}
             </h1>
             <div className="flex items-center space-x-3">
-              <Badge
-                variant="outline"
-                className={`text-sm capitalize ${statusVariants[member.status]}`}
-              >
-                {member.status}
-              </Badge>
               {canEdit && (
                 <Button
                   variant="outline"
@@ -99,7 +106,51 @@ export default function MemberProfile({ member }: MemberProfileProps) {
               )}
             </div>
           </div>
-          <p className="text-muted-foreground mb-6">{member.bio}</p>
+          <p className="text-muted-foreground mb-4">{member.bio}</p>
+
+          {/* Subscription Status */}
+          {isSubscriptionLoading ? (
+            <SubscriptionStatusSkeleton />
+          ) : (
+            <div className="flex items-center gap-2 mb-6">
+              <Badge
+                variant="outline"
+                className={`text-sm ${tierVariants[member.tier]}`}
+              >
+                {formatTierName(member.tier)}
+              </Badge>
+              {member.subscriptionStatus === "active" && member.tier !== "free" && (
+                <Badge variant="secondary" className="text-xs">
+                  {member.billingInterval === "yearly" ? "Yearly" : "Monthly"}
+                </Badge>
+              )}
+              {member.subscriptionStatus === "cancelled" && member.subscriptionEndDate && (
+                <Badge variant="secondary" className="text-xs text-yellow-600 dark:text-yellow-400">
+                  Expires {formatDate(member.subscriptionEndDate)}
+                </Badge>
+              )}
+              {member.subscriptionStatus === "past_due" && (
+                <Badge variant="secondary" className="text-xs text-red-600 dark:text-red-400">
+                  Payment Required
+                </Badge>
+              )}
+              {canEdit && member.tier !== "free" && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    subscriptionAnalytics.manageClicked(member.tier);
+                    setIsSubscriptionLoading(true);
+                    router.push("/settings/billing");
+                  }}
+                  className="ml-auto"
+                >
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Manage Subscription
+                </Button>
+              )}
+            </div>
+          )}
 
           {/* Skills */}
           {member.skills && member.skills.length > 0 && (

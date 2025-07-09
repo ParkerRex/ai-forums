@@ -1,3 +1,33 @@
+/**
+ * @fileoverview Interactive Calendar Grid Component
+ * 
+ * This component renders a full-featured monthly calendar grid with event
+ * visualization, navigation, and interaction capabilities. It's the core
+ * calendar interface that displays events in a traditional calendar layout
+ * with smooth animations and responsive design.
+ * 
+ * Key Features:
+ * - Monthly calendar grid with proper date calculations
+ * - Event loading and display with real-time updates
+ * - Month navigation with smooth transitions
+ * - Event filtering and grouping by date
+ * - Interactive date selection and event clicking
+ * - Animated event cards with staggered loading
+ * - Overflow handling for dates with many events
+ * - Responsive design for all screen sizes
+ * 
+ * Technical Implementation:
+ * - Uses Convex queries for real-time event data
+ * - Implements proper date arithmetic for calendar layout
+ * - Handles month boundaries and leap years correctly
+ * - Provides smooth animations using Framer Motion
+ * - Optimized for performance with efficient re-renders
+ * 
+ * @author VAI Team
+ * @version 1.0.0
+ * @since 2024
+ */
+
 "use client";
 
 import { useState } from "react";
@@ -8,44 +38,105 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
+/**
+ * Props interface for the CalendarGrid component
+ * 
+ * @interface CalendarGridProps
+ * @property {Date} selectedDate - Currently selected date for highlighting
+ * @property {function} onDateSelect - Callback fired when a date is clicked
+ * @property {function} onEventSelect - Callback fired when an event is clicked
+ */
 interface CalendarGridProps {
   selectedDate: Date;
   onDateSelect: (date: Date) => void;
   onEventSelect: (eventId: string) => void;
 }
 
+/**
+ * Interactive calendar grid component that displays events in a monthly view
+ * 
+ * This component handles the complex logic of calendar layout generation,
+ * event data fetching, and user interactions. It provides a clean interface
+ * for navigating between months and viewing/selecting events.
+ * 
+ * @param {CalendarGridProps} props - Component props
+ * @param {Date} props.selectedDate - Currently selected date
+ * @param {function} props.onDateSelect - Called when user clicks a date
+ * @param {function} props.onEventSelect - Called when user clicks an event
+ * @returns {JSX.Element} The calendar grid with navigation and events
+ * 
+ * @example
+ * ```tsx
+ * <CalendarGrid
+ *   selectedDate={selectedDate}
+ *   onDateSelect={setSelectedDate}
+ *   onEventSelect={setSelectedEventId}
+ * />
+ * ```
+ */
 export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: CalendarGridProps) {
+  // State for tracking the currently displayed month
+  // Independent of selectedDate to allow navigation without changing selection
   const [currentMonth, setCurrentMonth] = useState(new Date());
   
+  // Fetch events for the current month using Convex query
+  // This provides real-time updates when events are created/modified
   const events = useQuery(api.events.getEventsByMonth, {
     year: currentMonth.getFullYear(),
     month: currentMonth.getMonth(),
   });
 
+  /**
+   * Navigates to the previous or next month
+   * 
+   * This function handles month navigation by creating a new Date object
+   * and updating the month. JavaScript's Date object automatically handles
+   * year boundaries and leap years.
+   * 
+   * @param {('prev' | 'next')} direction - Navigation direction
+   */
   const navigateMonth = (direction: 'prev' | 'next') => {
     const newMonth = new Date(currentMonth);
     if (direction === 'prev') {
+      // Move to previous month (automatically handles year boundary)
       newMonth.setMonth(newMonth.getMonth() - 1);
     } else {
+      // Move to next month (automatically handles year boundary)
       newMonth.setMonth(newMonth.getMonth() + 1);
     }
     setCurrentMonth(newMonth);
   };
 
+  /**
+   * Filters events for a specific date
+   * 
+   * This function creates a date range for the entire day (00:00:00 to 23:59:59)
+   * and filters events that fall within that range. This handles events that
+   * start on the given date regardless of their time.
+   * 
+   * @param {Date} date - The date to filter events for
+   * @returns {Array} Array of events occurring on the specified date
+   */
   const getEventsForDate = (date: Date) => {
     if (!events) return [];
     
+    // Create start of day (00:00:00.000)
     const dateStart = new Date(date);
     dateStart.setHours(0, 0, 0, 0);
+    
+    // Create end of day (23:59:59.999)
     const dateEnd = new Date(date);
     dateEnd.setHours(23, 59, 59, 999);
     
+    // Filter events that start within this date range
     return events.filter(event => {
       const eventDate = new Date(event.startTime);
       return eventDate >= dateStart && eventDate <= dateEnd;
     });
   };
 
+  // Array of month names for display
+  // Used to convert month index to readable format
   const monthNames = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
@@ -53,7 +144,9 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
 
   return (
     <div className="space-y-6">
+      {/* Month navigation header */}
       <div className="flex items-center justify-between">
+        {/* Previous month button */}
         <Button
           variant="outline"
           size="sm"
@@ -62,6 +155,8 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
           <ChevronLeft className="w-4 h-4" />
         </Button>
         
+        {/* Month and year display with animation */}
+        {/* Key prop forces re-render when month changes for smooth transitions */}
         <motion.h2 
           key={`${currentMonth.getFullYear()}-${currentMonth.getMonth()}`}
           initial={{ opacity: 0, y: -10 }}
@@ -71,6 +166,7 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
           {monthNames[currentMonth.getMonth()]} {currentMonth.getFullYear()}
         </motion.h2>
         
+        {/* Next month button */}
         <Button
           variant="outline"
           size="sm"
@@ -80,18 +176,26 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
         </Button>
       </div>
 
+      {/* Calendar grid container */}
       <div className="grid grid-cols-7 gap-1 bg-muted/30 p-4 rounded-lg">
+        {/* Day headers (Sun, Mon, Tue, etc.) */}
         {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
           <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
             {day}
           </div>
         ))}
         
+        {/* Calendar date cells */}
+        {/* Generate 42 cells (6 rows × 7 days) to always show complete weeks */}
         {Array.from({ length: 42 }, (_, i) => {
+          // Calculate the date for this cell
+          // Start from the first day of the month
           const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
           const startDate = new Date(firstDay);
+          // Adjust to show previous month's trailing days
           startDate.setDate(startDate.getDate() - firstDay.getDay() + i);
           
+          // Calculate display states for this date
           const isCurrentMonth = startDate.getMonth() === currentMonth.getMonth();
           const isToday = startDate.toDateString() === new Date().toDateString();
           const isSelected = startDate.toDateString() === selectedDate.toDateString();
@@ -111,12 +215,15 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
+              {/* Date number */}
               <div className="text-sm font-medium mb-1">
                 {startDate.getDate()}
               </div>
               
+              {/* Events for this date */}
               <div className="space-y-1">
                 <AnimatePresence>
+                  {/* Show up to 3 events with staggered animation */}
                   {dayEvents.slice(0, 3).map((event, index) => (
                     <motion.div
                       key={event._id}
@@ -134,6 +241,7 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
                   ))}
                 </AnimatePresence>
                 
+                {/* Show overflow indicator if more than 3 events */}
                 {dayEvents.length > 3 && (
                   <div className="text-xs text-muted-foreground">
                     +{dayEvents.length - 3} more
