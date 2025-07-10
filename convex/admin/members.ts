@@ -281,39 +281,3 @@ export const updateMemberRole = mutation({
     return { success: true };
   },
 });
-
-// Emergency function to fix Parker's external ID mismatch
-export const fixParkerExternalId = mutation({
-  args: {},
-  handler: async (ctx) => {
-    const targetEmail = "me@parkerrex.com";
-    const oldExternalId = "user_2yyFKoLudxP4Jv18JVXf42xycPa";
-    const newExternalId = "user_2zerp6zgT4SRupI5hkIBHxlJEQ9";
-
-    // Find Parker's member record by email
-    const member = await ctx.db
-      .query("members")
-      .filter(q => q.eq(q.field("email"), targetEmail))
-      .first();
-
-    if (!member) {
-      throw new Error(`No member found with email: ${targetEmail}`);
-    }
-
-    // Update the external ID
-    await ctx.db.patch(member._id, {
-      externalId: newExternalId,
-      updatedAt: Date.now(),
-    });
-
-    return {
-      success: true,
-      memberId: member._id,
-      memberEmail: member.email,
-      memberName: `${member.firstName} ${member.lastName}`,
-      oldExternalId: member.externalId,
-      newExternalId: newExternalId,
-      message: "External ID updated successfully"
-    };
-  },
-});
