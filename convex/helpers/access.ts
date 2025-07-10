@@ -188,3 +188,59 @@ export function getSubscriptionStatusMessage(member: Doc<"members">): string {
   // Default message for any other expired/invalid states
   return "Subscription expired - Renew to continue access";
 }
+
+/**
+ * Determines if a user can view the preview of a post.
+ * Previews are always accessible to all users (authenticated or not).
+ * This allows free users to see a teaser of the content before upgrading.
+ * 
+ * @param member - The member document (can be null for unauthenticated users)
+ * @returns {boolean} Always returns true as previews are public
+ */
+export function canViewPreview(member: Doc<"members"> | null | undefined): boolean {
+  // Previews are always available to encourage engagement
+  return true;
+}
+
+/**
+ * Determines if a user can view the full content of a specific post.
+ * Takes into account both the user's subscription status and whether the post is free.
+ * 
+ * @param member - The member document (can be null for unauthenticated users)
+ * @param post - The post document to check access for
+ * @returns {boolean} True if the user can view the full post content
+ */
+export function canViewPost(
+  member: Doc<"members"> | null | undefined,
+  post: { isFree?: boolean } | null | undefined
+): boolean {
+  // If post doesn't exist, deny access
+  if (!post) return false;
+  
+  // If post is marked as free, everyone can view it
+  if (post.isFree === true) return true;
+  
+  // Otherwise, use standard content access rules
+  return canViewFullContent(member);
+}
+
+/**
+ * Determines if a user can view a resource based on their subscription and the resource's free status.
+ * 
+ * @param member - The member document (can be null for unauthenticated users)
+ * @param resource - The resource document to check access for
+ * @returns {boolean} True if the user can view the resource
+ */
+export function canViewResource(
+  member: Doc<"members"> | null | undefined,
+  resource: { isFree?: boolean } | null | undefined
+): boolean {
+  // If resource doesn't exist, deny access
+  if (!resource) return false;
+  
+  // If resource is marked as free, everyone can view it
+  if (resource.isFree === true) return true;
+  
+  // Otherwise, use standard content access rules
+  return canViewFullContent(member);
+}

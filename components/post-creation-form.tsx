@@ -7,6 +7,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PreviewGenerationDialog } from "@/components/preview-generation-dialog";
 // import {
 //   Select,
 //   SelectContent,
@@ -21,6 +22,7 @@ import { DraftsModal } from "@/components/drafts-modal";
 import { PollCreationModal, PollData } from "@/components/poll-creation-modal";
 import { MediaUploadSection } from "@/components/media-upload-section";
 import { CategoryToggleGroup } from "@/components/category-toggle-group";
+import { PostPreviewToggle } from "@/components/post-preview-toggle";
 import { MediaItem } from "@/types";
 import {
   PostFormData,
@@ -65,6 +67,7 @@ interface ExtendedPostFormData extends PostFormData {
   linkImage?: string;
   pollData?: PollData;
   mediaItems?: MediaItem[];
+  preview?: string;
 }
 
 // Loading skeleton for the rich text editor
@@ -151,16 +154,22 @@ export function PostCreationForm({
   // Poll modal state
   const [showPollModal, setShowPollModal] = useState(false);
 
-  // Track which fields have been touched by the user
-  const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(
-    new Set(),
-  );
+  // Preview generation state
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [previewError, setPreviewError] = useState<string | null>(null);
+
+  // Content tab state (for edit/preview toggle)
+  const [contentTab, setContentTab] = useState<"edit" | "preview">("edit");
+
+  // Track whether validation errors should be shown (only after submit attempt)
+  const [showValidationErrors, setShowValidationErrors] = useState(false);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Real-time validation (only for touched fields)
-  const { errors } = validatePostForm(formData, touchedFields);
+  const { errors } = validatePostForm(formData, new Set()); // Don't show errors until submit
 
   // Check overall form validity for submit button (regardless of touched state)
   const { isValid: formIsValid } = validatePostForm(formData);
@@ -192,6 +201,9 @@ export function PostCreationForm({
   const createPost = useMutation(api.posts.createPost);
   const createPollPost = useMutation(api.polls.createPollPost);
   const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
+  const generatePostPreview = useAction(
+    api.previewGeneration.generatePostPreview,
+  );
 
   // Character count helpers
   const titleInfo = getCharacterCountInfo(formData.title, 5, 200);
@@ -210,7 +222,6 @@ export function PostCreationForm({
   const handleTitleChange = useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setFormData((prev) => ({ ...prev, title: e.target.value }));
-      setTouchedFields((prev) => new Set(prev).add("title"));
       setSubmitError(null);
     },
     [],
@@ -218,13 +229,11 @@ export function PostCreationForm({
 
   const handleContentChange = useCallback((content: string) => {
     setFormData((prev) => ({ ...prev, content }));
-    setTouchedFields((prev) => new Set(prev).add("content"));
     setSubmitError(null);
   }, []);
 
   const handleCategoryChange = useCallback((categoryId: string) => {
     setFormData((prev) => ({ ...prev, categoryId }));
-    setTouchedFields((prev) => new Set(prev).add("categoryId"));
     setSubmitError(null);
   }, []);
 
@@ -285,15 +294,27 @@ export function PostCreationForm({
     setShowPollModal(false);
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleGeneratePreview = useCallback(async () => {
+    setIsGeneratingPreview(true);
+    setPreviewError(null);
 
-    if (!isFormComplete || isSubmitting) {
-      // Mark all fields as touched to show validation errors
-      setTouchedFields(new Set(["title", "content", "categoryId"]));
-      return;
+    try {
+      const preview = await generatePostPreview({
+        title: formData.title,
+        content: formData.content,
+      });
+
+      setFormData((prev) => ({ ...prev, preview }));
+      setIsGeneratingPreview(false);
+    } catch (error) {
+      console.error("Failed to generate preview:", error);
+      setPreviewError("Failed to generate preview. Please try again.");
+      setIsGeneratingPreview(false);
     }
+  }, [formData.title, formData.content, generatePostPreview]);
 
+  // Define handleActualSubmit first before using it in handlePreviewConfirm
+  const handleActualSubmit = useCallback(async () => {
     setIsSubmitting(true);
     setSubmitError(null);
 
@@ -364,6 +385,7 @@ export function PostCreationForm({
           categoryId: formData.categoryId as Id<"categories">,
           pollOptions: formData.pollData.options,
           pollDuration: formData.pollData.duration,
+          preview: formData.preview || "",
         });
         postId = result.postId;
         postSlug = result.slug;
@@ -383,6 +405,7 @@ export function PostCreationForm({
           linkTitle: formData.linkTitle,
           linkDescription: formData.linkDescription,
           linkImage: formData.linkImage,
+          preview: formData.preview || "",
           // Pass all media items as attachments
           attachments: formData.mediaItems?.map((item, index) => ({
             id: item.id,
@@ -436,6 +459,41 @@ export function PostCreationForm({
       setIsSubmitting(false);
       setUploadProgress(null);
     }
+  }, [
+    formData,
+    categories,
+    createPost,
+    createPollPost,
+    convex,
+    onSuccess,
+    router,
+  ]);
+
+  const handlePreviewConfirm = useCallback(
+    (preview: string) => {
+      setFormData((prev) => ({ ...prev, preview }));
+      setShowPreviewDialog(false);
+      // Proceed with actual submission
+      handleActualSubmit();
+    },
+    [handleActualSubmit],
+  );
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!isFormComplete || isSubmitting) {
+      // Show validation errors only on submit attempt
+      setShowValidationErrors(true);
+      return;
+    }
+
+    // Clear validation errors on successful validation
+    setShowValidationErrors(false);
+
+    // Show preview dialog and generate preview
+    setShowPreviewDialog(true);
+    handleGeneratePreview();
   };
 
   const handleCancel = () => {
@@ -519,13 +577,13 @@ export function PostCreationForm({
                   value={formData.title}
                   onChange={handleTitleChange}
                   placeholder="Enter your post title (required)"
-                  className={`${errors.title && touchedFields.has("title") ? "border-red-500 focus:border-red-500 focus:ring-red-500" : "focus:border-green-700 focus:ring-green-700"}`}
+                  className="focus:border-green-700 focus:ring-green-700"
                   disabled={isSubmitting}
                 />
                 <div className="flex justify-between items-center text-sm">
                   <div>
-                    {errors.title && touchedFields.has("title") && (
-                      <span className="text-muted-foreground text-xs">
+                    {errors.title && showValidationErrors && (
+                      <span className="text-red-500 text-xs">
                         {errors.title}
                       </span>
                     )}
@@ -563,8 +621,8 @@ export function PostCreationForm({
                   onChange={handleCategoryChange}
                   disabled={isSubmitting}
                 />
-                {errors.categoryId && touchedFields.has("categoryId") && (
-                  <span className="text-muted-foreground text-xs">
+                {errors.categoryId && showValidationErrors && (
+                  <span className="text-red-500 text-xs">
                     {errors.categoryId}
                   </span>
                 )}
@@ -575,26 +633,26 @@ export function PostCreationForm({
             <TabsContent value="text" className="mt-6">
               <div className="space-y-2">
                 <Label htmlFor="content">Content</Label>
-                <Tabs defaultValue="edit" className="w-full">
-                  <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="edit">Edit</TabsTrigger>
-                    <TabsTrigger value="preview">Preview</TabsTrigger>
-                  </TabsList>
-                  <TabsContent value="edit" className="mt-4">
+                <div className="flex justify-between items-center mb-4">
+                  <PostPreviewToggle
+                    value={contentTab}
+                    onValueChange={setContentTab}
+                  />
+                </div>
+                {contentTab === "edit" && (
+                  <div className="mt-4">
                     <Suspense fallback={<RichTextEditorSkeleton />}>
                       <RichTextEditor
                         content={formData.content}
                         onChange={handleContentChange}
                         placeholder="Write your post content here (required)"
-                        className={
-                          errors.content && touchedFields.has("content")
-                            ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
-                            : ""
-                        }
+                        className=""
                       />
                     </Suspense>
-                  </TabsContent>
-                  <TabsContent value="preview" className="mt-4">
+                  </div>
+                )}
+                {contentTab === "preview" && (
+                  <div className="mt-4">
                     <Suspense fallback={<PostPreviewSkeleton />}>
                       <PostPreview
                         post={{
@@ -615,14 +673,15 @@ export function PostCreationForm({
                             slug: "you",
                           },
                         }}
+                        showMember={false}
                       />
                     </Suspense>
-                  </TabsContent>
-                </Tabs>
+                  </div>
+                )}
                 <div className="flex justify-between items-center text-sm">
                   <div>
-                    {errors.content && touchedFields.has("content") && (
-                      <span className="text-muted-foreground text-xs">
+                    {errors.content && showValidationErrors && (
+                      <span className="text-red-500 text-xs">
                         {errors.content}
                       </span>
                     )}
@@ -761,17 +820,13 @@ export function PostCreationForm({
                     content={formData.content}
                     onChange={handleContentChange}
                     placeholder="Share your thoughts about this link (required)"
-                    className={
-                      errors.content && touchedFields.has("content")
-                        ? "border-red-500 focus-within:border-red-500 focus-within:ring-red-500"
-                        : ""
-                    }
+                    className=""
                   />
                 </Suspense>
                 <div className="flex justify-between items-center text-sm">
                   <div>
-                    {errors.content && touchedFields.has("content") && (
-                      <span className="text-muted-foreground text-xs">
+                    {errors.content && showValidationErrors && (
+                      <span className="text-red-500 text-xs">
                         {errors.content}
                       </span>
                     )}
@@ -915,6 +970,21 @@ export function PostCreationForm({
         isOpen={showPollModal}
         onClose={() => setShowPollModal(false)}
         onConfirm={handlePollConfirm}
+      />
+
+      {/* Preview Generation Dialog */}
+      <PreviewGenerationDialog
+        isOpen={showPreviewDialog}
+        onClose={() => {
+          setShowPreviewDialog(false);
+          setIsGeneratingPreview(false);
+          setPreviewError(null);
+        }}
+        onConfirm={handlePreviewConfirm}
+        title={formData.title}
+        isGenerating={isGeneratingPreview}
+        generatedPreview={formData.preview || null}
+        error={previewError}
       />
     </Card>
   );

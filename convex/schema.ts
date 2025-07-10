@@ -291,6 +291,10 @@ const posts = defineTable({
     pollEndsAt: v.optional(v.number()),      // Poll expiration timestamp
     totalPollVotes: v.optional(v.number()),  // Total votes cast in poll
     
+    // Content preview for free users
+    preview: v.optional(v.string()),             // Auto-generated preview text (2-3 lines)
+    isFree: v.optional(v.boolean()),             // Whether post is free to read
+    
     // Multi-attachment system
     attachments: v.optional(v.array(v.object({
       id: v.string(),                        // Unique attachment identifier
@@ -662,6 +666,7 @@ const resources = defineTable({
       v.literal("advanced")       // Expert-level content
     )),
     isPaid: v.boolean(),                     // Whether resource costs money
+    isFree: v.optional(v.boolean()),        // Whether resource is free for all users
     
     // Engagement and quality metrics
     upvotes: v.number(),                     // Community upvotes

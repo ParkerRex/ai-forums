@@ -7,13 +7,15 @@ import PostCard from "@/components/post-card";
 interface PostListProps {
   categoryId?: Id<"categories">;
   sortBy?: "newest" | "popular" | "trending";
+  freeOnly?: boolean;
 }
 
-export default function PostList({ categoryId, sortBy = "newest" }: PostListProps) {
+export default function PostList({ categoryId, sortBy = "newest", freeOnly = false }: PostListProps) {
   const posts = useQuery(api.posts.getPosts, {
     categoryId,
     limit: 20,
     sortBy,
+    freeOnly,
   });
 
   // Loading state

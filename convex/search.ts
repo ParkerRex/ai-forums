@@ -3,6 +3,7 @@ import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { getAuthenticatedMember } from "./auth";
+import { canViewPost } from "./helpers/access";
 
 export const globalSearch = query({
   args: { 
@@ -111,10 +112,11 @@ export const globalSearch = query({
       }).filter(Boolean); // Remove null entries
     });
 
-    // Mark visibility for private-category content
+    // Mark visibility for private-category content and paywalled posts
     const mappedPosts = posts.map((p: any) => {
       const isPrivate = p.category?.status === "private";
-      const restricted = isPrivate && (!viewer || viewer.status === "free");
+      const isPaywalled = !canViewPost(viewer, p);
+      const restricted = isPrivate || isPaywalled;
       return { 
         _id: p._id, 
         type: "post" as const, 
@@ -129,7 +131,8 @@ export const globalSearch = query({
     const mappedComments = enrichedComments.map((c: any) => {
       const parentPost = postsById.get(c.postId);
       const isPrivate = parentPost?.category?.status === "private";
-      const restricted = isPrivate && (!viewer || viewer.status === "free");
+      const isPaywalled = parentPost && !canViewPost(viewer, parentPost);
+      const restricted = isPrivate || isPaywalled;
       return { 
         _id: c._id, 
         type: "comment" as const, 

@@ -10,6 +10,32 @@ Unified Paywall & Direct Checkout
 TASK CHECKLIST
 ==============
 
+Phase 0 – Free Previews & Public Blog
+------------------------------------
+☑ create ``app/blog/page.tsx`` – public blog index listing free articles
+☑ update ``app/page.tsx`` – render post previews for unauthenticated users
+☑ update ``app/[category]/[slug]/page-client.tsx`` – show preview + overlay for free users
+☑ create ``components/post-preview-overlay.tsx`` – gradient overlay + paywall CTA
+☑ update ``convex/helpers/access.ts`` – add ``canViewPreview`` and refine ``canViewPost``
+☑ update ``middleware.ts`` – allow `/blog`, route gated paths to paywall
+☑ create ``scripts/generate-post-previews.ts`` – batch preview generation via Anthropic
+☑ create ``convex/migrations/add_preview_field.ts`` – add ``preview`` field to posts schema
+☑ update ``convex/schema.ts`` & ``convex/posts.ts`` – auto-generate preview on create/update
+☐ update ``app/api/rss/route.ts`` – use preview for gated posts (NO RSS FOUND - SKIP)
+☐ update ``lib/seo-meta.ts`` – meta description = preview (NO FILE FOUND - SKIP)
+☑ update ``components/global-search.tsx`` – gate clicks when user lacks access
+☑ update ``convex/resources.ts`` & ``convex/schema.ts`` – add isFree flag to resources
+☑ update ``app/educate/[topic]/submit/page-client.tsx`` – toggle for "Free for all"
+☐ add tests: ``previewGeneration``, ``globalSearchGating``, ``resourceAccess``
+
+Phase 0.5 – Missing Items from Phase 0
+--------------------------------------
+☐ implement automatic preview generation on post create/update (currently only manual script)
+☐ update ``lib/post-preview-utils.ts`` ``getContentExcerpt`` to use preview field
+☐ update ``components/post-preview.tsx`` to pass preview to ``getContentExcerpt``
+☐ implement resource access control using ``canViewResource`` helper
+☐ create cron job or background action for automatic preview generation
+
 Phase 1 – Streamlined Paywall UI
 -------------------------------
 ☐ create ``components/post-paywall-direct.tsx`` – clean paywall with direct "Upgrade to Pro" button

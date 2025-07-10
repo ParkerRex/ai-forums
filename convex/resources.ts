@@ -35,6 +35,7 @@ export const getResourcesByTopic = query({
       v.literal("advanced")
     )),
     isPaid: v.boolean(),
+    isFree: v.optional(v.boolean()),
     upvotes: v.number(),
     downvotes: v.number(),
     netVotes: v.number(),
@@ -129,6 +130,7 @@ export const createResource = mutation({
       v.literal("advanced")
     )),
     isPaid: v.boolean(),
+    isFree: v.optional(v.boolean()),
     linkTitle: v.optional(v.string()),
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
@@ -152,6 +154,7 @@ export const createResource = mutation({
       type: args.type,
       difficulty: args.difficulty,
       isPaid: args.isPaid,
+      isFree: args.isFree || false,
       upvotes: 0,
       downvotes: 0,
       netVotes: 0,
@@ -202,6 +205,7 @@ export const searchResources = query({
       v.literal("advanced")
     )),
     isPaid: v.boolean(),
+    isFree: v.optional(v.boolean()),
     upvotes: v.number(),
     downvotes: v.number(),
     netVotes: v.number(),

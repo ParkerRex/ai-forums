@@ -96,6 +96,7 @@ export default function ResourceSubmissionPageClient({
     type: "article", // Default to article type
     difficulty: "", // Optional field
     isPaid: false, // Default to free resource
+    isFree: false, // Default to paywalled for VAI members
   });
   
   // UI state for form submission and loading states
@@ -235,6 +236,7 @@ export default function ResourceSubmissionPageClient({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         difficulty: (formData.difficulty || undefined) as any,
         isPaid: formData.isPaid,
+        isFree: formData.isFree,
       });
 
       // Show success message and redirect to topic page
@@ -432,6 +434,18 @@ export default function ResourceSubmissionPageClient({
                 }
               />
               <Label htmlFor="isPaid">This is a paid resource</Label>
+            </div>
+
+            {/* Free for all checkbox */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isFree"
+                checked={formData.isFree}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, isFree: checked === true }))
+                }
+              />
+              <Label htmlFor="isFree">Free for all (accessible without VAI membership)</Label>
             </div>
 
             {/* Form submission controls */}

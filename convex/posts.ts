@@ -19,7 +19,7 @@
  * @version 1.0.0
  */
 
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
@@ -140,8 +140,9 @@ export const getPosts = query({
     categoryId: v.optional(v.id("categories")),
     limit: v.optional(v.number()),
     sortBy: v.optional(v.union(v.literal("newest"), v.literal("popular"), v.literal("trending"))),
+    freeOnly: v.optional(v.boolean()),
   },
-  handler: async (ctx, { categoryId, limit = 20, sortBy = "newest" }) => {
+  handler: async (ctx, { categoryId, limit = 20, sortBy = "newest", freeOnly = false }) => {
     let query;
 
     // Filter by category if specified and apply sorting
@@ -164,8 +165,14 @@ export const getPosts = query({
     }
 
     // Filter active posts and apply ordering
-    const posts = await query
-      .filter((q) => q.eq(q.field("status"), "active"))
+    let postsQuery = query.filter((q) => q.eq(q.field("status"), "active"));
+    
+    // Apply free-only filter if requested
+    if (freeOnly) {
+      postsQuery = postsQuery.filter((q) => q.eq(q.field("isFree"), true));
+    }
+    
+    const posts = await postsQuery
       .order(sortBy === "newest" ? "desc" : "desc")
       .take(limit);
 
@@ -494,6 +501,7 @@ export const createPost = mutation({
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
     mentions: v.optional(v.array(v.id("members"))),
+    preview: v.optional(v.string()),
     // Multi-attachment support
     attachments: v.optional(v.array(v.object({
       id: v.string(),
@@ -617,6 +625,9 @@ export const createPost = mutation({
       mentions: args.mentions,
       // Multi-attachment support
       attachments: args.attachments,
+      // Free content and preview
+      preview: args.preview || "", // Use provided preview or empty string
+      isFree: false, // Default to paywalled
     });
 
     // Update category post count
@@ -1376,5 +1387,41 @@ export const addSlugsToExistingPosts = mutation({
     
     console.log("Slug generation migration completed successfully!");
     return { processed: posts.length };
+  },
+});
+
+/**
+ * Internal query to get all posts for migration scripts
+ * Only accessible from backend scripts, not from clients
+ */
+export const getAllPostsForMigration = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("posts")
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+  },
+});
+
+/**
+ * Internal mutation to update a post's preview
+ * Used by the batch preview generation script
+ */
+export const updatePostPreview = internalMutation({
+  args: {
+    postId: v.id("posts"),
+    preview: v.string(),
+  },
+  handler: async (ctx, { postId, preview }) => {
+    const post = await ctx.db.get(postId);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+    
+    await ctx.db.patch(postId, {
+      preview,
+      updatedAt: Date.now(),
+    });
   },
 });

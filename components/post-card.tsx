@@ -20,6 +20,8 @@ interface Post extends Omit<PostData, "member" | "author" | "category"> {
   _id: Id<"posts">;
   title: string;
   content: string;
+  preview?: string;
+  isFree?: boolean;
   slug: string;
   createdAt: number;
   updatedAt: number;
