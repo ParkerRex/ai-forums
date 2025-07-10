@@ -273,11 +273,11 @@ export const updateMemberRole = mutation({
   },
   handler: async (ctx, args) => {
     await requireAdmin(ctx);
-    
+
     await ctx.db.patch(args.memberId, {
       role: args.role,
     });
-    
+
     return { success: true };
   },
 });

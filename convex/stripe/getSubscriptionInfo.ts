@@ -10,7 +10,8 @@ export const getSubscriptionInfo = query({
 
     const member = await ctx.db
       .query("members")
-      .withIndex("by_externalId", (q) => q.eq("externalId", identity.tokenIdentifier))
+      // Match on Clerk `subject` to align with stored `externalId` values.
+      .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
       .first();
 
     if (!member) {

@@ -39,7 +39,10 @@ export const createCheckoutSession = mutation({
     // Get the current member
     const member = await ctx.db
       .query("members")
-      .withIndex("by_externalId", (q) => q.eq("externalId", identity.tokenIdentifier))
+      // NOTE: We store Clerk's `subject` (e.g. "user_abc123") in the `externalId` field.
+      // identity.tokenIdentifier can include a prefix (e.g. "clerk:user_abc123"), which
+      // will not match existing records. We therefore query by `subject` to ensure a match.
+      .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
       .first();
 
     if (!member) {

@@ -12,7 +12,9 @@ export const createPortalSession = mutation({
 
     const member = await ctx.db
       .query("members")
-      .withIndex("by_externalId", (q) => q.eq("externalId", identity.tokenIdentifier))
+      // Use Clerk `subject` (e.g., "user_abc123") which is what we persist in `externalId`.
+      // identity.tokenIdentifier may contain a provider prefix and fail to match.
+      .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
       .first();
 
     if (!member) {
