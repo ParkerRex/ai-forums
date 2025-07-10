@@ -7,7 +7,6 @@ import { cn } from "@/lib/utils";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 interface PostPaywallDirectProps {
   className?: string;
@@ -18,7 +17,6 @@ export function PostPaywallDirect({
   className,
   postId,
 }: PostPaywallDirectProps) {
-  const router = useRouter();
   const createDirectCheckout = useAction(api.stripe.directCheckout.createDirectCheckout);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);

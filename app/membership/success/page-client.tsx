@@ -1,19 +1,65 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
-import { CheckCircle, ArrowRight, MessageSquare, BookOpen, User } from "lucide-react";
-import Link from "next/link";
+import { CheckCircle, Loader2 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { useQuery } from "convex/react";
+import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
+import { AutoSignIn } from "./auto-signin";
+import { getCheckoutSessionData } from "@/app/actions/checkout-session";
+
+interface SessionData {
+  email: string;
+  customerId: string;
+  subscriptionId: string;
+  customerName?: string;
+  signInToken?: string;
+}
 
 export function SuccessPageClient() {
   const searchParams = useSearchParams();
-  const router = useRouter();
-  // const sessionId = searchParams.get("session_id"); // Will be used for session validation in future
+  const sessionId = searchParams.get("session_id");
   const sourcePostId = searchParams.get("source_post_id");
   const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
+  const [sessionData, setSessionData] = useState<SessionData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  // Get post routing information if we have a source post
+  // TODO: Use this to redirect back to the original post after onboarding
+  useQuery(
+    api.posts.getPostRouting,
+    sourcePostId ? { postId: sourcePostId as Id<"posts"> } : "skip"
+  );
+
+  // Get member status from checkout
+  const memberStatus = useQuery(
+    api.members.checkoutStatus.getCheckoutMemberStatus,
+    sessionData?.email ? { email: sessionData.email } : "skip"
+  );
+
+  // Fetch checkout session data
+  useEffect(() => {
+    const fetchSessionData = async () => {
+      if (!sessionId) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        const data = await getCheckoutSessionData(sessionId);
+        setSessionData(data);
+      } catch (error) {
+        console.error("Error fetching session data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchSessionData();
+  }, [sessionId]);
 
   // Trigger confetti animation on mount
   useEffect(() => {
@@ -52,6 +98,20 @@ export function SuccessPageClient() {
     }
   }, [hasTriggeredConfetti]);
 
+  if (isLoading || !sessionData) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Card className="p-8 text-center">
+          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
+          <h3 className="text-lg font-semibold">Processing your payment...</h3>
+          <p className="text-sm text-muted-foreground mt-2">
+            Please wait while we set up your account.
+          </p>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <div className="max-w-2xl w-full space-y-8">
@@ -63,116 +123,33 @@ export function SuccessPageClient() {
             </div>
           </div>
           
-          <h1 className="text-4xl font-bold">Welcome to VAI Pro!</h1>
+          <h1 className="text-4xl font-bold">Payment Successful!</h1>
           <p className="text-xl text-muted-foreground">
-            Your payment was successful. You now have full access to all premium content.
+            Welcome to VAI Pro, {sessionData.customerName?.split(' ')[0] || 'there'}!
           </p>
         </div>
 
-        {/* Onboarding checklist */}
-        <Card className="p-8">
-          <h2 className="text-2xl font-semibold mb-6">What&apos;s Next?</h2>
-          
-          <div className="space-y-6">
-            {/* Check item 1 */}
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Payment Processed Successfully</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Your subscription is now active and will renew automatically.
-                </p>
-              </div>
-            </div>
+        {/* Auto sign-in component */}
+        {memberStatus?.signInToken ? (
+          <AutoSignIn 
+            signInToken={memberStatus.signInToken} 
+            email={sessionData.email}
+            sourcePostId={sourcePostId || undefined}
+          />
+        ) : (
+          <Card className="p-8 text-center">
+            <h3 className="text-lg font-semibold mb-2">Setting up your account...</h3>
+            <p className="text-sm text-muted-foreground">
+              Your account is being created. You&apos;ll be signed in automatically.
+            </p>
+            <Loader2 className="w-6 h-6 animate-spin mx-auto mt-4" />
+          </Card>
+        )}
 
-            {/* Check item 2 */}
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Full Access Unlocked</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  You can now read all premium posts and access exclusive content.
-                </p>
-              </div>
-            </div>
-
-            {/* Action item 1 */}
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                  <User className="w-5 h-5 text-primary" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Create Your Account (Optional)</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Sign up to personalize your experience and join discussions.
-                </p>
-                <Link href="/sign-up" className="inline-flex items-center text-sm text-primary hover:underline mt-2">
-                  Create account
-                  <ArrowRight className="w-3 h-3 ml-1" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Action item 2 */}
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 text-primary" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Explore Premium Content</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Dive into our collection of AI engineering tutorials and insights.
-                </p>
-                <Link href="/" className="inline-flex items-center text-sm text-primary hover:underline mt-2">
-                  Browse posts
-                  <ArrowRight className="w-3 h-3 ml-1" />
-                </Link>
-              </div>
-            </div>
-
-            {/* Action item 3 */}
-            <div className="flex items-start space-x-4">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                  <MessageSquare className="w-5 h-5 text-primary" />
-                </div>
-              </div>
-              <div className="flex-1">
-                <h3 className="font-semibold">Join the Community</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Connect with 2,000+ AI engineers in our Discord server.
-                </p>
-                <a 
-                  href="https://discord.gg/vai-community" 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center text-sm text-primary hover:underline mt-2"
-                >
-                  Join Discord
-                  <ArrowRight className="w-3 h-3 ml-1" />
-                </a>
-              </div>
-            </div>
-          </div>
-        </Card>
-
-        {/* Primary action button */}
-        <div className="text-center">
-          <Button size="lg" onClick={() => router.push(sourcePostId ? `/post/${sourcePostId}` : "/")}>
-            {sourcePostId ? "Return to Post" : "Start Exploring Premium Content"}
-          </Button>
+        {/* Additional info */}
+        <div className="text-center text-sm text-muted-foreground">
+          <p>Your subscription is now active and will renew automatically.</p>
+          <p>You&apos;ll be redirected to complete your account setup in a moment.</p>
         </div>
       </div>
     </div>

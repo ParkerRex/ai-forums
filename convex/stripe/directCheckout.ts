@@ -49,9 +49,9 @@ export const createDirectCheckout = action({
   handler: async (ctx, { email, sourcePostId }) => {
     try {
       // Get the monthly price ID from environment
-      const priceId = process.env.STRIPE_PRICE_ID_MONTHLY;
+      const priceId = process.env.STRIPE_MEMBER_MONTHLY_PRICE_ID;
       if (!priceId) {
-        throw new Error("Stripe price ID not configured");
+        throw new Error("Stripe monthly price ID not configured");
       }
 
       // Create metadata for tracking
@@ -74,7 +74,7 @@ export const createDirectCheckout = action({
           },
         ],
         mode: "subscription",
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}${sourcePostId ? `&source_post_id=${sourcePostId}` : ''}`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
         // Allow promotion codes for special offers
         allow_promotion_codes: true,
@@ -119,7 +119,7 @@ export const createDirectCheckoutYearly = action({
   handler: async (ctx, { email, sourcePostId }) => {
     try {
       // Get the yearly price ID from environment
-      const priceId = process.env.STRIPE_PRICE_ID_YEARLY;
+      const priceId = process.env.STRIPE_MEMBER_YEARLY_PRICE_ID;
       if (!priceId) {
         throw new Error("Stripe yearly price ID not configured");
       }
@@ -145,7 +145,7 @@ export const createDirectCheckoutYearly = action({
           },
         ],
         mode: "subscription",
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}${sourcePostId ? `&source_post_id=${sourcePostId}` : ''}`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
         allow_promotion_codes: true,
         billing_address_collection: "required",

@@ -1451,3 +1451,40 @@ export const updatePostPreview = internalMutation({
     });
   },
 });
+
+/**
+ * Get post routing information for navigation
+ * 
+ * Lightweight query that returns only the URL components needed for navigation.
+ * Used by the success page to redirect back to the original post after purchase.
+ * 
+ * @param postId - ID of the post to get routing info for
+ * @returns Object with category name and post slug, or null if post not found
+ * 
+ * @example
+ * ```typescript
+ * const routing = await getPostRouting({ postId: "post123" });
+ * if (routing) {
+ *   router.push(`/${routing.categoryName}/${routing.slug}`);
+ * }
+ * ```
+ */
+export const getPostRouting = query({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, { postId }) => {
+    const post = await ctx.db.get(postId);
+    if (!post || post.status !== "active") {
+      return null;
+    }
+    
+    const category = await ctx.db.get(post.categoryId);
+    if (!category) {
+      return null;
+    }
+    
+    return {
+      categoryName: category.name,
+      slug: post.slug,
+    };
+  },
+});

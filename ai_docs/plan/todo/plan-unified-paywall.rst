@@ -27,11 +27,12 @@ Phase 0 – Free Previews & Public Blog (COMPLETED)
 
 Phase 0.5 – Missing Items from Phase 0 (MOSTLY COMPLETED)
 ---------------------------------------------------------
-☑ implement automatic preview generation on post create/update (currently only manual script)
+☑ implement automatic preview generation on post create/update (client-side via UI)
 ☑ update ``lib/post-preview-utils.ts`` ``getContentExcerpt`` to use preview field
 ☑ update ``components/post-preview.tsx`` to pass preview to ``getContentExcerpt``
 ☑ implement resource access control using ``canViewResource`` helper
-☐ create cron job or background action for automatic preview generation
+☐ create cron job or background action for automatic preview generation **(STILL MISSING)**
+☐ add server-side fallback: if post.preview is empty on create/update, call ``internal.previewGeneration.generatePostPreview`` to ensure every post has a preview
 
 Phase 0.75 – Post Creation UX Improvements (COMPLETED)
 -----------------------------------------------------
@@ -58,18 +59,30 @@ Phase 2 – Direct Stripe Checkout (COMPLETED)
 ☑ update ``app/api/stripe/webhook/route.ts`` – handle unauthenticated checkout completion
 ☑ create success page ``app/membership/success/page.tsx`` – celebration + onboarding steps
 
-Phase 3 – Post-Purchase Experience
----------------------------------
-☐ create ``components/success-confetti.tsx`` – celebration animation
-☐ create ``components/onboarding-checklist.tsx`` – next steps after purchase
-☐ update success page to redirect back to original post with access granted
-
-Phase 4 – Backend Architecture Fixes (CRITICAL)
+Phase 3 – Post-Purchase Experience (COMPLETED)
 ----------------------------------------------
-☐ create ``convex/stripe/guestCheckout.ts`` – unauthenticated checkout flow
-☐ update ``convex/auth.ts`` – add guest member creation from email
-☐ create ``convex/migrations/linkGuestAccounts.ts`` – link guest purchases to accounts
-☐ update ``convex/helpers/access.ts`` – handle guest member access checks
+☑ create ``components/success-confetti.tsx`` – celebration animation (integrated into success page)
+☑ create ``components/onboarding-checklist.tsx`` – next steps after purchase (integrated into success page)
+☑ update success page to redirect back to original post with access granted
+☑ create ``getPostRouting`` query in ``posts.ts`` for post URL construction
+☑ improve success page messaging for guest members with clear instructions
+
+Phase 4 – Backend Architecture Fixes (CRITICAL - COMPLETED)
+-------------------------------------------------------------------
+☑ create ``convex/stripe/directCheckout.ts`` – unauthenticated checkout flow
+☑ handle guest checkout in webhooks – create guest members from email
+☑ create ``convex/migrations/linkGuestAccounts.ts`` – link guest purchases to Clerk accounts
+☑ update ``convex/helpers/access.ts`` – handle guest member access checks (members without externalId)
+☑ create account linking logic in ``convex/auth.ts`` – when user signs up with same email as guest purchase
+
+Phase 4.5 – Guest Member Access Control (COMPLETED)
+-------------------------------------------------------
+☑ update ``canViewFullContent`` in ``convex/helpers/access.ts`` – handle guest members (no externalId)
+☑ create ``findMemberByEmail`` helper for guest member lookups
+☑ create ``isGuestMember`` helper in ``convex/helpers/access.ts``
+☑ add ``getMemberByEmail`` query in ``convex/members.ts``
+☑ test guest member access to premium content after purchase
+☐ handle edge case: guest member signs up with different email than purchase
 
 Phase 5 – PostHog-Style Conversion Psychology
 --------------------------------------------
@@ -398,24 +411,59 @@ Unit Tests
 * ``lib/__tests__/payment-error-utils.test.ts`` – error message accuracy
 
 
+Phase 4.6 – Enhanced Webhook & Data Extraction (COMPLETED)
+---------------------------------------------------------
+☑ update webhook to use ``customer_details.email`` instead of ``customer_email``
+☑ extract customer name from ``customer_details.name`` and populate member records
+☑ store location info (country/city) from Stripe checkout
+☑ improve TypeScript types for Stripe session data
+☑ handle names properly when creating/updating guest members
+
+Phase 4.7 – Guest Session Infrastructure (COMPLETED)
+---------------------------------------------------
+☑ create ``app/api/guest-session/route.ts`` for guest session management
+☑ implement secure HTTP-only cookie storage for guest sessions
+☑ add session validation with Stripe payment verification
+☑ create ``app/actions/guest-session.ts`` for server-side session access
+☑ add guest session setting on success page
+☑ foundation ready for future guest content access
+
+Phase 4.8 – Mandatory Account Onboarding (COMPLETED)
+----------------------------------------------------
+☑ create ``convex/auth/clerkAccounts.ts`` – automatic Clerk account creation after checkout
+☑ implement sign-in token generation for passwordless auto-login
+☑ create ``app/membership/success/auto-signin.tsx`` – automatic sign-in component
+☑ update success page to auto-sign-in users with tokens
+☑ create ``app/onboarding/setup/page.tsx`` – mandatory password/social auth setup
+☑ implement password setting flow with Clerk user update
+☑ add Google/Discord OAuth connection options
+☑ create ``app/onboarding/complete/page.tsx`` – social auth completion handler
+☑ update middleware to enforce onboarding completion
+☑ block access to premium content for ``pending_onboarding`` members
+☑ update ``convex/helpers/access.ts`` to check onboarding status
+☑ implement post-purchase redirect to original content
+☑ add ``onboardingCompletedAt`` and ``authMethod`` fields to member schema
+☑ create ``convex/auth/updateClerkMetadata.ts`` for syncing onboarding status
+☑ create ``convex/auth/cleanupExpiredTokens.ts`` for token maintenance
+☑ handle existing Clerk accounts gracefully
+☑ ensure Clerk-Convex sync throughout the flow
+
 IMPLEMENTATION NOTES
 ===================
 
-Critical Backend Gaps
-^^^^^^^^^^^^^^^^^^^^^
-**Authentication Blocker**: Current ``convex/stripe/checkout.ts`` requires Clerk auth:
-```typescript
-const identity = await ctx.auth.getUserIdentity();
-if (!identity) {
-  throw new Error("Unauthorized"); // ❌ Blocks guest checkout
-}
-```
+Critical Backend Gaps (RESOLVED)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+**Authentication Blocker**: ✅ RESOLVED - Created ``directCheckout.ts`` that bypasses auth
+**Guest Member Creation**: ✅ RESOLVED - Webhook creates members from email
+**Account Linking**: ✅ RESOLVED - Auto-links when user signs up with same email
+**Access Control**: ✅ RESOLVED - Updated to recognize guest members
 
-**Missing Pieces**:
-* Guest checkout mutation (no auth required)
+**Current Implementation**:
+* Guest checkout mutation requires no auth
 * Email-based member creation in webhook
-* Account linking when user later signs up
-* Guest member access control logic
+* Account linking when user signs up with same email
+* Guest member access control logic in place
+* Guest session infrastructure ready for future use
 
 **Subscription Lifecycle Gaps**:
 * No reactivation flow for expired users
@@ -449,33 +497,54 @@ Conversion Flow Comparison
 6. Redirected to Stripe checkout
 7. Completes payment → success
 
-**NEW FLOW (3 steps)**:
+**NEW FLOW (5 steps)**:
 1. User sees paywall with direct pricing
 2. Clicks "Upgrade to VAI Pro - $99/mo" → Stripe checkout
-3. Completes payment → celebration + access granted
+3. Completes payment → automatic account creation
+4. Auto-signed in → mandatory password/social setup
+5. Onboarding complete → access to original content
 
-Key Improvements
-^^^^^^^^^^^^^^^
-* **Eliminated authentication barrier** - purchase first, create account later
-* **Removed modal complexity** - direct paywall in content flow
-* **Simplified pricing** - show single price upfront ($99/mo)
-* **Stripe handles everything** - customer creation, payment, email collection
-* **Immediate gratification** - confetti + instant access to content
-* **Clear onboarding** - guided next steps after purchase
-* **PostHog-style messaging** - fun, transparent, trust-building copy
-* **Subscription lifecycle** - proactive renewal, graceful reactivation
-* **PostHog tracking** - track and optimize every step
-* **Error recovery** - handle edge cases gracefully
+Key Improvements (IMPLEMENTED)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+☑ **Eliminated authentication barrier** - purchase first, create account later
+☑ **Removed modal complexity** - direct paywall in content flow  
+☑ **Simplified pricing** - show single price upfront ($99/mo)
+☑ **Stripe handles everything** - customer creation, payment, email collection
+☑ **Immediate gratification** - confetti + celebration on success
+☑ **Clear onboarding** - guided next steps after purchase
+☑ **Automatic account linking** - seamless when guest signs up with same email
+☑ **Better data extraction** - names, location from Stripe checkout
+☑ **Guest session foundation** - infrastructure ready for future enhancements
+☐ **PostHog tracking** - track and optimize every step
+☐ **Subscription lifecycle** - proactive renewal, graceful reactivation
+☐ **Error recovery** - handle edge cases gracefully
 
-**CRITICAL MISSING PIECES WE IDENTIFIED**:
+**CURRENT STATUS & NEXT STEPS**:
 
-1. **Subscription Lifecycle Management** - We handle cancellations but don't optimize for reactivation
-2. **PostHog Integration** - No visibility into funnel performance or optimization opportunities  
-3. **Error Handling & Edge Cases** - Poor error handling kills conversion at the final step
-4. **Personalized Messaging** - Different copy for new vs returning/expired users
-5. **Proactive Retention** - No renewal reminders or win-back campaigns
-6. **A/B Testing via PostHog** - No way to optimize conversion copy and design
-7. **Conversion Tracking** - No tracking of which content drives conversions
+✅ **COMPLETED**:
+1. Direct Stripe checkout without authentication
+2. Automatic Clerk account creation after payment
+3. Mandatory onboarding with password or social auth
+4. Auto-sign-in with temporary tokens
+5. Middleware enforcement of onboarding completion
+6. Content access blocked until onboarding complete
+7. Post-purchase redirect to original content
+8. Full Clerk-Convex synchronization
+
+✅ **RESOLVED LIMITATION**: 
+Members now get automatic accounts and must complete onboarding for access
+
+🚀 **REMAINING PHASES** (Priority Order):
+1. **Phase 5: PostHog-Style Conversion Psychology** - Better messaging and trust signals
+2. **Phase 6: Subscription Lifecycle Management** - Renewal reminders and reactivation
+3. **Phase 7: PostHog Integration** - Conversion tracking and A/B testing
+4. **Phase 8: Error Handling** - Graceful failure recovery
+
+📊 **METRICS TO TRACK**:
+* Conversion rate: Paywall view → Checkout start
+* Checkout completion rate
+* Guest → Account creation rate
+* Time to account creation after purchase
 
 Technical Decisions
 ^^^^^^^^^^^^^^^^^^

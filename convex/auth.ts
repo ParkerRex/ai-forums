@@ -106,6 +106,41 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     throw new Error("Member not found - please sign in again to create your profile");
   }
 
+  // Before creating new member, check if there's a guest member with same email
+  const mutationCtx = ctx as MutationCtx;
+  const guestMember = await ctx.db
+    .query("members")
+    .filter((q) => 
+      q.and(
+        q.eq(q.field("email"), email),
+        q.eq(q.field("externalId"), undefined),
+        q.eq(q.field("status"), "active")
+      )
+    )
+    .first();
+
+  if (guestMember) {
+    // Link guest account to authenticated user
+    console.log(`Linking guest member ${guestMember._id} to authenticated user ${externalId}`);
+    
+    // Get names from identity
+    const firstName = (identity.given_name as string) || identity.name?.split(" ")[0] || guestMember.firstName || "User";
+    const lastName = (identity.family_name as string) || identity.name?.split(" ").slice(1).join(" ") || guestMember.lastName || "";
+    
+    // Update guest member with authentication info
+    await mutationCtx.db.patch(guestMember._id, {
+      externalId,
+      firstName,
+      lastName,
+      lastOnline: now,
+      updatedAt: now,
+      // Keep existing subscription data
+    });
+    
+    const updatedMember = await ctx.db.get(guestMember._id);
+    return updatedMember!;
+  }
+
   // Create new member (only in mutation context)
   const firstName = (identity.given_name as string) || identity.name?.split(" ")[0] || "User";
   const lastName = (identity.family_name as string) || identity.name?.split(" ").slice(1).join(" ") || "";
@@ -123,7 +158,6 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
   const slug = ensureUniqueSlug(baseSlug, existingSlugs);
 
   // Create new member
-  const mutationCtx = ctx as MutationCtx;
   const memberId = await mutationCtx.db.insert("members", {
     firstName,
     lastName,

@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { mutation, MutationCtx } from "../_generated/server";
 import { Id, Doc } from "../_generated/dataModel";
 import Stripe from "stripe";
+import { internal } from "../_generated/api";
 
 // Extend Stripe types to include properties that exist in the API but not in TypeScript definitions
 interface ExtendedSubscription extends Stripe.Subscription {
@@ -13,6 +14,9 @@ interface ExtendedInvoice extends Stripe.Invoice {
   subscription?: string | null;
   payment_intent?: string | null;
 }
+
+// Use Stripe's checkout session type directly - it already includes customer_details
+type ExtendedCheckoutSession = Stripe.Checkout.Session;
 
 export const processWebhookEvent = mutation({
   args: {
@@ -109,7 +113,7 @@ export const processWebhookEvent = mutation({
  */
 async function handleCheckoutSessionCompleted(
   ctx: MutationCtx,
-  session: Stripe.Checkout.Session
+  session: ExtendedCheckoutSession
 ) {
   if (!session.subscription || !session.customer) {
     console.error("Missing subscription or customer in checkout session");
@@ -122,12 +126,18 @@ async function handleCheckoutSessionCompleted(
   if (!memberId) {
     // Check if this is a direct checkout
     if (session.metadata?.checkoutType === "direct") {
-      // Get customer email from session
-      const email = session.customer_email;
+      // Get customer email from session - prefer customer_details over customer_email
+      const email = session.customer_details?.email || session.customer_email;
       if (!email) {
         console.error("No email found for direct checkout");
         return;
       }
+      
+      // Extract customer name if available
+      const customerName = session.customer_details?.name || "";
+      const nameParts = customerName.split(" ");
+      const firstName = nameParts[0] || "";
+      const lastName = nameParts.slice(1).join(" ") || "";
 
       // Check if member already exists with this email
       let member = await ctx.db
@@ -145,16 +155,18 @@ async function handleCheckoutSessionCompleted(
           subscriptionStatus: "active",
           lastPaymentDate: Date.now(),
           updatedAt: Date.now(),
+          // Update names if they were empty and we got them from Stripe
+          ...((!member.firstName && firstName) ? { firstName } : {}),
+          ...((!member.lastName && lastName) ? { lastName } : {}),
         });
       } else {
         // Create new member for guest checkout
         const now = Date.now();
-        await ctx.db.insert("members", {
+        const newMemberId = await ctx.db.insert("members", {
           email,
-          firstName: "",
-          lastName: "",
-          // externalId is optional - don't set it for guest members
-          // When user signs up with Clerk later, we'll link accounts by email
+          firstName,
+          lastName,
+          // externalId will be set after Clerk account creation
           slug: email.split("@")[0] + "-" + Math.random().toString(36).substring(7),
           stripeCustomerId: session.customer as string,
           stripeSubscriptionId: session.subscription as string,
@@ -164,7 +176,19 @@ async function handleCheckoutSessionCompleted(
           joinedDate: now,
           updatedAt: now,
           lastOnline: now,
-          status: "active",
+          status: "pending_onboarding", // Requires onboarding completion
+          // Store location info if available
+          ...(session.customer_details?.address?.country ? { country: session.customer_details.address.country } : {}),
+          ...(session.customer_details?.address?.city ? { location: session.customer_details.address.city } : {}),
+        });
+        
+        // Schedule Clerk account creation
+        await ctx.scheduler.runAfter(0, internal.auth.clerkAccounts.createClerkAccount, {
+          email,
+          memberId: newMemberId,
+          checkoutSessionId: session.id,
+          firstName,
+          lastName,
         });
       }
       
