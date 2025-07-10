@@ -10,6 +10,10 @@ bug 1
 I noticed a Cloudflare 401 unauthorized, not really sure what that is. I was using the public dev URL, and that's used for R2 for storage uploads for images and any sort of media. 
 
 bug 2
+the e
+
+
+
 The Clerk user panel shows that my account was updated 5 minutes ago, which is correct when I converted the epoch timestamp to relative time where I am Eastern. Here's the JSON object: 
 ```
 {
