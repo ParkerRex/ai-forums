@@ -21,7 +21,7 @@
 
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { Id, Doc } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
 import { insertNotification } from "./notifications";
@@ -142,40 +142,99 @@ export const getPosts = query({
     sortBy: v.optional(v.union(v.literal("newest"), v.literal("popular"), v.literal("trending"))),
   },
   handler: async (ctx, { categoryId, limit = 20, sortBy = "newest" }) => {
-    let query;
+    let pinnedPosts: Doc<"posts">[] = [];
+    let regularPosts: Doc<"posts">[] = [];
 
-    // Filter by category if specified and apply sorting
+    // First, get pinned posts
     if (categoryId) {
-      if (sortBy === "popular" || sortBy === "trending") {
-        query = ctx.db.query("posts").withIndex("by_category_and_netVotes", (q) =>
-          q.eq("categoryId", categoryId)
-        );
-      } else {
-        query = ctx.db.query("posts").withIndex("by_category_and_createdAt", (q) =>
-          q.eq("categoryId", categoryId)
-        );
-      }
+      // Get category-specific pinned posts
+      pinnedPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_pinned_and_category")
+        .filter(q => 
+          q.and(
+            q.eq(q.field("isPinned"), true),
+            q.eq(q.field("categoryId"), categoryId),
+            q.eq(q.field("status"), "active"),
+            q.or(
+              q.eq(q.field("pinScope"), "category"),
+              q.eq(q.field("pinScope"), "both")
+            )
+          )
+        )
+        .order("desc")
+        .collect();
     } else {
-      if (sortBy === "popular" || sortBy === "trending") {
-        query = ctx.db.query("posts").withIndex("by_netVotes");
-      } else {
-        query = ctx.db.query("posts").withIndex("by_createdAt");
-      }
+      // Get globally pinned posts for "all posts" view
+      pinnedPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_pinned_global")
+        .filter(q => 
+          q.and(
+            q.eq(q.field("isPinned"), true),
+            q.eq(q.field("status"), "active"),
+            q.or(
+              q.eq(q.field("pinScope"), "global"),
+              q.eq(q.field("pinScope"), "both")
+            )
+          )
+        )
+        .order("desc")
+        .collect();
     }
 
-    // Filter active posts and apply ordering
-    const posts = await query
-      .filter((q) => q.eq(q.field("status"), "active"))
-      .order(sortBy === "newest" ? "desc" : "desc")
-      .take(limit);
+    // Sort pinned posts by pinnedAt timestamp (newest first)
+    pinnedPosts.sort((a, b) => (b.pinnedAt || 0) - (a.pinnedAt || 0));
+
+    // Calculate how many regular posts we need
+    const remainingLimit = Math.max(0, limit - pinnedPosts.length);
+
+    // Then get regular (non-pinned) posts if we need more
+    if (remainingLimit > 0) {
+      let query;
+
+      // Filter by category if specified and apply sorting
+      if (categoryId) {
+        if (sortBy === "popular" || sortBy === "trending") {
+          query = ctx.db.query("posts").withIndex("by_category_and_netVotes", (q) =>
+            q.eq("categoryId", categoryId)
+          );
+        } else {
+          query = ctx.db.query("posts").withIndex("by_category_and_createdAt", (q) =>
+            q.eq("categoryId", categoryId)
+          );
+        }
+      } else {
+        if (sortBy === "popular" || sortBy === "trending") {
+          query = ctx.db.query("posts").withIndex("by_netVotes");
+        } else {
+          query = ctx.db.query("posts").withIndex("by_createdAt");
+        }
+      }
+
+      // Filter active, non-pinned posts and apply ordering
+      regularPosts = await query
+        .filter((q) => 
+          q.and(
+            q.eq(q.field("status"), "active"),
+            q.or(
+              q.eq(q.field("isPinned"), false),
+              q.eq(q.field("isPinned"), undefined)
+            )
+          )
+        )
+        .order(sortBy === "newest" ? "desc" : "desc")
+        .take(remainingLimit);
+    }
+
+    // Combine pinned and regular posts
+    const allPosts = [...pinnedPosts, ...regularPosts];
 
     // Enrich posts with member and category data
     const enrichedPosts = await Promise.all(
-      posts.map(async (post) => {
-        const [member, category] = await Promise.all([
-          ctx.db.get(post.memberId),
-          ctx.db.get(post.categoryId),
-        ]);
+      allPosts.map(async (post) => {
+        const member = await ctx.db.get(post.memberId);
+        const category = await ctx.db.get(post.categoryId);
 
         return {
           ...post,
@@ -1377,4 +1436,144 @@ export const addSlugsToExistingPosts = mutation({
     console.log("Slug generation migration completed successfully!");
     return { processed: posts.length };
   },
+});
+
+/**
+ * Pins a post to the top of its category or globally for admin visibility.
+ * 
+ * Only administrators can pin posts. Enforces limits of 3 pinned posts per
+ * category and 3 globally pinned posts. Posts can be pinned in their category,
+ * globally, or both simultaneously.
+ * 
+ * @param postId - ID of the post to pin
+ * @param scope - Pin scope: "category", "global", or "both"
+ * @returns Success indicator
+ * @throws Error if user is not admin, limits exceeded, or post not found
+ * 
+ * @example
+ * ```typescript
+ * await pinPost({ 
+ *   postId: "post123", 
+ *   scope: "category" 
+ * });
+ * // Post now appears at top of its category
+ * ```
+ */
+export const pinPost = mutation({
+  args: {
+    postId: v.id("posts"),
+    scope: v.union(v.literal("category"), v.literal("global"), v.literal("both"))
+  },
+  handler: async (ctx, { postId, scope }) => {
+    // Get authenticated member and verify admin
+    const member = await getAuthenticatedMember(ctx);
+    if (member.role !== "admin") {
+      throw new Error("Only admins can pin posts");
+    }
+
+    const post = await ctx.db.get(postId);
+    if (!post || post.status !== "active") {
+      throw new Error("Post not found or not active");
+    }
+
+    // Check pinning limits based on scope
+    if (scope === "category" || scope === "both") {
+      const categoryPinnedPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_pinned_and_category")
+        .filter(q => 
+          q.and(
+            q.eq(q.field("isPinned"), true),
+            q.eq(q.field("categoryId"), post.categoryId),
+            q.eq(q.field("status"), "active"),
+            q.neq(q.field("_id"), postId) // Exclude current post if already pinned
+          )
+        )
+        .collect();
+      
+      const categoryPinnedCount = categoryPinnedPosts.filter(p => 
+        p.pinScope === "category" || p.pinScope === "both"
+      ).length;
+      
+      if (categoryPinnedCount >= 3) {
+        throw new Error("Maximum 3 posts can be pinned per category");
+      }
+    }
+
+    if (scope === "global" || scope === "both") {
+      const globalPinnedPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_pinned_global")
+        .filter(q => 
+          q.and(
+            q.eq(q.field("isPinned"), true),
+            q.eq(q.field("status"), "active"),
+            q.neq(q.field("_id"), postId) // Exclude current post if already pinned
+          )
+        )
+        .collect();
+      
+      const globalPinnedCount = globalPinnedPosts.filter(p => 
+        p.pinScope === "global" || p.pinScope === "both"
+      ).length;
+      
+      if (globalPinnedCount >= 3) {
+        throw new Error("Maximum 3 posts can be pinned globally");
+      }
+    }
+
+    // Pin the post
+    await ctx.db.patch(postId, {
+      isPinned: true,
+      pinScope: scope,
+      pinnedAt: Date.now(),
+      pinnedBy: member._id,
+      updatedAt: Date.now()
+    });
+
+    return { success: true };
+  }
+});
+
+/**
+ * Unpins a previously pinned post, removing it from top placement.
+ * 
+ * Only administrators can unpin posts. Removes all pin metadata and returns
+ * the post to normal chronological or popularity-based sorting.
+ * 
+ * @param postId - ID of the post to unpin
+ * @returns Success indicator
+ * @throws Error if user is not admin or post not found
+ * 
+ * @example
+ * ```typescript
+ * await unpinPost({ postId: "post123" });
+ * // Post returns to normal sort order
+ * ```
+ */
+export const unpinPost = mutation({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, { postId }) => {
+    // Get authenticated member and verify admin
+    const member = await getAuthenticatedMember(ctx);
+    if (member.role !== "admin") {
+      throw new Error("Only admins can unpin posts");
+    }
+
+    const post = await ctx.db.get(postId);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    // Unpin the post
+    await ctx.db.patch(postId, {
+      isPinned: false,
+      pinScope: undefined,
+      pinnedAt: undefined,
+      pinnedBy: undefined,
+      updatedAt: Date.now()
+    });
+
+    return { success: true };
+  }
 });

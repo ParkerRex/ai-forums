@@ -26,6 +26,8 @@ export interface PostData {
   downvotes: number;
   commentCount: number;
   viewCount: number;
+  isPinned?: boolean;
+  pinScope?: "category" | "global" | "both";
   member?: {
     _id: Id<"members">;
     firstName: string;
