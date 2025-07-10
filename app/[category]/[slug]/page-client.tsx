@@ -20,14 +20,11 @@
 
 import { Authenticated, Unauthenticated } from "convex/react";
 import PostDetail from "@/components/post-detail";
-import { MembershipCTAModal } from "@/components/membership-cta-modal";
 import { PostEditModal } from "@/components/post-edit-modal";
 import { PostDeleteModal } from "@/components/post-delete-modal";
 import { PostHistoryModal } from "@/components/post-history-modal";
 import { ReactivateBannerInline } from "@/components/reactivate-banner-inline";
-import { PostPreviewOverlay } from "@/components/post-preview-overlay";
-import { Button } from "@/components/ui/button";
-import { Lock, Eye, MessageSquare } from "lucide-react";
+import { PostPaywallDirect } from "@/components/post-paywall-direct";
 import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -96,6 +93,12 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   const post = useQuery(
     api.posts.getPostBySlug,
     hasValidParams ? { slug } : "skip",
+  );
+
+  // Query to check if the current user can view the full content
+  const canViewPost = useQuery(
+    api.posts.canUserViewPost,
+    post?._id ? { postId: post._id } : "skip"
   );
 
   // Debug logging for development (consider removing in production)
@@ -195,44 +198,95 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     <>
       <ReactivateBannerInline />
       <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
-        {/* Authenticated User Experience - Full access to posts and interactions */}
+        {/* Authenticated User Experience */}
         <Authenticated>
-          {/* Full post detail with all interactive features */}
-          <PostDetail
-            post={post}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onViewHistory={handleViewHistory}
-          />
-
-          {/* Comment section with deep linking support */}
-          <CommentSection
-            postId={post._id as Id<"posts">}
-            targetCommentId={commentId ?? undefined}
-          />
-
-          {/* Post Management Modals - Only available to authenticated users */}
-          {post && (
+          {canViewPost === undefined ? (
+            // Loading state while checking access
+            <div className="animate-pulse space-y-4">
+              <div className="h-8 bg-muted rounded w-3/4" />
+              <div className="h-4 bg-muted rounded w-full" />
+              <div className="h-4 bg-muted rounded w-full" />
+              <div className="h-4 bg-muted rounded w-2/3" />
+            </div>
+          ) : canViewPost === true ? (
             <>
-              <PostEditModal
+              {/* Full post detail with all interactive features */}
+              <PostDetail
                 post={post}
-                isOpen={isEditModalOpen}
-                onClose={() => setIsEditModalOpen(false)}
-                onSuccess={handleEditSuccess}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onViewHistory={handleViewHistory}
               />
-              <PostDeleteModal
+
+              {/* Comment section with deep linking support */}
+              <CommentSection
                 postId={post._id as Id<"posts">}
-                postTitle={post.title}
-                isOpen={isDeleteModalOpen}
-                onClose={() => setIsDeleteModalOpen(false)}
-                onSuccess={handleDeleteSuccess}
+                targetCommentId={commentId ?? undefined}
               />
-              <PostHistoryModal
-                postId={post._id as Id<"posts">}
-                isOpen={isHistoryModalOpen}
-                onClose={() => setIsHistoryModalOpen(false)}
-              />
+
+              {/* Post Management Modals - Only available to authenticated users */}
+              {post && (
+                <>
+                  <PostEditModal
+                    post={post}
+                    isOpen={isEditModalOpen}
+                    onClose={() => setIsEditModalOpen(false)}
+                    onSuccess={handleEditSuccess}
+                  />
+                  <PostDeleteModal
+                    postId={post._id as Id<"posts">}
+                    postTitle={post.title}
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    onSuccess={handleDeleteSuccess}
+                  />
+                  <PostHistoryModal
+                    postId={post._id as Id<"posts">}
+                    isOpen={isHistoryModalOpen}
+                    onClose={() => setIsHistoryModalOpen(false)}
+                  />
+                </>
+              )}
             </>
+          ) : (
+            // Authenticated user without access - show paywall
+            <div className="space-y-6">
+              {/* Post Header */}
+              <div className="border-b pb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-2">
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                      {post.category?.displayName || "General"}
+                    </span>
+                  </div>
+                </div>
+                <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                  <span>
+                    by {post.member?.firstName} {post.member?.lastName}
+                  </span>
+                  <span>•</span>
+                  <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                  <span>•</span>
+                  <span>{post.upvotes} upvotes</span>
+                </div>
+              </div>
+
+              {/* Preview Content with Paywall */}
+              <div className="relative">
+                <div className="prose prose-lg max-w-none">
+                  <div className="text-foreground leading-relaxed">
+                    {/* Show preview if available, otherwise fallback to truncated content */}
+                    {post.preview || post.content?.substring(0, 200) + "..."}
+                  </div>
+                </div>
+                
+                {/* Direct Paywall */}
+                <PostPaywallDirect 
+                  postId={post._id}
+                />
+              </div>
+            </div>
           )}
         </Authenticated>
 
@@ -285,13 +339,9 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                   </div>
                 </div>
                 
-                {/* Gradient Overlay and CTA */}
-                <PostPreviewOverlay 
-                  onUpgradeClick={() => {
-                    // Direct to Stripe checkout will be implemented in Phase 2
-                    window.location.href = "/pricing";
-                  }}
-                  postTitle={post.title}
+                {/* Direct Paywall */}
+                <PostPaywallDirect 
+                  postId={post._id}
                 />
               </div>
             </div>

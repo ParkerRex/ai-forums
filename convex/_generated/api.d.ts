@@ -53,6 +53,7 @@ import type * as search from "../search.js";
 import type * as stats from "../stats.js";
 import type * as storage from "../storage.js";
 import type * as stripe_checkout from "../stripe/checkout.js";
+import type * as stripe_directCheckout from "../stripe/directCheckout.js";
 import type * as stripe_getSubscriptionInfo from "../stripe/getSubscriptionInfo.js";
 import type * as stripe_monitoring from "../stripe/monitoring.js";
 import type * as stripe_portal from "../stripe/portal.js";
@@ -111,6 +112,7 @@ declare const fullApi: ApiFromModules<{
   stats: typeof stats;
   storage: typeof storage;
   "stripe/checkout": typeof stripe_checkout;
+  "stripe/directCheckout": typeof stripe_directCheckout;
   "stripe/getSubscriptionInfo": typeof stripe_getSubscriptionInfo;
   "stripe/monitoring": typeof stripe_monitoring;
   "stripe/portal": typeof stripe_portal;

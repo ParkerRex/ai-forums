@@ -34,6 +34,12 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { 
   Search, 
   Plus, 
@@ -44,7 +50,8 @@ import {
   SortAsc,
   Eye,
   User,
-  Calendar
+  Calendar,
+  Lock
 } from "lucide-react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BookmarkButton } from "@/components/bookmark-button";
@@ -87,6 +94,7 @@ interface Resource {
   type: "article" | "video" | "course" | "documentation" | "tool" | "book" | "other";
   difficulty?: "beginner" | "intermediate" | "advanced";
   isPaid: boolean;
+  isFree?: boolean;
   upvotes: number;
   netVotes: number;
   viewCount: number;
@@ -137,6 +145,11 @@ function ResourceCard({ resource }: { resource: Resource }) {
   const userVote = useQuery(api.votes.getUserVote, {
     targetId: resource._id,
     targetType: "resource",
+  });
+  
+  // Query if user can access this resource
+  const canViewResource = useQuery(api.resources.canUserViewResource, {
+    resourceId: resource._id,
   });
   
   // Local state for voting interactions and optimistic updates
@@ -207,8 +220,16 @@ function ResourceCard({ resource }: { resource: Resource }) {
    * Tracks when users click to view a resource for analytics purposes,
    * then opens the resource in a new tab with security attributes.
    * View tracking failures are logged but don't prevent navigation.
+   * Checks access permissions before allowing navigation.
    */
   const handleResourceClick = async () => {
+    // Check if user has access to this resource
+    if (canViewResource === false) {
+      // TODO: Show upgrade modal or redirect to paywall
+      console.log("Access denied: Premium resource");
+      return;
+    }
+    
     try {
       // Track view for analytics (fire-and-forget)
       await trackResourceView({ resourceId: resource._id });
@@ -272,13 +293,32 @@ function ResourceCard({ resource }: { resource: Resource }) {
                   Paid
                 </Badge>
               )}
+              {resource.isFree && (
+                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                  Free
+                </Badge>
+              )}
             </div>
             {/* Clickable resource title */}
             <CardTitle 
-              className="text-lg cursor-pointer hover:text-blue-600 transition-colors"
+              className={`text-lg cursor-pointer transition-colors flex items-center gap-2 ${
+                canViewResource === false ? 'hover:text-muted-foreground' : 'hover:text-blue-600'
+              }`}
               onClick={handleResourceClick}
             >
               {resource.title}
+              {canViewResource === false && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Premium resource - Upgrade to access</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </CardTitle>
           </div>
           {/* Voting section with authentication handling */}
@@ -350,8 +390,13 @@ function ResourceCard({ resource }: { resource: Resource }) {
               size="sm"
               className="p-2 h-auto"
               onClick={handleResourceClick}
+              disabled={canViewResource === false}
             >
-              <ExternalLink size={12} />
+              {canViewResource === false ? (
+                <Lock size={12} />
+              ) : (
+                <ExternalLink size={12} />
+              )}
             </Button>
           </div>
         </div>

@@ -285,3 +285,30 @@ export const trackResourceView = mutation({
     return null;
   },
 });
+
+export const canUserViewResource = query({
+  args: {
+    resourceId: v.id("resources"),
+  },
+  returns: v.boolean(),
+  handler: async (ctx, { resourceId }) => {
+    const { canViewResource } = await import("./helpers/access");
+    
+    const resource = await ctx.db.get(resourceId);
+    if (!resource) {
+      return false;
+    }
+    
+    const identity = await ctx.auth.getUserIdentity();
+    let member = null;
+    
+    if (identity) {
+      member = await ctx.db
+        .query("members")
+        .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+        .unique();
+    }
+    
+    return canViewResource(member, resource);
+  },
+});

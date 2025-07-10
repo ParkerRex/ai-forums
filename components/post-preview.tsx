@@ -63,7 +63,7 @@ export default function PostPreview({
   const previewClasses = getPreviewClasses(size, assetInfo, post);
 
   const stats = formatPostStats(post);
-  const excerpt = getContentExcerpt(post.content, size === "small" ? 120 : 200);
+  const excerpt = getContentExcerpt(post.content, size === "small" ? 120 : 200, post.preview);
 
   // Handle video autoplay on hover
   useEffect(() => {

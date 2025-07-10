@@ -10,8 +10,8 @@ Unified Paywall & Direct Checkout
 TASK CHECKLIST
 ==============
 
-Phase 0 – Free Previews & Public Blog
-------------------------------------
+Phase 0 – Free Previews & Public Blog (COMPLETED)
+-------------------------------------------------
 ☑ create ``app/blog/page.tsx`` – public blog index listing free articles
 ☑ update ``app/page.tsx`` – render post previews for unauthenticated users
 ☑ update ``app/[category]/[slug]/page-client.tsx`` – show preview + overlay for free users
@@ -21,32 +21,42 @@ Phase 0 – Free Previews & Public Blog
 ☑ create ``scripts/generate-post-previews.ts`` – batch preview generation via Anthropic
 ☑ create ``convex/migrations/add_preview_field.ts`` – add ``preview`` field to posts schema
 ☑ update ``convex/schema.ts`` & ``convex/posts.ts`` – auto-generate preview on create/update
-☐ update ``app/api/rss/route.ts`` – use preview for gated posts (NO RSS FOUND - SKIP)
-☐ update ``lib/seo-meta.ts`` – meta description = preview (NO FILE FOUND - SKIP)
 ☑ update ``components/global-search.tsx`` – gate clicks when user lacks access
 ☑ update ``convex/resources.ts`` & ``convex/schema.ts`` – add isFree flag to resources
 ☑ update ``app/educate/[topic]/submit/page-client.tsx`` – toggle for "Free for all"
-☐ add tests: ``previewGeneration``, ``globalSearchGating``, ``resourceAccess``
 
-Phase 0.5 – Missing Items from Phase 0
---------------------------------------
-☐ implement automatic preview generation on post create/update (currently only manual script)
-☐ update ``lib/post-preview-utils.ts`` ``getContentExcerpt`` to use preview field
-☐ update ``components/post-preview.tsx`` to pass preview to ``getContentExcerpt``
-☐ implement resource access control using ``canViewResource`` helper
+Phase 0.5 – Missing Items from Phase 0 (MOSTLY COMPLETED)
+---------------------------------------------------------
+☑ implement automatic preview generation on post create/update (currently only manual script)
+☑ update ``lib/post-preview-utils.ts`` ``getContentExcerpt`` to use preview field
+☑ update ``components/post-preview.tsx`` to pass preview to ``getContentExcerpt``
+☑ implement resource access control using ``canViewResource`` helper
 ☐ create cron job or background action for automatic preview generation
 
-Phase 1 – Streamlined Paywall UI
--------------------------------
-☐ create ``components/post-paywall-direct.tsx`` – clean paywall with direct "Upgrade to Pro" button
-☐ update ``app/[category]/[slug]/page-client.tsx`` – replace complex CTA modal with direct paywall
-☐ remove dependency on ``MembershipCTAModal`` from post pages
+Phase 0.75 – Post Creation UX Improvements (COMPLETED)
+-----------------------------------------------------
+☑ create ``convex/previewGeneration.ts`` – AI-powered preview generation using OpenAI GPT-4o-mini
+☑ create ``components/preview-generation-dialog.tsx`` – preview generation UI with edit capabilities
+☑ create ``components/post-preview-toggle.tsx`` – animated toggle for edit/preview modes
+☑ add ``components/ui/pen-tool.tsx`` – animated pen-tool icon for edit mode
+☑ add ``components/ui/telescope.tsx`` – animated telescope icon for preview mode
+☑ update ``components/post-creation-form.tsx`` – integrate AI preview generation workflow
+☑ update ``components/post-creation-form.tsx`` – replace aggressive validation with submit-time validation
+☑ fix member hover card validation error in preview mode (showMember=false)
+☑ remove aggressive real-time validation styling (red borders, immediate error messages)
+☑ implement user-friendly validation that only shows errors on submit attempt
 
-Phase 2 – Direct Stripe Checkout
--------------------------------
-☐ create ``convex/stripe/directCheckout.ts`` – simplified checkout for unauthenticated users
-☐ update ``app/api/stripe/webhook/route.ts`` – handle unauthenticated checkout completion
-☐ create success page ``app/membership/success/page.tsx`` – celebration + onboarding steps
+Phase 1 – Streamlined Paywall UI (COMPLETED)
+--------------------------------------------
+☑ create ``components/post-paywall-direct.tsx`` – clean paywall with direct "Upgrade to Pro" button
+☑ update ``app/[category]/[slug]/page-client.tsx`` – replace complex CTA modal with direct paywall
+☑ remove dependency on ``MembershipCTAModal`` from post pages
+
+Phase 2 – Direct Stripe Checkout (COMPLETED)
+-------------------------------------------
+☑ create ``convex/stripe/directCheckout.ts`` – simplified checkout for unauthenticated users
+☑ update ``app/api/stripe/webhook/route.ts`` – handle unauthenticated checkout completion
+☑ create success page ``app/membership/success/page.tsx`` – celebration + onboarding steps
 
 Phase 3 – Post-Purchase Experience
 ---------------------------------

@@ -1148,6 +1148,32 @@ export const deletePost = mutation({
  * console.log(`New view recorded: ${result.viewRecorded}`);
  * ```
  */
+export const canUserViewPost = query({
+  args: {
+    postId: v.id("posts"),
+  },
+  handler: async (ctx, { postId }) => {
+    const { canViewPost } = await import("./helpers/access");
+    
+    const post = await ctx.db.get(postId);
+    if (!post) {
+      return false;
+    }
+    
+    const identity = await ctx.auth.getUserIdentity();
+    let member = null;
+    
+    if (identity) {
+      member = await ctx.db
+        .query("members")
+        .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+        .unique();
+    }
+    
+    return canViewPost(member, post);
+  },
+});
+
 export const trackPostView = mutation({
   args: {
     postId: v.id("posts"),

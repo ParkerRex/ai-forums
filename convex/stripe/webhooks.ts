@@ -105,6 +105,7 @@ export const processWebhookEvent = mutation({
 /**
  * Handles checkout.session.completed webhook event
  * Updates member with subscription information after successful checkout
+ * Handles both authenticated and direct (guest) checkouts
  */
 async function handleCheckoutSessionCompleted(
   ctx: MutationCtx,
@@ -116,11 +117,65 @@ async function handleCheckoutSessionCompleted(
   }
 
   const memberId = session.metadata?.memberId as Id<"members">;
+  
+  // Handle direct checkout (no memberId)
   if (!memberId) {
+    // Check if this is a direct checkout
+    if (session.metadata?.checkoutType === "direct") {
+      // Get customer email from session
+      const email = session.customer_email;
+      if (!email) {
+        console.error("No email found for direct checkout");
+        return;
+      }
+
+      // Check if member already exists with this email
+      let member = await ctx.db
+        .query("members")
+        .filter((q) => q.eq(q.field("email"), email))
+        .first();
+
+      if (member) {
+        // Update existing member with subscription info
+        await ctx.db.patch(member._id, {
+          stripeCustomerId: session.customer as string,
+          stripeSubscriptionId: session.subscription as string,
+          tier: "member", // Default to member tier for direct checkouts
+          billingInterval: session.metadata?.billingInterval === "yearly" ? "yearly" : "monthly",
+          subscriptionStatus: "active",
+          lastPaymentDate: Date.now(),
+          updatedAt: Date.now(),
+        });
+      } else {
+        // Create new member for guest checkout
+        const now = Date.now();
+        await ctx.db.insert("members", {
+          email,
+          firstName: "",
+          lastName: "",
+          // externalId is optional - don't set it for guest members
+          // When user signs up with Clerk later, we'll link accounts by email
+          slug: email.split("@")[0] + "-" + Math.random().toString(36).substring(7),
+          stripeCustomerId: session.customer as string,
+          stripeSubscriptionId: session.subscription as string,
+          tier: "member",
+          billingInterval: session.metadata?.billingInterval === "yearly" ? "yearly" : "monthly",
+          subscriptionStatus: "active",
+          joinedDate: now,
+          updatedAt: now,
+          lastOnline: now,
+          status: "active",
+        });
+      }
+      
+      return;
+    }
+    
     console.error("Missing memberId in session metadata");
     return;
   }
 
+  // Handle authenticated checkout (existing flow)
   const member = await ctx.db.get(memberId);
   if (!member) {
     console.error(`Member ${memberId} not found`);
