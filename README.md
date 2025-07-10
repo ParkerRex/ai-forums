@@ -435,6 +435,9 @@ npm run lint            # Code quality checks
 - Follow existing patterns for authentication
 - Maintain real-time functionality where applicable
 
+## 🔢 **Story Points & Estimation**
+We size work using the Fibonacci sequence (1, 2, 3, 5, 8, 13).  Anything estimated at **13+** should be broken into smaller tickets.  See [`docs/STORY_POINTS_GUIDE.md`](docs/STORY_POINTS_GUIDE.md) for a detailed guide with real examples from this repo—including which sizes are safe to hand off to AI agents.
+
 ## 📚 **Learning Resources**
 
 - [Convex Documentation](https://docs.convex.dev/)
