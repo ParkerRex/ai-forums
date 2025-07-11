@@ -4,12 +4,12 @@ import {
   needsSubscriptionUpgrade, 
   getSubscriptionStatusMessage 
 } from "../helpers/access";
-import { Doc } from "../_generated/dataModel";
+import { Doc, Id } from "../_generated/dataModel";
 
 // Helper function to create a mock member
 function createMockMember(overrides: Partial<Doc<"members">>): Doc<"members"> {
   return {
-    _id: "member123" as any,
+    _id: "member123" as Id<"members">,
     _creationTime: Date.now(),
     email: "test@example.com",
     firstName: "Test",
@@ -257,7 +257,7 @@ describe("getSubscriptionStatusMessage", () => {
 
     for (const { tier, expected } of testCases) {
       const member = createMockMember({
-        tier: tier as any,
+        tier: tier as "founding_member" | "early_bird" | "member",
         subscriptionStatus: "active",
       });
       expect(getSubscriptionStatusMessage(member)).toBe(expected);
@@ -341,7 +341,7 @@ describe("getSubscriptionStatusMessage", () => {
   test("should handle missing subscription status", () => {
     const member = createMockMember({
       tier: "member",
-      subscriptionStatus: undefined as any,
+      subscriptionStatus: undefined,
     });
     expect(getSubscriptionStatusMessage(member)).toBe(
       "Free tier - Upgrade to access full content"

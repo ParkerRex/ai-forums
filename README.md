@@ -1,460 +1,343 @@
-# VAI-VEX: AI Engineers Community Platform
+# VAI-VEX
 
-A modern, real-time community platform built for AI engineers to share knowledge, collaborate, and build together. This Next.js application with Convex backend replaces the old-school website with a fun, engaging, and easy-to-contribute platform.
+This repository contains the source code for the VAI-VEX application, a full-stack web application built with Next.js, Convex, and a variety of other modern technologies.
 
-## 🎯 **Project Vision**
+## Overview
 
-**RESULT**: A replacement for the old skool website that makes people enjoy engaging with our community.
+The application is a feature-rich platform that includes user authentication, a blogging system, a membership model with payments, a news feed, and administrative tools. It is designed to be a high-quality, production-ready application with a focus on user experience and developer productivity.
 
-**PURPOSE**:
-- Understand how Convex works and make the site easy to work on
-- Provide a better member experience and become a household name
-- Bring AI to the member experience with chatbots that can answer questions from Discord and the website
 
-## 🏗️ **Architecture Overview**
+## Tech Stack
 
-### **System Architecture Diagram**
+- **Framework:** [Next.js](https://nextjs.org/)
+- **Backend:** [Convex](https://www.convex.dev/)
+- **Authentication:** [Clerk](https://clerk.com/)
+- **Payments:** [Stripe](https://stripe.com/)
+- **UI Components:** [Radix UI](https://www.radix-ui.com/) and [shadcn/ui](https://ui.shadcn.com/)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **Testing:** [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/)
+- **Linting:** [ESLint](https://eslint.org/)
+- **Formatting:** [Prettier](https://prettier.io/)
 
-```mermaid
-graph TB
-    %% User Layer
-    User[👤 User] --> Browser[🌐 Browser]
+## Getting Started
 
-    %% Frontend Layer
-    Browser --> NextJS[⚡ Next.js 15 App Router]
-    NextJS --> React[⚛️ React 19 Components]
+To get started with the project, you will need to have Node.js and npm installed.
 
-    %% Authentication
-    NextJS --> Clerk[🔐 Clerk Auth]
-    Clerk --> ClerkDB[(Clerk User DB)]
+1.  **Clone the repository:**
 
-    %% UI Components
-    React --> ShadCN[🎨 shadcn/ui Components]
-    React --> Tailwind[🎯 Tailwind CSS]
-    React --> TipTap[📝 TipTap Rich Editor]
+    ```bash
+    git clone https://github.com/your-username/vai-vex.git
+    ```
 
-    %% Backend Layer
-    NextJS --> ConvexClient[📡 Convex Client]
-    ConvexClient --> ConvexBackend[🚀 Convex Backend]
+2.  **Install dependencies:**
 
-    %% Database Layer
-    ConvexBackend --> ConvexDB[(🗄️ Convex Database)]
+    ```bash
+    npm install
+    ```
 
-    %% Core Data Models
-    ConvexDB --> Members[👥 Members]
-    ConvexDB --> Posts[📄 Posts]
-    ConvexDB --> Comments[💬 Comments]
-    ConvexDB --> Categories[📁 Categories]
-    ConvexDB --> Votes[👍 Votes]
-    ConvexDB --> Bookmarks[🔖 Bookmarks]
-    ConvexDB --> Notifications[🔔 Notifications]
-    ConvexDB --> Subscriptions[💳 Subscriptions]
-    ConvexDB --> Payments[💰 Payments]
+3.  **Set up environment variables:**
 
-    %% External Services
-    ConvexBackend --> R2Storage[☁️ Cloudflare R2 Storage]
-    ConvexBackend --> GitHub[🐙 GitHub API]
-    ConvexBackend --> Discord[💬 Discord API]
-    ConvexBackend --> Stripe[💳 Stripe API]
+    This project uses Convex for the backend, and each developer has their own separate development environment. To get set up, you will need to:
 
-    %% File Storage
-    R2Storage --> Images[🖼️ Images]
-    R2Storage --> Videos[🎥 Videos]
-    R2Storage --> PDFs[📄 PDFs]
-    R2Storage --> Attachments[📎 Attachments]
+    1.  **Reach out to Parker** to get the necessary environment variables.
+    2.  Create a `.env.local` file in the root of the project and add the variables provided.
+    3.  Follow the Convex setup instructions to initialize your development environment. This will likely involve running `npx convex dev`.
 
-    %% Real-time Features
-    ConvexBackend -.->|Real-time Updates| ConvexClient
-    ConvexClient -.->|Live Data| React
+4. **Set up Convex backend**
+    
+    ```bash
+    npx convex dev
+    ```
 
-    %% Testing Layer
-    NextJS --> Vitest[🧪 Vitest Unit Tests]
-    NextJS --> Playwright[🎭 Playwright E2E Tests]
+    # Set Convex environment variables
+    # IMPORTANT: Convex functions require their own environment variables
+    # These are separate from .env.local and must be set using the Convex CLI:
+    npx convex env set STRIPE_SECRET_KEY "your_stripe_secret_key"
+    npx convex env set NEXT_PUBLIC_APP_URL "http://localhost:3000"
+    npx convex env set CLERK_JWT_ISSUER_DOMAIN "your_clerk_issuer_domain"
+    npx convex env set EXA_API_KEY "your_exa_api_key"  # Required for news feed functionality
 
-    %% Styling
-    classDef frontend fill:#e1f5fe
-    classDef backend fill:#f3e5f5
-    classDef database fill:#e8f5e8
-    classDef external fill:#fff3e0
-    classDef auth fill:#fce4ec
+5.  **Run the development server:**
 
-    class NextJS,React,ShadCN,Tailwind,TipTap frontend
-    class ConvexBackend,ConvexClient backend
-    class ConvexDB,Members,Posts,Comments,Categories,Votes,Bookmarks,Notifications,Subscriptions,Payments database
-    class R2Storage,GitHub,Discord,Stripe,Images,Videos,PDFs,Attachments external
-    class Clerk,ClerkDB auth
+    ```bash
+    npm run dev
+    ```
+
+    This will start the development server on `http://localhost:3000`.
+
+## Project Structure
+
+Here is a breakdown of the project's file structure:
+
+```
+/
+├── app/
+│   ├── globals.css # Global CSS styles
+│   ├── layout.tsx # Root layout for the application
+│   ├── not-found.tsx # Custom 404 page
+│   ├── page.tsx # Home page
+│   ├── [category]/ # Dynamic category pages
+│   ├── actions/ # Server-side actions
+│   ├── admin/ # Admin dashboard pages
+│   ├── api/ # API routes
+│   ├── blog/ # Blog pages
+│   ├── bookmarks/ # User bookmarks page
+│   ├── calendar/ # Calendar feature pages
+│   ├── create/ # Content creation page
+│   ├── educate/ # Educational content pages
+│   ├── members/ # Member profile pages
+│   ├── membership/ # Membership and subscription pages
+│   ├── news/ # News feed page
+│   ├── onboarding/ # User onboarding flow
+│   ├── pricing/ # Pricing page
+│   ├── reactivate/ # Account reactivation page
+│   └── settings/ # User settings pages
+├── components/
+│   ├── ui/ # UI components from shadcn/ui
+│   ├── *.tsx # Reusable React components
+├── convex/
+│   ├── schema.ts # Convex database schema
+│   ├── *.ts # Convex backend functions (queries, mutations, actions)
+├── hooks/
+│   ├── *.ts # Custom React hooks
+├── lib/
+│   ├── *.ts # Utility functions and libraries
+├── public/
+│   ├── *.svg # Static SVG assets
+│   └── *.png # Static image assets
+├── scripts/
+│   ├── *.js # Scripts for various development and administrative tasks
+│   └── *.ts
+├── tests/
+│   ├── *.spec.ts # Playwright end-to-end tests
+├── .github/ # GitHub-specific configuration
+├── .next/ # Next.js build output
+├── .vercel/ # Vercel deployment configuration
+├── ai_docs/ # AI-generated documentation and plans
+├── docs/ # Project documentation
+├── node_modules/ # Project dependencies
+├── playwright-report/ # Playwright test reports
+├── test-results/ # Test results
+└── types/ # TypeScript type definitions
 ```
 
-### **Technology Stack**
-- **Frontend**: Next.js 15 + React 19 + TypeScript
-- **Backend**: Convex (real-time database + serverless functions)
-- **Authentication**: Clerk
-- **Payments**: Stripe (subscriptions, webhooks, customer portal)
-- **UI Framework**: Tailwind CSS + shadcn/ui components
-- **Rich Text**: TipTap editor
-- **Testing**: Vitest + Playwright
-- **Monitoring**: Custom webhook monitoring & analytics dashboards
+## Component-by-Component Breakdown
 
-### **Project Structure**
-```
-vai-vex/
-├── app/                    # Next.js App Router (main application)
-│   ├── layout.tsx         # Root layout with providers
-│   ├── page.tsx           # Homepage (post feed)
-│   ├── members/           # Member directory & profiles  
-│   ├── create/            # Post creation
-│   ├── admin/             # Admin dashboards (members, payments, analytics)
-│   ├── pricing/           # Pricing and subscription pages
-│   └── api/               # API routes (Discord, GitHub, Stripe webhooks)
-├── components/             # React components
-│   ├── ui/                # shadcn/ui components
-│   ├── header.tsx         # Global navigation
-│   ├── post-list.tsx      # Post feed component
-│   └── ...                # Feature components
-├── convex/                 # Backend logic & database
-│   ├── schema.ts          # Database schema
-│   ├── posts.ts           # Post CRUD operations
-│   ├── members.ts         # User management
-│   ├── auth.ts            # Authentication helpers
-│   ├── stripe/            # Payment processing & webhooks
-│   ├── admin/             # Admin queries and mutations
-│   ├── helpers/           # Shared utilities (access control)
-│   └── test/              # Backend test files
-├── lib/                    # Utility functions & helpers
-├── hooks/                  # Custom React hooks
-└── types/                  # TypeScript type definitions
-```
+### Root Components
 
-### **Component Architecture Flow**
+-   `attachment-grid.tsx`: Displays a grid of attachments.
+-   `auth-button.tsx`: A button for user authentication.
+-   `bookmark-button.tsx`: A button for bookmarking content.
+-   `bug-report-button.tsx`: A button to trigger a bug report modal.
+-   `bug-report-modal.tsx`: A modal for submitting bug reports.
+-   `category-toggle-group.tsx`: A group of toggles for filtering by category.
+-   `checkout-error-recovery.tsx`: A component to handle checkout errors.
+-   `code-block-wrapper.tsx`: A wrapper for code blocks to provide additional functionality.
+-   `comment-actions-menu.tsx`: A menu of actions for a comment.
+-   `comment-section.tsx`: A component to display a comment section.
+-   `ConvexClientProvider.tsx`: A Convex client provider for the application.
+-   `current-customers-ticker.tsx`: A ticker to display current customers.
+-   `discord-status.tsx`: Displays the status of a Discord integration.
+-   `drafts-modal.tsx`: A modal for managing drafts.
+-   `enhanced-comment-input.tsx`: An enhanced comment input field.
+-   `error-boundary.tsx`: An error boundary to catch and handle errors.
+-   `error-display.tsx`: A component to display errors.
+-   `feature-request-button.tsx`: A button to trigger a feature request modal.
+-   `feature-request-modal.tsx`: A modal for submitting feature requests.
+-   `footer.tsx`: The application footer.
+-   `gif-picker.tsx`: A picker for selecting GIFs.
+-   `global-search.tsx`: A global search input.
+-   `header.tsx`: The application header.
+-   `join-vai-pro.tsx`: A component to encourage users to join the pro plan.
+-   `last-push-tag.tsx`: A tag to display the last push information.
+-   `link-badge.tsx`: A badge for links.
+-   `media-preview-grid.tsx`: A grid for previewing media.
+-   `media-preview-item.tsx`: An item in the media preview grid.
+-   `media-upload-section.tsx`: A section for uploading media.
+-   `member-card.tsx`: A card to display member information.
+-   `member-dropdown.tsx`: A dropdown menu for member actions.
+-   `member-edit-form.tsx`: A form for editing member information.
+-   `member-edit-modal.tsx`: A modal for editing member information.
+-   `member-header-skeleton.tsx`: A skeleton loader for the member header.
+-   `member-hover-card.tsx`: A hover card to display member information.
+-   `member-profile.tsx`: A component to display a member's profile.
+-   `member-skeleton.tsx`: A skeleton loader for a member.
+-   `members-display.tsx`: A component to display a list of members.
+-   `membership-cta-modal.tsx`: A modal for a membership call to action.
+-   `mention-autocomplete.tsx`: An autocomplete for mentioning users.
+-   `notification-bell.tsx`: A notification bell icon.
+-   `notification-dropdown.tsx`: A dropdown for displaying notifications.
+-   `online-users.tsx`: A component to display online users.
+-   `payment-reminder-banner.tsx`: A banner to remind users of a payment.
+-   `payment-retry-modal.tsx`: A modal for retrying a payment.
+-   `paywall.tsx`: A paywall to restrict access to content.
+-   `pdf-preview.tsx`: A component to preview PDF files.
+-   `poll-creation-modal.tsx`: A modal for creating polls.
+-   `poll-display.tsx`: A component to display a poll.
+-   `poll-voters-modal.tsx`: A modal to display poll voters.
+-   `post-card.tsx`: A card to display a post.
+-   `post-content-teaser.tsx`: A teaser for post content.
+-   `post-creation-form.tsx`: A form for creating posts.
+-   `post-delete-modal.tsx`: A modal for deleting a post.
+-   `post-detail.tsx`: A component to display the details of a post.
+-   `post-edit-modal.tsx`: A modal for editing a post.
+-   `post-form-fields.tsx`: Fields for the post form.
+-   `post-header-skeleton.tsx`: A skeleton loader for the post header.
+-   `post-header.tsx`: The header for a post.
+-   `post-history-modal.tsx`: A modal to display the history of a post.
+-   `post-list.tsx`: A list of posts.
+-   `post-paywall-direct.tsx`: A direct paywall for a post.
+-   `post-preview-overlay.tsx`: An overlay for post previews.
+-   `post-preview-toggle.tsx`: A toggle for post previews.
+-   `post-preview.tsx`: A component to preview a post.
+-   `post-sidebar-skeleton.tsx`: A skeleton loader for the post sidebar.
+-   `post-sidebar.tsx`: The sidebar for a post.
+-   `preview-generation-dialog.tsx`: A dialog for generating previews.
+-   `pricing-comparison-table.tsx`: A table for comparing pricing plans.
+-   `reactivate-banner-inline.tsx`: An inline banner for reactivating an account.
+-   `reactivate-banner-top.tsx`: A top banner for reactivating an account.
+-   `rich-text-editor-full.tsx`: A full-featured rich text editor.
+-   `rich-text-editor.tsx`: A rich text editor.
+-   `settings-dialog.tsx`: A dialog for settings.
+-   `sidebar-roadmap-component.tsx`: A roadmap component for the sidebar.
+-   `sign-in-form.tsx`: A form for signing in.
+-   `sign-in-modal.tsx`: A modal for signing in.
+-   `sort-popover.tsx`: A popover for sorting options.
+-   `sortable-comment-item.tsx`: A sortable comment item.
+-   `subscription-expired-modal.tsx`: A modal for an expired subscription.
+-   `subscription-status-skeleton.tsx`: A skeleton loader for the subscription status.
+-   `theme-provider.tsx`: A provider for the application theme.
+-   `theme-toggle-simple.tsx`: A simple theme toggle.
+-   `theme-toggle-switch.tsx`: A theme toggle switch.
+-   `theme-toggle.tsx`: A theme toggle.
+-   `video-preview.tsx`: A component to preview videos.
+-   `vote-hover-card.tsx`: A hover card for votes.
+-   `weekly-countdown.tsx`: A weekly countdown timer.
+-   `youtube-embed.tsx`: A component to embed YouTube videos.
+-   `youtube-preview.tsx`: A component to preview YouTube videos.
 
-```mermaid
-graph TD
-    %% App Router Structure
-    AppLayout[📱 app/layout.tsx<br/>Root Layout] --> Header[🧭 Header Component]
-    AppLayout --> ThemeProvider[🎨 Theme Provider]
-    AppLayout --> ClerkProvider[🔐 Clerk Provider]
-    AppLayout --> ConvexProvider[📡 Convex Provider]
+### Admin Components
 
-    %% Main Pages
-    AppLayout --> HomePage[🏠 app/page.tsx<br/>Homepage]
-    AppLayout --> MembersPage[👥 app/members/page.tsx]
-    AppLayout --> CreatePage[✏️ app/create/page.tsx]
-    AppLayout --> CategoryPage[📁 app/[category]/page.tsx]
+-   `admin/member-card.tsx`: A card to display member information in the admin dashboard.
+-   `admin/member-details-modal.tsx`: A modal to display member details in the admin dashboard.
+-   `admin/member-status-filter.tsx`: A filter for member status in the admin dashboard.
+-   `admin/payment-details-modal.tsx`: A modal to display payment details in the admin dashboard.
+-   `admin/payment-history.tsx`: A component to display payment history in the admin dashboard.
 
-    %% Homepage Components
-    HomePage --> PostList[📋 PostList Component]
-    PostList --> PostCard[📄 PostCard Component]
-    PostCard --> VoteButtons[👍 Vote Buttons]
-    PostCard --> BookmarkButton[🔖 Bookmark Button]
-    PostCard --> PostPreview[👁️ Post Preview]
+### Calendar Components
 
-    %% Post Detail Flow
-    PostCard --> PostDetail[📖 Post Detail Modal]
-    PostDetail --> CommentSection[💬 Comment Section]
-    CommentSection --> CommentInput[✍️ Enhanced Comment Input]
-    CommentSection --> CommentItem[💭 Comment Item]
+-   `calendar/calendar-grid.tsx`: A grid for the calendar.
+-   `calendar/event-card.tsx`: A card to display a calendar event.
+-   `calendar/event-modal.tsx`: A modal for calendar events.
 
-    %% Create Post Flow
-    CreatePage --> PostCreationForm[📝 Post Creation Form]
-    PostCreationForm --> RichTextEditor[📝 Rich Text Editor]
-    PostCreationForm --> MediaUpload[📎 Media Upload Section]
-    PostCreationForm --> CategorySelect[📁 Category Selection]
+### News Components
 
-    %% Member Features
-    MembersPage --> MemberCard[👤 Member Card]
-    MemberCard --> MemberProfile[📊 Member Profile Modal]
+-   `news/news-card.tsx`: A card to display a news item.
+-   `news/news-feed-widget.tsx`: A widget for the news feed.
 
-    %% Shared UI Components
-    Header --> AuthButton[🔑 Auth Button]
-    Header --> ThemeToggle[🌓 Theme Toggle]
-    Header --> GlobalSearch[🔍 Global Search]
-    Header --> NotificationBell[🔔 Notification Bell]
+### UI Components (from shadcn/ui)
 
-    %% Real-time Features
-    ConvexProvider -.->|Real-time Data| PostList
-    ConvexProvider -.->|Live Updates| CommentSection
-    ConvexProvider -.->|Instant Sync| VoteButtons
+-   `ui/accordion.tsx`: An accordion component.
+-   `ui/alert-dialog.tsx`: An alert dialog component.
+-   `ui/alert.tsx`: An alert component.
+-   `ui/arrow-big-up.tsx`: A big up arrow icon.
+-   `ui/arrow-left.tsx`: A left arrow icon.
+-   `ui/aspect-ratio.tsx`: A component to maintain the aspect ratio of an element.
+-   `ui/avatar.tsx`: An avatar component.
+-   `ui/badge.tsx`: A badge component.
+-   `ui/bell.tsx`: A bell icon.
+-   `ui/breadcrumb.tsx`: A breadcrumb component.
+-   `ui/button.tsx`: A button component.
+-   `ui/calendar-days.tsx`: A component to display the days of a calendar.
+-   `ui/calendar.tsx`: A calendar component.
+-   `ui/card.tsx`: A card component.
+-   `ui/carousel.tsx`: A carousel component.
+-   `ui/chart.tsx`: A chart component.
+-   `ui/checkbox.tsx`: A checkbox component.
+-   `ui/clap.tsx`: A clap icon.
+-   `ui/collapsible.tsx`: A collapsible component.
+-   `ui/command.tsx`: A command component.
+-   `ui/comment-thread-line.tsx`: A line for a comment thread.
+-   `ui/context-menu.tsx`: A context menu component.
+-   `ui/dialog.tsx`: A dialog component.
+-   `ui/drawer.tsx`: A drawer component.
+-   `ui/dropdown-menu.tsx`: A dropdown menu component.
+-   `ui/emoji.tsx`: An emoji component.
+-   `ui/expand.tsx`: An expand icon.
+-   `ui/flame.tsx`: A flame icon.
+-   `ui/flask.tsx`: A flask icon.
+-   `ui/form.tsx`: A form component.
+-   `ui/gif.tsx`: A GIF component.
+-   `ui/github.tsx`: A GitHub icon.
+-   `ui/home.tsx`: A home icon.
+-   `ui/hover-card.tsx`: A hover card component.
+-   `ui/input-otp.tsx`: An input for one-time passwords.
+-   `ui/input.tsx`: An input component.
+-   `ui/key.tsx`: A key icon.
+-   `ui/label.tsx`: A label component.
+-   `ui/laptop-minimal-check.tsx`: A laptop icon with a checkmark.
+-   `ui/link.tsx`: A link component.
+-   `ui/media-upload.tsx`: A component for uploading media.
+-   `ui/menubar.tsx`: A menubar component.
+-   `ui/message-square.tsx`: A message square icon.
+-   `ui/moon.tsx`: A moon icon.
+-   `ui/navigation-menu.tsx`: A navigation menu component.
+-   `ui/pagination.tsx`: A pagination component.
+-   `ui/party-popper.tsx`: A party popper icon.
+-   `ui/pen-tool.tsx`: A pen tool icon.
+-   `ui/plus.tsx`: A plus icon.
+-   `ui/popover.tsx`: A popover component.
+-   `ui/progress.tsx`: A progress bar component.
+-   `ui/rabbit.tsx`: A rabbit icon.
+-   `ui/radio-group.tsx`: A radio group component.
+-   `ui/resizable.tsx`: A resizable component.
+-   `ui/scroll-area.tsx`: A scroll area component.
+-   `ui/search.tsx`: A search icon.
+-   `ui/select.tsx`: A select component.
+-   `ui/separator.tsx`: A separator component.
+-   `ui/sheet.tsx`: A sheet component.
+-   `ui/sidebar.tsx`: A sidebar component.
+-   `ui/skeleton.tsx`: A skeleton loader component.
+-   `ui/slider.tsx`: A slider component.
+-   `ui/smile.tsx`: A smile icon.
+-   `ui/sonner.tsx`: A toast notification component.
+-   `ui/square-stack.tsx`: A square stack icon.
+-   `ui/sun.tsx`: A sun icon.
+-   `ui/switch.tsx`: A switch component.
+-   `ui/table.tsx`: A table component.
+-   `ui/tabs.tsx`: A tabs component.
+-   `ui/telescope.tsx`: A telescope icon.
+-   `ui/text-area.tsx`: A text area component.
+-   `ui/textarea.tsx`: A textarea component.
+-   `ui/tier-badge.tsx`: A badge for a tier.
+-   `ui/toggle-group.tsx`: A toggle group component.
+-   `ui/toggle.tsx`: A toggle component.
+-   `ui/tooltip.tsx`: A tooltip component.
+-   `ui/upload.tsx`: An upload icon.
+-   `ui/upvote.tsx`: An upvote icon.
+-   `ui/users.tsx`: A users icon.
+-   `ui/vote-button.tsx`: A button for voting.
 
-    %% Styling
-    classDef page fill:#e3f2fd
-    classDef component fill:#f1f8e9
-    classDef ui fill:#fce4ec
-    classDef realtime fill:#fff3e0
+## Testing
 
-    class AppLayout,HomePage,MembersPage,CreatePage,CategoryPage page
-    class PostList,PostCard,PostDetail,CommentSection,PostCreationForm,MemberCard component
-    class Header,AuthButton,ThemeToggle,GlobalSearch,VoteButtons,BookmarkButton ui
-    class ConvexProvider realtime
-```
+The project uses Vitest for unit and integration tests, and Playwright for end-to-end tests.
 
-## 🗄️ **Database Schema**
+-   **Run unit and integration tests:**
 
-### **Core Entities**
+    ```bash
+    npm test
+    ```
 
-**Members Table**
-- User profiles with Clerk authentication
-- Cached statistics (post count, comment count, net votes)
-- Rich profile data (bio, links, skills, location)
-- Support for legacy email-based and new externalId-based auth
-- Payment tier tracking (free, scholarship, founding_member, early_bird, member)
-- Subscription status and billing information
-- Stripe customer integration
+-   **Run end-to-end tests:**
 
-**Posts Table**
-- Multiple content types: text, image, video, link
-- Reddit-style voting system (upvotes/downvotes)
-- Categorization and link preview functionality
-- Version history tracking for edits
+    ```bash
+    npx playwright test
+    ```
 
-**Comments Table**
-- Nested comment system with depth tracking
-- Voting on comments
-- Status management (active/deleted/hidden)
+## Contributing
 
-**Categories Table**
-- Post organization and filtering
-- Admin controls and rules
+Contributions are welcome! Please read the [CONTRIBUTING.md](CONTRIBUTING.md) file for more information on how to contribute to the project.
 
-**Subscriptions Table**
-- Active subscription tracking
-- Stripe subscription management
-- Billing interval and tier information
-- Renewal and cancellation tracking
+## License
 
-**Payments Table**
-- Complete payment history
-- Transaction fees and net amounts
-- Refund tracking
-- Payment method information
-
-**StripeWebhookEvents Table**
-- Webhook event idempotency
-- Processing status tracking
-- Error logging for failed events
-
-### **Data Flow Architecture**
-
-```mermaid
-sequenceDiagram
-    participant U as 👤 User
-    participant C as 🌐 Client (Next.js)
-    participant A as 🔐 Clerk Auth
-    participant CV as 📡 Convex Client
-    participant CB as 🚀 Convex Backend
-    participant DB as 🗄️ Database
-    participant S as ☁️ Storage (R2)
-
-    %% Authentication Flow
-    U->>C: Login Request
-    C->>A: Authenticate User
-    A->>C: Return JWT Token
-    C->>CV: Initialize with Auth
-    CV->>CB: Verify Token
-    CB->>DB: Get/Create Member
-    DB->>CB: Return Member Data
-    CB->>CV: Member Profile
-    CV->>C: Authenticated State
-
-    %% Post Creation Flow
-    U->>C: Create New Post
-    C->>S: Upload Media Files
-    S->>C: Return File URLs
-    C->>CV: Submit Post Data
-    CV->>CB: Create Post Mutation
-    CB->>DB: Insert Post Record
-    DB->>CB: Confirm Creation
-    CB->>CV: Real-time Update
-    CV->>C: Update UI
-
-    %% Real-time Updates
-    Note over CB,CV: Real-time Subscriptions
-    CB-->>CV: Post Updates
-    CB-->>CV: Comment Updates
-    CB-->>CV: Vote Changes
-    CV-->>C: Live UI Updates
-
-    %% Comment Flow
-    U->>C: Add Comment
-    C->>CV: Submit Comment
-    CV->>CB: Create Comment Mutation
-    CB->>DB: Insert Comment
-    CB->>DB: Update Post Comment Count
-    CB->>CV: Broadcast Update
-    CV->>C: Update Comment Section
-
-    %% Vote Flow
-    U->>C: Vote on Post/Comment
-    C->>CV: Submit Vote
-    CV->>CB: Vote Mutation
-    CB->>DB: Update Vote Counts
-    CB->>DB: Update Member Stats
-    CB->>CV: Real-time Vote Update
-    CV->>C: Update Vote Display
-```
-
-## 🚀 **Getting Started**
-
-### **Prerequisites**
-- Node.js 18+ 
-- npm or pnpm
-
-### **Installation**
-```bash
-# Clone the repository
-git clone https://github.com/joinvai/vai-vex.git
-cd vai-vex
-
-# Install dependencies
-npm install
-
-# Set up Convex backend
-npx convex dev
-
-# Configure environment variables
-# Add your Clerk keys to .env.local
-# Add your Stripe keys to .env.local:
-# STRIPE_SECRET_KEY=sk_...
-# STRIPE_WEBHOOK_SECRET=whsec_...
-# NEXT_PUBLIC_STRIPE_FOUNDING_MEMBER_PRICE_ID=price_...
-# NEXT_PUBLIC_STRIPE_EARLY_BIRD_PRICE_ID=price_...
-# NEXT_PUBLIC_STRIPE_MEMBER_PRICE_ID=price_...
-# EXA_API_KEY=your_exa_api_key  # Required for news feed functionality
-
-# Set Convex environment variables
-# IMPORTANT: Convex functions require their own environment variables
-# These are separate from .env.local and must be set using the Convex CLI:
-npx convex env set STRIPE_SECRET_KEY "your_stripe_secret_key"
-npx convex env set NEXT_PUBLIC_APP_URL "http://localhost:3000"
-npx convex env set CLERK_JWT_ISSUER_DOMAIN "your_clerk_issuer_domain"
-npx convex env set EXA_API_KEY "your_exa_api_key"  # Required for news feed functionality
-
-# Start development servers
-npm run dev
-```
-
-### **Development Scripts**
-```bash
-npm run dev              # Start both frontend and backend
-npm run dev:frontend     # Start Next.js only
-npm run dev:backend      # Start Convex only
-npm run build           # Build for production
-npm run test            # Run unit tests
-npm run test:visual     # Run Playwright tests
-npm run lint            # Code quality checks
-```
-
-## 🔄 **Key Architectural Patterns**
-
-### **1. Unified Authentication Flow**
-- Handles both legacy (email-based) and new (Clerk externalId) authentication
-- Automatically migrates legacy users
-- Context-aware behavior for queries vs mutations
-- Auto-creates user profiles on first login
-
-### **2. Real-time Data with Convex**
-- **Queries**: Real-time reactive data fetching
-- **Mutations**: Server-side data modifications  
-- **Subscriptions**: Automatic UI updates when data changes
-
-### **3. Component Architecture**
-- **Atomic Design**: Reusable UI components in `/components/ui/`
-- **Feature Components**: Higher-level components like `post-list.tsx`
-- **Layout Components**: Consistent structure with `header.tsx`, `footer.tsx`
-
-## 🎨 **UI System**
-
-- **shadcn/ui**: Pre-built, accessible components
-- **Tailwind CSS**: Utility-first styling
-- **Theme System**: Dark/light mode support
-- **Responsive Design**: Mobile-first approach
-
-## 🔍 **Key Features**
-
-### **Content Management**
-- Multi-format posts (text, images, videos, links)
-- Rich text editing with TipTap
-- Automatic link previews
-- Content validation and security checks
-
-### **Community Features**
-- Reddit-style voting system
-- Rich member profiles with statistics
-- Full-text search across posts and members
-- Category-based content organization
-
-### **Real-time Features**
-- Live updates without page refresh
-- Real-time voting and comment updates
-- Instant search results
-
-### **Payment System**
-- 5-tier membership structure (Free, Scholarship, Founding Member, Early Bird, Member)
-- Stripe integration for subscriptions
-- Content paywall for premium posts
-- Admin tools for payment management
-- Webhook monitoring and analytics
-- Automated renewal reminders
-- Customer portal for self-service
-
-## 📋 **Development Status**
-
-### **Completed ✅**
-- [x] Database schema and data models
-- [x] ShadCN/UI integration
-- [x] Basic layout and navigation
-- [x] Reddit-style voting system
-- [x] Authentication with Clerk
-- [x] Real-time post feed
-- [x] Stripe payments integration (7 phases completed)
-- [x] Content paywall system
-- [x] Admin dashboards (members, payments, analytics)
-- [x] Webhook monitoring and alerting
-- [x] Comprehensive test suite (102+ tests)
-
-### **In Progress 🔄**
-- [ ] Component connections (post-sidebar, post-detail, etc.)
-- [ ] Member directory and profiles
-- [ ] Search functionality
-- [ ] Comment system
-
-### **Planned 📋**
-- [ ] Discord bot for membership tracking
-- [ ] AI chatbot for community Q&A
-- [ ] 3D/AI rotating object
-- [ ] Automated channel summaries
-- [ ] Mobile app
-
-## 🛠️ **Contributing**
-
-### **Code Style**
-- TypeScript for type safety
-- ESLint + Prettier for code formatting
-- Conventional commits for git history
-
-### **Development Workflow**
-1. Create feature branch from `master`
-2. Make changes with proper TypeScript types
-3. Add tests for new functionality
-4. Run linting and tests locally
-5. Create pull request with clear description
-
-### **Architecture Guidelines**
-- Keep components small and focused
-- Use Convex queries/mutations for data operations
-- Follow existing patterns for authentication
-- Maintain real-time functionality where applicable
-
-## 📚 **Learning Resources**
-
-- [Convex Documentation](https://docs.convex.dev/)
-- [Next.js App Router](https://nextjs.org/docs/app)
-- [shadcn/ui Components](https://ui.shadcn.com/)
-- [Clerk Authentication](https://clerk.com/docs)
-
-## 🤝 **Community**
-
-This platform is built by AI engineers, for AI engineers. We welcome contributions that make the community experience better for everyone.
-
----
-
-*Built with ❤️ by the VAI community*
+This project is licensed under the [MIT License](LICENSE).

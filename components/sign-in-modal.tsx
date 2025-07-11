@@ -41,10 +41,6 @@ export function SignInModal({
               Sign In
             </Button>
           </SignInButton>
-
-          <p className="text-center text-sm text-muted-foreground">
-            Don&apos;t have an account? Sign in to create one.
-          </p>
         </div>
       </DialogContent>
     </Dialog>

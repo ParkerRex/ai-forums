@@ -19,13 +19,14 @@
  * @version 1.0.0
  */
 
-import { query, mutation } from "./_generated/server";
+import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { Id, Doc } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
 import { insertNotification } from "./notifications";
-import { canViewFullContent } from "./helpers/access";
+import { canViewFullContent, canViewPost } from "./helpers/access";
+import { api } from "./_generated/api";
 
 /**
  * Checks if a member is the author of a post for authorization purposes.
@@ -58,15 +59,19 @@ function isPostAuthor(post: { memberId: Id<"members"> }, memberId: Id<"members">
  * ```
  */
 function validateContentUrls(content: string): void {
+  // Extract, deduplicate, and validate any URLs (including markdown links)
+  // present within the provided content string. Throws an error for any
+  // URL that is malformed, uses a disallowed protocol, or targets a
+  // private/localhost address to mitigate XSS and SSRF vectors.
   // Match URLs and markdown links
-  const urlRegex = /https?:\/\/[^\s)]+/g;
+  const urlPattern = /https?:\/\/[^\s)]+/g;
   const markdownRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
   
   const urls = new Set<string>();
   
   // Extract bare URLs
   let match;
-  while ((match = urlRegex.exec(content)) !== null) {
+  while ((match = urlPattern.exec(content)) !== null) {
     urls.add(match[0]);
   }
   
@@ -140,62 +145,153 @@ export const getPosts = query({
     categoryId: v.optional(v.id("categories")),
     limit: v.optional(v.number()),
     sortBy: v.optional(v.union(v.literal("newest"), v.literal("popular"), v.literal("trending"))),
+    freeOnly: v.optional(v.boolean()),
   },
-  handler: async (ctx, { categoryId, limit = 20, sortBy = "newest" }) => {
-    let query;
+  handler: async (ctx, { categoryId, limit = 20, sortBy = "newest", freeOnly = false }) => {
+    let pinnedPosts: Doc<"posts">[] = [];
+    let regularPosts: Doc<"posts">[] = [];
 
-    // Filter by category if specified and apply sorting
+    // First, get pinned posts
     if (categoryId) {
-      if (sortBy === "popular" || sortBy === "trending") {
-        query = ctx.db.query("posts").withIndex("by_category_and_netVotes", (q) =>
-          q.eq("categoryId", categoryId)
-        );
-      } else {
-        query = ctx.db.query("posts").withIndex("by_category_and_createdAt", (q) =>
-          q.eq("categoryId", categoryId)
-        );
-      }
+      // Get category-specific pinned posts
+      pinnedPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_pinned_and_category")
+        .filter(q => 
+          q.and(
+            q.eq(q.field("isPinned"), true),
+            q.eq(q.field("categoryId"), categoryId),
+            q.eq(q.field("status"), "active"),
+            q.or(
+              q.eq(q.field("pinScope"), "category"),
+              q.eq(q.field("pinScope"), "both")
+            )
+          )
+        )
+        .order("desc")
+        .collect();
     } else {
-      if (sortBy === "popular" || sortBy === "trending") {
-        query = ctx.db.query("posts").withIndex("by_netVotes");
-      } else {
-        query = ctx.db.query("posts").withIndex("by_createdAt");
-      }
+      // Get globally pinned posts for "all posts" view
+      pinnedPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_pinned_global")
+        .filter(q => 
+          q.and(
+            q.eq(q.field("isPinned"), true),
+            q.eq(q.field("status"), "active"),
+            q.or(
+              q.eq(q.field("pinScope"), "global"),
+              q.eq(q.field("pinScope"), "both")
+            )
+          )
+        )
+        .order("desc")
+        .collect();
     }
 
-    // Filter active posts and apply ordering
-    const posts = await query
-      .filter((q) => q.eq(q.field("status"), "active"))
-      .order(sortBy === "newest" ? "desc" : "desc")
-      .take(limit);
+    // Sort pinned posts by pinnedAt timestamp (newest first)
+    pinnedPosts.sort((a, b) => (b.pinnedAt || 0) - (a.pinnedAt || 0));
+
+    // Apply free-only filter to pinned posts if requested
+    if (freeOnly) {
+      pinnedPosts = pinnedPosts.filter(post => post.isFree === true);
+    }
+
+    // Limit pinned posts to not exceed the total limit
+    pinnedPosts = pinnedPosts.slice(0, limit);
+
+    // Calculate how many regular posts we need
+    const remainingLimit = Math.max(0, limit - pinnedPosts.length);
+
+    // Then get regular (non-pinned) posts if we need more
+    if (remainingLimit > 0) {
+      let query;
+
+      // Filter by category if specified and apply sorting
+      if (categoryId) {
+        if (sortBy === "popular" || sortBy === "trending") {
+          query = ctx.db.query("posts").withIndex("by_category_and_netVotes", (q) =>
+            q.eq("categoryId", categoryId)
+          );
+        } else {
+          query = ctx.db.query("posts").withIndex("by_category_and_createdAt", (q) =>
+            q.eq("categoryId", categoryId)
+          );
+        }
+      } else {
+        if (sortBy === "popular" || sortBy === "trending") {
+          query = ctx.db.query("posts").withIndex("by_netVotes");
+        } else {
+          query = ctx.db.query("posts").withIndex("by_createdAt");
+        }
+      }
+
+      // Filter active, non-pinned posts and apply ordering
+      let regularPostsQuery = query
+        .filter((q) => 
+          q.and(
+            q.eq(q.field("status"), "active"),
+            q.or(
+              q.eq(q.field("isPinned"), false),
+              q.eq(q.field("isPinned"), undefined)
+            )
+          )
+        );
+
+      // Apply free-only filter if requested
+      if (freeOnly) {
+        regularPostsQuery = regularPostsQuery.filter((q) => q.eq(q.field("isFree"), true));
+      }
+
+      regularPosts = await regularPostsQuery
+        .order(sortBy === "newest" ? "desc" : "desc")
+        .take(remainingLimit);
+    }
+
+    // Combine pinned and regular posts
+    const allPosts = [...pinnedPosts, ...regularPosts];
+
+    // Collect unique member and category IDs
+    const memberIds = [...new Set(allPosts.map(post => post.memberId))];
+    const categoryIds = [...new Set(allPosts.map(post => post.categoryId))];
+
+    // Fetch all members and categories in parallel
+    const [members, categories] = await Promise.all([
+      Promise.all(memberIds.map(id => ctx.db.get(id))),
+      Promise.all(categoryIds.map(id => ctx.db.get(id)))
+    ]);
+
+    // Create lookup maps for fast access
+    const memberMap = new Map(
+      members.map((member, index) => [memberIds[index], member])
+    );
+    const categoryMap = new Map(
+      categories.map((category, index) => [categoryIds[index], category])
+    );
 
     // Enrich posts with member and category data
-    const enrichedPosts = await Promise.all(
-      posts.map(async (post) => {
-        const [member, category] = await Promise.all([
-          ctx.db.get(post.memberId),
-          ctx.db.get(post.categoryId),
-        ]);
+    const enrichedPosts = allPosts.map((post) => {
+      const member = memberMap.get(post.memberId);
+      const category = categoryMap.get(post.categoryId);
 
-        return {
-          ...post,
-          member: member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            email: member.email,
-            username: member.email.split('@')[0], // Derive username from email
-            slug: member.slug || "",
-          } : null,
-          category: category ? {
-            _id: category._id,
-            name: category.name,
-            displayName: category.displayName,
-            icon: category.icon,
-          } : null,
-        };
-      })
-    );
+      return {
+        ...post,
+        member: member ? {
+          _id: member._id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          email: member.email,
+          username: member.email.split('@')[0], // Derive username from email
+          slug: member.slug || "",
+        } : null,
+        category: category ? {
+          _id: category._id,
+          name: category.name,
+          displayName: category.displayName,
+          icon: category.icon,
+        } : null,
+      };
+    });
 
     return enrichedPosts;
   },
@@ -494,6 +590,7 @@ export const createPost = mutation({
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
     mentions: v.optional(v.array(v.id("members"))),
+    preview: v.optional(v.string()),
     // Multi-attachment support
     attachments: v.optional(v.array(v.object({
       id: v.string(),
@@ -617,6 +714,9 @@ export const createPost = mutation({
       mentions: args.mentions,
       // Multi-attachment support
       attachments: args.attachments,
+      // Free content and preview
+      preview: args.preview || "", // Use provided preview or empty string
+      isFree: false, // Default to paywalled
     });
 
     // Update category post count
@@ -624,6 +724,19 @@ export const createPost = mutation({
       postCount: (category.postCount || 0) + 1,
       updatedAt: now,
     });
+    
+    // Schedule preview generation if not provided
+    if (!args.preview || args.preview.trim() === "") {
+      await ctx.scheduler.runAfter(
+        0,
+        api.previewGeneration.generateAndUpdatePostPreview,
+        { 
+          postId,
+          title: args.title.trim(),
+          content: args.content.trim()
+        }
+      );
+    }
 
     // Create mention notifications
     try {
@@ -1051,6 +1164,19 @@ export const editPost = mutation({
       throw new Error("Failed to retrieve updated post");
     }
     
+    // Schedule preview regeneration if title or content changed
+    if ((args.title !== undefined || args.content !== undefined) && (!updatedPost.preview || updatedPost.preview.trim() === "")) {
+      await ctx.scheduler.runAfter(
+        0,
+        api.previewGeneration.generateAndUpdatePostPreview,
+        { 
+          postId: args.postId,
+          title: updatedPost.title,
+          content: updatedPost.content
+        }
+      );
+    }
+    
     // Get the category for the URL (use updated category if changed)
     const category = await ctx.db.get(updatedPost.categoryId);
     
@@ -1137,6 +1263,30 @@ export const deletePost = mutation({
  * console.log(`New view recorded: ${result.viewRecorded}`);
  * ```
  */
+export const canUserViewPost = query({
+  args: {
+    postId: v.id("posts"),
+  },
+  handler: async (ctx, { postId }) => {
+    const post = await ctx.db.get(postId);
+    if (!post) {
+      return false;
+    }
+    
+    const identity = await ctx.auth.getUserIdentity();
+    let member = null;
+    
+    if (identity) {
+      member = await ctx.db
+        .query("members")
+        .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+        .unique();
+    }
+    
+    return canViewPost(member, post);
+  },
+});
+
 export const trackPostView = mutation({
   args: {
     postId: v.id("posts"),
@@ -1215,28 +1365,16 @@ export const searchPosts = query({
       return [];
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const baseSearch = (q: any) => {
-      let query = q.search("title", searchTerm).eq("status", "active");
-      if (categoryId) {
-        query = query.eq("categoryId", categoryId);
-      }
-      return query;
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const baseContentSearch = (q: any) => {
-      let query = q.search("content", searchTerm).eq("status", "active");
-      if (categoryId) {
-        query = query.eq("categoryId", categoryId);
-      }
-      return query;
-    };
-
     // Search titles
     const titleQuery = ctx.db
       .query("posts")
-      .withSearchIndex("search_posts", baseSearch);
+      .withSearchIndex("search_posts", (q) => {
+        let query = q.search("title", searchTerm).eq("status", "active");
+        if (categoryId) {
+          query = query.eq("categoryId", categoryId);
+        }
+        return query;
+      });
 
     let posts = await titleQuery.take(limit);
 
@@ -1244,7 +1382,13 @@ export const searchPosts = query({
     if (includeContent) {
       const contentQuery = ctx.db
         .query("posts")
-        .withSearchIndex("search_posts_content", baseContentSearch);
+        .withSearchIndex("search_posts_content", (q) => {
+          let query = q.search("content", searchTerm).eq("status", "active");
+          if (categoryId) {
+            query = query.eq("categoryId", categoryId);
+          }
+          return query;
+        });
       
       const contentPosts = await contentQuery.take(limit);
       
@@ -1376,5 +1520,218 @@ export const addSlugsToExistingPosts = mutation({
     
     console.log("Slug generation migration completed successfully!");
     return { processed: posts.length };
+  },
+});
+
+/**
+ * Pins a post to the top of its category or globally for admin visibility.
+ * 
+ * Only administrators can pin posts. Enforces limits of 3 pinned posts per
+ * category and 3 globally pinned posts. Posts can be pinned in their category,
+ * globally, or both simultaneously.
+ * 
+ * @param postId - ID of the post to pin
+ * @param scope - Pin scope: "category", "global", or "both"
+ * @returns Success indicator
+ * @throws Error if user is not admin, limits exceeded, or post not found
+ * 
+ * @example
+ * ```typescript
+ * await pinPost({ 
+ *   postId: "post123", 
+ *   scope: "category" 
+ * });
+ * // Post now appears at top of its category
+ * ```
+ */
+export const pinPost = mutation({
+  args: {
+    postId: v.id("posts"),
+    scope: v.union(v.literal("category"), v.literal("global"), v.literal("both"))
+  },
+  handler: async (ctx, { postId, scope }) => {
+    // Get authenticated member and verify admin
+    const member = await getAuthenticatedMember(ctx);
+    if (member.role !== "admin") {
+      throw new Error("Only admins can pin posts");
+    }
+
+    const post = await ctx.db.get(postId);
+    if (!post || post.status !== "active") {
+      throw new Error("Post not found or not active");
+    }
+
+    // Check pinning limits based on scope
+    if (scope === "category" || scope === "both") {
+      const categoryPinnedPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_pinned_and_category")
+        .filter(q => 
+          q.and(
+            q.eq(q.field("isPinned"), true),
+            q.eq(q.field("categoryId"), post.categoryId),
+            q.eq(q.field("status"), "active"),
+            q.neq(q.field("_id"), postId) // Exclude current post if already pinned
+          )
+        )
+        .collect();
+      
+      const categoryPinnedCount = categoryPinnedPosts.filter(p => 
+        p.pinScope === "category" || p.pinScope === "both"
+      ).length;
+      
+      if (categoryPinnedCount >= 3) {
+        throw new Error("Maximum 3 posts can be pinned per category");
+      }
+    }
+
+    if (scope === "global" || scope === "both") {
+      const globalPinnedPosts = await ctx.db
+        .query("posts")
+        .withIndex("by_pinned_global")
+        .filter(q => 
+          q.and(
+            q.eq(q.field("isPinned"), true),
+            q.eq(q.field("status"), "active"),
+            q.neq(q.field("_id"), postId) // Exclude current post if already pinned
+          )
+        )
+        .collect();
+      
+      const globalPinnedCount = globalPinnedPosts.filter(p => 
+        p.pinScope === "global" || p.pinScope === "both"
+      ).length;
+      
+      if (globalPinnedCount >= 3) {
+        throw new Error("Maximum 3 posts can be pinned globally");
+      }
+    }
+
+    // Pin the post
+    await ctx.db.patch(postId, {
+      isPinned: true,
+      pinScope: scope,
+      pinnedAt: Date.now(),
+      pinnedBy: member._id,
+      updatedAt: Date.now()
+    });
+
+    return { success: true };
+  }
+});
+
+/**
+ * Unpins a previously pinned post, removing it from top placement.
+ * 
+ * Only administrators can unpin posts. Removes all pin metadata and returns
+ * the post to normal chronological or popularity-based sorting.
+ * 
+ * @param postId - ID of the post to unpin
+ * @returns Success indicator
+ * @throws Error if user is not admin or post not found
+ * 
+ * @example
+ * ```typescript
+ * await unpinPost({ postId: "post123" });
+ * // Post returns to normal sort order
+ * ```
+ */
+export const unpinPost = mutation({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, { postId }) => {
+    // Get authenticated member and verify admin
+    const member = await getAuthenticatedMember(ctx);
+    if (member.role !== "admin") {
+      throw new Error("Only admins can unpin posts");
+    }
+
+    const post = await ctx.db.get(postId);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+
+    // Unpin the post
+    await ctx.db.patch(postId, {
+      isPinned: false,
+      pinScope: undefined,
+      pinnedAt: undefined,
+      pinnedBy: undefined,
+      updatedAt: Date.now()
+    });
+
+    return { success: true };
+  }
+});
+
+/**
+ * Internal query to get all posts for migration scripts
+ * Only accessible from backend scripts, not from clients
+ */
+export const getAllPostsForMigration = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("posts")
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+  },
+});
+
+/**
+ * Internal mutation to update a post's preview
+ * Used by the batch preview generation script
+ */
+export const updatePostPreview = internalMutation({
+  args: {
+    postId: v.id("posts"),
+    preview: v.string(),
+  },
+  handler: async (ctx, { postId, preview }) => {
+    const post = await ctx.db.get(postId);
+    if (!post) {
+      throw new Error("Post not found");
+    }
+    
+    await ctx.db.patch(postId, {
+      preview,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Get post routing information for navigation
+ * 
+ * Lightweight query that returns only the URL components needed for navigation.
+ * Used by the success page to redirect back to the original post after purchase.
+ * 
+ * @param postId - ID of the post to get routing info for
+ * @returns Object with category name and post slug, or null if post not found
+ * 
+ * @example
+ * ```typescript
+ * const routing = await getPostRouting({ postId: "post123" });
+ * if (routing) {
+ *   router.push(`/${routing.categoryName}/${routing.slug}`);
+ * }
+ * ```
+ */
+export const getPostRouting = query({
+  args: { postId: v.id("posts") },
+  handler: async (ctx, { postId }) => {
+    const post = await ctx.db.get(postId);
+    if (!post || post.status !== "active") {
+      return null;
+    }
+    
+    const category = await ctx.db.get(post.categoryId);
+    if (!category) {
+      return null;
+    }
+    
+    return {
+      categoryName: category.name,
+      slug: post.slug,
+    };
   },
 });

@@ -14,12 +14,15 @@ import { PostData } from "@/lib/post-preview-utils";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { BookmarkButton } from "@/components/bookmark-button";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 // Interface to match Convex post data structure
 interface Post extends Omit<PostData, "member" | "author" | "category"> {
   _id: Id<"posts">;
   title: string;
   content: string;
+  preview?: string;
+  isFree?: boolean;
   slug: string;
   createdAt: number;
   updatedAt: number;
@@ -35,6 +38,7 @@ interface Post extends Omit<PostData, "member" | "author" | "category"> {
   isLocked?: boolean;
   editedAt?: number;
   editReason?: string;
+  pinScope?: "category" | "global" | "both";
   pollOptions?: Array<{
     id: string;
     text: string;
@@ -153,7 +157,10 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
   };
 
   return (
-    <div className="bg-card border rounded-lg hover:bg-muted/30 transition-all duration-200 group">
+    <div className={cn(
+      "border rounded-lg transition-all duration-200 group",
+      post.isPinned ? "bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/30 hover:bg-orange-100/50 dark:hover:bg-orange-950/30" : "bg-card hover:bg-muted/30"
+    )}>
       {/* Main content - Reddit style full width */}
       <div
         className="cursor-pointer py-2 px-3"
@@ -242,7 +249,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
           <Unauthenticated>
             <MembershipCTAModal
               title="Join the Conversation"
-              description="Sign up to read comments and share your thoughts with the VAI community"
+              description="Become a member to read comments and share your thoughts with the VAI community"
             >
               <Button
                 variant="ghost"

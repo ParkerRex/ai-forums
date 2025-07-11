@@ -2,7 +2,7 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { AlertCircle, X } from "lucide-react";
+import { AlertCircle, Sparkles, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -12,28 +12,52 @@ export function PaymentReminderBanner() {
   const [isDismissed, setIsDismissed] = useState(false);
 
   useEffect(() => {
-    // Check if banner was dismissed in this session
-    const dismissed = sessionStorage.getItem("payment-reminder-dismissed");
-    if (dismissed) {
-      setIsDismissed(true);
+    // Check if banner was dismissed (7-day persistence)
+    const dismissedTimestamp = localStorage.getItem("vai-upgrade-cta-dismissed");
+    if (dismissedTimestamp) {
+      const dismissedDate = new Date(dismissedTimestamp);
+      const daysSinceDismissed = (Date.now() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
+      if (daysSinceDismissed < 7) {
+        setIsDismissed(true);
+      }
     }
   }, []);
 
   const handleDismiss = () => {
     setIsDismissed(true);
-    sessionStorage.setItem("payment-reminder-dismissed", "true");
+    localStorage.setItem("vai-upgrade-cta-dismissed", new Date().toISOString());
   };
 
   // Don't show banner if:
-  // - User is not logged in
   // - Subscription info is loading
   // - Banner was dismissed
-  // - User doesn't have an active subscription
-  // - Renewal is more than 7 days away
-  if (!subscriptionInfo || isDismissed || !subscriptionInfo.isActive) {
+  if (!subscriptionInfo || isDismissed) {
     return null;
   }
 
+  // Show upgrade CTA for non-paid members
+  if (!subscriptionInfo.isActive) {
+    return (
+      <div className="relative w-full px-4 py-3 text-sm font-medium text-center bg-gradient-to-r from-blue-50 to-purple-50 text-gray-900 border-b border-gray-200">
+        <Sparkles className="inline-block w-4 h-4 mr-2 text-blue-600" />
+        <span>
+          Join VAI Pro to unlock exclusive AI engineering content and connect with industry leaders.
+        </span>
+        <Link href="/pricing" className="ml-2 underline hover:no-underline">
+          Explore VAI Pro Benefits
+        </Link>
+        <button
+          onClick={handleDismiss}
+          className="absolute right-2 top-1/2 -translate-y-1/2 p-1 rounded hover:bg-black/5 transition-colors"
+          aria-label="Dismiss reminder"
+        >
+          <X className="w-4 h-4" />
+        </button>
+      </div>
+    );
+  }
+
+  // For paid members, only show if renewal is approaching
   const daysUntilRenewal = subscriptionInfo.renewalInfo?.daysUntilRenewal;
   if (!daysUntilRenewal || daysUntilRenewal > 7) {
     return null;

@@ -18,7 +18,7 @@
  */
 
 import { v } from "convex/values";
-import { query, internalMutation, internalQuery } from "../_generated/server";
+import { query, internalMutation, internalQuery, QueryCtx, MutationCtx } from "../_generated/server";
 import { Doc } from "../_generated/dataModel";
 import { api } from "../_generated/api";
 
@@ -79,26 +79,26 @@ export const trackWebhookEvent = internalMutation({
 /**
  * Helper function to calculate webhook metrics
  */
-async function calculateMetrics(ctx: any) {
+async function calculateMetrics(ctx: QueryCtx) {
   const cutoffTime = Date.now() - MONITORING_CONFIG.MONITORING_WINDOW;
     
     // Get all events in the monitoring window
     const events = await ctx.db
       .query("stripeWebhookEvents")
       .withIndex("by_createdAt")
-      .filter((q: any) => q.gte(q.field("createdAt"), cutoffTime))
+      .filter((q) => q.gte(q.field("createdAt"), cutoffTime))
       .collect();
     
     // Calculate metrics
     const totalEvents = events.length;
-    const processedEvents = events.filter((e: any) => e.processed).length;
-    const failedEvents = events.filter((e: any) => !e.processed && e.error).length;
-    const duplicateEvents = events.filter((e: any) => e.error?.includes("duplicate")).length;
+    const processedEvents = events.filter((e) => e.processed).length;
+    const failedEvents = events.filter((e) => !e.processed && e.error).length;
+    const duplicateEvents = events.filter((e) => e.error?.includes("duplicate")).length;
     
     // Calculate processing times for successful events
     const processingTimes = events
-      .filter((e: any) => e.processed && e.processedAt)
-      .map((e: any) => (e.processedAt! - e.createdAt));
+      .filter((e) => e.processed && e.processedAt)
+      .map((e) => (e.processedAt! - e.createdAt));
     
     const avgProcessingTime = processingTimes.length > 0
       ? processingTimes.reduce((sum: number, time: number) => sum + time, 0) / processingTimes.length
@@ -109,13 +109,14 @@ async function calculateMetrics(ctx: any) {
       : 0;
     
     // Group by event type
-    const eventTypeMetrics = events.reduce((acc: any, event: any) => {
+    const eventTypeMetrics = events.reduce((acc: Record<string, {total: number; processed: number; failed: number; avgTime: number; errors: string[]}>, event) => {
       if (!acc[event.type]) {
         acc[event.type] = {
           total: 0,
           processed: 0,
           failed: 0,
-          avgProcessingTime: 0,
+          avgTime: 0,
+          errors: [],
         };
       }
       
@@ -127,7 +128,7 @@ async function calculateMetrics(ctx: any) {
       }
       
       return acc;
-    }, {} as Record<string, any>);
+    }, {} as Record<string, {total: number; processed: number; failed: number; avgTime: number; errors: string[]}>);
     
     // Calculate failure rate
     const failureRate = totalEvents > 0 ? failedEvents / totalEvents : 0;
@@ -210,7 +211,7 @@ export const getWebhookHealth = query({
     
     // Check for critical event failures
     const criticalFailures = Object.entries(metrics.eventTypeMetrics)
-      .filter(([eventType, stats]: [string, any]) => 
+      .filter(([eventType, stats]) => 
         MONITORING_CONFIG.CRITICAL_EVENTS.includes(eventType) && 
         stats.failed > 0
       );
@@ -238,7 +239,7 @@ export const getWebhookHealth = query({
 /**
  * Check if we need to send alerts based on current metrics
  */
-async function checkForAlerts(ctx: any, eventType: string, error: string) {
+async function checkForAlerts(ctx: MutationCtx, eventType: string, error: string) {
   // Get recent metrics
   const metrics = await calculateMetrics(ctx);
   
@@ -253,20 +254,9 @@ async function checkForAlerts(ctx: any, eventType: string, error: string) {
     console.error(`[WEBHOOK ALERT] Current failure rate: ${(metrics.failureRate * 100).toFixed(1)}%`);
     
     // Log alert for audit trail
-    await ctx.db.insert("notifications", {
-      memberId: undefined, // System notification
-      type: "payment_reminder", // Reusing type for now
-      title: "Webhook Processing Alert",
-      message: `Failed to process ${eventType}: ${error}`,
-      link: "/admin/payments",
-      isRead: false,
-      metadata: {
-        eventType,
-        error,
-        failureRate: metrics.failureRate,
-      },
-      createdAt: Date.now(),
-    });
+    // Note: System-level webhook alerts are logged to console only.
+    // For a production system, consider creating a separate alerts table
+    // or sending to an external monitoring service like Sentry/DataDog
   }
 }
 
@@ -320,7 +310,7 @@ export const generateDailyReport = internalQuery({
       topErrors,
       criticalEvents: Object.entries(todayMetrics.eventTypeMetrics)
         .filter(([type]) => MONITORING_CONFIG.CRITICAL_EVENTS.includes(type))
-        .map(([type, metrics]: [string, any]) => ({
+        .map(([type, metrics]) => ({
           type,
           total: metrics.total,
           failed: metrics.failed,

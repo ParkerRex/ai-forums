@@ -2,6 +2,8 @@
 
 import DOMPurify from 'dompurify';
 import { LinkBadge } from '@/components/link-badge';
+import { useEffect, useRef } from 'react';
+import hljs from 'highlight.js';
 
 interface LinkPreview {
   title?: string;
@@ -93,17 +95,59 @@ function getDisplayTextForUrl(url: string, preview?: LinkPreview): string {
 
 // For backward compatibility, also export a function that handles HTML from TipTap
 export function RenderTipTapContent({ content }: { content: string }) {
+  const contentRef = useRef<HTMLDivElement>(null);
   const isHtml = content.trim().startsWith('<') || /<[^>]+>/.test(content);
+  
+  useEffect(() => {
+    if (contentRef.current && isHtml) {
+      // Apply syntax highlighting to all code blocks
+      const codeBlocks = contentRef.current.querySelectorAll('pre code');
+      codeBlocks.forEach((block) => {
+        // Only highlight if not already highlighted
+        if (!block.classList.contains('hljs')) {
+          hljs.highlightElement(block as HTMLElement);
+        }
+      });
+      
+      // Add copy buttons to code blocks
+      const preBlocks = contentRef.current.querySelectorAll('pre');
+      preBlocks.forEach((pre) => {
+        if (!pre.querySelector('.copy-button')) {
+          const code = pre.querySelector('code');
+          if (code) {
+            const copyButton = document.createElement('button');
+            copyButton.className = 'copy-button absolute top-2 right-2 opacity-0 hover:opacity-100 transition-opacity duration-200 h-8 w-8 p-1 rounded bg-muted hover:bg-muted/80 border border-border/50';
+            copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+            copyButton.onclick = async () => {
+              const text = code.textContent || '';
+              try {
+                await navigator.clipboard.writeText(text);
+                copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+                setTimeout(() => {
+                  copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>';
+                }, 2000);
+              } catch (err) {
+                console.error('Failed to copy:', err);
+              }
+            };
+            pre.style.position = 'relative';
+            pre.appendChild(copyButton);
+          }
+        }
+      });
+    }
+  }, [content, isHtml]);
   
   if (isHtml) {
     const sanitizedHtml = DOMPurify.sanitize(content, {
       ALLOWED_TAGS: ['p', 'br', 'strong', 'em', 'u', 's', 'a', 'ul', 'ol', 'li', 'blockquote', 'code', 'pre', 'h1', 'h2', 'h3'],
-      ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'data-link-badge', 'data-preview-title', 'data-preview-description']
+      ALLOWED_ATTR: ['href', 'target', 'rel', 'class', 'data-link-badge', 'data-preview-title', 'data-preview-description', 'data-language']
     });
     
     return (
       <>
         <div 
+          ref={contentRef}
           className="prose prose-sm max-w-none text-foreground"
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />

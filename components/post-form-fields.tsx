@@ -111,7 +111,14 @@ export function PostFormFields({
   const { errors } = validatePostForm(formData, touchedFields);
 
   // Queries and actions
-  const categories = useQuery(api.categories.getCategories);
+  const categories = useQuery(api.categories.getCategories) as Array<{
+    _id: Id<"categories">;
+    name: string;
+    displayName: string;
+    description: string;
+    icon?: string;
+    postCount: number;
+  }> | undefined;
   const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
 
   // Character count helpers

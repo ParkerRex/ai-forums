@@ -3,6 +3,8 @@
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { Markdown } from "tiptap-markdown";
+import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
+import { common, createLowlight } from "lowlight";
 import {
   LinkBadge,
   Mention,
@@ -18,6 +20,7 @@ import {
   ListOrdered,
   Quote,
   Code,
+  Code2,
   Undo,
   Redo,
 } from "lucide-react";
@@ -28,6 +31,9 @@ interface FullRichTextEditorProps {
   placeholder?: string;
   className?: string;
 }
+
+// Create lowlight instance with common languages
+const lowlight = createLowlight(common);
 
 export function FullRichTextEditor({
   content = "",
@@ -64,6 +70,15 @@ export function FullRichTextEditor({
         heading: {
           levels: [1, 2, 3],
         },
+        codeBlock: false, // Disable the default code block to use our custom one
+      }),
+      CodeBlockLowlight.configure({
+        lowlight,
+        HTMLAttributes: {
+          class: "hljs",
+        },
+        languageClassPrefix: 'language-',
+        defaultLanguage: 'javascript',
       }),
       LinkBadge.configure({
         openOnClick: true,
@@ -86,6 +101,8 @@ export function FullRichTextEditor({
         bulletListMarker: "-",
         linkify: true,
         breaks: false,
+        transformPastedText: true,
+        transformCopiedText: true,
       }),
       Mention.configure({
         HTMLAttributes: {
@@ -173,7 +190,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBold().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive("bold") ? "bg-green-100 text-green-700" : ""}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("bold") ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : ""}`}
           >
             <Bold className="h-4 w-4" />
           </Button>
@@ -182,7 +199,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleItalic().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive("italic") ? "bg-green-100 text-green-700" : ""}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("italic") ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : ""}`}
           >
             <Italic className="h-4 w-4" />
           </Button>
@@ -191,7 +208,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleCode().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive("code") ? "bg-green-100 text-green-700" : ""}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("code") ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : ""}`}
           >
             <Code className="h-4 w-4" />
           </Button>
@@ -204,7 +221,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBulletList().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive("bulletList") ? "bg-green-100 text-green-700" : ""}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("bulletList") ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : ""}`}
           >
             <List className="h-4 w-4" />
           </Button>
@@ -213,7 +230,7 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleOrderedList().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive("orderedList") ? "bg-green-100 text-green-700" : ""}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("orderedList") ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : ""}`}
           >
             <ListOrdered className="h-4 w-4" />
           </Button>
@@ -226,9 +243,19 @@ export function FullRichTextEditor({
             variant="ghost"
             size="sm"
             onClick={() => editor.chain().focus().toggleBlockquote().run()}
-            className={`h-8 w-8 p-0 ${editor.isActive("blockquote") ? "bg-green-100 text-green-700" : ""}`}
+            className={`h-8 w-8 p-0 ${editor.isActive("blockquote") ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : ""}`}
           >
             <Quote className="h-4 w-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+            className={`h-8 w-8 p-0 ${editor.isActive("codeBlock") ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" : ""}`}
+            title="Code Block"
+          >
+            <Code2 className="h-4 w-4" />
           </Button>
         </div>
       </div>

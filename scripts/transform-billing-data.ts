@@ -38,8 +38,8 @@ function transformFromCSV(): BillingMember[] | null {
   });
 
   return records
-    .filter((record: any) => record.tier && record.tier !== '') // Only include members with billing data
-    .map((record: any): BillingMember => ({
+    .filter((record) => record.tier && record.tier !== '') // Only include members with billing data
+    .map((record): BillingMember => ({
       email: record.email,
       tier: record.tier,
       status: record.status || 'active',
@@ -72,8 +72,8 @@ function transformFromJSON(): BillingMember[] | null {
   const jsonData = JSON.parse(fs.readFileSync(jsonPath, 'utf-8'));
   
   return jsonData.members
-    .filter((member: any) => member.tier && member.tier !== '') // Only include members with billing data
-    .map((member: any): BillingMember => ({
+    .filter((member) => member.tier && member.tier !== '') // Only include members with billing data
+    .map((member): BillingMember => ({
       email: member.email,
       tier: member.tier,
       status: member.status || 'active',

@@ -14,13 +14,12 @@ import {
   CalendarDaysIcon,
   CalendarDaysIconHandle,
 } from "@/components/ui/calendar-days";
-import { UserButton, SignUpButton } from "@clerk/nextjs";
 import { AuthButton } from "@/components/auth-button";
 import { NotificationDropdown } from "@/components/notification-dropdown";
 import { Authenticated, Unauthenticated } from "convex/react";
 import React from "react";
 import { SearchIcon, SearchIconHandle } from "@/components/ui/search";
-import { PlusIcon, PlusIconHandle } from "@/components/ui/plus";
+import { MemberDropdown } from "@/components/member-dropdown";
 // We intentionally do NOT import useSearchHotkey here because we
 // only need to *trigger* the global search dialog. The actual
 // open/close state is maintained inside the GlobalSearch
@@ -32,7 +31,6 @@ export default function Header() {
   const iconRef = React.useRef<UsersIconHandle>(null);
   const calendarIconRef = React.useRef<CalendarDaysIconHandle>(null);
   const searchIconRef = React.useRef<SearchIconHandle>(null);
-  const plusIconRef = React.useRef<PlusIconHandle>(null);
   // Trigger helper for the global search. This dispatches the
   // custom event that <GlobalSearch/> listens to, ensuring we
   // modify *its* state rather than a separate local hook state.
@@ -191,18 +189,13 @@ export default function Header() {
               </Tooltip>
             </Authenticated>
             <Unauthenticated>
-              <SignUpButton mode="modal">
-                <Button
-                  variant="default"
-                  size="default"
-                  className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
-                  onMouseEnter={() => plusIconRef.current?.startAnimation()}
-                  onMouseLeave={() => plusIconRef.current?.stopAnimation()}
-                >
-                  <PlusIcon ref={plusIconRef} size={16} className="mr-2" />
-                  Create Post
-                </Button>
-              </SignUpButton>
+              <Button
+                variant="outline"
+                size="default"
+                onClick={() => window.location.href = '/pricing'}
+              >
+                Become a Member
+              </Button>
             </Unauthenticated>
             <Authenticated>
               <Tooltip>
@@ -215,7 +208,7 @@ export default function Header() {
                   <p>notifications</p>
                 </TooltipContent>
               </Tooltip>
-              <UserButton />
+              <MemberDropdown />
             </Authenticated>
             <Unauthenticated>
               <AuthButton />

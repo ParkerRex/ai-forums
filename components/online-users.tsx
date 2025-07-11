@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Users } from "lucide-react";
 import Link from "next/link";
 import { memberProfileUrl } from "@/lib/slug-utils";
+import { Id } from "@/convex/_generated/dataModel";
 
 export function OnlineUsers() {
   const onlineMembers = useQuery(api.members.getOnlineMembers);
@@ -24,7 +25,15 @@ export function OnlineUsers() {
         </h3>
       </div>
       <div className="text-xs space-y-1">
-        {onlineMembers.map((member) => {
+        {onlineMembers.map((member: {
+          _id: Id<"members">;
+          firstName: string;
+          lastName: string;
+          avatarUrl?: string;
+          fullName: string;
+          initials: string;
+          slug: string;
+        }) => {
           const memberUrl = memberProfileUrl({ 
             slug: member.slug, 
             _id: member._id 

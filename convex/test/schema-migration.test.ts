@@ -63,7 +63,7 @@ describe("Payment Schema Migration Tests", () => {
             email: `${tier}@example.com`,
             firstName: "Test",
             lastName: tier,
-            tier: tier as any,
+            tier: tier as "free" | "scholarship" | "founding_member" | "early_bird" | "member" | undefined,
             subscriptionStatus: tier === "free" ? "none" : "active",
             stripeCustomerId: `cus_${tier}`,
             billingInterval: tier !== "free" && tier !== "scholarship" ? "monthly" : undefined,
@@ -89,7 +89,7 @@ describe("Payment Schema Migration Tests", () => {
             firstName: "Test",
             lastName: status,
             tier: status === "none" ? "free" : "member",
-            subscriptionStatus: status as any,
+            subscriptionStatus: status as "active" | "cancelled" | "past_due" | "expired" | "none" | undefined,
             stripeCustomerId: `cus_status_${status}`,
           }));
         });
@@ -225,7 +225,7 @@ describe("Payment Schema Migration Tests", () => {
             firstName: tier,
             lastName: "Monthly",
             joinedDate: Date.now() - 180 * 24 * 60 * 60 * 1000, // 6 months ago
-            tier: tier as any,
+            tier: tier as "free" | "scholarship" | "founding_member" | "early_bird" | "member" | undefined,
             subscriptionStatus: "active",
             stripeCustomerId: `cus_${tier}_monthly`,
             billingInterval: "monthly",
@@ -239,7 +239,7 @@ describe("Payment Schema Migration Tests", () => {
             firstName: tier,
             lastName: "Yearly",
             joinedDate: Date.now() - 365 * 24 * 60 * 60 * 1000, // 1 year ago
-            tier: tier as any,
+            tier: tier as "free" | "scholarship" | "founding_member" | "early_bird" | "member" | undefined,
             subscriptionStatus: "active",
             stripeCustomerId: `cus_${tier}_yearly`,
             billingInterval: "yearly",

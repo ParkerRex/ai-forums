@@ -372,7 +372,7 @@ describe("Payment History Tracking Integration Tests", () => {
             stripePaymentIntentId: `pi_${status}`,
             amount: 9900,
             currency: "usd",
-            status: status as any,
+            status: status as "succeeded" | "pending" | "failed" | "refunded" | "partially_refunded",
             description: `Payment ${status}`,
             paymentMethod: {
               type: "card",
@@ -485,7 +485,7 @@ describe("Payment History Tracking Integration Tests", () => {
           return await ctx.db.insert("members", createTestMember({
             email: `${tier}@example.com`,
             stripeCustomerId: `cus_${tier}_metrics`,
-            tier: tier as any,
+            tier: tier as "free" | "scholarship" | "founding_member" | "early_bird" | "member" | undefined,
           }));
         });
         
