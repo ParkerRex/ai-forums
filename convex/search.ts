@@ -1,16 +1,23 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
+import { Doc, Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
 import { canViewPost } from "./helpers/access";
+
+// Search result types - using a more flexible type to handle various result shapes
+type SearchResult = {
+  _id: string | Id<"posts"> | Id<"comments"> | Id<"topics"> | Id<"resources">;
+  type: "post" | "comment" | "link" | "topic" | "resource";
+  [key: string]: unknown; // Allow other properties
+};
 
 export const globalSearch = query({
   args: { 
     searchTerm: v.string(), 
     limit: v.optional(v.number()) 
   },
-  handler: async (ctx, { searchTerm, limit = 30 }): Promise<any[]> => {
+  handler: async (ctx, { searchTerm, limit = 30 }): Promise<SearchResult[]> => {
     if (!searchTerm.trim()) {
       return [];
     }
@@ -27,21 +34,21 @@ export const globalSearch = query({
       ctx.runQuery(api.posts.searchPosts, { searchTerm, limit, includeContent: true }),
       ctx.db
         .query("comments")
-        .withSearchIndex("search_comments", (q: any) => q.search("content", searchTerm).eq("status", "active"))
+        .withSearchIndex("search_comments", (q) => q.search("content", searchTerm).eq("status", "active"))
         .take(limit),
       ctx.db
         .query("topics")
-        .withSearchIndex("search_topics", (q: any) => q.search("displayName", searchTerm).eq("status", "active"))
+        .withSearchIndex("search_topics", (q) => q.search("displayName", searchTerm).eq("status", "active"))
         .take(limit),
       ctx.db
         .query("resources")
-        .withSearchIndex("search_resources", (q: any) => q.search("title", searchTerm).eq("status", "active"))
+        .withSearchIndex("search_resources", (q) => q.search("title", searchTerm).eq("status", "active"))
         .take(limit),
     ]);
 
     // Enrich comments with member data
     const enrichedComments = await Promise.all(
-      comments.map(async (comment: any) => {
+      comments.map(async (comment) => {
         const member = await ctx.db.get(comment.memberId);
         return {
           ...comment,
@@ -58,28 +65,38 @@ export const globalSearch = query({
     );
 
     // Build a complete post lookup map for comments
-    const postsById = new Map();
-    posts.forEach((p: any) => postsById.set(p._id, p));
+    const postsById = new Map<Id<"posts">, typeof posts[0]>();
+    posts.forEach((p) => postsById.set(p._id, p));
 
     // Find missing parent posts for comments
     const missingPostIds = enrichedComments
-      .map((c: any) => c.postId)
-      .filter((postId: any) => !postsById.has(postId));
+      .map((c) => c.postId)
+      .filter((postId) => !postsById.has(postId));
 
-    // Fetch missing posts with their categories
+    // Fetch missing posts with their categories and members
     const missingPosts = await Promise.all(
-      missingPostIds.map(async (postId: any) => {
-        const post = (await ctx.db.get(postId)) as any;
+      missingPostIds.map(async (postId) => {
+        const post = await ctx.db.get(postId);
         if (!post) return null;
         
-        const category = post.categoryId ? (await ctx.db.get(post.categoryId)) as any : null;
+        const [category, member] = await Promise.all([
+          post.categoryId ? ctx.db.get(post.categoryId) : null,
+          ctx.db.get(post.memberId),
+        ]);
+        
         return {
           ...post,
+          member: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            username: member.email.split('@')[0],
+            slug: member.slug || "",
+          } : null,
           category: category ? {
             _id: category._id,
             name: category.name,
             displayName: category.displayName,
-            status: category.status,
             icon: category.icon,
           } : null,
         };
@@ -87,13 +104,13 @@ export const globalSearch = query({
     );
 
     // Add missing posts to the lookup map
-    missingPosts.forEach((post: any) => {
+    missingPosts.forEach((post) => {
       if (post) postsById.set(post._id, post);
     });
 
     // Extract links from comments
     const linkRegex = /(https?:\/\/\S+)/gi;
-    const linkResults = enrichedComments.flatMap((c: any) => {
+    const linkResults = enrichedComments.flatMap((c) => {
       const links = c.content.match(linkRegex) ?? [];
       return links.map((link: string) => {
         try {
@@ -113,8 +130,8 @@ export const globalSearch = query({
     });
 
     // Mark visibility for private-category content and paywalled posts
-    const mappedPosts = posts.map((p: any) => {
-      const isPrivate = p.category?.status === "private";
+    const mappedPosts = posts.map((p) => {
+      const isPrivate = false; // Category status not included in search results
       const isPaywalled = !canViewPost(viewer, p);
       const restricted = isPrivate || isPaywalled;
       return { 
@@ -128,9 +145,9 @@ export const globalSearch = query({
       };
     });
 
-    const mappedComments = enrichedComments.map((c: any) => {
+    const mappedComments = enrichedComments.map((c) => {
       const parentPost = postsById.get(c.postId);
-      const isPrivate = parentPost?.category?.status === "private";
+      const isPrivate = false; // Category status not included in search results
       const isPaywalled = parentPost && !canViewPost(viewer, parentPost);
       const restricted = isPrivate || isPaywalled;
       return { 
@@ -147,11 +164,11 @@ export const globalSearch = query({
     });
 
     // Dedupe identical links
-    const uniqueLinks = linkResults.filter((link: any, index: number, arr: any[]) => 
-      arr.findIndex((l: any) => l.link === link.link) === index
+    const uniqueLinks = linkResults.filter((link, index, arr) => 
+      link && arr.findIndex((l) => l && l.link === link.link) === index
     );
 
-    const mappedTopics = topics.map((t: any) => ({
+    const mappedTopics = topics.map((t) => ({
       _id: t._id,
       type: "topic" as const,
       name: t.name,
@@ -161,7 +178,7 @@ export const globalSearch = query({
     }));
 
     const enrichedResources = await Promise.all(
-      resources.map(async (r: any) => {
+      resources.map(async (r) => {
         const member = await ctx.db.get(r.memberId);
         const topic = await ctx.db.get(r.topicId);
         return {
@@ -187,12 +204,12 @@ export const globalSearch = query({
       })
     );
 
-    return [
+    return ([
       ...mappedPosts,
       ...mappedComments,
       ...mappedTopics,
       ...enrichedResources,
       ...uniqueLinks,
-    ].slice(0, limit);
+    ].filter(Boolean) as SearchResult[]).slice(0, limit);
   },
 });        

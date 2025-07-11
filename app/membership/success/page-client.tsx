@@ -10,6 +10,7 @@ import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import { AutoSignIn } from "./auto-signin";
 import { getCheckoutSessionData } from "@/app/actions/checkout-session";
+import { successCopy, getPaywallVariant, type PaywallVariant } from "@/lib/conversion-copy";
 
 interface SessionData {
   email: string;
@@ -23,9 +24,14 @@ export function SuccessPageClient() {
   const searchParams = useSearchParams();
   const sessionId = searchParams.get("session_id");
   const sourcePostId = searchParams.get("source_post_id");
+  const variantParam = searchParams.get("variant") as PaywallVariant | null;
   const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
   const [sessionData, setSessionData] = useState<SessionData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Get the messaging variant
+  const variant = getPaywallVariant(variantParam || undefined);
+  const copy = successCopy[variant];
   
   // Get post routing information if we have a source post
   // TODO: Use this to redirect back to the original post after onboarding
@@ -123,9 +129,12 @@ export function SuccessPageClient() {
             </div>
           </div>
           
-          <h1 className="text-4xl font-bold">Payment Successful!</h1>
+          <h1 className="text-4xl font-bold">{copy.headline}</h1>
           <p className="text-xl text-muted-foreground">
-            Welcome to VAI Pro, {sessionData.customerName?.split(' ')[0] || 'there'}!
+            {copy.welcome(sessionData.customerName?.split(' ')[0])}
+          </p>
+          <p className="text-base text-muted-foreground mt-2">
+            {copy.celebration}
           </p>
         </div>
 
@@ -148,8 +157,8 @@ export function SuccessPageClient() {
 
         {/* Additional info */}
         <div className="text-center text-sm text-muted-foreground">
-          <p>Your subscription is now active and will renew automatically.</p>
-          <p>You&apos;ll be redirected to complete your account setup in a moment.</p>
+          <p>{copy.nextSteps}</p>
+          <p className="mt-2">Your subscription is now active and will renew automatically.</p>
         </div>
       </div>
     </div>

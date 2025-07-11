@@ -16,7 +16,6 @@ import { PreviewGenerationDialog } from "@/components/preview-generation-dialog"
 //   SelectValue,
 // } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DraftsModal } from "@/components/drafts-modal";
 import { PollCreationModal, PollData } from "@/components/poll-creation-modal";
@@ -37,11 +36,14 @@ import {
   FileText,
   Link,
   BarChart3,
+  Image as ImageIcon,
+  Video,
+  ArrowLeft,
 } from "lucide-react";
-import { MediaUploadIcon } from "@/components/ui/media-upload";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 // Lazy load heavy components
 const RichTextEditor = lazy(() => import("@/components/rich-text-editor"));
@@ -73,23 +75,10 @@ interface ExtendedPostFormData extends PostFormData {
 // Loading skeleton for the rich text editor
 function RichTextEditorSkeleton() {
   return (
-    <div className="border rounded-lg">
-      <div className="border-b p-2 bg-muted rounded-t-lg">
-        <div className="flex flex-wrap gap-1">
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
-        </div>
-      </div>
-      <div className="min-h-[200px] p-4">
-        <div className="animate-pulse space-y-2">
-          <div className="h-4 bg-muted opacity-50 rounded w-3/4" />
-          <div className="h-4 bg-muted opacity-50 rounded w-1/2" />
-          <div className="h-4 bg-muted opacity-50 rounded w-5/6" />
-        </div>
-      </div>
+    <div className="animate-pulse space-y-3">
+      <div className="h-4 bg-muted rounded w-3/4" />
+      <div className="h-4 bg-muted rounded w-1/2" />
+      <div className="h-4 bg-muted rounded w-5/6" />
     </div>
   );
 }
@@ -97,37 +86,16 @@ function RichTextEditorSkeleton() {
 // Loading skeleton for the post preview
 function PostPreviewSkeleton() {
   return (
-    <Card className="w-full">
-      <CardHeader className="pb-4">
-        <div className="animate-pulse space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="h-6 bg-muted opacity-50 rounded w-32" />
-            <div className="h-4 bg-muted opacity-50 rounded w-24" />
-          </div>
-          <div className="h-8 bg-muted opacity-50 rounded w-3/4" />
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-muted opacity-50 rounded-full" />
-              <div className="space-y-1">
-                <div className="h-4 bg-muted opacity-50 rounded w-16" />
-                <div className="h-3 bg-muted opacity-50 rounded w-12" />
-              </div>
-            </div>
-            <div className="flex space-x-4">
-              <div className="h-4 bg-muted opacity-50 rounded w-8" />
-              <div className="h-4 bg-muted opacity-50 rounded w-8" />
-            </div>
-          </div>
+    <div className="border rounded-lg p-6">
+      <div className="animate-pulse space-y-4">
+        <div className="h-8 bg-muted rounded w-3/4" />
+        <div className="space-y-3">
+          <div className="h-4 bg-muted rounded w-full" />
+          <div className="h-4 bg-muted rounded w-5/6" />
+          <div className="h-4 bg-muted rounded w-4/6" />
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-muted opacity-50 rounded w-full" />
-          <div className="h-4 bg-muted opacity-50 rounded w-5/6" />
-          <div className="h-4 bg-muted opacity-50 rounded w-4/6" />
-        </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -197,7 +165,14 @@ export function PostCreationForm({
   const isFormComplete = formIsValid && isPostTypeValid();
 
   // Queries and mutations
-  const categories = useQuery(api.categories.getCategories);
+  const categories = useQuery(api.categories.getCategories) as Array<{
+    _id: Id<"categories">;
+    name: string;
+    displayName: string;
+    description: string;
+    icon?: string;
+    postCount: number;
+  }> | undefined;
   const createPost = useMutation(api.posts.createPost);
   const createPollPost = useMutation(api.polls.createPollPost);
   const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
@@ -394,8 +369,7 @@ export function PostCreationForm({
           title: formData.title.trim(),
           content: formData.content.trim(),
           categoryId: formData.categoryId as Id<"categories">,
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          type: resolvedType as any,
+          type: resolvedType as "text" | "image" | "video" | "link",
           mediaUrl,
           thumbnailUrl,
           aspectRatio: formData.aspectRatio,
@@ -507,202 +481,242 @@ export function PostCreationForm({
   // Loading state for categories
   if (categories === undefined) {
     return (
-      <Card className="w-full max-w-4xl mx-auto">
-        <CardHeader>
-          <CardTitle>Create New Post</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-6">
-            <div className="animate-pulse space-y-4">
-              <div className="h-4 bg-muted opacity-50 rounded w-1/4" />
-              <div className="h-10 bg-muted opacity-50 rounded" />
-              <div className="h-4 bg-muted opacity-50 rounded w-1/4" />
-              <div className="h-10 bg-muted opacity-50 rounded" />
-              <div className="h-32 bg-muted opacity-50 rounded" />
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="w-full max-w-4xl mx-auto">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-muted rounded w-1/4" />
+          <div className="h-96 bg-muted rounded" />
+        </div>
+      </div>
     );
   }
 
+  // Type buttons configuration
+  const typeButtons = [
+    { value: "text", icon: FileText, label: "Text" },
+    { value: "image", icon: ImageIcon, label: "Image" },
+    { value: "video", icon: Video, label: "Video" },
+    { value: "link", icon: Link, label: "Link" },
+    { value: "poll", icon: BarChart3, label: "Poll" },
+  ];
+
   return (
-    <Card className="w-full max-w-4xl mx-auto">
-      <CardHeader>
-        <CardTitle>Create New Post</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Submit Error */}
-          {submitError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{submitError}</AlertDescription>
-            </Alert>
-          )}
+    <div className="w-full max-w-4xl mx-auto">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between pb-6 border-b">
+          <div className="flex items-center gap-4">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={handleCancel}
+              className="rounded-full"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <h1 className="text-2xl font-semibold">Create post</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <DraftsModal>
+              <Button
+                type="button"
+                variant="ghost"
+                disabled={isSubmitting}
+                size="sm"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                Drafts
+              </Button>
+            </DraftsModal>
+            <Button
+              type="submit"
+              disabled={!isFormComplete || isSubmitting}
+              className="bg-green-700 hover:bg-green-800"
+              size="sm"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {uploadProgress !== null
+                    ? `Uploading... ${uploadProgress}%`
+                    : "Publishing..."}
+                </>
+              ) : (
+                <>
+                  <Send className="w-4 h-4 mr-2" />
+                  Publish
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
 
-          {/* Post Type Tabs */}
-          <Tabs
-            value={formData.type}
-            onValueChange={handleTypeChange}
-            className="w-full"
-          >
-            <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="text" className="flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Text
-              </TabsTrigger>
-              <TabsTrigger value="image" className="flex items-center gap-2">
-                <MediaUploadIcon className="h-4 w-4" />
-                Image/Video
-              </TabsTrigger>
-              <TabsTrigger value="link" className="flex items-center gap-2">
-                <Link className="h-4 w-4" />
-                Link
-              </TabsTrigger>
-              <TabsTrigger value="poll" className="flex items-center gap-2">
-                <BarChart3 className="h-4 w-4" />
-                Poll
-              </TabsTrigger>
-            </TabsList>
+        {/* Submit Error */}
+        {submitError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{submitError}</AlertDescription>
+          </Alert>
+        )}
 
-            {/* Common fields */}
-            <div className="space-y-6 mt-6">
-              {/* Title Field */}
-              <div className="space-y-2">
-                <Label htmlFor="title">Title</Label>
-                <Input
-                  id="title"
-                  type="text"
-                  value={formData.title}
-                  onChange={handleTitleChange}
-                  placeholder="Enter your post title (required)"
-                  className="focus:border-green-700 focus:ring-green-700"
-                  disabled={isSubmitting}
-                />
-                <div className="flex justify-between items-center text-sm">
-                  <div>
-                    {errors.title && showValidationErrors && (
-                      <span className="text-red-500 text-xs">
-                        {errors.title}
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    className={`text-xs ${
-                      titleInfo.status === "error"
-                        ? "text-muted-foreground"
-                        : titleInfo.status === "warning"
-                          ? "text-yellow-500"
-                          : "text-muted-foreground"
-                    }`}
-                  >
-                    {titleInfo.length}/200 characters
-                  </div>
-                </div>
-              </div>
+        {/* Post Type Selection */}
+        <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-fit">
+          {typeButtons.map(({ value, icon: Icon, label }) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => handleTypeChange(value)}
+              className={cn(
+                "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                formData.type === value
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <Icon className="h-4 w-4" />
+              {label}
+            </button>
+          ))}
+        </div>
 
-              {/* Category Field */}
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <CategoryToggleGroup
-                  categories={
-                    categories?.map((cat) => ({
-                      id: cat._id,
-                      name: cat.name,
-                      displayName: cat.displayName,
-                      description: cat.description,
-                      icon: cat.icon,
-                      postCount: cat.postCount,
-                      isTrending: false, // You can add trending logic here
-                    })) || []
-                  }
-                  value={formData.categoryId}
-                  onChange={handleCategoryChange}
-                  disabled={isSubmitting}
-                />
-                {errors.categoryId && showValidationErrors && (
-                  <span className="text-red-500 text-xs">
-                    {errors.categoryId}
-                  </span>
+        {/* Main Content Area */}
+        <div className="space-y-6">
+          {/* Title */}
+          <div className="space-y-2">
+            <Input
+              id="title"
+              type="text"
+              value={formData.title}
+              onChange={handleTitleChange}
+              placeholder="Post title"
+              className="text-2xl font-medium border-0 px-0 focus-visible:ring-0 focus-visible:ring-offset-0 placeholder:text-muted-foreground/60"
+              disabled={isSubmitting}
+              autoFocus
+            />
+            <div className="flex items-center justify-between">
+              <div>
+                {errors.title && showValidationErrors && (
+                  <span className="text-red-500 text-xs">{errors.title}</span>
                 )}
               </div>
+              <div
+                className={cn(
+                  "text-xs",
+                  titleInfo.status === "error"
+                    ? "text-red-500"
+                    : titleInfo.status === "warning"
+                    ? "text-yellow-500"
+                    : "text-muted-foreground"
+                )}
+              >
+                {titleInfo.length}/200
+              </div>
             </div>
+          </div>
 
-            {/* Type-specific content */}
-            <TabsContent value="text" className="mt-6">
-              <div className="space-y-2">
-                <Label htmlFor="content">Content</Label>
-                <div className="flex justify-between items-center mb-4">
+          {/* Category Selection */}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium text-muted-foreground">
+              Category
+            </Label>
+            <CategoryToggleGroup
+              categories={
+                categories?.map((cat) => ({
+                  id: cat._id,
+                  name: cat.name,
+                  displayName: cat.displayName,
+                  description: cat.description,
+                  icon: cat.icon,
+                  postCount: cat.postCount,
+                  isTrending: false,
+                })) || []
+              }
+              value={formData.categoryId}
+              onChange={handleCategoryChange}
+              disabled={isSubmitting}
+            />
+            {errors.categoryId && showValidationErrors && (
+              <span className="text-red-500 text-xs">{errors.categoryId}</span>
+            )}
+          </div>
+
+          {/* Type-specific content */}
+          {formData.type === "text" && (
+            <div className="space-y-4">
+              {contentTab === "preview" && (
+                <div className="flex justify-end">
                   <PostPreviewToggle
                     value={contentTab}
                     onValueChange={setContentTab}
                   />
                 </div>
-                {contentTab === "edit" && (
-                  <div className="mt-4">
-                    <Suspense fallback={<RichTextEditorSkeleton />}>
-                      <RichTextEditor
-                        content={formData.content}
-                        onChange={handleContentChange}
-                        placeholder="Write your post content here (required)"
-                        className=""
+              )}
+              {contentTab === "edit" ? (
+                <div className="space-y-2">
+                  <Suspense fallback={<RichTextEditorSkeleton />}>
+                    <RichTextEditor
+                      content={formData.content}
+                      onChange={handleContentChange}
+                      placeholder="Write your post..."
+                      className="min-h-[300px] border-0"
+                    />
+                  </Suspense>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      {errors.content && showValidationErrors && (
+                        <span className="text-red-500 text-xs">
+                          {errors.content}
+                        </span>
+                      )}
+                      <PostPreviewToggle
+                        value={contentTab}
+                        onValueChange={setContentTab}
                       />
-                    </Suspense>
-                  </div>
-                )}
-                {contentTab === "preview" && (
-                  <div className="mt-4">
-                    <Suspense fallback={<PostPreviewSkeleton />}>
-                      <PostPreview
-                        post={{
-                          _id: "preview" as unknown as Id<"posts">,
-                          title: formData.title || "Untitled Post",
-                          content: formData.content || "No content yet...",
-                          createdAt: Date.now(),
-                          upvotes: 0,
-                          downvotes: 0,
-                          commentCount: 0,
-                          viewCount: 0,
-                          type: "text",
-                          member: {
-                            _id: "preview" as unknown as Id<"members">,
-                            firstName: "You",
-                            lastName: "",
-                            username: "you",
-                            slug: "you",
-                          },
-                        }}
-                        showMember={false}
-                      />
-                    </Suspense>
-                  </div>
-                )}
-                <div className="flex justify-between items-center text-sm">
-                  <div>
-                    {errors.content && showValidationErrors && (
-                      <span className="text-red-500 text-xs">
-                        {errors.content}
-                      </span>
-                    )}
-                  </div>
-                  <div
-                    className={`text-xs ${
-                      contentInfo.status === "error"
-                        ? "text-muted-foreground"
-                        : contentInfo.status === "warning"
+                    </div>
+                    <div
+                      className={cn(
+                        "text-xs",
+                        contentInfo.status === "error"
+                          ? "text-red-500"
+                          : contentInfo.status === "warning"
                           ? "text-yellow-500"
                           : "text-muted-foreground"
-                    }`}
-                  >
-                    {contentInfo.length}/10,000 characters
+                      )}
+                    >
+                      {contentInfo.length}/10,000
+                    </div>
                   </div>
                 </div>
-              </div>
-            </TabsContent>
+              ) : (
+                <Suspense fallback={<PostPreviewSkeleton />}>
+                  <PostPreview
+                    post={{
+                      _id: "preview" as unknown as Id<"posts">,
+                      title: formData.title || "Untitled Post",
+                      content: formData.content || "No content yet...",
+                      createdAt: Date.now(),
+                      upvotes: 0,
+                      downvotes: 0,
+                      commentCount: 0,
+                      viewCount: 0,
+                      type: "text",
+                      member: {
+                        _id: "preview" as unknown as Id<"members">,
+                        firstName: "You",
+                        lastName: "",
+                        username: "you",
+                        slug: "you",
+                      },
+                    }}
+                    showMember={false}
+                  />
+                </Suspense>
+              )}
+            </div>
+          )}
 
-            <TabsContent value="image" className="mt-6 space-y-6">
-              {/* Media Upload */}
+          {(formData.type === "image" || formData.type === "video") && (
+            <div className="space-y-6">
               <MediaUploadSection
                 media={formData.mediaItems || []}
                 onMediaChange={(mediaItems) => {
@@ -748,82 +762,84 @@ export function PostCreationForm({
                 disabled={isSubmitting}
               />
 
-              {/* Description for media posts */}
               <div className="space-y-2">
-                <Label htmlFor="media-content">
-                  Description{" "}
-                  <span className="text-muted-foreground">(optional)</span>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  Description (optional)
                 </Label>
                 <Suspense fallback={<RichTextEditorSkeleton />}>
                   <RichTextEditor
                     content={formData.content}
                     onChange={handleContentChange}
-                    placeholder="Add a description for your media..."
-                    className=""
+                    placeholder="Add a description..."
+                    className="min-h-[150px] border-0"
                   />
                 </Suspense>
-                <div className="text-sm text-muted-foreground text-right">
-                  {contentInfo.length}/10,000 characters
+                <div className="text-xs text-muted-foreground text-right">
+                  {contentInfo.length}/10,000
                 </div>
               </div>
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="link" className="mt-6 space-y-6">
-              {/* Link URL */}
+          {formData.type === "link" && (
+            <div className="space-y-6">
               <div className="space-y-2">
-                <Label htmlFor="link-url">Link URL</Label>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  URL
+                </Label>
                 <Input
                   id="link-url"
                   type="url"
                   value={formData.linkUrl || ""}
                   onChange={handleLinkUrlChange}
-                  placeholder="https://example.com (required)"
-                  className="focus:border-green-700 focus:ring-green-700"
+                  placeholder="https://example.com"
+                  className="border-muted"
                   disabled={isSubmitting}
                 />
                 {formData.linkUrl && formData.linkTitle && (
-                  <Card className="mt-4">
-                    <CardContent className="p-4">
-                      <div className="flex space-x-4">
-                        {formData.linkImage && (
-                          <Image
-                            src={formData.linkImage}
-                            alt="Link preview image"
-                            width={96}
-                            height={96}
-                            className="w-24 h-24 object-cover rounded"
-                            unoptimized={true}
-                          />
-                        )}
-                        <div className="flex-1">
-                          <h4 className="font-medium">{formData.linkTitle}</h4>
-                          {formData.linkDescription && (
-                            <p className="text-sm text-muted-foreground mt-1">
-                              {formData.linkDescription}
-                            </p>
-                          )}
-                          <p className="text-xs text-muted-foreground mt-2">
-                            {new URL(formData.linkUrl).hostname}
+                  <div className="mt-4 p-4 border rounded-lg">
+                    <div className="flex gap-4">
+                      {formData.linkImage && (
+                        <Image
+                          src={formData.linkImage}
+                          alt="Link preview"
+                          width={96}
+                          height={96}
+                          className="w-24 h-24 object-cover rounded"
+                          unoptimized={true}
+                        />
+                      )}
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium truncate">
+                          {formData.linkTitle}
+                        </h4>
+                        {formData.linkDescription && (
+                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                            {formData.linkDescription}
                           </p>
-                        </div>
+                        )}
+                        <p className="text-xs text-muted-foreground mt-2">
+                          {new URL(formData.linkUrl).hostname}
+                        </p>
                       </div>
-                    </CardContent>
-                  </Card>
+                    </div>
+                  </div>
                 )}
               </div>
 
-              {/* Description for link posts */}
               <div className="space-y-2">
-                <Label htmlFor="link-content">Description</Label>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  Description
+                </Label>
                 <Suspense fallback={<RichTextEditorSkeleton />}>
                   <RichTextEditor
                     content={formData.content}
                     onChange={handleContentChange}
-                    placeholder="Share your thoughts about this link (required)"
-                    className=""
+                    placeholder="Share your thoughts about this link..."
+                    className="min-h-[150px] border-0"
                   />
                 </Suspense>
-                <div className="flex justify-between items-center text-sm">
+                <div className="flex items-center justify-between">
                   <div>
                     {errors.content && showValidationErrors && (
                       <span className="text-red-500 text-xs">
@@ -832,57 +848,62 @@ export function PostCreationForm({
                     )}
                   </div>
                   <div
-                    className={`text-xs ${
+                    className={cn(
+                      "text-xs",
                       contentInfo.status === "error"
-                        ? "text-muted-foreground"
+                        ? "text-red-500"
                         : contentInfo.status === "warning"
-                          ? "text-yellow-500"
-                          : "text-muted-foreground"
-                    }`}
+                        ? "text-yellow-500"
+                        : "text-muted-foreground"
+                    )}
                   >
-                    {contentInfo.length}/10,000 characters
+                    {contentInfo.length}/10,000
                   </div>
                 </div>
               </div>
-            </TabsContent>
+            </div>
+          )}
 
-            <TabsContent value="poll" className="mt-6 space-y-6">
-              {/* Poll Options */}
+          {formData.type === "poll" && (
+            <div className="space-y-6">
               <div className="space-y-2">
-                <Label>Poll Options</Label>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  Poll Options
+                </Label>
                 {formData.pollData ? (
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="space-y-2">
-                        <p className="text-sm text-muted-foreground mb-3">
-                          {formData.pollData.options.length} options • Ends in{" "}
-                          {formData.pollData.duration === "unlimited"
-                            ? "never"
-                            : formData.pollData.duration}
-                        </p>
-                        {formData.pollData.options.map((option, index) => (
-                          <div
-                            key={option.id}
-                            className="flex items-center space-x-2"
-                          >
-                            <span className="text-sm text-muted-foreground w-6">
-                              {index + 1}.
-                            </span>
-                            <span className="flex-1">{option.text}</span>
-                          </div>
-                        ))}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => setShowPollModal(true)}
-                          className="w-full mt-3"
+                  <div className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
+                      <span>{formData.pollData.options.length} options</span>
+                      <span>
+                        Ends{" "}
+                        {formData.pollData.duration === "unlimited"
+                          ? "never"
+                          : `in ${formData.pollData.duration}`}
+                      </span>
+                    </div>
+                    <div className="space-y-2">
+                      {formData.pollData.options.map((option, index) => (
+                        <div
+                          key={option.id}
+                          className="flex items-center gap-3 p-2 bg-muted rounded"
                         >
-                          Edit Poll Options
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
+                          <span className="text-sm font-medium w-6">
+                            {index + 1}.
+                          </span>
+                          <span className="flex-1">{option.text}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => setShowPollModal(true)}
+                      className="w-full"
+                      size="sm"
+                    >
+                      Edit Options
+                    </Button>
+                  </div>
                 ) : (
                   <Button
                     type="button"
@@ -896,74 +917,26 @@ export function PostCreationForm({
                 )}
               </div>
 
-              {/* Description for poll posts */}
               <div className="space-y-2">
-                <Label htmlFor="poll-content">
-                  Description{" "}
-                  <span className="text-muted-foreground">(optional)</span>
+                <Label className="text-sm font-medium text-muted-foreground">
+                  Description (optional)
                 </Label>
                 <Suspense fallback={<RichTextEditorSkeleton />}>
                   <RichTextEditor
                     content={formData.content}
                     onChange={handleContentChange}
-                    placeholder="Add context or details about your poll..."
-                    className=""
+                    placeholder="Add context about your poll..."
+                    className="min-h-[150px] border-0"
                   />
                 </Suspense>
-                <div className="text-sm text-muted-foreground text-right">
-                  {contentInfo.length}/10,000 characters
+                <div className="text-xs text-muted-foreground text-right">
+                  {contentInfo.length}/10,000
                 </div>
               </div>
-            </TabsContent>
-          </Tabs>
-
-          {/* Form Actions */}
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center pt-4 border-t space-y-4 sm:space-y-0">
-            <DraftsModal>
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={isSubmitting}
-                className="w-full sm:w-auto"
-              >
-                <FileText className="w-4 h-4 mr-2" />
-                Drafts
-              </Button>
-            </DraftsModal>
-
-            <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-                className="w-full sm:w-auto"
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={!isFormComplete || isSubmitting}
-                className="bg-green-700 hover:bg-green-800 w-full sm:w-auto"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    {uploadProgress !== null
-                      ? `Uploading... ${uploadProgress}%`
-                      : "Publishing..."}
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Publish Post
-                  </>
-                )}
-              </Button>
             </div>
-          </div>
-        </form>
-      </CardContent>
+          )}
+        </div>
+      </form>
 
       {/* Poll Creation Modal */}
       <PollCreationModal
@@ -986,7 +959,7 @@ export function PostCreationForm({
         generatedPreview={formData.preview || null}
         error={previewError}
       />
-    </Card>
+    </div>
   );
 }
 

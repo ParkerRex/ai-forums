@@ -391,7 +391,13 @@ export default function BillingPage() {
             <CardContent>
               <div className="space-y-3">
                 {/* Map through recent payments to display each transaction */}
-                {subscriptionInfo.recentPayments.map((payment) => (
+                {subscriptionInfo.recentPayments.map((payment: {
+                  id: string;
+                  date: string;
+                  amount: string;
+                  status: string;
+                  description: string;
+                }) => (
                   <div
                     key={payment.id}
                     className="flex items-center justify-between py-2"

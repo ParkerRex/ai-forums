@@ -163,6 +163,12 @@ const members = defineTable({
   // Payment history tracking
   lastPaymentDate: v.optional(v.number()),
   amountCents: v.optional(v.number()),
+  lastPaymentFailure: v.optional(v.object({
+    date: v.number(),
+    code: v.string(),
+    message: v.string(),
+    invoiceId: v.string(),
+  })),
   
   // Access control and permissions
   role: v.optional(v.union(
@@ -871,6 +877,7 @@ const subscriptions = defineTable({
   ),
   createdAt: v.number(),
   updatedAt: v.number(),
+  lastFailureAt: v.optional(v.number()),
 })
   .index("by_memberId", ["memberId"])
   .index("by_stripeSubscriptionId", ["stripeSubscriptionId"])
@@ -906,6 +913,7 @@ const payments = defineTable({
   transactionFee: v.optional(v.number()),
   netAmount: v.optional(v.number()),
   failureReason: v.optional(v.string()),
+  failureCode: v.optional(v.string()),
   refundedAmount: v.optional(v.number()),
   createdAt: v.number(),
 })
@@ -928,6 +936,9 @@ const stripeWebhookEvents = defineTable({
   error: v.optional(v.string()),
   createdAt: v.number(),
   processedAt: v.optional(v.number()),
+  retryCount: v.optional(v.number()),
+  lastErrorAt: v.optional(v.number()),
+  needsRetry: v.optional(v.boolean()),
 })
   .index("by_stripeEventId", ["stripeEventId"])
   .index("by_processed", ["processed"])

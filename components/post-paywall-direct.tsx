@@ -6,22 +6,41 @@ import { Lock, Zap, Shield, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { paywallCopy, getPaywallVariant, type PaywallVariant } from "@/lib/conversion-copy";
+import { paywallAnalytics } from "@/lib/analytics";
 
 interface PostPaywallDirectProps {
   className?: string;
   postId?: string;
+  postTitle?: string;
+  variant?: PaywallVariant;
 }
 
 export function PostPaywallDirect({
   className,
   postId,
+  postTitle,
+  variant,
 }: PostPaywallDirectProps) {
   const createDirectCheckout = useAction(api.stripe.directCheckout.createDirectCheckout);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  
+  // Get the copy variant for this paywall
+  const selectedVariant = getPaywallVariant(variant);
+  const copy = paywallCopy[selectedVariant];
+  
+  // Track paywall impression
+  useEffect(() => {
+    paywallAnalytics.shown(postId, postTitle, selectedVariant);
+    paywallAnalytics.variantPerformance(selectedVariant, "shown");
+  }, [postId, postTitle, selectedVariant]);
 
   const handleUpgradeClick = async () => {
+    // Track upgrade click
+    paywallAnalytics.upgradeClicked(postId, postTitle, selectedVariant);
+    paywallAnalytics.variantPerformance(selectedVariant, "clicked");
     setError(null);
     setIsLoading(true);
     try {
@@ -53,22 +72,29 @@ export function PostPaywallDirect({
         
         {/* Headline */}
         <h3 className="text-2xl font-bold mb-2">
-          This is a Premium Post
+          {copy.headline}
         </h3>
         
         {/* Subheadline */}
         <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-          Join 2,000+ AI engineers getting exclusive insights, tutorials, and community discussions.
+          {copy.subheadline}
         </p>
+        
+        {/* Value prop (if exists) */}
+        {copy.valueProp && (
+          <p className="text-sm text-muted-foreground mb-6 italic">
+            {copy.valueProp}
+          </p>
+        )}
         
         {/* Primary CTA button */}
         <Button 
-          size="lg" 
-          className="mb-6 text-lg px-8"
+          size="default" 
+          className="mb-6 px-6 font-medium"
           onClick={handleUpgradeClick}
           disabled={isLoading}
         >
-          {isLoading ? "Loading..." : "Upgrade to VAI Pro - $99/mo"}
+          {isLoading ? "Loading..." : copy.cta}
         </Button>
         
         {/* Error message */}
@@ -86,7 +112,7 @@ export function PostPaywallDirect({
           <div className="flex flex-col items-center space-y-2">
             <Users className="w-5 h-5 text-primary" />
             <span className="text-sm font-medium">Active Community</span>
-            <span className="text-xs text-muted-foreground">2,000+ AI engineers</span>
+            <span className="text-xs text-muted-foreground">Engineers from Google and Microsoft</span>
           </div>
           <div className="flex flex-col items-center space-y-2">
             <Shield className="w-5 h-5 text-primary" />
@@ -97,7 +123,7 @@ export function PostPaywallDirect({
         
         {/* Trust indicators */}
         <p className="text-xs text-muted-foreground">
-          No commitment • Cancel anytime • 30-day money-back guarantee
+          {copy.trustSignals.join(" • ")}
         </p>
       </Card>
     </div>

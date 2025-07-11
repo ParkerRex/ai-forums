@@ -36,7 +36,17 @@ export function PollVotersModal({
   const [activeTab, setActiveTab] = useState(pollOptions[0]?.id || "");
   
   // Get poll votes
-  const pollVotes = useQuery(api.polls.getPollVotes, { pollId });
+  const pollVotes = useQuery(api.polls.getPollVotes, { pollId }) as {
+    votesByOption: Record<string, Array<{
+      memberId: Id<"members">;
+      firstName: string;
+      lastName: string;
+      email: string;
+      slug: string;
+      avatarUrl?: string;
+      votedAt: number;
+    }>>;
+  } | undefined;
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName[0]}${lastName[0]}`.toUpperCase();

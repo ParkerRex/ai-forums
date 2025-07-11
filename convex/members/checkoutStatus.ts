@@ -10,14 +10,19 @@ export const getCheckoutMemberStatus = query({
     email: v.string(),
   },
   handler: async (ctx, args) => {
-    // Find member by email (guest member without externalId)
+    // Find the most recent member by email
     const member = await ctx.db
       .query("members")
       .filter((q) => q.eq(q.field("email"), args.email))
-      .filter((q) => q.eq(q.field("status"), "pending_onboarding"))
+      .order("desc") // Get the most recent member with this email
       .first();
 
     if (!member) {
+      return null;
+    }
+
+    // Return member info regardless of status, as long as they have a valid subscription
+    if (!member.stripeSubscriptionId || member.subscriptionStatus !== "active") {
       return null;
     }
 

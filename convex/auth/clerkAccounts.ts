@@ -54,7 +54,7 @@ export const createClerkAccount = internalAction({
         // Check if user already exists
         if (response.status === 422) {
           const errorData = JSON.parse(error);
-          if (errorData.errors?.some((e: any) => e.code === "form_identifier_exists")) {
+          if (errorData.errors?.some((e: {code: string}) => e.code === "form_identifier_exists")) {
             // User already exists, link to existing Clerk account
             const existingUserResponse = await fetch(
               `https://api.clerk.com/v1/users?email_address=${encodeURIComponent(args.email)}`,
@@ -174,10 +174,14 @@ export const internalUpdateMemberWithClerkId = internalMutation({
       throw new Error("Member not found");
     }
 
-    // Update member with Clerk external ID and pending onboarding status
-    const updateData: any = {
+    // Update member with Clerk external ID
+    const updateData: {
+      externalId: string;
+      updatedAt: number;
+      signInToken?: string;
+    } = {
       externalId: args.clerkUserId,
-      status: "pending_onboarding" as const,
+      // Keep status as "active" - no onboarding needed
       updatedAt: Date.now(),
     };
 

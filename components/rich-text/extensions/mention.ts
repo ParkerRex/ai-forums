@@ -1,8 +1,19 @@
 import { Node, mergeAttributes } from '@tiptap/core';
 import { ReactRenderer } from '@tiptap/react';
-import { Suggestion, SuggestionOptions } from '@tiptap/suggestion';
+import { Suggestion, SuggestionOptions, SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion';
+import type { Editor, Range } from '@tiptap/core';
 import tippy, { Instance as TippyInstance } from 'tippy.js';
 import { MentionAutocomplete } from '@/components/mention-autocomplete';
+import { Id } from '@/convex/_generated/dataModel';
+
+// Type for member data returned by search
+interface MemberSearchResult {
+  _id: Id<"members">;
+  firstName: string;
+  lastName: string;
+  slug: string;
+  [key: string]: unknown; // Allow other properties
+}
 
 export interface MentionOptions {
   HTMLAttributes: Record<string, unknown>;
@@ -131,7 +142,7 @@ export const Mention = Node.create<MentionOptions>({
   },
 });
 
-export function createMentionSuggestion(searchMembers: (term: string) => Promise<unknown[]>) {
+export function createMentionSuggestion(searchMembers: (term: string) => Promise<any[]>) {
   return {
     items: async ({ query }: { query: string }) => {
       console.log('Mention suggestion triggered with query:', query);
@@ -139,8 +150,7 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
       console.log('Search results:', results);
       console.log('Returning results count:', results.length);
       if (results.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const first: any = results[0];
+        const first = results[0];
         console.log('First result structure:', JSON.stringify(first, null, 2));
         console.log('First result keys:', Object.keys(first));
       }
@@ -148,8 +158,7 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
       return results;
     },
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    command: ({ editor, range, props }: { editor: any; range: any; props: any }) => {
+    command: ({ editor, range, props }: { editor: Editor; range: Range; props: unknown }) => {
       console.log('Mention command called with:', { editor, range, props });
       
       editor
@@ -175,21 +184,18 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
       let popup: TippyInstance[];
 
       return {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onStart: (props: any) => {
+        onStart: (props: SuggestionProps<MemberSearchResult>) => {
           console.log('Mention suggestion onStart called with props:', props);
           
           component = new ReactRenderer(MentionAutocomplete, {
             props: {
               items: props.items,
-              onSelect: (member: unknown) => {
-                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-                const m = member as any;
-                console.log('Mention extension: Member selected via onSelect:', m);
+              onSelect: (member: MemberSearchResult) => {
+                console.log('Mention extension: Member selected via onSelect:', member);
                 props.command({
-                  id: m._id,
-                  label: `${m.firstName} ${m.lastName}`,
-                  slug: m.slug,
+                  id: member._id,
+                  label: `${member.firstName} ${member.lastName}`,
+                  slug: member.slug,
                 });
               },
               onClose: () => {
@@ -205,7 +211,7 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
           }
 
           popup = tippy('body', {
-            getReferenceClientRect: props.clientRect,
+            getReferenceClientRect: props.clientRect as () => DOMRect,
             appendTo: () => document.body,
             content: component.element,
             showOnCreate: true,
@@ -215,18 +221,15 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
           });
         },
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onUpdate(props: any) {
+        onUpdate(props: SuggestionProps<MemberSearchResult>) {
           component.updateProps({
             items: props.items,
-            onSelect: (member: unknown) => {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              const m = member as any;
-              console.log('Mention extension (onUpdate): Member selected via onSelect:', m);
+            onSelect: (member: MemberSearchResult) => {
+              console.log('Mention extension (onUpdate): Member selected via onSelect:', member);
               props.command({
-                id: m._id,
-                label: `${m.firstName} ${m.lastName}`,
-                slug: m.slug,
+                id: member._id,
+                label: `${member.firstName} ${member.lastName}`,
+                slug: member.slug,
               });
             },
             onClose: () => {
@@ -239,12 +242,11 @@ export function createMentionSuggestion(searchMembers: (term: string) => Promise
           }
 
           popup[0]?.setProps({
-            getReferenceClientRect: props.clientRect,
+            getReferenceClientRect: props.clientRect as () => DOMRect,
           });
         },
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        onKeyDown(props: any) {
+        onKeyDown(props: SuggestionKeyDownProps) {
           if (props.event.key === 'Escape') {
             popup[0]?.hide();
             return true;

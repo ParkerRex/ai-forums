@@ -41,7 +41,13 @@ export function PollDisplay({
   const pollResults = useQuery(
     api.polls.getPollResults,
     currentUserId ? { pollId, userId: currentUserId } : { pollId }
-  );
+  ) as {
+    pollOptions: PollOption[];
+    totalVotes: number;
+    userVotedOptionId: string | null;
+    hasEnded: boolean;
+    endsAt?: number;
+  } | undefined;
 
   const voteOnPoll = useMutation(api.polls.voteOnPoll);
 

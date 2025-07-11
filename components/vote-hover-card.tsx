@@ -32,7 +32,17 @@ export const VoteHoverCard: React.FC<VoteHoverCardProps> = ({
   voteCount,
   children,
 }) => {
-  const voters = useQuery(api.votes.getPostVoters, { postId });
+  const voters = useQuery(api.votes.getPostVoters, { postId }) as {
+    voters: Array<{
+      _id: Id<"members">;
+      firstName: string;
+      lastName: string;
+      avatarUrl?: string;
+      slug: string;
+    }>;
+    hasMore: boolean;
+    total: number;
+  } | undefined;
 
   if (voteCount === 0) {
     return <>{children}</>;

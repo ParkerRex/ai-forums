@@ -233,13 +233,514 @@
   color: hsl(var(--muted-foreground));
 }
 
+/* Inline code styling - Slack/Discord style */
 .prose-editor .ProseMirror code {
   background-color: hsl(var(--muted));
   color: hsl(var(--foreground));
-  padding: 0.125rem 0.25rem;
+  padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  font-family: 'Courier New', monospace;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.85em;
+  font-weight: 500;
+  border: 1px solid hsl(var(--border) / 0.5);
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+/* Hover effect for inline code */
+.prose-editor .ProseMirror code:hover {
+  background-color: hsl(var(--muted) / 0.8);
+  border-color: hsl(var(--border) / 0.8);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* Better contrast in dark mode */
+.dark .prose-editor .ProseMirror code {
+  background-color: hsl(var(--muted) / 0.8);
+  color: #79c0ff;
+  border-color: hsl(var(--border) / 0.3);
+}
+
+/* Code blocks with syntax highlighting */
+.prose-editor .ProseMirror pre {
+  background: hsl(var(--muted));
+  border-radius: 0.5rem;
+  color: hsl(var(--foreground));
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
   font-size: 0.875rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  padding: 1rem;
+  position: relative;
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+/* Language label for code blocks */
+.prose-editor .ProseMirror pre[data-language]::before {
+  content: attr(data-language);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: hsl(var(--muted-foreground));
+  background: hsl(var(--muted) / 0.5);
+  border-bottom-left-radius: 0.25rem;
+  border-top-right-radius: 0.5rem;
+  text-transform: lowercase;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.prose-editor .ProseMirror pre code {
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Syntax highlighting theme for light mode */
+.prose-editor .hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0;
+  background: transparent;
+}
+
+.prose-editor .hljs-comment,
+.prose-editor .hljs-quote {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.prose-editor .hljs-keyword,
+.prose-editor .hljs-selector-tag,
+.prose-editor .hljs-subst {
+  color: #d73a49;
+  font-weight: bold;
+}
+
+.prose-editor .hljs-number,
+.prose-editor .hljs-literal,
+.prose-editor .hljs-variable,
+.prose-editor .hljs-template-variable,
+.prose-editor .hljs-tag .hljs-attr {
+  color: #005cc5;
+}
+
+.prose-editor .hljs-string,
+.prose-editor .hljs-doctag {
+  color: #032f62;
+}
+
+.prose-editor .hljs-title,
+.prose-editor .hljs-section,
+.prose-editor .hljs-selector-id {
+  color: #6f42c1;
+  font-weight: bold;
+}
+
+.prose-editor .hljs-type,
+.prose-editor .hljs-class .hljs-title {
+  color: #e36209;
+  font-weight: bold;
+}
+
+.prose-editor .hljs-tag,
+.prose-editor .hljs-name,
+.prose-editor .hljs-attribute {
+  color: #22863a;
+  font-weight: normal;
+}
+
+.prose-editor .hljs-regexp,
+.prose-editor .hljs-link {
+  color: #032f62;
+}
+
+.prose-editor .hljs-symbol,
+.prose-editor .hljs-bullet {
+  color: #005cc5;
+}
+
+.prose-editor .hljs-built_in,
+.prose-editor .hljs-builtin-name {
+  color: #005cc5;
+}
+
+.prose-editor .hljs-meta {
+  color: #005cc5;
+  font-weight: bold;
+}
+
+.prose-editor .hljs-deletion {
+  color: #b31d28;
+  background-color: #ffeef0;
+}
+
+.prose-editor .hljs-addition {
+  color: #22863a;
+  background-color: #f0fff4;
+}
+
+.prose-editor .hljs-emphasis {
+  font-style: italic;
+}
+
+.prose-editor .hljs-strong {
+  font-weight: bold;
+}
+
+/* Dark mode syntax highlighting */
+.dark .prose-editor .hljs-comment,
+.dark .prose-editor .hljs-quote {
+  color: #8b949e;
+}
+
+.dark .prose-editor .hljs-keyword,
+.dark .prose-editor .hljs-selector-tag,
+.dark .prose-editor .hljs-subst {
+  color: #ff7b72;
+}
+
+.dark .prose-editor .hljs-number,
+.dark .prose-editor .hljs-literal,
+.dark .prose-editor .hljs-variable,
+.dark .prose-editor .hljs-template-variable,
+.dark .prose-editor .hljs-tag .hljs-attr {
+  color: #79c0ff;
+}
+
+.dark .prose-editor .hljs-string,
+.dark .prose-editor .hljs-doctag {
+  color: #a5d6ff;
+}
+
+.dark .prose-editor .hljs-title,
+.dark .prose-editor .hljs-section,
+.dark .prose-editor .hljs-selector-id {
+  color: #d2a8ff;
+}
+
+.dark .prose-editor .hljs-type,
+.dark .prose-editor .hljs-class .hljs-title {
+  color: #ffa657;
+}
+
+.dark .prose-editor .hljs-tag,
+.dark .prose-editor .hljs-name,
+.dark .prose-editor .hljs-attribute {
+  color: #7ee787;
+}
+
+.dark .prose-editor .hljs-regexp,
+.dark .prose-editor .hljs-link {
+  color: #a5d6ff;
+}
+
+.dark .prose-editor .hljs-symbol,
+.dark .prose-editor .hljs-bullet {
+  color: #79c0ff;
+}
+
+.dark .prose-editor .hljs-built_in,
+.dark .prose-editor .hljs-builtin-name {
+  color: #79c0ff;
+}
+
+.dark .prose-editor .hljs-meta {
+  color: #79c0ff;
+}
+
+.dark .prose-editor .hljs-deletion {
+  color: #ffa198;
+  background-color: rgba(255, 161, 152, 0.1);
+}
+
+.dark .prose-editor .hljs-addition {
+  color: #56d364;
+  background-color: rgba(86, 211, 100, 0.1);
+}
+
+/* Dark mode code block background */
+.dark .prose-editor .ProseMirror pre {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+}
+
+/* Inline code in rendered posts */
+.prose code:not(pre code) {
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.85em;
+  font-weight: 500;
+  border: 1px solid hsl(var(--border) / 0.5);
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.prose code:not(pre code):hover {
+  background-color: hsl(var(--muted) / 0.8);
+  border-color: hsl(var(--border) / 0.8);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.dark .prose code:not(pre code) {
+  background-color: hsl(var(--muted) / 0.8);
+  color: #79c0ff;
+  border-color: hsl(var(--border) / 0.3);
+}
+
+/* Code blocks in rendered posts */
+.prose pre {
+  background: hsl(var(--muted));
+  border-radius: 0.5rem;
+  color: hsl(var(--foreground));
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.875rem;
+  margin: 1rem 0;
+  overflow-x: auto;
+  padding: 1rem;
+  position: relative;
+  border: 1px solid hsl(var(--border) / 0.5);
+}
+
+/* Better scrollbar for code blocks */
+.prose pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.prose pre::-webkit-scrollbar-track {
+  background: hsl(var(--muted) / 0.5);
+  border-radius: 4px;
+}
+
+.prose pre::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+.prose pre::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+.prose pre code {
+  background: none;
+  border-radius: 0;
+  padding: 0;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Apply same syntax highlighting to rendered posts */
+.prose .hljs {
+  display: block;
+  overflow-x: auto;
+  padding: 0;
+  background: transparent;
+}
+
+/* Copy all the highlight.js styles for .prose */
+.prose .hljs-comment,
+.prose .hljs-quote {
+  color: #6a737d;
+  font-style: italic;
+}
+
+.prose .hljs-keyword,
+.prose .hljs-selector-tag,
+.prose .hljs-subst {
+  color: #d73a49;
+  font-weight: bold;
+}
+
+.prose .hljs-number,
+.prose .hljs-literal,
+.prose .hljs-variable,
+.prose .hljs-template-variable,
+.prose .hljs-tag .hljs-attr {
+  color: #005cc5;
+}
+
+.prose .hljs-string,
+.prose .hljs-doctag {
+  color: #032f62;
+}
+
+.prose .hljs-title,
+.prose .hljs-section,
+.prose .hljs-selector-id {
+  color: #6f42c1;
+  font-weight: bold;
+}
+
+.prose .hljs-type,
+.prose .hljs-class .hljs-title {
+  color: #e36209;
+  font-weight: bold;
+}
+
+.prose .hljs-tag,
+.prose .hljs-name,
+.prose .hljs-attribute {
+  color: #22863a;
+  font-weight: normal;
+}
+
+.prose .hljs-regexp,
+.prose .hljs-link {
+  color: #032f62;
+}
+
+.prose .hljs-symbol,
+.prose .hljs-bullet {
+  color: #005cc5;
+}
+
+.prose .hljs-built_in,
+.prose .hljs-builtin-name {
+  color: #005cc5;
+}
+
+.prose .hljs-meta {
+  color: #005cc5;
+  font-weight: bold;
+}
+
+.prose .hljs-deletion {
+  color: #b31d28;
+  background-color: #ffeef0;
+}
+
+.prose .hljs-addition {
+  color: #22863a;
+  background-color: #f0fff4;
+}
+
+.prose .hljs-emphasis {
+  font-style: italic;
+}
+
+.prose .hljs-strong {
+  font-weight: bold;
+}
+
+/* Dark mode syntax highlighting for rendered posts */
+.dark .prose .hljs-comment,
+.dark .prose .hljs-quote {
+  color: #8b949e;
+}
+
+.dark .prose .hljs-keyword,
+.dark .prose .hljs-selector-tag,
+.dark .prose .hljs-subst {
+  color: #ff7b72;
+}
+
+.dark .prose .hljs-number,
+.dark .prose .hljs-literal,
+.dark .prose .hljs-variable,
+.dark .prose .hljs-template-variable,
+.dark .prose .hljs-tag .hljs-attr {
+  color: #79c0ff;
+}
+
+.dark .prose .hljs-string,
+.dark .prose .hljs-doctag {
+  color: #a5d6ff;
+}
+
+.dark .prose .hljs-title,
+.dark .prose .hljs-section,
+.dark .prose .hljs-selector-id {
+  color: #d2a8ff;
+}
+
+.dark .prose .hljs-type,
+.dark .prose .hljs-class .hljs-title {
+  color: #ffa657;
+}
+
+.dark .prose .hljs-tag,
+.dark .prose .hljs-name,
+.dark .prose .hljs-attribute {
+  color: #7ee787;
+}
+
+.dark .prose .hljs-regexp,
+.dark .prose .hljs-link {
+  color: #a5d6ff;
+}
+
+.dark .prose .hljs-symbol,
+.dark .prose .hljs-bullet {
+  color: #79c0ff;
+}
+
+.dark .prose .hljs-built_in,
+.dark .prose .hljs-builtin-name {
+  color: #79c0ff;
+}
+
+.dark .prose .hljs-meta {
+  color: #79c0ff;
+}
+
+.dark .prose .hljs-deletion {
+  color: #ffa198;
+  background-color: rgba(255, 161, 152, 0.1);
+}
+
+.dark .prose .hljs-addition {
+  color: #56d364;
+  background-color: rgba(86, 211, 100, 0.1);
+}
+
+/* Dark mode code block background for rendered posts */
+.dark .prose pre {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+}
+
+/* Copy button for code blocks */
+.prose pre:hover .copy-button,
+.prose-editor .ProseMirror pre:hover .copy-button {
+  opacity: 1 !important;
+}
+
+/* Line numbers for code blocks (optional enhancement) */
+.prose pre.line-numbers,
+.prose-editor .ProseMirror pre.line-numbers {
+  padding-left: 3.5rem;
+}
+
+.prose pre.line-numbers code,
+.prose-editor .ProseMirror pre.line-numbers code {
+  counter-reset: line;
+}
+
+.prose pre.line-numbers code > span,
+.prose-editor .ProseMirror pre.line-numbers code > span {
+  counter-increment: line;
+  position: relative;
+}
+
+.prose pre.line-numbers code > span::before,
+.prose-editor .ProseMirror pre.line-numbers code > span::before {
+  content: counter(line);
+  position: absolute;
+  left: -3rem;
+  width: 2.5rem;
+  text-align: right;
+  color: hsl(var(--muted-foreground) / 0.5);
+  font-size: 0.75rem;
+  user-select: none;
 }
 
 .prose-editor .ProseMirror a {

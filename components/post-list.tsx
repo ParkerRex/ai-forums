@@ -16,7 +16,78 @@ export default function PostList({ categoryId, sortBy = "newest", freeOnly = fal
     limit: 20,
     sortBy,
     freeOnly,
-  });
+  }) as Array<{
+    _id: Id<"posts">;
+    title: string;
+    content: string;
+    preview?: string;
+    isFree?: boolean;
+    slug: string;
+    createdAt: number;
+    updatedAt: number;
+    memberId: Id<"members">;
+    categoryId: Id<"categories">;
+    status: "active" | "deleted" | "hidden" | "archived";
+    upvotes: number;
+    downvotes: number;
+    netVotes: number;
+    commentCount: number;
+    viewCount: number;
+    isPinned?: boolean;
+    isLocked?: boolean;
+    editedAt?: number;
+    type?: "text" | "image" | "video" | "link" | "poll";
+    pollOptions?: Array<{
+      id: string;
+      text: string;
+      voteCount: number;
+    }>;
+    pollEndsAt?: number;
+    totalPollVotes?: number;
+    mediaUrl?: string;
+    thumbnailUrl?: string;
+    aspectRatio?: number;
+    mediaWidth?: number;
+    mediaHeight?: number;
+    linkUrl?: string;
+    linkTitle?: string;
+    linkDescription?: string;
+    linkImage?: string;
+    attachments?: Array<{
+      id: string;
+      type: "image" | "video" | "pdf" | "youtube";
+      url: string;
+      thumbnailUrl?: string;
+      width?: number;
+      height?: number;
+      aspectRatio?: number;
+      order: number;
+      pageCount?: number;
+      fileSize?: number;
+      videoId?: string;
+      title?: string;
+      duration?: string;
+      channelName?: string;
+      videoDuration?: string;
+      format?: string;
+      resolution?: string;
+      codec?: string;
+    }>;
+    member: {
+      _id: Id<"members">;
+      firstName: string;
+      lastName: string;
+      email: string;
+      username: string;
+      slug: string;
+    } | null;
+    category: {
+      _id: Id<"categories">;
+      name: string;
+      displayName: string;
+      icon?: string;
+    } | null;
+  }> | undefined | null;
 
   // Loading state
   if (posts === undefined) {

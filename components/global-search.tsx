@@ -267,6 +267,9 @@ export function GlobalSearch() {
     debouncedSearchTerm.trim() ? { searchTerm: debouncedSearchTerm } : "skip",
   ) as SearchResult[] | undefined;
 
+  // Hide results if the current search term is empty (prevents glitch when clearing)
+  const displayResults = searchTerm.trim() ? results : undefined;
+
   const handleSelect = useCallback(
     (result: SearchResult) => {
       closeSearch();
@@ -290,14 +293,14 @@ export function GlobalSearch() {
   );
 
   const groupedResults = useMemo(() => {
-    if (!results) return { posts: [], comments: [], links: [] };
+    if (!displayResults) return { posts: [], comments: [], links: [] };
 
     return {
-      posts: results.filter((r) => r.type === "post"),
-      comments: results.filter((r) => r.type === "comment"),
-      links: results.filter((r) => r.type === "link"),
+      posts: displayResults.filter((r) => r.type === "post"),
+      comments: displayResults.filter((r) => r.type === "comment"),
+      links: displayResults.filter((r) => r.type === "link"),
     };
-  }, [results]);
+  }, [displayResults]);
 
   return (
     <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
@@ -309,8 +312,10 @@ export function GlobalSearch() {
       />
       <CommandList>
         <CommandEmpty>
-          {debouncedSearchTerm.trim()
-            ? "No results found."
+          {searchTerm.trim()
+            ? displayResults === undefined
+              ? "Searching..."
+              : "No results found."
             : "Start typing to search..."}
         </CommandEmpty>
 

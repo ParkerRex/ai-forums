@@ -849,11 +849,20 @@ export default function CommentSection({
         <Unauthenticated>
           <div className="mb-6 p-4 bg-muted/50 rounded-lg text-center">
             <p className="text-muted-foreground mb-4">
-              Join the conversation! Sign in to post comments.
+              Members-only discussion. Join VAI Community to participate.
             </p>
-            <SignInButton mode="modal">
-              <Button variant="outline">Sign In to Comment</Button>
-            </SignInButton>
+            <div className="space-y-2">
+              <SignInButton mode="modal">
+                <Button variant="outline" className="w-full sm:w-auto">Sign In (Members Only)</Button>
+              </SignInButton>
+              <Button 
+                variant="ghost" 
+                className="w-full sm:w-auto"
+                onClick={() => window.location.href = '/pricing'}
+              >
+                Become a Member
+              </Button>
+            </div>
           </div>
         </Unauthenticated>
 
@@ -883,7 +892,7 @@ export default function CommentSection({
             </div>
           ) : (
             <div className="space-y-4">
-              {comments?.map((comment, index) => (
+              {comments?.map((comment: CommentWithReplies, index: number) => (
                 <CommentItem
                   key={comment._id}
                   comment={comment}

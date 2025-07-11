@@ -25,7 +25,8 @@ import { Id } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
 import { insertNotification } from "./notifications";
-import { canViewFullContent } from "./helpers/access";
+import { canViewFullContent, canViewPost } from "./helpers/access";
+import { api, internal } from "./_generated/api";
 
 /**
  * Checks if a member is the author of a post for authorization purposes.
@@ -58,6 +59,30 @@ function isPostAuthor(post: { memberId: Id<"members"> }, memberId: Id<"members">
  * ```
  */
 function validateContentUrls(content: string): void {
+  // CODE REVIEW: URL validation implementation
+  // 
+  // SECURITY CONCERNS:
+  // 1. The regex patterns may not catch all URL variations. Consider using a more comprehensive pattern
+  //    or a proper URL parsing library specifically designed for security validation
+  // 2. The private IP check doesn't cover all RFC1918 ranges - missing 172.16.0.0/12 proper validation
+  // 3. IPv6 localhost (::1) and link-local addresses are not blocked
+  // 4. The protocol check happens after URL parsing, but the regex only matches http(s) - this is redundant
+  // 5. No validation for IDN homograph attacks (e.g., using Cyrillic characters that look like Latin)
+  // 6. No length limits on URLs - could lead to DoS with extremely long URLs
+  // 
+  // EDGE CASES:
+  // 1. URLs with unicode characters may not be properly validated
+  // 2. URL fragments and query parameters aren't specifically validated
+  // 3. Relative URLs in markdown links will throw errors even though they might be safe
+  // 4. The regex doesn't handle markdown links with titles: [link](url "title")
+  // 
+  // RECOMMENDATIONS:
+  // 1. Use a proper URL validation library like validator.js or DOMPurify
+  // 2. Add IPv6 validation
+  // 3. Implement URL length limits (e.g., max 2048 characters)
+  // 4. Consider allowing relative URLs for internal links
+  // 5. Add rate limiting on validation to prevent DoS
+  
   // Match URLs and markdown links
   const urlRegex = /https?:\/\/[^\s)]+/g;
   const markdownRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
@@ -635,6 +660,19 @@ export const createPost = mutation({
       postCount: (category.postCount || 0) + 1,
       updatedAt: now,
     });
+    
+    // Schedule preview generation if not provided
+    if (!args.preview || args.preview.trim() === "") {
+      await ctx.scheduler.runAfter(
+        0,
+        api.previewGeneration.generateAndUpdatePostPreview,
+        { 
+          postId,
+          title: args.title.trim(),
+          content: args.content.trim()
+        }
+      );
+    }
 
     // Create mention notifications
     try {
@@ -1062,6 +1100,19 @@ export const editPost = mutation({
       throw new Error("Failed to retrieve updated post");
     }
     
+    // Schedule preview regeneration if title or content changed
+    if ((args.title !== undefined || args.content !== undefined) && (!updatedPost.preview || updatedPost.preview.trim() === "")) {
+      await ctx.scheduler.runAfter(
+        0,
+        api.previewGeneration.generateAndUpdatePostPreview,
+        { 
+          postId: args.postId,
+          title: updatedPost.title,
+          content: updatedPost.content
+        }
+      );
+    }
+    
     // Get the category for the URL (use updated category if changed)
     const category = await ctx.db.get(updatedPost.categoryId);
     
@@ -1153,8 +1204,6 @@ export const canUserViewPost = query({
     postId: v.id("posts"),
   },
   handler: async (ctx, { postId }) => {
-    const { canViewPost } = await import("./helpers/access");
-    
     const post = await ctx.db.get(postId);
     if (!post) {
       return false;
@@ -1252,28 +1301,16 @@ export const searchPosts = query({
       return [];
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const baseSearch = (q: any) => {
-      let query = q.search("title", searchTerm).eq("status", "active");
-      if (categoryId) {
-        query = query.eq("categoryId", categoryId);
-      }
-      return query;
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const baseContentSearch = (q: any) => {
-      let query = q.search("content", searchTerm).eq("status", "active");
-      if (categoryId) {
-        query = query.eq("categoryId", categoryId);
-      }
-      return query;
-    };
-
     // Search titles
     const titleQuery = ctx.db
       .query("posts")
-      .withSearchIndex("search_posts", baseSearch);
+      .withSearchIndex("search_posts", (q) => {
+        let query = q.search("title", searchTerm).eq("status", "active");
+        if (categoryId) {
+          query = query.eq("categoryId", categoryId);
+        }
+        return query;
+      });
 
     let posts = await titleQuery.take(limit);
 
@@ -1281,7 +1318,13 @@ export const searchPosts = query({
     if (includeContent) {
       const contentQuery = ctx.db
         .query("posts")
-        .withSearchIndex("search_posts_content", baseContentSearch);
+        .withSearchIndex("search_posts_content", (q) => {
+          let query = q.search("content", searchTerm).eq("status", "active");
+          if (categoryId) {
+            query = query.eq("categoryId", categoryId);
+          }
+          return query;
+        });
       
       const contentPosts = await contentQuery.take(limit);
       

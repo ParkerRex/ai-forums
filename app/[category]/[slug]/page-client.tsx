@@ -32,6 +32,7 @@ import { Id } from "@/convex/_generated/dataModel";
 import CommentSection from "@/components/comment-section";
 import { use, useState, useEffect } from "react";
 import { notFound, useSearchParams, useRouter } from "next/navigation";
+import { Badge } from "@/components/ui/badge";
 
 /**
  * Props for the PostPageClient component
@@ -168,11 +169,73 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   if (post === undefined) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-8">
-        <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded mb-4"></div>
-          <div className="h-4 bg-muted rounded mb-2"></div>
-          <div className="h-4 bg-muted rounded mb-2"></div>
-          <div className="h-4 bg-muted rounded w-2/3"></div>
+        {/* Post header skeleton */}
+        <div className="mb-6">
+          {/* Category badge and metadata */}
+          <div className="flex items-center gap-2 mb-4">
+            <div className="h-6 bg-muted rounded-full w-20 animate-pulse" />
+            <div className="h-4 bg-muted rounded w-48 animate-pulse" />
+          </div>
+          
+          {/* Post title */}
+          <div className="h-10 bg-muted rounded mb-4 animate-pulse" />
+          
+          {/* Author and voting section */}
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center space-x-4">
+              <div className="w-10 h-10 bg-muted rounded-full animate-pulse" />
+              <div>
+                <div className="h-4 bg-muted rounded w-32 animate-pulse mb-2" />
+                <div className="h-3 bg-muted rounded w-24 animate-pulse" />
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-muted rounded animate-pulse" />
+              <div className="h-6 bg-muted rounded w-12 animate-pulse" />
+            </div>
+          </div>
+        </div>
+        
+        {/* Post content skeleton */}
+        <div className="space-y-4 mb-8">
+          <div className="h-4 bg-muted rounded animate-pulse" />
+          <div className="h-4 bg-muted rounded animate-pulse" />
+          <div className="h-4 bg-muted rounded w-5/6 animate-pulse" />
+          <div className="h-32 bg-muted rounded animate-pulse my-6" />
+          <div className="h-4 bg-muted rounded animate-pulse" />
+          <div className="h-4 bg-muted rounded w-4/5 animate-pulse" />
+          <div className="h-4 bg-muted rounded animate-pulse" />
+        </div>
+        
+        {/* Action buttons skeleton */}
+        <div className="flex items-center justify-between py-4 border-t border-b mb-8">
+          <div className="flex items-center space-x-4">
+            <div className="h-9 bg-muted rounded w-20 animate-pulse" />
+            <div className="h-9 bg-muted rounded w-24 animate-pulse" />
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="w-9 h-9 bg-muted rounded animate-pulse" />
+            <div className="w-9 h-9 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+        
+        {/* Comments section skeleton */}
+        <div>
+          <div className="h-6 bg-muted rounded w-32 animate-pulse mb-4" />
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="border rounded-lg p-4">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 bg-muted rounded-full animate-pulse" />
+                  <div className="flex-1">
+                    <div className="h-4 bg-muted rounded w-24 animate-pulse mb-2" />
+                    <div className="h-3 bg-muted rounded animate-pulse mb-1" />
+                    <div className="h-3 bg-muted rounded w-4/5 animate-pulse" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -255,9 +318,9 @@ export default function PostPageClient({ params }: PostPageClientProps) {
               <div className="border-b pb-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                    <Badge variant="secondary" className="bg-primary/10 text-primary">
                       {post.category?.displayName || "General"}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
                 <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
@@ -284,6 +347,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 {/* Direct Paywall */}
                 <PostPaywallDirect 
                   postId={post._id}
+                  postTitle={post.title}
                 />
               </div>
             </div>
@@ -313,9 +377,9 @@ export default function PostPageClient({ params }: PostPageClientProps) {
               <div className="border-b pb-6">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-2">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
+                    <Badge variant="secondary" className="bg-primary/10 text-primary">
                       {post.category?.displayName || "General"}
-                    </span>
+                    </Badge>
                   </div>
                 </div>
                 <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
@@ -342,6 +406,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 {/* Direct Paywall */}
                 <PostPaywallDirect 
                   postId={post._id}
+                  postTitle={post.title}
                 />
               </div>
             </div>

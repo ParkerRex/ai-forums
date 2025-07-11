@@ -33,11 +33,13 @@ export function AutoSignIn({ signInToken, email, sourcePostId }: AutoSignInProps
           });
 
           if (signInResult.status === "complete") {
-            // Sign-in successful, redirect to onboarding with source post if available
-            const onboardingUrl = sourcePostId 
-              ? `/onboarding/setup?source_post_id=${sourcePostId}`
-              : "/onboarding/setup";
-            router.push(onboardingUrl);
+            // Sign-in successful, redirect to source post or home
+            if (sourcePostId) {
+              // TODO: Get the actual post URL from the post ID
+              router.push("/");
+            } else {
+              router.push("/");
+            }
           } else {
             throw new Error("Sign-in not complete");
           }
@@ -59,7 +61,8 @@ export function AutoSignIn({ signInToken, email, sourcePostId }: AutoSignInProps
         
         // Redirect to sign-in page after a delay
         setTimeout(() => {
-          router.push(`/sign-in?redirect_url=/onboarding/setup&prefill_email=${encodeURIComponent(email)}`);
+          const redirectUrl = sourcePostId ? `/?source_post_id=${sourcePostId}` : "/";
+          router.push(`/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}&prefill_email=${encodeURIComponent(email)}`);
         }, 3000);
       }
     };
