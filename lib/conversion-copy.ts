@@ -33,7 +33,7 @@ export const paywallCopy: Record<PaywallVariant, PaywallCopy> = {
     trustSignals: [
       "Cancel in one click",
       "30-day money-back guarantee",
-      "Join 2,000+ engineers"
+      "Join 100+ engineers"
     ],
     valueProp: "We could make this free, but then we'd have to show you ads 🤮"
   },
@@ -45,7 +45,7 @@ export const paywallCopy: Record<PaywallVariant, PaywallCopy> = {
     trustSignals: [
       "Cancel anytime (we won't cry)",
       "30-day guarantee (we're confident)",
-      "2,000+ engineers can't be wrong"
+      "100+ engineers can't be wrong"
     ],
     valueProp: "At least we're honest about wanting your money 🤷"
   },
@@ -63,7 +63,7 @@ export const paywallCopy: Record<PaywallVariant, PaywallCopy> = {
   },
   
   social: {
-    headline: "Join 2,000+ smart engineers inside",
+    headline: "Join 100+ smart engineers inside",
     subheadline: "Vercel engineers, OpenAI researchers, and indie hackers are already here.",
     cta: "Join the community → $99/mo",
     trustSignals: [
@@ -94,7 +94,7 @@ export const successCopy: Record<PaywallVariant, SuccessCopy> = {
   default: {
     headline: "You're in! Welcome to the inside 🎉",
     welcome: (name) => name ? `We're excited to have you, ${name}!` : "We're excited to have you!",
-    celebration: "You just joined 2,000+ engineers building the future of AI.",
+    celebration: "You just joined 100+ engineers building the future of AI.",
     nextSteps: "Let's get you set up and exploring."
   },
   
@@ -115,7 +115,7 @@ export const successCopy: Record<PaywallVariant, SuccessCopy> = {
   social: {
     headline: "Welcome to the community! 🚀",
     welcome: (name) => name ? `${name}, you're now part of something special.` : "You're now part of something special.",
-    celebration: "2,001 engineers and counting. You're in good company.",
+    celebration: "101 engineers and counting. You're in good company.",
     nextSteps: "Join our Discord and say hi!"
   },
   
@@ -144,7 +144,7 @@ export const trustMessages = {
   },
   
   value: {
-    community: "You're not just buying content. You're joining 2,000+ engineers.",
+    community: "You're not just buying content. You're joining 100+ engineers.",
     quality: "Every post is worth the price of admission.",
     support: "Your subscription keeps us ad-free and independent."
   }
@@ -158,7 +158,7 @@ export const ctaVariants = {
   humorous: "Shut up and take my money",
   simple: "Join now",
   developer: "git checkout -b premium",
-  social: "Join 2,000+ engineers",
+  social: "Join 100+ engineers",
   direct: "Yes, I want access",
   playful: "I'm convinced. Let's go!",
   transparent: "Start membership - $99/mo"

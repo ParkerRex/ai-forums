@@ -31,7 +31,8 @@
       "Bash(npm run dev:*)",
       "Bash(npm run:*)",
       "Bash(mkdir:*)",
-      "mcp__convex__data"
+      "mcp__convex__data",
+      "WebFetch(domain:vercel.com)"
     ],
     "deny": []
   }
