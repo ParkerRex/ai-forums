@@ -31,6 +31,37 @@ import { api } from "../_generated/api";
 const mockFetch = vi.fn<typeof fetch>();
 global.fetch = mockFetch;
 
+// Helper function to create a mock Response object with all required properties
+function createMockResponse(config: {
+  ok: boolean;
+  status: number;
+  statusText: string;
+  json: () => Promise<any>;
+  text?: () => Promise<string>;
+}): Response {
+  const { ok, status, statusText, json, text } = config;
+  const jsonText = text || (async () => JSON.stringify(await json()));
+  
+  return {
+    ok,
+    status,
+    statusText,
+    json,
+    text: jsonText,
+    headers: new Headers(),
+    redirected: false,
+    type: 'default',
+    url: 'https://api.github.com/repos/joinvai/vai-vex/issues',
+    body: null,
+    bodyUsed: false,
+    arrayBuffer: async () => new ArrayBuffer(0),
+    blob: async () => new Blob(),
+    bytes: async () => new Uint8Array(),
+    formData: async () => new FormData(),
+    clone: () => ({} as Response)
+  } as Response;
+}
+
 /**
  * Test setup and teardown hooks
  * 
@@ -69,13 +100,15 @@ test("createFeatureRequest creates issue with authenticated user", async () => {
   
   // Mock successful GitHub API response
   // This simulates a successful issue creation on GitHub
-  mockFetch.mockResolvedValueOnce({
-    ok: true, // HTTP 200 OK status
+  mockFetch.mockResolvedValueOnce(createMockResponse({
+    ok: true,
+    status: 200,
+    statusText: 'OK',
     json: async () => ({
       number: 123, // GitHub issue number
       html_url: 'https://github.com/joinvai/vai-vex/issues/123' // Public issue URL
     })
-  });
+  }));
 
   // Set up authenticated user context for the feature request
   // This simulates a logged-in user submitting a feature request
@@ -119,7 +152,7 @@ test("createFeatureRequest creates issue with authenticated user", async () => {
 
   // Verify the request payload was formatted correctly
   const fetchCall = mockFetch.mock.calls[0];
-  const requestBody = JSON.parse(fetchCall[1].body);
+  const requestBody = JSON.parse(fetchCall[1]?.body as string);
   
   // Validate issue title formatting
   expect(requestBody.title).toBe('[Feature] Add dark mode');
@@ -153,13 +186,15 @@ test("createFeatureRequest creates issue with anonymous user", async () => {
   const t = convexTest(schema);
   
   // Mock successful GitHub API response for anonymous submission
-  mockFetch.mockResolvedValueOnce({
+  mockFetch.mockResolvedValueOnce(createMockResponse({
     ok: true,
+    status: 200,
+    statusText: 'OK',
     json: async () => ({
       number: 124, // Different issue number for isolation
       html_url: 'https://github.com/joinvai/vai-vex/issues/124'
     })
-  });
+  }));
 
   // Call action without authentication context (anonymous user)
   const result = await t.action(api.github.createFeatureRequest, {
@@ -177,7 +212,7 @@ test("createFeatureRequest creates issue with anonymous user", async () => {
 
   // Verify request body handles anonymous user correctly
   const fetchCall = mockFetch.mock.calls[0];
-  const requestBody = JSON.parse(fetchCall[1].body);
+  const requestBody = JSON.parse(fetchCall[1]?.body as string);
   
   // Anonymous users should be clearly identified in the issue
   expect(requestBody.body).toContain('Anonymous user');
@@ -201,13 +236,15 @@ test("createFeatureRequest handles non-image attachments", async () => {
   const t = convexTest(schema);
   
   // Mock successful API response
-  mockFetch.mockResolvedValueOnce({
+  mockFetch.mockResolvedValueOnce(createMockResponse({
     ok: true,
+    status: 200,
+    statusText: 'OK',
     json: async () => ({
       number: 125,
       html_url: 'https://github.com/joinvai/vai-vex/issues/125'
     })
-  });
+  }));
 
   // Test with various file types to validate attachment handling
   await t.action(api.github.createFeatureRequest, {
@@ -222,7 +259,7 @@ test("createFeatureRequest handles non-image attachments", async () => {
 
   // Verify different file types are handled appropriately
   const fetchCall = mockFetch.mock.calls[0];
-  const requestBody = JSON.parse(fetchCall[1].body);
+  const requestBody = JSON.parse(fetchCall[1]?.body as string);
   
   // PDF should be formatted as download link with document icon
   expect(requestBody.body).toContain('[📎 document.pdf](https://example.com/document.pdf)');
@@ -275,15 +312,17 @@ test("createFeatureRequest handles GitHub API errors", async () => {
   const t = convexTest(schema);
   
   // Mock GitHub API error response (e.g., authentication failure)
-  mockFetch.mockResolvedValueOnce({
-    ok: false, // HTTP error status
+  mockFetch.mockResolvedValueOnce(createMockResponse({
+    ok: false,
+    status: 401,
+    statusText: 'Unauthorized',
     json: async () => ({
       message: 'Bad credentials', // GitHub error message
       errors: [
         { code: 'invalid_token', message: 'Token is expired' } // Detailed error info
       ]
     })
-  });
+  }));
 
   // Attempt feature request creation with invalid token
   await expect(
@@ -336,12 +375,15 @@ test("createFeatureRequest handles malformed API response", async () => {
   const t = convexTest(schema);
   
   // Mock malformed API response that fails to parse as JSON
-  mockFetch.mockResolvedValueOnce({
-    ok: false, // Error status
+  mockFetch.mockResolvedValueOnce(createMockResponse({
+    ok: false,
+    status: 500,
+    statusText: 'Internal Server Error',
     json: async () => { 
       throw new Error('Invalid JSON'); // Simulate JSON parsing failure
-    }
-  });
+    },
+    text: async () => 'Invalid response'
+  }));
 
   // Attempt feature request creation with malformed response
   await expect(
