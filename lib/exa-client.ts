@@ -50,3 +50,27 @@ export async function searchNews(
 
   return response.json();
 }
+
+export async function summarize(text: string): Promise<string> {
+  if (!text || text.trim().length === 0) {
+    return '';
+  }
+  
+  // For Phase 0, we'll return a truncated version of the text
+  // In future phases, this could call an AI summarization API
+  const maxLength = 150;
+  const trimmed = text.trim();
+  
+  if (trimmed.length <= maxLength) {
+    return trimmed;
+  }
+  
+  // Find a good break point (end of sentence)
+  let cutoff = maxLength;
+  const sentenceEnd = trimmed.lastIndexOf('.', maxLength);
+  if (sentenceEnd > maxLength * 0.8) {
+    cutoff = sentenceEnd + 1;
+  }
+  
+  return trimmed.substring(0, cutoff).trim() + '...';
+}
