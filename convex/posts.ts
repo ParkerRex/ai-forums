@@ -26,7 +26,7 @@ import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
 import { insertNotification } from "./notifications";
 import { canViewFullContent, canViewPost } from "./helpers/access";
-import { api, internal } from "./_generated/api";
+import { api } from "./_generated/api";
 
 /**
  * Checks if a member is the author of a post for authorization purposes.
@@ -59,39 +59,19 @@ function isPostAuthor(post: { memberId: Id<"members"> }, memberId: Id<"members">
  * ```
  */
 function validateContentUrls(content: string): void {
-  // CODE REVIEW: URL validation implementation
-  // 
-  // SECURITY CONCERNS:
-  // 1. The regex patterns may not catch all URL variations. Consider using a more comprehensive pattern
-  //    or a proper URL parsing library specifically designed for security validation
-  // 2. The private IP check doesn't cover all RFC1918 ranges - missing 172.16.0.0/12 proper validation
-  // 3. IPv6 localhost (::1) and link-local addresses are not blocked
-  // 4. The protocol check happens after URL parsing, but the regex only matches http(s) - this is redundant
-  // 5. No validation for IDN homograph attacks (e.g., using Cyrillic characters that look like Latin)
-  // 6. No length limits on URLs - could lead to DoS with extremely long URLs
-  // 
-  // EDGE CASES:
-  // 1. URLs with unicode characters may not be properly validated
-  // 2. URL fragments and query parameters aren't specifically validated
-  // 3. Relative URLs in markdown links will throw errors even though they might be safe
-  // 4. The regex doesn't handle markdown links with titles: [link](url "title")
-  // 
-  // RECOMMENDATIONS:
-  // 1. Use a proper URL validation library like validator.js or DOMPurify
-  // 2. Add IPv6 validation
-  // 3. Implement URL length limits (e.g., max 2048 characters)
-  // 4. Consider allowing relative URLs for internal links
-  // 5. Add rate limiting on validation to prevent DoS
-  
+  // Extract, deduplicate, and validate any URLs (including markdown links)
+  // present within the provided content string. Throws an error for any
+  // URL that is malformed, uses a disallowed protocol, or targets a
+  // private/localhost address to mitigate XSS and SSRF vectors.
   // Match URLs and markdown links
-  const urlRegex = /https?:\/\/[^\s)]+/g;
+  const urlPattern = /https?:\/\/[^\s)]+/g;
   const markdownRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
   
   const urls = new Set<string>();
   
   // Extract bare URLs
   let match;
-  while ((match = urlRegex.exec(content)) !== null) {
+  while ((match = urlPattern.exec(content)) !== null) {
     urls.add(match[0]);
   }
   
