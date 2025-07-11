@@ -32,7 +32,8 @@
       "Bash(npm run:*)",
       "Bash(mkdir:*)",
       "mcp__convex__data",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "WebFetch(domain:vercel.com)"
     ],
     "deny": []
   }

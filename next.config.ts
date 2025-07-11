@@ -29,6 +29,12 @@ const nextConfig: NextConfig = {
         hostname: "14d1d4528aaefcc1f32912faf86ca612.r2.cloudflarestorage.com",
         pathname: "/**",
       },
+      // Public R2 bucket hostname
+      {
+        protocol: "https",
+        hostname: "pub-118afec7cb16482aa1157fc863f4911a.r2.dev",
+        pathname: "/**",
+      },
       // Giphy media domains
       {
         protocol: "https",

@@ -1,22 +1,21 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { ChevronDown, User, Settings, CreditCard, LogOut } from "lucide-react";
+import { User, Settings, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
+import { ThemeToggleSwitch } from "@/components/theme-toggle-switch";
+import { SettingsDialog } from "@/components/settings-dialog";
 
 /**
  * MemberDropdown component provides a user profile dropdown menu with member information
@@ -41,6 +40,7 @@ export function MemberDropdown() {
   
   // State to control dropdown open/closed state for programmatic control
   const [isOpen, setIsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   /**
    * Handles navigation to the user's profile page.
@@ -53,18 +53,10 @@ export function MemberDropdown() {
   };
 
   /**
-   * Handles navigation to the account settings page.
+   * Handles opening the settings dialog.
    */
   const handleSettingsClick = () => {
-    router.push("/settings");
-    setIsOpen(false);
-  };
-
-  /**
-   * Handles navigation to the billing page.
-   */
-  const handleBillingClick = () => {
-    router.push("/settings/billing");
+    setSettingsOpen(true);
     setIsOpen(false);
   };
 
@@ -76,62 +68,20 @@ export function MemberDropdown() {
     setIsOpen(false);
   };
 
-  /**
-   * Gets the appropriate styling classes for the membership tier badge.
-   * Monochromatic design with subtle variations.
-   *
-   * @param tier - The membership tier
-   * @returns string - CSS classes for the badge styling
-   */
-  const getTierBadgeStyle = (tier: string | undefined) => {
-    if (!tier) return "";
-    
-    switch (tier.toLowerCase()) {
-      case "founding_member":
-      case "early_bird":
-      case "member":
-      case "scholarship":
-        return "bg-foreground text-background";
-      case "free":
-      default:
-        return "bg-muted text-muted-foreground";
-    }
-  };
-
-  /**
-   * Gets the display text for the membership tier.
-   */
-  const getTierDisplayName = (tier: string | undefined) => {
-    if (!tier) return "Free";
-    
-    switch (tier) {
-      case "founding_member":
-        return "Founding";
-      case "early_bird":
-        return "Early Bird";
-      case "member":
-        return "Pro";
-      case "scholarship":
-        return "Scholarship";
-      case "free":
-      default:
-        return "Free";
-    }
-  };
 
   if (!currentMember) {
     return null;
   }
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-      {/* Dropdown trigger button with user avatar and chevron indicator */}
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      {/* Avatar-only trigger */}
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
-          className="flex items-center gap-2 px-2 py-1.5 h-auto hover:bg-accent"
+        <button
+          className="relative rounded-full outline-none ring-2 ring-transparent hover:ring-muted-foreground/20 transition-all duration-200 focus-visible:ring-ring"
+          aria-label="Open user menu"
         >
-          {/* User avatar with fallback to initials */}
           <Avatar className="h-8 w-8">
             <AvatarImage src={currentMember.avatarUrl} alt={currentMember.firstName} />
             <AvatarFallback className="text-xs font-medium bg-muted">
@@ -139,45 +89,29 @@ export function MemberDropdown() {
               {currentMember.lastName?.[0]}
             </AvatarFallback>
           </Avatar>
-
-          {/* User name with responsive visibility */}
-          <span className="hidden sm:block text-sm font-medium">
-            {currentMember.firstName} {currentMember.lastName}
-          </span>
-
-          {/* Chevron down icon */}
-          <ChevronDown
-            className={`h-4 w-4 text-muted-foreground transition-transform duration-200 ${
-              isOpen ? "rotate-180" : ""
-            }`}
-          />
-        </Button>
+        </button>
       </DropdownMenuTrigger>
 
       {/* Dropdown content with user info and navigation options */}
-      <DropdownMenuContent align="end" className="w-56">
+      <DropdownMenuContent align="end" className="w-64">
         {/* User information header section */}
-        <DropdownMenuLabel className="font-normal">
-          <div className="flex flex-col space-y-2">
-            {/* User name and email display */}
-            <div className="flex flex-col space-y-1">
-              <p className="text-sm font-medium leading-none">
-                {currentMember.firstName} {currentMember.lastName}
-              </p>
-              <p className="text-xs leading-none text-muted-foreground">
-                {currentMember.email}
-              </p>
-            </div>
-
-            {/* Membership tier badge */}
-            <Badge
-              variant="secondary"
-              className={`w-fit text-xs ${getTierBadgeStyle(currentMember.tier)}`}
-            >
-              {getTierDisplayName(currentMember.tier)} Member
-            </Badge>
+        <div className="flex items-center gap-3 px-2 py-3">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={currentMember.avatarUrl} alt={currentMember.firstName} />
+            <AvatarFallback className="text-sm font-medium bg-muted">
+              {currentMember.firstName?.[0]}
+              {currentMember.lastName?.[0]}
+            </AvatarFallback>
+          </Avatar>
+          <div className="flex flex-col space-y-1">
+            <p className="text-sm font-medium leading-none">
+              {currentMember.firstName} {currentMember.lastName}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {currentMember.email}
+            </p>
           </div>
-        </DropdownMenuLabel>
+        </div>
 
         <DropdownMenuSeparator />
 
@@ -199,14 +133,13 @@ export function MemberDropdown() {
           <span>Settings</span>
         </DropdownMenuItem>
 
-        {/* Billing navigation item */}
-        <DropdownMenuItem
-          onClick={handleBillingClick}
-          className="cursor-pointer"
-        >
-          <CreditCard className="mr-2 h-4 w-4" />
-          <span>Billing</span>
-        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+
+        {/* Theme toggle section */}
+        <div className="px-2 py-2">
+          <p className="text-xs font-medium text-muted-foreground mb-2">Theme</p>
+          <ThemeToggleSwitch className="w-full" />
+        </div>
 
         <DropdownMenuSeparator />
 
@@ -220,5 +153,9 @@ export function MemberDropdown() {
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
+
+    {/* Settings Dialog */}
+    <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </>
   );
 }
