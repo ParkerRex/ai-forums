@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import Image from "next/image";
 import { GiphyFetch } from "@giphy/js-fetch-api";
+import type { IGif } from "@giphy/js-types";
 
 const gf = new GiphyFetch(process.env.NEXT_PUBLIC_GIPHY_API_KEY || "");
 
@@ -15,8 +16,7 @@ interface GifPickerProps {
 
 export function GifPicker({ onGifSelect }: GifPickerProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const [gifs, setGifs] = useState<any[]>([]);
+  const [gifs, setGifs] = useState<IGif[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {

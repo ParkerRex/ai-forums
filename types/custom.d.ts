@@ -1,5 +1,2 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-declare module "dompurify" {
-  const DOMPurify: any;
-  export default DOMPurify;
-} 
+// Custom type declarations
+// Currently empty as all required types are provided by installed @types packages

@@ -212,7 +212,7 @@ export default function AnalyticsPage() {
                           {tier.replace(/_/g, " ")}
                         </span>
                         <span className="text-sm text-muted-foreground">
-                          {formatCurrency(data.revenue)}
+                          {formatCurrency(data.totalRevenue)}
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
@@ -220,13 +220,13 @@ export default function AnalyticsPage() {
                           <div 
                             className="h-full"
                             style={{
-                              width: `${(data.revenue / metrics.revenue.gross) * 100}%`,
+                              width: `${(data.totalRevenue / metrics.revenue.gross) * 100}%`,
                               backgroundColor: TIER_COLORS[tier as keyof typeof TIER_COLORS] || CHART_COLORS.secondary,
                             }}
                           />
                         </div>
                         <span className="text-xs text-muted-foreground">
-                          {data.activeMembers} members
+                          {data.count} members
                         </span>
                       </div>
                     </div>
@@ -327,7 +327,7 @@ export default function AnalyticsPage() {
                   {Object.entries(churnAnalysis.churnByTier).map(([tier, data]) => (
                     <div key={tier} className="flex items-center justify-between">
                       <span className="text-sm capitalize">{tier.replace(/_/g, " ")}</span>
-                      <Badge variant="secondary">{data.count}</Badge>
+                      <Badge variant="secondary">{data.count as number}</Badge>
                     </div>
                   ))}
                 </div>
@@ -349,7 +349,7 @@ export default function AnalyticsPage() {
                     <span className="text-sm font-medium capitalize">{brand}</span>
                     <div className="flex items-center gap-4">
                       <span className="text-sm text-muted-foreground">
-                        {data.count} payments
+                        {data.count as number} payments
                       </span>
                       <span className="text-sm font-medium">
                         {formatCurrency(data.revenue)}

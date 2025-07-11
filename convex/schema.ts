@@ -88,15 +88,25 @@ const members = defineTable({
   
   // Member status and lifecycle
   status: v.union(
-    v.literal("active"),     // Active paying or engaged member
-    v.literal("cancelled"),  // Subscription cancelled but still in grace period
-    v.literal("churned"),    // Previously active, now inactive
-    v.literal("free"),       // Free tier member
-    v.literal("duplicate")   // Duplicate account marked for cleanup
+    v.literal("active"),           // Active paying or engaged member
+    v.literal("cancelled"),        // Subscription cancelled but still in grace period
+    v.literal("churned"),          // Previously active, now inactive
+    v.literal("free"),             // Free tier member
+    v.literal("duplicate"),        // Duplicate account marked for cleanup
+    v.literal("pending_onboarding") // Created from checkout, needs password/social auth
   ),
   joinedDate: v.number(),                   // Unix timestamp of account creation
   updatedAt: v.number(),                    // Last profile update timestamp
   lastOnline: v.number(),                   // Last activity timestamp for presence
+  
+  // Onboarding tracking
+  onboardingCompletedAt: v.optional(v.number()),  // When user completed onboarding
+  authMethod: v.optional(v.union(                 // How user authenticated
+    v.literal("password"),
+    v.literal("google"),
+    v.literal("discord")
+  )),
+  signInToken: v.optional(v.string()),             // Temporary token for auto-signin after checkout
   
   // Profile and location data
   country: v.optional(v.string()),          // Country code or name
@@ -153,6 +163,12 @@ const members = defineTable({
   // Payment history tracking
   lastPaymentDate: v.optional(v.number()),
   amountCents: v.optional(v.number()),
+  lastPaymentFailure: v.optional(v.object({
+    date: v.number(),
+    code: v.string(),
+    message: v.string(),
+    invoiceId: v.string(),
+  })),
   
   // Access control and permissions
   role: v.optional(v.union(
@@ -290,6 +306,10 @@ const posts = defineTable({
     }))),
     pollEndsAt: v.optional(v.number()),      // Poll expiration timestamp
     totalPollVotes: v.optional(v.number()),  // Total votes cast in poll
+    
+    // Content preview for free users
+    preview: v.optional(v.string()),             // Auto-generated preview text (2-3 lines)
+    isFree: v.optional(v.boolean()),             // Whether post is free to read
     
     // Multi-attachment system
     attachments: v.optional(v.array(v.object({
@@ -662,6 +682,7 @@ const resources = defineTable({
       v.literal("advanced")       // Expert-level content
     )),
     isPaid: v.boolean(),                     // Whether resource costs money
+    isFree: v.optional(v.boolean()),        // Whether resource is free for all users
     
     // Engagement and quality metrics
     upvotes: v.number(),                     // Community upvotes
@@ -856,6 +877,7 @@ const subscriptions = defineTable({
   ),
   createdAt: v.number(),
   updatedAt: v.number(),
+  lastFailureAt: v.optional(v.number()),
 })
   .index("by_memberId", ["memberId"])
   .index("by_stripeSubscriptionId", ["stripeSubscriptionId"])
@@ -891,6 +913,7 @@ const payments = defineTable({
   transactionFee: v.optional(v.number()),
   netAmount: v.optional(v.number()),
   failureReason: v.optional(v.string()),
+  failureCode: v.optional(v.string()),
   refundedAmount: v.optional(v.number()),
   createdAt: v.number(),
 })
@@ -913,6 +936,9 @@ const stripeWebhookEvents = defineTable({
   error: v.optional(v.string()),
   createdAt: v.number(),
   processedAt: v.optional(v.number()),
+  retryCount: v.optional(v.number()),
+  lastErrorAt: v.optional(v.number()),
+  needsRetry: v.optional(v.boolean()),
 })
   .index("by_stripeEventId", ["stripeEventId"])
   .index("by_processed", ["processed"])

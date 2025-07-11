@@ -102,8 +102,25 @@ export function PostHistoryModal({
   const [viewMode, setViewMode] = useState<"rendered" | "diff">("rendered");
 
   // Fetch post history
-  const history = useQuery(api.postVersions.getPostHistory, { postId });
-  const currentPost = useQuery(api.posts.getPostById, { postId });
+  const history = useQuery(api.postVersions.getPostHistory, { postId }) as PostVersion[] | undefined;
+  const currentPost = useQuery(api.posts.getPostById, { postId }) as {
+    _id: Id<"posts">;
+    title: string;
+    content: string;
+    createdAt: number;
+    editedAt?: number;
+    member?: {
+      _id: Id<"members">;
+      firstName: string;
+      lastName: string;
+      avatarUrl?: string;
+    } | null;
+    category?: {
+      _id: Id<"categories">;
+      name: string;
+      displayName: string;
+    } | null;
+  } | null | undefined;
 
   // Loading state
   if (history === undefined || currentPost === undefined) {

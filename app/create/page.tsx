@@ -36,9 +36,10 @@ import { PostCreationForm } from "@/components/post-creation-form";
 // Card components provide structured container layouts with proper spacing
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Clerk authentication components for sign-up and sign-in modals
+// Clerk authentication components for sign-in modals
 // These provide pre-built UI for user authentication flows
-import { SignUpButton, SignInButton } from "@clerk/nextjs";
+import { SignInButton } from "@clerk/nextjs";
+import { Button } from "@/components/ui/button";
 
 /**
  * CreatePostSkeleton component renders a loading placeholder during form initialization.
@@ -167,24 +168,33 @@ export default function CreatePostPage() {
           <div className="max-w-md mx-auto">
             {/* Card component with consistent styling and subtle elevation */}
             <div className="bg-card rounded-lg shadow-sm border border-border p-8 text-center">
-              {/* Primary heading with emphasis on community aspect */}
-              <h1 className="text-2xl font-bold text-foreground mb-4">Join VAI Community</h1>
+              {/* Primary heading with emphasis on members-only access */}
+              <h1 className="text-2xl font-bold text-foreground mb-4">Members Only</h1>
               
-              {/* Value proposition text that explains the platform benefits */}
-              {/* Emphasizes the target audience (engineers from top companies) */}
+              {/* Value proposition text that explains membership requirement */}
+              {/* Emphasizes the exclusive nature of the community */}
               <p className="text-muted-foreground mb-6">
-                Create an account to share your AI workflows, prompts, and insights with our community of engineers from top companies.
+                VAI Community is an exclusive platform for engineers from top companies to share AI workflows, prompts, and insights. Membership is required to create content.
               </p>
               
-              {/* Primary call-to-action button using Clerk's pre-built modal */}
-              {/* Modal mode provides seamless UX without page navigation */}
-              <SignUpButton mode="modal" />
-              
-              {/* Secondary action for existing users */}
-              {/* Provides clear path for users who already have accounts */}
-              <p className="text-sm text-muted-foreground">
-                Already have an account? <SignInButton mode="modal" />
-              </p>
+              {/* Primary call-to-action buttons */}
+              <div className="space-y-4">
+                {/* Members sign-in button */}
+                <SignInButton mode="modal">
+                  <Button variant="default" className="w-full">
+                    Sign In (Members Only)
+                  </Button>
+                </SignInButton>
+                
+                {/* Become a member button */}
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => window.location.href = '/pricing'}
+                >
+                  Become a Member
+                </Button>
+              </div>
             </div>
           </div>
         </div>

@@ -2,9 +2,9 @@
 
 .. task checklist ------------------------------------------------------------------------------------------------------
 
-☐ **Phase 0** – Core refactor & hard-coded multi-source feed  
-☐ **Phase 1** – User-configurable sources & Discord daily digest  
-☐ **Phase 2** – Shareable feed page & profile pinning  
+☐ **Phase 0** – Core refactor & hard-coded multi-source feed
+☐ **Phase 1** – User-configurable sources & Discord daily digest
+☐ **Phase 2** – Shareable feed page & profile pinning
 
 ---
 
@@ -24,7 +24,7 @@ Affected files
 * ``lib/news-sources/`` *(new dir)* – fetcher modules per *sourceType* (``rss.ts``, ``youtube.ts``, ``x-twitter.ts`` …).
 * ``lib/exa-client.ts`` – minor: expose ``summarize(text)`` helper.
 * ``convex/newsFeed.ts`` *(new)* – server action that orchestrates multi-source retrieval + Convex caching.
-* ``tests/hooks/use-news-feed.test.tsx`` *(new)* – unit tests for hook logic.
+* `tests/hooks/use-news-feed.test.tsx`` *(new)* – unit tests for hook logic.
 
 Concise changes
 1. **Source schema** – create ``NewsSource`` TS interface:
@@ -87,4 +87,4 @@ Concise changes
 2. **Profile header** – checkbox saves setting via mutation.
 3. **Route ``/feed/[memberId]``** – server component fetches public feed & renders with same widget.
 4. **SEO** – generate OG meta + structured data for discoverability.
-5. **Tests** – e2e visibility toggling & unauthenticated access. 
+5. **Tests** – e2e visibility toggling & unauthenticated access.

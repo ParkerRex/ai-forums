@@ -319,6 +319,13 @@ npx convex dev
 # NEXT_PUBLIC_STRIPE_EARLY_BIRD_PRICE_ID=price_...
 # NEXT_PUBLIC_STRIPE_MEMBER_PRICE_ID=price_...
 
+# Set Convex environment variables
+# IMPORTANT: Convex functions require their own environment variables
+# These are separate from .env.local and must be set using the Convex CLI:
+npx convex env set STRIPE_SECRET_KEY "your_stripe_secret_key"
+npx convex env set NEXT_PUBLIC_APP_URL "http://localhost:3000"
+npx convex env set CLERK_JWT_ISSUER_DOMAIN "your_clerk_issuer_domain"
+
 # Start development servers
 npm run dev
 ```

@@ -37,6 +37,7 @@ import { Doc } from "../_generated/dataModel";
  * 1. Member has an active subscription with a paid tier
  * 2. Member has a cancelled subscription but is still within the grace period
  * 3. Member has a scholarship tier (regardless of payment status)
+ * 4. Guest member (no externalId) with active subscription and paid tier
  * 
  * @param member - The member document from the database, can be null/undefined for unauthenticated users
  * @returns {boolean} True if the member can view full content, false otherwise
@@ -53,6 +54,9 @@ import { Doc } from "../_generated/dataModel";
 export function canViewFullContent(member: Doc<"members"> | null | undefined): boolean {
   // Early return for unauthenticated users
   if (!member) return false;
+  
+  // Block members who haven't completed onboarding
+  if (member.status === "pending_onboarding") return false;
   
   // Check subscription status first - active subscriptions get priority evaluation
   if (member.subscriptionStatus !== "active") {
@@ -71,6 +75,7 @@ export function canViewFullContent(member: Doc<"members"> | null | undefined): b
   // Note: scholarship tier is included here for full access without payment
   const fullAccessTiers = ["scholarship", "founding_member", "early_bird", "member"];
   // Ensure tier exists and is in the allowed list
+  // Guest members (no externalId) with valid subscriptions also get full access
   return member.tier ? fullAccessTiers.includes(member.tier) : false;
 }
 
@@ -187,4 +192,136 @@ export function getSubscriptionStatusMessage(member: Doc<"members">): string {
   
   // Default message for any other expired/invalid states
   return "Subscription expired - Renew to continue access";
+}
+
+/**
+ * Determines if a user can view the preview of a post.
+ * Previews are always accessible to all users (authenticated or not).
+ * This allows free users to see a teaser of the content before upgrading.
+ * 
+ * @param member - The member document (can be null for unauthenticated users)
+ * @returns {boolean} Always returns true as previews are public
+ */
+export function canViewPreview(member: Doc<"members"> | null | undefined): boolean {
+  // Previews are always available to encourage engagement
+  return true;
+}
+
+/**
+ * Determines if a user can view the full content of a specific post.
+ * Takes into account both the user's subscription status and whether the post is free.
+ * 
+ * @param member - The member document (can be null for unauthenticated users)
+ * @param post - The post document to check access for
+ * @returns {boolean} True if the user can view the full post content
+ */
+export function canViewPost(
+  member: Doc<"members"> | null | undefined,
+  post: { isFree?: boolean } | null | undefined
+): boolean {
+  // If post doesn't exist, deny access
+  if (!post) return false;
+  
+  // If post is marked as free, everyone can view it
+  if (post.isFree === true) return true;
+  
+  // Otherwise, use standard content access rules
+  return canViewFullContent(member);
+}
+
+/**
+ * Determines if a user can view a resource based on their subscription and the resource's free status.
+ * 
+ * @param member - The member document (can be null for unauthenticated users)
+ * @param resource - The resource document to check access for
+ * @returns {boolean} True if the user can view the resource
+ */
+export function canViewResource(
+  member: Doc<"members"> | null | undefined,
+  resource: { isFree?: boolean } | null | undefined
+): boolean {
+  // If resource doesn't exist, deny access
+  if (!resource) return false;
+  
+  // If resource is marked as free, everyone can view it
+  if (resource.isFree === true) return true;
+  
+  // Otherwise, use standard content access rules
+  return canViewFullContent(member);
+}
+
+/**
+ * Helper type for member lookup context - used when we need to find guest members
+ * This type represents the minimal database context needed for member queries
+ */
+export type MemberLookupContext = {
+  db: {
+    query: (table: "members") => {
+      filter: (predicate: (q: any) => any) => {
+        first: () => Promise<Doc<"members"> | null>;
+        collect: () => Promise<Doc<"members">[]>;
+      };
+    };
+  };
+};
+
+/**
+ * Finds a member by email address, including guest members without externalId.
+ * This is used for guest checkout scenarios where users purchase without authentication.
+ * 
+ * @param ctx - Database context for queries
+ * @param email - Email address to search for
+ * @returns {Promise<Doc<"members"> | null>} The member if found, null otherwise
+ * 
+ * @example
+ * // Find guest member who purchased without signing up
+ * const guestMember = await findMemberByEmail(ctx, "user@example.com");
+ * if (guestMember && !guestMember.externalId) {
+ *   // This is a guest member
+ * }
+ */
+export async function findMemberByEmail(
+  ctx: MemberLookupContext,
+  email: string
+): Promise<Doc<"members"> | null> {
+  // Look for member with this email
+  // Include both active and pending_onboarding members
+  const members = await ctx.db
+    .query("members")
+    .filter((q) => 
+      q.and(
+        q.eq(q.field("email"), email),
+        q.or(
+          q.eq(q.field("status"), "active"),
+          q.eq(q.field("status"), "pending_onboarding")
+        )
+      )
+    )
+    .collect();
+  
+  if (members.length === 0) return null;
+  
+  // If multiple members found, prioritize authenticated over guest
+  const authenticatedMember = members.find(m => m.externalId !== undefined);
+  if (authenticatedMember) return authenticatedMember;
+  
+  // Return the first guest member found
+  return members[0];
+}
+
+/**
+ * Determines if a member is a guest (purchased without authentication).
+ * Guest members have email and subscription but no externalId from Clerk.
+ * 
+ * @param member - The member document to check
+ * @returns {boolean} True if the member is a guest, false otherwise
+ */
+export function isGuestMember(member: Doc<"members"> | null | undefined): boolean {
+  if (!member) return false;
+  
+  // Guest members have no externalId but have email and subscription data
+  return !member.externalId && 
+         !!member.email && 
+         !!member.stripeCustomerId &&
+         (member.status === "active" || member.status === "pending_onboarding");
 }

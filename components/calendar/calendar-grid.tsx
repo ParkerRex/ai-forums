@@ -33,6 +33,7 @@
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Doc } from "@/convex/_generated/dataModel";
 import { EventCard } from "./event-card";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -224,7 +225,7 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
               <div className="space-y-1">
                 <AnimatePresence>
                   {/* Show up to 3 events with staggered animation */}
-                  {dayEvents.slice(0, 3).map((event, index) => (
+                  {dayEvents.slice(0, 3).map((event: Doc<"events">, index: number) => (
                     <motion.div
                       key={event._id}
                       initial={{ opacity: 0, scale: 0.8 }}
