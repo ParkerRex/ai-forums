@@ -1,16 +1,16 @@
 import { v } from "convex/values";
-import { mutation, internalMutation, action, query } from "../_generated/server";
+import { mutation, internalMutation, action, query, QueryCtx, MutationCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
 import { Doc } from "../_generated/dataModel";
 
 // Helper to check if user is admin
-async function requireAdmin(ctx: any): Promise<Doc<"members">> {
+async function requireAdmin(ctx: QueryCtx | MutationCtx): Promise<Doc<"members">> {
   const user = await ctx.auth.getUserIdentity();
   if (!user) throw new Error("Not authenticated");
   
   const member = await ctx.db
     .query("members")
-    .filter((q: any) => q.eq(q.field("email"), user.email))
+    .filter((q) => q.eq(q.field("email"), user.email))
     .first();
     
   if (!member || member.role !== "admin") {
@@ -102,10 +102,10 @@ export const refundPayment = action({
     
     try {
       // Create refund in Stripe
-      const refund: any = await stripe.refunds.create({
+      const refund = await stripe.refunds.create({
         payment_intent: payment.stripePaymentIntentId,
         amount: refundAmount,
-        reason: args.reason as any,
+        reason: args.reason as "duplicate" | "fraudulent" | "requested_by_customer" | undefined,
         metadata: {
           admin_id: admin._id,
           admin_email: admin.email,
@@ -130,18 +130,20 @@ export const refundPayment = action({
         refundedAmount: refundAmount,
         status: refundAmount >= payment.amount ? "fully_refunded" : "partially_refunded",
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error("Stripe refund error:", error);
+      
+      const errorMessage = error instanceof Error ? error.message : String(error);
       
       // Log failed refund attempt
       await ctx.runMutation(internal.stripe.refund.logFailedRefund, {
         paymentId: args.paymentId,
         adminId: admin._id,
-        error: error.message,
+        error: errorMessage,
         amount: refundAmount,
       });
       
-      throw new Error(`Failed to process refund: ${error.message}`);
+      throw new Error(`Failed to process refund: ${errorMessage}`);
     }
   },
 });

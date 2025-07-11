@@ -9,17 +9,17 @@
  */
 
 import { v } from "convex/values";
-import { query } from "../_generated/server";
+import { query, QueryCtx } from "../_generated/server";
 import { Doc } from "../_generated/dataModel";
 
 // Helper to check if user is admin
-async function requireAdmin(ctx: any) {
+async function requireAdmin(ctx: QueryCtx) {
   const user = await ctx.auth.getUserIdentity();
   if (!user) throw new Error("Not authenticated");
   
   const member = await ctx.db
     .query("members")
-    .filter((q: any) => q.eq(q.field("email"), user.email))
+    .filter((q) => q.eq(q.field("email"), user.email))
     .first();
     
   if (!member || member.role !== "admin") {
@@ -305,12 +305,19 @@ function calculateMemberMetrics(members: Doc<"members">[], cutoffTime: number) {
 }
 
 async function calculateTierMetrics(
-  ctx: any, 
+  ctx: QueryCtx, 
   members: Doc<"members">[], 
   payments: Doc<"payments">[]
 ) {
   const tiers = ["founding_member", "early_bird", "member"];
-  const tierMetrics: Record<string, any> = {};
+  const tierMetrics: Record<string, {
+    count: number;
+    mrr: number;
+    totalRevenue: number;
+    avgRevenue: number;
+    churnRate: number;
+    growthRate: number;
+  }> = {};
   
   for (const tier of tiers) {
     const tierMembers = members.filter(m => 
@@ -332,11 +339,13 @@ async function calculateTierMetrics(
     const yearlyCount = tierMembers.filter(m => m.billingInterval === "yearly").length;
     
     tierMetrics[tier] = {
-      activeMembers: tierMembers.length,
-      monthlyMembers: monthlyCount,
-      yearlyMembers: yearlyCount,
-      revenue,
+      count: tierMembers.length,
+      mrr: monthlyCount * (tier === "founding_member" ? 2500 : tier === "early_bird" ? 4900 : 9900) +
+           yearlyCount * (tier === "founding_member" ? 2100 : tier === "early_bird" ? 4100 : 8300),
+      totalRevenue: revenue,
       avgRevenue: tierMembers.length > 0 ? Math.round(revenue / tierMembers.length) : 0,
+      churnRate: 0, // TODO: Calculate actual churn rate
+      growthRate: 0, // TODO: Calculate actual growth rate
     };
   }
   

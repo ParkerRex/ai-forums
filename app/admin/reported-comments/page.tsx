@@ -61,6 +61,41 @@ import Link from "next/link";
 type ReportStatus = "pending" | "resolved" | "dismissed" | undefined;
 
 /**
+ * Type for enriched report data returned from the API
+ */
+type EnrichedReport = {
+  _id: Id<"commentReports">;
+  commentId: Id<"comments">;
+  reporterId: Id<"members">;
+  reason: string;
+  reasonText?: string;
+  status: "pending" | "resolved" | "dismissed";
+  createdAt: number;
+  comment: {
+    _id: Id<"comments">;
+    content: string;
+    author: {
+      _id: Id<"members">;
+      firstName: string;
+      lastName: string;
+      email: string;
+    } | null;
+  } | null;
+  reporter: {
+    _id: Id<"members">;
+    firstName: string;
+    lastName: string;
+    email: string;
+  } | null;
+  post: {
+    _id: Id<"posts">;
+    title: string;
+    slug: string;
+    categoryName: string | null;
+  } | null;
+};
+
+/**
  * Main content component for the reported comments admin page
  *
  * This component handles the core functionality of displaying and managing reported comments.
@@ -362,7 +397,7 @@ function ReportedCommentsContent() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {reports.map((report) => (
+              {reports.map((report: EnrichedReport) => (
                 <TableRow key={report._id}>
                   {/* Timestamp column - shows when the report was created */}
                   <TableCell>
@@ -383,7 +418,7 @@ function ReportedCommentsContent() {
                         {/* Uses URL fragments to jump directly to the comment */}
                         {report.post && (
                           <Link
-                            href={`/${report.post.categoryName ?? "general"}/${report.post.slug}#comment-${report.comment._id}`}
+                            href={`/${report.post.categoryName ?? "general"}/${report.post.slug}#comment-${report.comment?._id}`}
                             className="text-xs text-blue-600 hover:underline flex items-center gap-1"
                           >
                             View in context <ExternalLink className="w-3 h-3" />

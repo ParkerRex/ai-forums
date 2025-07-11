@@ -3,6 +3,7 @@ import React from "react";
 import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
+import { Id } from "@/convex/_generated/dataModel";
 import { Skeleton } from "@/components/ui/skeleton";
 import { usePathname } from "next/navigation";
 import PostHeaderSkeleton from "@/components/post-header-skeleton";
@@ -29,7 +30,14 @@ type CategoryIconRef = {
 export default function PostHeader({ sortBy = "newest", onSortChange }: PostHeaderProps) {
   const homeIconRef = React.useRef<HomeIconHandle>(null);
   const categoryIconRefs = React.useRef<{[key: string]: CategoryIconRef | null}>({});
-  const categories = useQuery(api.categories.getCategories);
+  const categories = useQuery(api.categories.getCategories) as Array<{
+    _id: Id<"categories">;
+    name: string;
+    displayName: string;
+    description: string;
+    icon?: string;
+    postCount: number;
+  }> | undefined;
   const pathname = usePathname();
 
   // Show skeleton while categories are loading

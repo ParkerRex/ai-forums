@@ -1040,6 +1040,27 @@ export const getOnlineMembers = query({
   },
 });
 
+/**
+ * Get a member by email address
+ * Used for guest session validation and guest member lookups
+ */
+export const getMemberByEmail = query({
+  args: { email: v.string() },
+  handler: async (ctx, { email }) => {
+    const member = await ctx.db
+      .query("members")
+      .filter((q) => 
+        q.and(
+          q.eq(q.field("email"), email),
+          q.eq(q.field("status"), "active")
+        )
+      )
+      .first();
+    
+    return member;
+  },
+});
+
 // Helper function to calculate time ago
 function getTimeAgo(timestamp: number): string {
   const now = Date.now();
