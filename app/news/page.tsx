@@ -29,7 +29,7 @@
 // Import React hooks for state management
 import { useState } from "react";
 // Import news card component for displaying individual articles
-import { NewsCard } from "@/components/news/news-card";
+import { NewsCard } from "@/features/news/components";
 // Import UI components for interactive elements
 import { Button } from "@/components/ui/button";
 // Import icons for refresh and settings buttons
@@ -37,7 +37,7 @@ import { Settings, RefreshCw } from "lucide-react";
 // Import card components for skeleton loading states
 import { Card, CardContent } from "@/components/ui/card";
 // Import the news feed hook
-import { useNewsFeed } from "@/hooks/use-news-feed";
+import { useNewsFeed } from "@/features/news/hooks";
 
 
 /**

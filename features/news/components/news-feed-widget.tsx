@@ -4,7 +4,7 @@ import { useState } from "react";
 import { RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { useNewsFeed } from "@/hooks/use-news-feed";
+import { useNewsFeed, NewsItem } from "../hooks/use-news-feed";
 
 const RATE_LIMIT_DURATION = 30 * 1000; // 30 seconds
 
@@ -94,7 +94,7 @@ export function NewsFeedWidget() {
       <div
         className={`text-xs space-y-1 transition-all ${refreshing ? "blur-sm opacity-50" : ""}`}
       >
-        {news.slice(0, 5).map((item, index) => {
+        {news.slice(0, 5).map((item: NewsItem, index: number) => {
           return (
             <div key={index} className="group">
               <a

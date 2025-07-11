@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { renderHook, waitFor } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { useNewsFeed } from "@/hooks/use-news-feed";
+import { useNewsFeed } from "../../hooks/use-news-feed";
 import React from "react";
 
 // Mock localStorage

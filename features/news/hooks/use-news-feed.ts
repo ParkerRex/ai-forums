@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useCurrentMember } from "./use-current-member";
+import { useCurrentMember } from "@/hooks/use-current-member";
 
 export type NewsItem = {
   title: string;

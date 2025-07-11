@@ -42,6 +42,7 @@ import type * as migrations_migrate_post_attachments from "../migrations/migrate
 import type * as migrations_populatePaymentFields from "../migrations/populatePaymentFields.js";
 import type * as migrations_verifyImport from "../migrations/verifyImport.js";
 import type * as news from "../news.js";
+import type * as newsFeed from "../newsFeed.js";
 import type * as notifications from "../notifications.js";
 import type * as polls from "../polls.js";
 import type * as postVersions from "../postVersions.js";
@@ -98,6 +99,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/populatePaymentFields": typeof migrations_populatePaymentFields;
   "migrations/verifyImport": typeof migrations_verifyImport;
   news: typeof news;
+  newsFeed: typeof newsFeed;
   notifications: typeof notifications;
   polls: typeof polls;
   postVersions: typeof postVersions;
