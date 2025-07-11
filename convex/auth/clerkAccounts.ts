@@ -31,7 +31,7 @@ export const createClerkAccount = internalAction({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          email_addresses: [args.email],
+          email_address: [args.email],
           first_name: args.firstName || "",
           last_name: args.lastName || "",
           skip_password_requirement: true,
@@ -54,7 +54,7 @@ export const createClerkAccount = internalAction({
         // Check if user already exists
         if (response.status === 422) {
           const errorData = JSON.parse(error);
-          if (errorData.errors?.some((e: {code: string}) => e.code === "form_identifier_exists")) {
+          if (errorData.errors?.some((e: { code: string }) => e.code === "form_identifier_exists")) {
             // User already exists, link to existing Clerk account
             const existingUserResponse = await fetch(
               `https://api.clerk.com/v1/users?email_address=${encodeURIComponent(args.email)}`,

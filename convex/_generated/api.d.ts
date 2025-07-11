@@ -43,6 +43,8 @@ import type * as migrations_add_preview_field from "../migrations/add_preview_fi
 import type * as migrations_analyzeMembershipCounts from "../migrations/analyzeMembershipCounts.js";
 import type * as migrations_checkSubscriptionStatuses from "../migrations/checkSubscriptionStatuses.js";
 import type * as migrations_checkUnmatchedMembers from "../migrations/checkUnmatchedMembers.js";
+import type * as migrations_create_clerk_account_for_email from "../migrations/create_clerk_account_for_email.js";
+import type * as migrations_create_clerk_accounts_for_legacy_members from "../migrations/create_clerk_accounts_for_legacy_members.js";
 import type * as migrations_fix_member_status from "../migrations/fix_member_status.js";
 import type * as migrations_importMemberBilling from "../migrations/importMemberBilling.js";
 import type * as migrations_linkGuestAccounts from "../migrations/linkGuestAccounts.js";
@@ -111,6 +113,8 @@ declare const fullApi: ApiFromModules<{
   "migrations/analyzeMembershipCounts": typeof migrations_analyzeMembershipCounts;
   "migrations/checkSubscriptionStatuses": typeof migrations_checkSubscriptionStatuses;
   "migrations/checkUnmatchedMembers": typeof migrations_checkUnmatchedMembers;
+  "migrations/create_clerk_account_for_email": typeof migrations_create_clerk_account_for_email;
+  "migrations/create_clerk_accounts_for_legacy_members": typeof migrations_create_clerk_accounts_for_legacy_members;
   "migrations/fix_member_status": typeof migrations_fix_member_status;
   "migrations/importMemberBilling": typeof migrations_importMemberBilling;
   "migrations/linkGuestAccounts": typeof migrations_linkGuestAccounts;
