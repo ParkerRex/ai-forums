@@ -68,7 +68,7 @@ export function AutoSignIn({ signInToken, email, sourcePostId }: AutoSignInProps
     };
 
     performAutoSignIn();
-  }, [isLoaded, signIn, signInToken, email, router]);
+  }, [isLoaded, signIn, signInToken, email, router, sourcePostId]);
 
   if (status === "loading" || status === "signing-in") {
     return (

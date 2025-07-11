@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Zap, Shield, Users, Code, Sparkles, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { useMutation, useQuery } from "convex/react";
+import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -53,7 +53,7 @@ export default function PricingPage() {
           </Badge>
           
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground">
-            $99/month. That's it.
+            $99/month. That&apos;s it.
           </h1>
 
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
@@ -98,7 +98,7 @@ export default function PricingPage() {
             </CardHeader>
             <CardContent>
               <p className="text-sm text-muted-foreground">
-                Share freely without corporate PR. What works, what doesn't, and why.
+                Share freely without corporate PR. What works, what doesn&apos;t, and why.
               </p>
             </CardContent>
           </Card>
@@ -153,12 +153,12 @@ export default function PricingPage() {
             <div>
               <h3 className="font-semibold mb-2">Why $99/month?</h3>
               <p className="text-muted-foreground">
-                It keeps the community small and signal high. We're not trying to be Reddit.
+                It keeps the community small and signal high. We&apos;re not trying to be Reddit.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Who's actually in here?</h3>
+              <h3 className="font-semibold mb-2">Who&apos;s actually in here?</h3>
               <p className="text-muted-foreground">
                 Engineers from OpenAI, Anthropic, Google DeepMind, Meta, and similar. 
                 Verified through work email or commits.
@@ -168,7 +168,7 @@ export default function PricingPage() {
             <div>
               <h3 className="font-semibold mb-2">Can I expense this?</h3>
               <p className="text-muted-foreground">
-                Yes. We provide invoices with all the right tax info. Most engineers expense it as "professional development" or "technical resources".
+                Yes. We provide invoices with all the right tax info. Most engineers expense it as &quot;professional development&quot; or &quot;technical resources&quot;.
               </p>
             </div>
 
@@ -176,7 +176,7 @@ export default function PricingPage() {
               <h3 className="font-semibold mb-2">What if it sucks?</h3>
               <p className="text-muted-foreground">
                 Cancel anytime from your account. No calls, no retention BS. 
-                If you cancel in the first week, we'll refund you.
+                If you cancel in the first week, we&apos;ll refund you.
               </p>
             </div>
           </div>

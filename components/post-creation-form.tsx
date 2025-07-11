@@ -16,7 +16,6 @@ import { PreviewGenerationDialog } from "@/components/preview-generation-dialog"
 //   SelectValue,
 // } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DraftsModal } from "@/components/drafts-modal";
 import { PollCreationModal, PollData } from "@/components/poll-creation-modal";
 import { MediaUploadSection } from "@/components/media-upload-section";

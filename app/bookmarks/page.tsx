@@ -25,7 +25,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import PostCard from "@/components/post-card";
 import { PageErrorBoundary, QueryErrorBoundary } from "@/components/error-boundary";
 import { PostSkeletonList } from "@/components/member-skeleton";
-import { Id } from "@/convex/_generated/dataModel";
 
 /**
  * Main content component for the bookmarks page.

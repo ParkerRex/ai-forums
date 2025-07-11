@@ -62,7 +62,7 @@ export default function OnboardingCompletePage() {
     };
 
     finishOnboarding();
-  }, [member, user, completeOnboarding, router]);
+  }, [member, user, completeOnboarding, router, postRouting]);
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4">

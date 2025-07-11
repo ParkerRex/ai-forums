@@ -2,9 +2,8 @@
 
 import DOMPurify from 'dompurify';
 import { LinkBadge } from '@/components/link-badge';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import hljs from 'highlight.js';
-import { CodeBlockWrapper } from '@/components/code-block-wrapper';
 
 interface LinkPreview {
   title?: string;
@@ -97,7 +96,6 @@ function getDisplayTextForUrl(url: string, preview?: LinkPreview): string {
 // For backward compatibility, also export a function that handles HTML from TipTap
 export function RenderTipTapContent({ content }: { content: string }) {
   const contentRef = useRef<HTMLDivElement>(null);
-  const [processedContent, setProcessedContent] = useState<string>("");
   const isHtml = content.trim().startsWith('<') || /<[^>]+>/.test(content);
   
   useEffect(() => {

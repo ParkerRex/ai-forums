@@ -142,7 +142,7 @@ export const Mention = Node.create<MentionOptions>({
   },
 });
 
-export function createMentionSuggestion(searchMembers: (term: string) => Promise<any[]>) {
+export function createMentionSuggestion(searchMembers: (term: string) => Promise<MemberSearchResult[]>) {
   return {
     items: async ({ query }: { query: string }) => {
       console.log('Mention suggestion triggered with query:', query);
