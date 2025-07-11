@@ -28,6 +28,7 @@
  */
 
 import { Doc } from "../_generated/dataModel";
+import { DatabaseReader } from "../_generated/server";
 
 /**
  * Determines if a member has full access to view content based on their subscription
@@ -255,14 +256,7 @@ export function canViewResource(
  * This type represents the minimal database context needed for member queries
  */
 export type MemberLookupContext = {
-  db: {
-    query: (table: "members") => {
-      filter: (predicate: (q: any) => any) => {
-        first: () => Promise<Doc<"members"> | null>;
-        collect: () => Promise<Doc<"members">[]>;
-      };
-    };
-  };
+  db: DatabaseReader;
 };
 
 /**

@@ -16,6 +16,7 @@
 
 import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
+import { Doc } from "../_generated/dataModel";
 
 /**
  * Links guest members to authenticated members by email
@@ -58,7 +59,7 @@ export const linkGuestAccounts = internalMutation({
       if (guestMember) {
         try {
           // Transfer subscription data from guest to authenticated member
-          const updates: any = {};
+          const updates: Partial<Doc<"members">> = {};
           
           // Only update if guest has subscription data we don't have
           if (guestMember.stripeCustomerId && !authMember.stripeCustomerId) {
@@ -153,7 +154,7 @@ export const linkSpecificGuestAccount = internalMutation({
     }
 
     // Transfer subscription data
-    const updates: any = {};
+    const updates: Partial<Doc<"members">> = {};
     
     if (guestMember.stripeCustomerId) {
       updates.stripeCustomerId = guestMember.stripeCustomerId;

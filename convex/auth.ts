@@ -65,10 +65,17 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     if (isMutationContext) {
       // Update lastOnline and return updated member in mutation context
       const mutationCtx = ctx as MutationCtx;
-      await mutationCtx.db.patch(member._id, {
+      const updates: any = {
         lastOnline: now,
         updatedAt: now,
-      });
+      };
+      
+      // Update avatarUrl if available from Clerk
+      if (identity.pictureUrl && member.avatarUrl !== identity.pictureUrl) {
+        updates.avatarUrl = identity.pictureUrl;
+      }
+      
+      await mutationCtx.db.patch(member._id, updates);
       const updatedMember = await ctx.db.get(member._id);
       return updatedMember!;
     } else {
@@ -87,11 +94,18 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     if (isMutationContext) {
       // Found legacy member - patch with externalId and update timestamps
       const mutationCtx = ctx as MutationCtx;
-      await mutationCtx.db.patch(member._id, {
+      const updates: any = {
         externalId,
         lastOnline: now,
         updatedAt: now,
-      });
+      };
+      
+      // Update avatarUrl if available from Clerk
+      if (identity.pictureUrl && member.avatarUrl !== identity.pictureUrl) {
+        updates.avatarUrl = identity.pictureUrl;
+      }
+      
+      await mutationCtx.db.patch(member._id, updates);
       const updatedMember = await ctx.db.get(member._id);
       return updatedMember!;
     } else {
@@ -128,14 +142,21 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     const lastName = (identity.family_name as string) || identity.name?.split(" ").slice(1).join(" ") || guestMember.lastName || "";
     
     // Update guest member with authentication info
-    await mutationCtx.db.patch(guestMember._id, {
+    const guestUpdates: any = {
       externalId,
       firstName,
       lastName,
       lastOnline: now,
       updatedAt: now,
       // Keep existing subscription data
-    });
+    };
+    
+    // Update avatarUrl if available from Clerk
+    if (identity.pictureUrl) {
+      guestUpdates.avatarUrl = identity.pictureUrl;
+    }
+    
+    await mutationCtx.db.patch(guestMember._id, guestUpdates);
     
     const updatedMember = await ctx.db.get(guestMember._id);
     return updatedMember!;
@@ -158,7 +179,7 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
   const slug = ensureUniqueSlug(baseSlug, existingSlugs);
 
   // Create new member
-  const memberId = await mutationCtx.db.insert("members", {
+  const newMemberData: any = {
     firstName,
     lastName,
     email,
@@ -172,7 +193,14 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     tier: "free" as const,
     subscriptionStatus: "none" as const,
     stripeCustomerId: `cus_temp_${email.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`, // TODO: Replace with Stripe API call
-  });
+  };
+  
+  // Add avatarUrl if available from Clerk
+  if (identity.pictureUrl) {
+    newMemberData.avatarUrl = identity.pictureUrl;
+  }
+  
+  const memberId = await mutationCtx.db.insert("members", newMemberData);
 
   // Return the newly created member
   const newMember = await ctx.db.get(memberId);

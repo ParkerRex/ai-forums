@@ -10,7 +10,7 @@ type MockStripeEvent = {
   id: string;
   type: string;
   data: {
-    object: any;
+    object: Record<string, unknown>;
   };
 };
 
@@ -487,13 +487,13 @@ describe("Stripe Webhook Integration Tests", () => {
             email: `${from}-to-${to}@example.com`,
             stripeCustomerId: `cus_${from}_${to}`,
             tier: "member",
-            subscriptionStatus: from as any,
+            subscriptionStatus: from as "active" | "cancelled" | "past_due" | "expired" | "none" | undefined,
           }));
         });
         
         await t.run(async (ctx) => {
           await ctx.db.patch(memberId, {
-            subscriptionStatus: to as any,
+            subscriptionStatus: to as "active" | "cancelled" | "past_due" | "expired" | "none" | undefined,
           });
         });
         

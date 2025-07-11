@@ -254,7 +254,12 @@ export const processMissingPreviews = internalMutation({
     console.log(`Processing ${posts.length} posts for preview generation`);
 
     // Generate previews for this batch
-    const results: any[] = [];
+    const results: Array<{
+      id: string;
+      preview: string | null;
+      success: boolean;
+      error?: string;
+    }> = [];
     const successfulUpdates: Array<{
       postId: Id<"posts">;
       preview: string;
@@ -350,18 +355,24 @@ export const triggerPreviewGeneration = action({
   args: {},
   handler: async (ctx): Promise<{
     message: string;
-    stats: any;
-    firstBatch?: any;
+    stats: {
+      totalPosts: number;
+      postsWithPreview: number;
+      postsWithoutPreview: number;
+      activePosts: number;
+      activePostsWithoutPreview: number;
+    };
+    firstBatch?: string;
   }> => {
     // Get count of posts needing previews
-    const stats: any = await ctx.runQuery(internal.previewGeneration.getPreviewStats);
+    const stats = await ctx.runQuery(internal.previewGeneration.getPreviewStats);
     
     if (stats.postsWithoutPreview === 0) {
       return { message: "All posts already have previews!", stats };
     }
     
     // Start the first batch
-    const result: any = await ctx.scheduler.runAfter(
+    const result = await ctx.scheduler.runAfter(
       0,
       internal.previewGeneration.processMissingPreviews,
       { batchSize: 5 }

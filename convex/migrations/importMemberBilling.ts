@@ -9,6 +9,7 @@
 
 import { mutation } from "../_generated/server";
 import { v } from "convex/values";
+import { Doc } from "../_generated/dataModel";
 
 // Base date for calculations (July 9, 2025)
 const TODAY = new Date('2025-07-09').getTime();
@@ -321,7 +322,7 @@ export const importMemberBilling = mutation({
         
         if (existingMember) {
           // Update existing member
-          const updates: any = {
+          const updates: Partial<Doc<"members">> = {
             status: "active", // All imported members are active
             tier: mapTier(row.tier, row.status, row.renewalDate),
             subscriptionStatus: mapSubscriptionStatus(row.status, row.renewalDate),

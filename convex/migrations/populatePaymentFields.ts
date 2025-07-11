@@ -6,6 +6,7 @@
  */
 
 import { mutation } from "../_generated/server";
+import { Doc } from "../_generated/dataModel";
 
 export const populatePaymentFields = mutation({
   handler: async (ctx) => {
@@ -15,7 +16,7 @@ export const populatePaymentFields = mutation({
     let updated = 0;
     
     for (const member of members) {
-      const updates: any = {};
+      const updates: Partial<Doc<"members">> = {};
       
       // Set default tier if not set
       if (!member.tier) {

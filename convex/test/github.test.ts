@@ -28,8 +28,8 @@ import { api } from "../_generated/api";
 
 // Global fetch mock for controlling GitHub API responses during testing
 // This allows us to simulate various API scenarios without network calls
-const mockFetch = vi.fn();
-global.fetch = mockFetch as any;
+const mockFetch = vi.fn<typeof fetch>();
+global.fetch = mockFetch;
 
 /**
  * Test setup and teardown hooks

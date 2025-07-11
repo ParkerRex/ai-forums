@@ -284,9 +284,9 @@ describe('extractVideoThumbnail', () => {
   // The following tests are commented out as they require DOM APIs
   // They can be enabled when running in a browser environment or with proper jsdom setup
   /*
-  let mockVideo: any;
-  let mockCanvas: any;
-  let mockContext: any;
+  let mockVideo: HTMLVideoElement;
+  let mockCanvas: HTMLCanvasElement;
+  let mockContext: CanvasRenderingContext2D;
   let createElementSpy: ReturnType<typeof vi.spyOn> | undefined;
   let createObjectURLSpy: ReturnType<typeof vi.spyOn> | undefined;
   let revokeObjectURLSpy: ReturnType<typeof vi.spyOn> | undefined;
@@ -486,7 +486,7 @@ describe('extractVideoThumbnail', () => {
 
   it('should use JPEG format with 0.8 quality', async () => {
     const videoFile = new File(['video-content'], 'test.mp4', { type: 'video/mp4' });
-    let toBlobArgs: any[] = [];
+    let toBlobArgs: [string | undefined, number | undefined] = [undefined, undefined];
 
     mockCanvas.toBlob = vi.fn((callback, type, quality) => {
       toBlobArgs = [type, quality];

@@ -1,13 +1,15 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useDiscordPresence } from '../discord'
-import useSWR from 'swr'
+import useSWR, { SWRResponse } from 'swr'
+
+interface DiscordPresenceResponse {
+  presence_count: number
+}
 
 // Mock SWR
 vi.mock('swr', () => ({
   default: vi.fn((key: string) => {
-    const mockData: Record<string, any> = {
+    const mockData: Record<string, DiscordPresenceResponse> = {
       '/api/discord': { presence_count: 42 }
     }
     
@@ -43,7 +45,7 @@ describe('Discord API', () => {
       isLoading: true,
       isValidating: false,
       mutate: vi.fn(),
-    } as any)
+    } as unknown as SWRResponse<undefined, Error>)
     
     const result = useDiscordPresence()
     
@@ -60,7 +62,7 @@ describe('Discord API', () => {
       isLoading: false,
       isValidating: false,
       mutate: vi.fn(),
-    } as any)
+    } as unknown as SWRResponse<Record<string, never>, Error>)
     
     const result = useDiscordPresence()
     
