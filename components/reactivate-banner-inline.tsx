@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
@@ -119,20 +118,21 @@ export function ReactivateBannerInline() {
   };
 
   return (
-    <div className="relative w-full bg-muted/30 border-b">
+    <div className="relative w-full bg-black dark:bg-white border-b border-white/10 dark:border-black/10">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-3">
           {/* Left side: Badge and message */}
           <div className="flex items-center gap-3">
-            <Badge variant="secondary" className="bg-foreground text-background font-medium">
+            <span className="inline-flex items-center rounded-full bg-white dark:bg-black px-2.5 py-0.5 text-xs font-semibold text-black dark:text-white">
               PRO
-            </Badge>
-            <p className="text-sm text-muted-foreground">
-              {getMessage()} —{" "}
+            </span>
+            <p className="text-sm text-white dark:text-black">
+              {getMessage()}
+              <span className="text-white/60 dark:text-black/60 mx-2">•</span>
               <button
                 onClick={handleReactivate}
                 disabled={isCreatingSession}
-                className="font-medium text-foreground underline-offset-4 hover:underline focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="font-semibold text-white dark:text-black hover:text-white/80 dark:hover:text-black/80 transition-colors underline decoration-white/30 dark:decoration-black/30 hover:decoration-white/60 dark:hover:decoration-black/60 underline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isCreatingSession ? "Loading..." : "Reactivate Pro"}
               </button>
@@ -142,7 +142,7 @@ export function ReactivateBannerInline() {
           {/* Right side: Dismiss button */}
           <button
             onClick={handleDismiss}
-            className="text-muted-foreground hover:text-foreground transition-colors p-1 rounded-md hover:bg-muted focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+            className="text-white/60 dark:text-black/60 hover:text-white dark:hover:text-black transition-colors p-1 hover:bg-white/10 dark:hover:bg-black/10 rounded focus:outline-none focus:ring-2 focus:ring-white/20 dark:focus:ring-black/20 focus:ring-offset-2 focus:ring-offset-black dark:focus:ring-offset-white"
             aria-label="Dismiss banner for 24 hours"
           >
             <svg

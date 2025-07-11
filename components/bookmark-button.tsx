@@ -95,7 +95,7 @@ export function BookmarkButton({
             className={`transition-colors ${
               isBookmarked
                 ? "text-blue-500 fill-blue-500"
-                : "text-muted-foreground hover:text-blue-500"
+                : "text-muted-foreground"
             }`}
           />
           {shouldShowLabel && (
@@ -115,7 +115,7 @@ export function BookmarkButton({
           >
             <Bookmark
               size={12}
-              className="text-muted-foreground hover:text-blue-500"
+              className="text-muted-foreground"
             />
             {shouldShowLabel && <span className="ml-1 text-xs font-medium">save</span>}
           </Button>

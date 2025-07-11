@@ -73,24 +73,36 @@ export function ReactivateBannerTop() {
   const tierInfo = getTierPricing();
 
   return (
-    <div className="w-full bg-black dark:bg-[#272727] h-12">
+    <div className="w-full bg-black dark:bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-center gap-4 h-12 relative">
-          <p className="text-sm font-medium text-white">
-            Your {tierInfo.name} plan has expired — 
-            <Link href="/reactivate" className="underline hover:no-underline">
+        <div className="flex items-center justify-center gap-4 py-3 relative">
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center rounded-full bg-white/10 dark:bg-black/10 px-2.5 py-0.5 text-xs font-semibold text-white dark:text-black">
+              {tierInfo.name}
+            </span>
+            <p className="text-sm font-medium text-white dark:text-black">
+              Your plan has expired
+            </p>
+            <span className="text-white/60 dark:text-black/60">•</span>
+            <Link 
+              href="/reactivate" 
+              className="inline-flex items-center gap-1 text-sm font-semibold text-white dark:text-black hover:text-white/80 dark:hover:text-black/80 transition-colors underline decoration-white/30 dark:decoration-black/30 hover:decoration-white/60 dark:hover:decoration-black/60"
+            >
               Reactivate for {tierInfo.monthly}
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
             </Link>
-          </p>
+          </div>
 
           <Button
             variant="ghost"
             size="sm"
             onClick={handleDismiss}
-            className="h-6 w-6 p-0 text-white hover:text-gray-300 hover:bg-gray-800 absolute right-0 cursor-pointer"
+            className="h-6 w-6 p-0 text-white/60 dark:text-black/60 hover:text-white dark:hover:text-black hover:bg-white/10 dark:hover:bg-black/10 absolute right-0 cursor-pointer transition-colors"
             aria-label="Dismiss reactivation banner"
           >
-            <X className="h-5 w-5" />
+            <X className="h-4 w-4" />
           </Button>
         </div>
       </div>
