@@ -14,12 +14,12 @@ import {
   CalendarDaysIcon,
   CalendarDaysIconHandle,
 } from "@/components/ui/calendar-days";
-import { UserButton } from "@clerk/nextjs";
 import { AuthButton } from "@/components/auth-button";
 import { NotificationDropdown } from "@/components/notification-dropdown";
 import { Authenticated, Unauthenticated } from "convex/react";
 import React from "react";
 import { SearchIcon, SearchIconHandle } from "@/components/ui/search";
+import { MemberDropdown } from "@/components/member-dropdown";
 // We intentionally do NOT import useSearchHotkey here because we
 // only need to *trigger* the global search dialog. The actual
 // open/close state is maintained inside the GlobalSearch
@@ -208,7 +208,7 @@ export default function Header() {
                   <p>notifications</p>
                 </TooltipContent>
               </Tooltip>
-              <UserButton />
+              <MemberDropdown />
             </Authenticated>
             <Unauthenticated>
               <AuthButton />
