@@ -19,7 +19,7 @@ import {
   type PostData,
   type PreviewSize
 } from "@/lib/post-preview-utils";
-import { MessageSquare, Eye, ChevronUp, Play, ExternalLink, BarChart3 } from "lucide-react";
+import { MessageSquare, Eye, ChevronUp, Play, ExternalLink, BarChart3, Pin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MemberHoverCardWrapper } from "@/components/member-hover-card";
 
@@ -137,6 +137,14 @@ export default function PostPreview({
                         {getPostTypeLabel(post)}
                       </span>
                     )}
+                  </div>
+                )}
+                {post.isPinned && (
+                  <div className="flex items-center gap-1 mb-1">
+                    <Pin className="h-3 w-3 text-orange-600" />
+                    <span className="text-xs font-medium text-orange-600">
+                      Community Highlights
+                    </span>
                   </div>
                 )}
                 <Link href={postUrl} className="text-foreground dark:text-foreground group-hover:text-black dark:group-hover:text-white transition-colors duration-200 ease-out">

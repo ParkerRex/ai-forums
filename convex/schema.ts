@@ -274,6 +274,15 @@ const posts = defineTable({
     isPinned: v.optional(v.boolean()),       // Sticky post at top of category
     isLocked: v.optional(v.boolean()),       // Comments disabled
     
+    // Pin management fields
+    pinScope: v.optional(v.union(
+      v.literal("category"),     // Pinned only in its category
+      v.literal("global"),       // Pinned in "all" view
+      v.literal("both")          // Pinned in both category and global
+    )),
+    pinnedAt: v.optional(v.number()),        // Timestamp when pinned
+    pinnedBy: v.optional(v.id("members")),   // Admin who pinned the post
+    
     // Content type and media
     type: v.optional(PostTypeValidator),     // Content type for rendering
     mediaUrl: v.optional(v.string()),        // Primary media URL (legacy)
@@ -355,6 +364,8 @@ const posts = defineTable({
   .index("by_category_and_createdAt", ["categoryId", "createdAt"])    // Category feeds
   .index("by_category_and_netVotes", ["categoryId", "netVotes"])      // Popular in category
   .index("by_member_and_createdAt", ["memberId", "createdAt"])        // Member profiles
+  .index("by_pinned_and_category", ["isPinned", "categoryId", "pinnedAt"])  // Pinned posts by category
+  .index("by_pinned_global", ["isPinned", "pinScope", "pinnedAt"])    // Globally pinned posts
   .searchIndex("search_posts", {                     // Title-based search
     searchField: "title",
     filterFields: ["categoryId", "status", "memberId"]

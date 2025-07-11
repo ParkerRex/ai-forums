@@ -9,6 +9,8 @@ import {
   Trash2,
   History,
   ArrowLeft,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { MessageSquareIcon } from "@/components/ui/message-square";
@@ -84,7 +86,10 @@ interface Post {
   } | null;
   category?: {
     name: string;
+    displayName?: string;
   } | null;
+  isPinned?: boolean;
+  pinScope?: "category" | "global" | "both";
   attachments?: Array<{
     id: string;
     type: "image" | "video" | "pdf" | "youtube";
@@ -190,6 +195,10 @@ export default function PostDetail({
     targetType: "post",
   });
   const { handleMutationError } = useMutationError();
+  
+  // Highlight mutations for admins
+  const highlightPost = useMutation(api.posts.pinPost);
+  const unhighlightPost = useMutation(api.posts.unpinPost);
 
   // Determine current vote state (optimistic or actual)
   const currentUserVote =
@@ -198,6 +207,9 @@ export default function PostDetail({
   // Check if current user owns this post
   const isMemberPost =
     currentMember && post.member && currentMember._id === post.member?._id;
+  
+  // Check if current user is an admin
+  const isAdmin = currentMember?.role === "admin";
 
   console.log("Debug member check:", {
     currentMember: currentMember
@@ -282,6 +294,29 @@ export default function PostDetail({
       toast.success("Link copied to clipboard!");
     } catch {
       toast.error("Failed to copy link");
+    }
+  };
+
+  const handleHighlight = async (scope: "category" | "global" | "both") => {
+    try {
+      await highlightPost({ postId: post._id, scope });
+      const scopeText = scope === "both" 
+        ? "in both category and globally" 
+        : scope === "global" 
+        ? "globally" 
+        : `in ${post.category?.displayName || "category"}`;
+      toast.success(`Post highlighted ${scopeText}`);
+    } catch (error) {
+      toast.error((error as Error).message);
+    }
+  };
+
+  const handleUnhighlight = async () => {
+    try {
+      await unhighlightPost({ postId: post._id });
+      toast.success("Post unhighlighted");
+    } catch {
+      toast.error("Failed to unhighlight post");
     }
   };
 
@@ -542,6 +577,32 @@ export default function PostDetail({
                   <Flag className="w-4 h-4 mr-2" />
                   Report
                 </DropdownMenuItem>
+                {isAdmin && (
+                  <>
+                    <DropdownMenuSeparator />
+                    {post.isPinned ? (
+                      <DropdownMenuItem onClick={handleUnhighlight}>
+                        <PinOff className="w-4 h-4 mr-2" />
+                        Remove Highlight
+                      </DropdownMenuItem>
+                    ) : (
+                      <>
+                        <DropdownMenuItem onClick={() => handleHighlight("category")}>
+                          <Pin className="w-4 h-4 mr-2" />
+                          Highlight in {post.category?.displayName || "Category"}
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleHighlight("global")}>
+                          <Pin className="w-4 h-4 mr-2" />
+                          Highlight Globally
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleHighlight("both")}>
+                          <Pin className="w-4 h-4 mr-2" />
+                          Highlight in Both
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                  </>
+                )}
                 {isMemberPost && (
                   <>
                     <DropdownMenuSeparator />
