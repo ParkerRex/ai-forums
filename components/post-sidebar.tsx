@@ -1,7 +1,7 @@
 "use client";
 import { OnlineUsers } from "./online-users";
 import { SidebarRoadmapComponent } from "./sidebar-roadmap-component";
-import { NewsFeedWidget } from "./news/news-feed-widget";
+import { NewsFeedWidget } from "@/features/news/components";
 
 export default function PostSidebar() {
   return (

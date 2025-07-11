@@ -956,6 +956,40 @@ const stripeWebhookEvents = defineTable({
   .index("by_createdAt", ["createdAt"]);
 
 /**
+ * News feed cache table for storing aggregated news articles.
+ * 
+ * This table caches news articles fetched from multiple sources to reduce
+ * external API calls and improve performance. Each cache entry stores the
+ * aggregated results with a timestamp for cache invalidation.
+ * 
+ * @table newsFeedCache
+ * @indexes
+ * - by_userId_createdAt: For user-specific cache lookups
+ * - by_createdAt: For cache cleanup operations
+ */
+const newsFeedCache = defineTable({
+  userId: v.optional(v.id("members")),       // Optional user ID for personalized feeds
+  cacheKey: v.string(),                     // Unique cache key for the feed configuration
+  articles: v.array(v.object({              // Cached news articles
+    title: v.string(),
+    url: v.string(),
+    publishedDate: v.optional(v.string()),
+    author: v.optional(v.string()),
+    summary: v.optional(v.string()),
+    source: v.string(),
+  })),
+  sources: v.array(v.object({              // Sources used for this cache entry
+    type: v.string(),
+    url: v.string(),
+    name: v.string(),
+  })),
+  createdAt: v.number(),                    // Cache creation timestamp
+  expiresAt: v.number(),                    // Cache expiration timestamp
+})
+  .index("by_userId_createdAt", ["userId", "createdAt"])
+  .index("by_createdAt", ["createdAt"]);
+
+/**
  * Complete database schema export for the VAI community platform.
  * 
  * This schema defines a comprehensive social platform with:
@@ -988,4 +1022,5 @@ export default defineSchema({
   subscriptions,    // Stripe subscription tracking
   payments,         // Payment transaction history
   stripeWebhookEvents, // Webhook event processing
+  newsFeedCache,    // News feed caching system
 });

@@ -6,6 +6,7 @@ This repository contains the source code for the VAI-VEX application, a full-sta
 
 The application is a feature-rich platform that includes user authentication, a blogging system, a membership model with payments, a news feed, and administrative tools. It is designed to be a high-quality, production-ready application with a focus on user experience and developer productivity.
 
+
 ## Tech Stack
 
 - **Framework:** [Next.js](https://nextjs.org/)
@@ -42,7 +43,21 @@ To get started with the project, you will need to have Node.js and npm installed
     2.  Create a `.env.local` file in the root of the project and add the variables provided.
     3.  Follow the Convex setup instructions to initialize your development environment. This will likely involve running `npx convex dev`.
 
-4.  **Run the development server:**
+4. **Set up Convex backend**
+    
+    ```bash
+    npx convex dev
+    ```
+
+    # Set Convex environment variables
+    # IMPORTANT: Convex functions require their own environment variables
+    # These are separate from .env.local and must be set using the Convex CLI:
+    npx convex env set STRIPE_SECRET_KEY "your_stripe_secret_key"
+    npx convex env set NEXT_PUBLIC_APP_URL "http://localhost:3000"
+    npx convex env set CLERK_JWT_ISSUER_DOMAIN "your_clerk_issuer_domain"
+    npx convex env set EXA_API_KEY "your_exa_api_key"  # Required for news feed functionality
+
+5.  **Run the development server:**
 
     ```bash
     npm run dev
