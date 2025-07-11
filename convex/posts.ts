@@ -197,6 +197,9 @@ export const getPosts = query({
       pinnedPosts = pinnedPosts.filter(post => post.isFree === true);
     }
 
+    // Limit pinned posts to not exceed the total limit
+    pinnedPosts = pinnedPosts.slice(0, limit);
+
     // Calculate how many regular posts we need
     const remainingLimit = Math.max(0, limit - pinnedPosts.length);
 
@@ -248,31 +251,47 @@ export const getPosts = query({
     // Combine pinned and regular posts
     const allPosts = [...pinnedPosts, ...regularPosts];
 
-    // Enrich posts with member and category data
-    const enrichedPosts = await Promise.all(
-      allPosts.map(async (post) => {
-        const member = await ctx.db.get(post.memberId);
-        const category = await ctx.db.get(post.categoryId);
+    // Collect unique member and category IDs
+    const memberIds = [...new Set(allPosts.map(post => post.memberId))];
+    const categoryIds = [...new Set(allPosts.map(post => post.categoryId))];
 
-        return {
-          ...post,
-          member: member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            email: member.email,
-            username: member.email.split('@')[0], // Derive username from email
-            slug: member.slug || "",
-          } : null,
-          category: category ? {
-            _id: category._id,
-            name: category.name,
-            displayName: category.displayName,
-            icon: category.icon,
-          } : null,
-        };
-      })
+    // Fetch all members and categories in parallel
+    const [members, categories] = await Promise.all([
+      Promise.all(memberIds.map(id => ctx.db.get(id))),
+      Promise.all(categoryIds.map(id => ctx.db.get(id)))
+    ]);
+
+    // Create lookup maps for fast access
+    const memberMap = new Map(
+      members.map((member, index) => [memberIds[index], member])
     );
+    const categoryMap = new Map(
+      categories.map((category, index) => [categoryIds[index], category])
+    );
+
+    // Enrich posts with member and category data
+    const enrichedPosts = allPosts.map((post) => {
+      const member = memberMap.get(post.memberId);
+      const category = categoryMap.get(post.categoryId);
+
+      return {
+        ...post,
+        member: member ? {
+          _id: member._id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          email: member.email,
+          username: member.email.split('@')[0], // Derive username from email
+          slug: member.slug || "",
+        } : null,
+        category: category ? {
+          _id: category._id,
+          name: category.name,
+          displayName: category.displayName,
+          icon: category.icon,
+        } : null,
+      };
+    });
 
     return enrichedPosts;
   },

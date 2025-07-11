@@ -18,11 +18,11 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       // Primary public bucket hostname (configurable)
-      {
-        protocol: "https",
-        hostname: process.env.NEXT_PUBLIC_R2_HOSTNAME!,
+      ...(process.env.NEXT_PUBLIC_R2_HOSTNAME ? [{
+        protocol: "https" as const,
+        hostname: process.env.NEXT_PUBLIC_R2_HOSTNAME,
         pathname: "/**",
-      },
+      }] : []),
       // Legacy Cloudflare R2 S3-style endpoint for existing objects
       {
         protocol: "https",
