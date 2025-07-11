@@ -20,6 +20,7 @@ export const createPollPost = mutation({
       v.literal("7d"),
       v.literal("unlimited")
     )),
+    preview: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Get authenticated member
@@ -103,6 +104,8 @@ export const createPollPost = mutation({
       pollOptions: pollOptionsWithVotes,
       pollEndsAt,
       totalPollVotes: 0,
+      preview: args.preview || "", // Use provided preview or empty string
+      isFree: false, // Default to paywalled
     });
 
     // Update category post count

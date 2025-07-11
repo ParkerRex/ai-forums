@@ -21,6 +21,8 @@ interface Post extends Omit<PostData, "member" | "author" | "category"> {
   _id: Id<"posts">;
   title: string;
   content: string;
+  preview?: string;
+  isFree?: boolean;
   slug: string;
   createdAt: number;
   updatedAt: number;
@@ -247,7 +249,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
           <Unauthenticated>
             <MembershipCTAModal
               title="Join the Conversation"
-              description="Sign up to read comments and share your thoughts with the VAI community"
+              description="Become a member to read comments and share your thoughts with the VAI community"
             >
               <Button
                 variant="ghost"

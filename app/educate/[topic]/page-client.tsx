@@ -19,7 +19,7 @@
  */
 
 "use client";
-import React, { useState, use } from "react";
+import React, { useState, use, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -34,6 +34,12 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { 
   Search, 
   Plus, 
@@ -44,7 +50,8 @@ import {
   SortAsc,
   Eye,
   User,
-  Calendar
+  Calendar,
+  Lock
 } from "lucide-react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { BookmarkButton } from "@/components/bookmark-button";
@@ -87,6 +94,7 @@ interface Resource {
   type: "article" | "video" | "course" | "documentation" | "tool" | "book" | "other";
   difficulty?: "beginner" | "intermediate" | "advanced";
   isPaid: boolean;
+  isFree?: boolean;
   upvotes: number;
   netVotes: number;
   viewCount: number;
@@ -137,6 +145,11 @@ function ResourceCard({ resource }: { resource: Resource }) {
   const userVote = useQuery(api.votes.getUserVote, {
     targetId: resource._id,
     targetType: "resource",
+  });
+  
+  // Query if user can access this resource
+  const canViewResource = useQuery(api.resources.canUserViewResource, {
+    resourceId: resource._id,
   });
   
   // Local state for voting interactions and optimistic updates
@@ -207,8 +220,16 @@ function ResourceCard({ resource }: { resource: Resource }) {
    * Tracks when users click to view a resource for analytics purposes,
    * then opens the resource in a new tab with security attributes.
    * View tracking failures are logged but don't prevent navigation.
+   * Checks access permissions before allowing navigation.
    */
   const handleResourceClick = async () => {
+    // Check if user has access to this resource
+    if (canViewResource === false) {
+      // TODO: Show upgrade modal or redirect to paywall
+      console.log("Access denied: Premium resource");
+      return;
+    }
+    
     try {
       // Track view for analytics (fire-and-forget)
       await trackResourceView({ resourceId: resource._id });
@@ -272,13 +293,32 @@ function ResourceCard({ resource }: { resource: Resource }) {
                   Paid
                 </Badge>
               )}
+              {resource.isFree && (
+                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                  Free
+                </Badge>
+              )}
             </div>
             {/* Clickable resource title */}
             <CardTitle 
-              className="text-lg cursor-pointer hover:text-blue-600 transition-colors"
+              className={`text-lg cursor-pointer transition-colors flex items-center gap-2 ${
+                canViewResource === false ? 'hover:text-muted-foreground' : 'hover:text-blue-600'
+              }`}
               onClick={handleResourceClick}
             >
               {resource.title}
+              {canViewResource === false && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Premium resource - Upgrade to access</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
             </CardTitle>
           </div>
           {/* Voting section with authentication handling */}
@@ -350,8 +390,13 @@ function ResourceCard({ resource }: { resource: Resource }) {
               size="sm"
               className="p-2 h-auto"
               onClick={handleResourceClick}
+              disabled={canViewResource === false}
             >
-              <ExternalLink size={12} />
+              {canViewResource === false ? (
+                <Lock size={12} />
+              ) : (
+                <ExternalLink size={12} />
+              )}
             </Button>
           </div>
         </div>
@@ -461,6 +506,10 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
   const [typeFilter, setTypeFilter] = useState<string>("all");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
   const [paidFilter, setPaidFilter] = useState<string>("all");
+  
+  // Track if this is the initial load to prevent skeleton flash
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [previousResources, setPreviousResources] = useState<Resource[] | null>(null);
 
   // Fetch topic data by name from URL
   const topic = useQuery(api.topics.getTopicByName, { name: topicName });
@@ -489,19 +538,55 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
 
   // Determine which resources to display based on search state
   const displayResources = searchTerm.trim() ? searchResults : resources;
+  
+  // Track when we receive resources to manage loading states
+  useEffect(() => {
+    if (displayResources !== undefined) {
+      setIsInitialLoad(false);
+      setPreviousResources(displayResources);
+    }
+  }, [displayResources]);
 
   // Loading state while topic data is being fetched
   if (topic === undefined) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="animate-pulse">
-          {/* Skeleton for page header */}
-          <div className="h-8 bg-muted rounded w-1/3 mb-4" />
-          <div className="h-4 bg-muted rounded w-2/3 mb-8" />
-          {/* Skeleton grid matching actual resource layout */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {Array.from({ length: 6 }, (_, i) => <ResourceCardSkeleton key={i} />)}
+        {/* Page header skeleton */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex-1">
+              {/* Topic title skeleton */}
+              <div className="flex items-center mb-2">
+                <div className="w-12 h-12 bg-muted rounded animate-pulse mr-3" />
+                <div className="h-9 bg-muted rounded w-64 animate-pulse" />
+              </div>
+              {/* Description skeleton */}
+              <div className="h-5 bg-muted rounded w-96 animate-pulse mb-2" />
+              {/* Resource count skeleton */}
+              <div className="h-4 bg-muted rounded w-32 animate-pulse mt-2" />
+            </div>
+            {/* Add resource button skeleton */}
+            <div className="w-32 h-10 bg-muted rounded animate-pulse" />
           </div>
+
+          {/* Search and filters skeleton */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            {/* Search input skeleton */}
+            <div className="flex-1 h-10 bg-muted rounded animate-pulse" />
+            
+            {/* Filter controls skeleton */}
+            <div className="flex items-center space-x-2">
+              <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+              <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+              <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+              <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+            </div>
+          </div>
+        </div>
+
+        {/* Resources grid skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }, (_, i) => <ResourceCardSkeleton key={i} />)}
         </div>
       </div>
     );
@@ -635,7 +720,31 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {displayResources === undefined ? (
-          Array.from({ length: 6 }, (_, i) => <ResourceCardSkeleton key={i} />)
+          // Only show skeleton on initial load or if we had previous results
+          isInitialLoad || (previousResources && previousResources.length > 0) ? (
+            Array.from({ length: 6 }, (_, i) => <ResourceCardSkeleton key={i} />)
+          ) : (
+            // Show empty state immediately if we know there were no previous results
+            <div className="col-span-full text-center py-12">
+              <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-lg font-medium mb-2">
+                {searchTerm.trim() ? "No resources found" : "No resources available"}
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {searchTerm.trim()
+                  ? "Try adjusting your search terms or filters"
+                  : `Be the first to add a ${topic.displayName} resource!`}
+              </p>
+              <Authenticated>
+                <Button asChild>
+                  <Link href={`/educate/${topicName}/submit`}>
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add First Resource
+                  </Link>
+                </Button>
+              </Authenticated>
+            </div>
+          )
         ) : displayResources.length === 0 ? (
           <div className="col-span-full text-center py-12">
             <BookOpen className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
@@ -657,7 +766,7 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
             </Authenticated>
           </div>
         ) : (
-          displayResources.map((resource) => (
+          displayResources.map((resource: Resource) => (
             <ResourceCard key={resource._id} resource={resource} />
           ))
         )}

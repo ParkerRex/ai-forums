@@ -145,7 +145,7 @@ async function main() {
   // Read the original member export to get IDs
   const memberExportPath = path.join(process.cwd(), 'migration-data', 'members-export-2025-07-07T16-56-26-534Z.json');
   const memberExport = JSON.parse(fs.readFileSync(memberExportPath, 'utf-8'));
-  const membersByEmail = new Map(memberExport.members.map((m: any) => [m.email, m]));
+  const membersByEmail = new Map(memberExport.members.map((m) => [m.email, m]));
   
   // Transform billing records
   const transformedMembers: TransformedMember[] = [];

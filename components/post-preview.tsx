@@ -63,7 +63,7 @@ export default function PostPreview({
   const previewClasses = getPreviewClasses(size, assetInfo, post);
 
   const stats = formatPostStats(post);
-  const excerpt = getContentExcerpt(post.content, size === "small" ? 120 : 200);
+  const excerpt = getContentExcerpt(post.content, size === "small" ? 120 : 200, post.preview);
 
   // Handle video autoplay on hover
   useEffect(() => {
@@ -126,14 +126,14 @@ export default function PostPreview({
               <div className="flex-1 min-w-0">
                 {showCategory && post.category && (
                   <div className="flex items-center gap-1 mb-1">
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-foreground/70">
                       /{post.category.displayName}
                     </span>
                     {post.type !== "text" && (
-                      <span className="text-xs text-muted-foreground">•</span>
+                      <span className="text-xs text-foreground/70">•</span>
                     )}
                     {post.type !== "text" && (
-                      <span className="text-xs text-muted-foreground">
+                      <span className="text-xs text-foreground/70">
                         {getPostTypeLabel(post)}
                       </span>
                     )}
@@ -147,7 +147,7 @@ export default function PostPreview({
                     </span>
                   </div>
                 )}
-                <Link href={postUrl} className="group-hover:text-black dark:group-hover:text-white transition-colors duration-200 ease-out">
+                <Link href={postUrl} className="text-foreground dark:text-foreground group-hover:text-black dark:group-hover:text-white transition-colors duration-200 ease-out">
                   <h3 className={cn(
                     "font-medium line-clamp-2",
                     size === "small" ? "text-sm" : "text-base"
@@ -176,12 +176,12 @@ export default function PostPreview({
 
             {/* Author and excerpt - Reddit style */}
             {shouldShowMember && post.member && (
-              <div className="text-xs text-muted-foreground mb-1">
+              <div className="text-xs text-foreground/70 mb-1">
                 by{" "}
                 <MemberHoverCardWrapper member={post.member}>
                   <Link
                     href={`/members/${post.member?.slug || post.member?.username}`}
-                    className="font-medium"
+                    className="font-medium hover:text-foreground transition-colors"
                     onClick={(e) => e.stopPropagation()}
                   >
                     {post.member?.firstName} {post.member?.lastName}
@@ -204,7 +204,7 @@ export default function PostPreview({
 
             {/* Stats footer */}
             {showStats && size !== "small" && (
-              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
+              <div className="flex items-center gap-4 mt-3 text-xs text-foreground/60">
                 <div className="flex items-center gap-1">
                   <MessageSquare className="h-3 w-3" />
                   <span>{stats.comments} comments</span>

@@ -1,15 +1,15 @@
 import { v } from "convex/values";
-import { query, mutation } from "../_generated/server";
+import { query, mutation, QueryCtx, MutationCtx } from "../_generated/server";
 import { Doc } from "../_generated/dataModel";
 
 // Helper to check if user is admin
-async function requireAdmin(ctx: any) {
+async function requireAdmin(ctx: QueryCtx | MutationCtx) {
   const user = await ctx.auth.getUserIdentity();
   if (!user) throw new Error("Not authenticated");
   
   const member = await ctx.db
     .query("members")
-    .filter((q: any) => q.eq(q.field("email"), user.email))
+    .filter((q) => q.eq(q.field("email"), user.email))
     .first();
     
   if (!member || member.role !== "admin") {

@@ -129,19 +129,30 @@ export const subscriptionAnalytics = {
  */
 export const paywallAnalytics = {
   // When paywall is shown
-  shown: (postId?: string, postTitle?: string) => {
+  shown: (postId?: string, postTitle?: string, variant?: string) => {
     trackEvent("paywall_shown", {
       postId,
       postTitle,
+      variant,
       timestamp: new Date().toISOString(),
     });
   },
 
   // When user clicks upgrade from paywall
-  upgradeClicked: (postId?: string, postTitle?: string) => {
+  upgradeClicked: (postId?: string, postTitle?: string, variant?: string) => {
     trackEvent("paywall_upgrade_clicked", {
       postId,
       postTitle,
+      variant,
+      timestamp: new Date().toISOString(),
+    });
+  },
+
+  // Track paywall variant performance
+  variantPerformance: (variant: string, action: "shown" | "clicked" | "converted") => {
+    trackEvent("paywall_variant_performance", {
+      variant,
+      action,
       timestamp: new Date().toISOString(),
     });
   },

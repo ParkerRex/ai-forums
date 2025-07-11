@@ -77,7 +77,7 @@ export default function MonitoringPage() {
             <div className="space-y-2">
               <p className="text-sm font-medium text-destructive">Issues detected:</p>
               <ul className="list-disc list-inside space-y-1">
-                {webhookHealth.issues.map((issue, index) => (
+                {webhookHealth.issues.map((issue: string, index: number) => (
                   <li key={index} className="text-sm text-muted-foreground">
                     {issue}
                   </li>
@@ -179,7 +179,13 @@ export default function MonitoringPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentFailures.map((failure) => (
+              {recentFailures.map((failure: {
+                eventId: string;
+                type: string;
+                error: string | undefined;
+                createdAt: number;
+                age: number;
+              }) => (
                 <div
                   key={failure.eventId}
                   className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"

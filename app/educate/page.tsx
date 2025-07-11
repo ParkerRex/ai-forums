@@ -196,6 +196,49 @@ export default function EducatePage() {
   // Determine which topics to display based on search state
   const displayTopics = searchTerm.trim() ? searchResults : topics;
 
+  // Show full page skeleton while initial data is loading
+  if (topics === undefined && !searchTerm.trim()) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-6">
+        {/* Page header skeleton */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <div className="h-9 bg-muted rounded w-64 animate-pulse mb-2" />
+              <div className="h-5 bg-muted rounded w-96 animate-pulse" />
+            </div>
+            <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+          </div>
+          
+          {/* Search input skeleton */}
+          <div className="max-w-md">
+            <div className="h-10 bg-muted rounded animate-pulse" />
+          </div>
+        </div>
+
+        {/* Topics grid skeleton */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }, (_, i) => <TopicCardSkeleton key={i} />)}
+        </div>
+
+        {/* Statistics section skeleton */}
+        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {Array.from({ length: 3 }, (_, i) => (
+            <Card key={i}>
+              <CardHeader>
+                <div className="h-5 bg-muted rounded w-32 animate-pulse" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-muted rounded w-16 animate-pulse mb-2" />
+                <div className="h-4 bg-muted rounded w-24 animate-pulse" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Page header with title, description, and action buttons */}

@@ -170,8 +170,7 @@ export function PostEditModal({
         postId: post._id,
         title: formData.title.trim(),
         content: formData.content.trim(),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        type: formData.type as any,
+        type: formData.type === "poll" ? undefined : formData.type as "text" | "image" | "video" | "link",
         mediaUrl,
         thumbnailUrl,
         categoryId: formData.categoryId as Id<"categories">,

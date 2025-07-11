@@ -1,4 +1,4 @@
-import { SignInButton, SignUpButton } from '@clerk/clerk-react';
+import { SignInButton } from '@clerk/clerk-react';
 import React from 'react'
 
 export default function SignInForm() {
@@ -10,11 +10,6 @@ export default function SignInForm() {
           Sign in
         </button>
       </SignInButton>
-      <SignUpButton mode="modal">
-        <button className="bg-foreground text-background px-4 py-2 rounded-md">
-          Sign up
-        </button>
-      </SignUpButton>
     </div>
   );
 }

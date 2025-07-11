@@ -4,6 +4,8 @@ export interface PostData {
   _id: Id<"posts">;
   title: string;
   content: string;
+  preview?: string;
+  isFree?: boolean;
   type?: "text" | "image" | "video" | "link" | "poll";
   mediaUrl?: string;
   thumbnailUrl?: string;
@@ -106,11 +108,19 @@ export function getPostPreviewAsset(post: PostData): {
 
 /**
  * Get content excerpt for preview
+ * Prefers the preview field if available, otherwise truncates content
  */
 export function getContentExcerpt(
   content: string,
-  maxLength: number = 150
+  maxLength: number = 150,
+  preview?: string
 ): string {
+  // If preview is available, use it
+  if (preview && preview.trim()) {
+    return preview;
+  }
+  
+  // Otherwise, truncate content as before
   // Strip HTML tags if present
   const plainText = content.replace(/<[^>]*>/g, "");
   

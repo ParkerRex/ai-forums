@@ -96,6 +96,7 @@ export default function ResourceSubmissionPageClient({
     type: "article", // Default to article type
     difficulty: "", // Optional field
     isPaid: false, // Default to free resource
+    isFree: false, // Default to paywalled for VAI members
   });
   
   // UI state for form submission and loading states
@@ -229,12 +230,10 @@ export default function ResourceSubmissionPageClient({
         description: formData.description.trim(),
         url: formData.url.trim(),
         topicId: topic._id,
-        // Type assertions needed for Convex schema compatibility
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        type: formData.type as any,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        difficulty: (formData.difficulty || undefined) as any,
+        type: formData.type as "article" | "video" | "course" | "documentation" | "tool" | "book" | "other",
+        difficulty: formData.difficulty as "beginner" | "intermediate" | "advanced" | undefined,
         isPaid: formData.isPaid,
+        isFree: formData.isFree,
       });
 
       // Show success message and redirect to topic page
@@ -255,7 +254,41 @@ export default function ResourceSubmissionPageClient({
 
   // Loading state while fetching topic data
   if (topic === undefined) {
-    return <div>Loading topic...</div>;
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-6">
+        {/* Page header skeleton */}
+        <div className="mb-6">
+          <div className="flex items-center space-x-2 mb-4">
+            <div className="w-20 h-8 bg-muted rounded animate-pulse" />
+            <div className="h-5 bg-muted rounded w-24 animate-pulse" />
+          </div>
+          <div className="h-8 bg-muted rounded w-64 animate-pulse mb-2" />
+          <div className="h-5 bg-muted rounded w-96 animate-pulse" />
+        </div>
+
+        {/* Form card skeleton */}
+        <Card>
+          <CardHeader>
+            <div className="h-6 bg-muted rounded w-48 animate-pulse" />
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {/* Form fields skeleton */}
+            {Array.from({ length: 6 }, (_, i) => (
+              <div key={i} className="space-y-2">
+                <div className="h-4 bg-muted rounded w-24 animate-pulse" />
+                <div className="h-10 bg-muted rounded animate-pulse" />
+              </div>
+            ))}
+            
+            {/* Submit button skeleton */}
+            <div className="flex justify-end space-x-2">
+              <div className="w-20 h-10 bg-muted rounded animate-pulse" />
+              <div className="w-24 h-10 bg-muted rounded animate-pulse" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
 
   // Error state when topic doesn't exist
@@ -432,6 +465,18 @@ export default function ResourceSubmissionPageClient({
                 }
               />
               <Label htmlFor="isPaid">This is a paid resource</Label>
+            </div>
+
+            {/* Free for all checkbox */}
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="isFree"
+                checked={formData.isFree}
+                onCheckedChange={(checked) =>
+                  setFormData((prev) => ({ ...prev, isFree: checked === true }))
+                }
+              />
+              <Label htmlFor="isFree">Free for all (accessible without VAI membership)</Label>
             </div>
 
             {/* Form submission controls */}

@@ -45,8 +45,7 @@ export async function POST(request: Request) {
 
   try {
     // Process the event in Convex
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await convex.mutation((api as any)["stripe/webhooks"].processWebhookEvent, {
+    await convex.mutation(api.stripe.webhooks.processWebhookEvent, {
       stripeEventId: event.id,
       type: event.type,
       data: event.data.object,
