@@ -22,13 +22,14 @@
  * @version 1.0.0
  */
 
-import { query, mutation, type QueryCtx } from "./_generated/server";
+import { query, mutation, type QueryCtx, internalMutation } from "./_generated/server";
 import { v, ConvexError } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
 import { Doc } from "./_generated/dataModel";
 import { generateMemberSlug } from "../lib/slug-utils";
 import type { MutationCtx } from "./_generated/server";
 import { getAuthenticatedMember } from "./auth";
+import { api, internal } from "./_generated/api";
 
 // Shared validator for transformed member data
 const MemberUIValidator = v.object({
@@ -667,6 +668,8 @@ export const updateMemberProfile = mutation({
     linkGithub: v.optional(v.string()),
     linkX: v.optional(v.string()),
     linkYouTube: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
+    websiteUrl: v.optional(v.string()),
   },
   returns: v.null(),
   handler: async (ctx, args) => {
@@ -706,6 +709,25 @@ export const updateMemberProfile = mutation({
       throw new ConvexError("Invalid YouTube URL format");
     }
 
+    // Validate avatar URL
+    if (args.avatarUrl) {
+      if (args.avatarUrl.length > 500) {
+        throw new ConvexError("Avatar URL must be less than 500 characters");
+      }
+      if (!args.avatarUrl.match(/^https?:\/\//)) {
+        throw new ConvexError("Avatar URL must start with https:// or http://");
+      }
+    }
+    // Validate website URL
+    if (args.websiteUrl) {
+      if (args.websiteUrl.length > 500) {
+        throw new ConvexError("Website URL must be less than 500 characters");
+      }
+      if (!args.websiteUrl.match(/^https?:\/\//)) {
+        throw new ConvexError("Website URL must start with https:// or http://");
+      }
+    }
+
     // Check if name is changing and regenerate slug if needed
     let slugUpdate = {};
     if (args.firstName || args.lastName) {
@@ -717,16 +739,80 @@ export const updateMemberProfile = mutation({
       slugUpdate = { slug: uniqueSlug };
     }
 
+    // Handle avatar URL update and delete old avatar if needed
+    if (args.avatarUrl !== undefined && args.avatarUrl !== member.avatarUrl) {
+      const oldUrl = member.avatarUrl;
+      if (oldUrl && oldUrl.includes('/uploads/')) {
+        // Extract object key from URL (part after '/uploads/')
+        const parts = oldUrl.split('/uploads/');
+        if (parts.length > 1) {
+          const objectKey = `uploads/${parts[1]}`;
+          try {
+            // Schedule deletion of old avatar (non-blocking)
+            await ctx.scheduler.runAfter(0, api.storage.deleteObject, { objectKey });
+          } catch (error) {
+            // Log error but continue with profile update
+            console.error('Avatar deletion scheduling error:', error);
+          }
+        }
+      }
+    }
+
     // Filter out undefined values (excluding id)
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
       Object.entries(updates).filter(([, value]) => value !== undefined)
     );
+    
+    // Auto-detect country from location if location is being updated
+    let countryUpdate = {};
+    if (args.location) {
+      // Import the detection function inline to avoid circular dependencies
+      const detectCountryFromLocation = (location: string): string | null => {
+        const normalized = location.toLowerCase().trim();
+        
+        // Check for US states
+        const parts = location.split(',').map(p => p.trim());
+        if (parts.length >= 2) {
+          const lastPart = parts[parts.length - 1].toUpperCase();
+          const usStates = new Set(["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"]);
+          if (usStates.has(lastPart)) return "US";
+        }
+        
+        // Check common patterns
+        if (normalized.includes("usa") || normalized.includes("united states")) return "US";
+        if (normalized.includes("uk") || normalized.includes("united kingdom") || normalized.includes("england")) return "GB";
+        if (normalized.includes("canada")) return "CA";
+        if (normalized.includes("australia")) return "AU";
+        if (normalized.includes("germany") || normalized.includes("deutschland")) return "DE";
+        if (normalized.includes("france")) return "FR";
+        if (normalized.includes("spain") || normalized.includes("españa")) return "ES";
+        if (normalized.includes("italy") || normalized.includes("italia")) return "IT";
+        if (normalized.includes("netherlands") || normalized.includes("holland")) return "NL";
+        if (normalized.includes("japan")) return "JP";
+        if (normalized.includes("india")) return "IN";
+        if (normalized.includes("brazil") || normalized.includes("brasil")) return "BR";
+        
+        return null;
+      };
+      
+      const detectedCountry = detectCountryFromLocation(args.location);
+      if (detectedCountry) {
+        countryUpdate = { country: detectedCountry };
+      } else {
+        // If basic detection fails, schedule AI detection as a background job
+        await ctx.scheduler.runAfter(0, internal.countryDetection.detectAndUpdateCountryAI, {
+          memberId: id,
+          location: args.location,
+        });
+      }
+    }
 
-    // Apply updates including slug if name changed
+    // Apply updates including slug if name changed and country if detected
     await ctx.db.patch(id, {
       ...filteredUpdates,
       ...slugUpdate,
+      ...countryUpdate,
       updatedAt: Date.now(),
     });
 
@@ -1082,3 +1168,4 @@ function getTimeAgo(timestamp: number): string {
   if (minutes > 0) return `${minutes}m`;
   return `${seconds}s`;
 }
+

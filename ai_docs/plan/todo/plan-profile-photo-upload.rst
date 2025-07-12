@@ -1,7 +1,7 @@
 
 ☐ Phase 1 – Backend: extend profile mutation
   • convex/members.ts → add ``avatarUrl`` (optional string) to ``updateMemberProfile`` args and patch logic.
-    – Validate content (must start with https). «Also parse+schedule deletion of prior avatar via ``api.storage.deleteObject`` when a new one is provided»
+    – Validate content (must start with https). «Also immediately delete the prior avatar via ``api.storage.deleteObject`` for guaranteed cleanup when a new one is provided»
   • convex/members.ts → update JSDoc comment & unit validator usage.
   • convex/_generated/api.d.ts → regenerate via `npx convex dev` (implicit).
 
@@ -34,7 +34,7 @@ Affected files: convex/members.ts
    a. Save ``const oldUrl = member.avatarUrl`` before patch.
    b. If ``args.avatarUrl`` provided AND ``oldUrl`` && differs:
       i. Derive objectKey from ``oldUrl`` (split at '/uploads/').
-      ii. ``await ctx.scheduler.runAfter(0, api.storage.deleteObject, {objectKey})``.
+      ii. ``await api.storage.deleteObject({objectKey})``  // guaranteed synchronous deletion.
    c. Include ``avatarUrl`` in patch payload.
 
 3. Maintain validation (max length 500, etc.) + simple check on url:: ``/^https?:\/\//``
@@ -46,7 +46,7 @@ Affected files: components/avatar-upload.tsx (new); components/member-edit-form.
 1. New AvatarUpload component
    • Props: ``initialUrl?: string``; ``onUpload: (url: string) => void``; ``onRemove?: () => void``.
    • Renders square avatar preview (size = 128) with overlay button to change.
-   • On file select: validate type (image/png,jpeg,webp), size ≤ 5 MB.
+   • On file select: validate type (image/png,jpeg,webp), size ≤ 5 MB; present cropping/resizing UI (square aspect). Cloudflare Images will handle final dimension resizing.
    • Calls ``const {uploadUrl, publicUrl} = await api.storage.generateUploadUrl({...})`` via ``useMutation``.
    • ``await fetch(uploadUrl,{method:'PUT',headers:{'Content-Type':file.type},body:file})``.
    • On success call ``onUpload(publicUrl)``.
@@ -67,8 +67,8 @@ Affected files: new tests + adjust mocks
 1. avatar-upload.test.tsx: simulate file selection; expect fetch PUT called and onUpload receives url.
 2. member-edit-form.test.tsx: render with initial avatar; simulate upload; expect mutation includes new url.
 
-Open Questions ⚠️
-=================
-* Do we need client-side image cropping/resizing before upload?
-* Should we enforce max dimensions or let Cloudflare handle resizing via image delivery?
-* Is deleting old avatar objects acceptable via best-effort scheduler, or require guaranteed cleanup job? 
+Decisions
+=========
+* Client-side image cropping/resizing before upload: **Yes** – implemented via cropping modal in AvatarUpload.
+* Max-dimension enforcement: handled by **Cloudflare Images** at delivery; no client-side dimension cap.
+* Old avatar cleanup: **Guaranteed** – synchronous deletion of previous avatar object inside ``updateMemberProfile``. 

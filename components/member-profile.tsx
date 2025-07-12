@@ -4,16 +4,17 @@ import React, { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CalendarDays, MapPin, Globe, Github, Youtube, Edit, ExternalLink, Linkedin, CreditCard } from "lucide-react";
+import { CalendarDays, MapPin, Globe, Github, Youtube, Edit, ExternalLink, Linkedin } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useConvexAuth } from "convex/react";
 import MemberEditModal from "@/components/member-edit-modal";
-import { useRouter } from "next/navigation";
 import { formatDate, formatTierName } from "@/lib/format";
 import { SubscriptionStatusSkeleton } from "@/components/subscription-status-skeleton";
-import { subscriptionAnalytics } from "@/lib/analytics";
+import { ProfileFieldIndicator } from "@/components/profile-field-indicator";
+import { ProfileFieldModal } from "@/components/profile-field-modal";
+import { detectCountryFromLocation, getFlagEmoji, getCountryName } from "@/lib/country-utils";
 
 interface MemberProfileProps {
   member: {
@@ -57,14 +58,18 @@ export default function MemberProfile({ member }: MemberProfileProps) {
   const { isAuthenticated } = useConvexAuth();
   const currentMember = useQuery(api.members.getCurrentMember);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [isSubscriptionLoading, setIsSubscriptionLoading] = useState(false);
-  const router = useRouter();
+  const [activeFieldModal, setActiveFieldModal] = useState<"bio" | "location" | "github" | "x" | "youtube" | "website" | "avatar" | null>(null);
 
   const initials = member.initials;
   const joinedDateFormatted = member.joinedDate;
 
   // Check if the current user can edit this profile
   const canEdit = isAuthenticated && currentMember?._id === member.id;
+  
+  // Detect country from location or use the country field
+  const detectedCountryCode = detectCountryFromLocation(member.location) || member.country;
+  const flagEmoji = detectedCountryCode ? getFlagEmoji(detectedCountryCode) : null;
+  const countryDisplay = detectedCountryCode ? getCountryName(detectedCountryCode) : member.country;
 
   // Transform member data for the edit modal
   const memberForEdit = {
@@ -77,17 +82,34 @@ export default function MemberProfile({ member }: MemberProfileProps) {
     linkGithub: member.linkGithub,
     linkX: member.linkX,
     linkYouTube: member.linkYouTube,
+    avatarUrl: member.avatarUrl,
+    websiteUrl: member.websiteUrl,
   };
 
   return (
     <div className="bg-card border rounded-lg p-8">
       <div className="flex flex-col md:flex-row items-start">
-        <Avatar className="h-32 w-32 mr-8 mb-6 md:mb-0 flex-shrink-0">
-          <AvatarImage
-            src={member.avatarUrl || ""}
-          />
-          <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
-        </Avatar>
+        <div className="relative mr-8 mb-6 md:mb-0 flex-shrink-0">
+          <Avatar className="h-32 w-32">
+            <AvatarImage
+              src={member.avatarUrl || ""}
+            />
+            <AvatarFallback className="text-4xl">{initials}</AvatarFallback>
+          </Avatar>
+          {canEdit && !member.avatarUrl && (
+            <button
+              onClick={() => setActiveFieldModal("avatar")}
+              className="absolute bottom-0 right-0 flex h-8 w-8 items-center justify-center rounded-full bg-foreground text-background shadow-lg hover:scale-110 transition-transform"
+              title="Add profile photo"
+            >
+              <span className="absolute flex h-full w-full">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-foreground opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-full w-full bg-foreground"></span>
+              </span>
+              <span className="relative text-xs font-bold z-10">+</span>
+            </button>
+          )}
+        </div>
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
             <h1 className="text-3xl font-bold text-card-foreground">
@@ -106,13 +128,20 @@ export default function MemberProfile({ member }: MemberProfileProps) {
               )}
             </div>
           </div>
-          <p className="text-muted-foreground mb-4">{member.bio}</p>
+          {member.bio ? (
+            <p className="text-muted-foreground mb-4">{member.bio}</p>
+          ) : canEdit ? (
+            <div className="mb-4">
+              <ProfileFieldIndicator
+                label="Bio"
+                onClick={() => setActiveFieldModal("bio")}
+                className="w-full justify-center"
+              />
+            </div>
+          ) : null}
 
           {/* Subscription Status */}
-          {isSubscriptionLoading ? (
-            <SubscriptionStatusSkeleton />
-          ) : (
-            <div className="flex items-center gap-2 mb-6">
+          <div className="flex items-center gap-2 mb-6">
               <Badge
                 variant="outline"
                 className={`text-sm ${tierVariants[member.tier]}`}
@@ -134,23 +163,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
                   Payment Required
                 </Badge>
               )}
-              {canEdit && member.tier !== "free" && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    subscriptionAnalytics.manageClicked(member.tier);
-                    setIsSubscriptionLoading(true);
-                    router.push("/settings/billing");
-                  }}
-                  className="ml-auto"
-                >
-                  <CreditCard className="w-4 h-4 mr-2" />
-                  Manage Subscription
-                </Button>
-              )}
             </div>
-          )}
 
           {/* Skills */}
           {member.skills && member.skills.length > 0 && (
@@ -171,21 +184,35 @@ export default function MemberProfile({ member }: MemberProfileProps) {
               <CalendarDays className="w-4 h-4 mr-2" />
               Joined: {joinedDateFormatted}
             </div>
-            {member.location && (
+            {member.location ? (
               <div className="flex items-center">
                 <MapPin className="w-4 h-4 mr-2" />
                 {member.location}
               </div>
+            ) : canEdit ? (
+              <ProfileFieldIndicator
+                label="Location"
+                onClick={() => setActiveFieldModal("location")}
+                className="text-sm"
+              />
+            ) : null}
+            {countryDisplay && (
+              <div className="flex items-center">
+                {flagEmoji ? (
+                  <span className="text-lg mr-2" role="img" aria-label={`${countryDisplay} flag`}>
+                    {flagEmoji}
+                  </span>
+                ) : (
+                  <MapPin className="w-4 h-4 mr-2" />
+                )}
+                {countryDisplay}
+              </div>
             )}
-            <div className="flex items-center">
-              <Globe className="w-4 h-4 mr-2" />
-              {member.country}
-            </div>
           </div>
 
           {/* Social Links */}
           <div className="flex flex-wrap gap-3">
-            {member.linkGithub && (
+            {member.linkGithub ? (
               <a
                 href={member.linkGithub}
                 target="_blank"
@@ -196,8 +223,13 @@ export default function MemberProfile({ member }: MemberProfileProps) {
                 GitHub
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
+            ) : canEdit && (
+              <ProfileFieldIndicator
+                label="GitHub"
+                onClick={() => setActiveFieldModal("github")}
+              />
             )}
-            {member.linkX && (
+            {member.linkX ? (
               <a
                 href={member.linkX}
                 target="_blank"
@@ -210,8 +242,13 @@ export default function MemberProfile({ member }: MemberProfileProps) {
                 X (Twitter)
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
+            ) : canEdit && (
+              <ProfileFieldIndicator
+                label="X"
+                onClick={() => setActiveFieldModal("x")}
+              />
             )}
-            {member.linkYouTube && (
+            {member.linkYouTube ? (
               <a
                 href={member.linkYouTube}
                 target="_blank"
@@ -222,6 +259,11 @@ export default function MemberProfile({ member }: MemberProfileProps) {
                 YouTube
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
+            ) : canEdit && (
+              <ProfileFieldIndicator
+                label="YouTube"
+                onClick={() => setActiveFieldModal("youtube")}
+              />
             )}
             {member.linkedinUrl && (
               <a
@@ -235,7 +277,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
             )}
-            {member.websiteUrl && (
+            {member.websiteUrl ? (
               <a
                 href={member.websiteUrl}
                 target="_blank"
@@ -246,6 +288,11 @@ export default function MemberProfile({ member }: MemberProfileProps) {
                 Website
                 <ExternalLink className="w-3 h-3 ml-1" />
               </a>
+            ) : canEdit && (
+              <ProfileFieldIndicator
+                label="Website"
+                onClick={() => setActiveFieldModal("website")}
+              />
             )}
           </div>
         </div>
@@ -253,11 +300,33 @@ export default function MemberProfile({ member }: MemberProfileProps) {
 
       {/* Edit Modal */}
       {canEdit && (
-        <MemberEditModal
-          member={memberForEdit}
-          isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
-        />
+        <>
+          <MemberEditModal
+            member={memberForEdit}
+            isOpen={isEditModalOpen}
+            onClose={() => setIsEditModalOpen(false)}
+          />
+          
+          {/* Individual Field Modals */}
+          {activeFieldModal && (
+            <ProfileFieldModal
+              memberId={member.id}
+              field={activeFieldModal}
+              currentValue={
+                activeFieldModal === "bio" ? member.bio :
+                activeFieldModal === "location" ? member.location :
+                activeFieldModal === "github" ? member.linkGithub :
+                activeFieldModal === "x" ? member.linkX :
+                activeFieldModal === "youtube" ? member.linkYouTube :
+                activeFieldModal === "website" ? member.websiteUrl :
+                activeFieldModal === "avatar" ? member.avatarUrl :
+                undefined
+              }
+              isOpen={true}
+              onClose={() => setActiveFieldModal(null)}
+            />
+          )}
+        </>
       )}
     </div>
   );

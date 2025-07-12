@@ -86,6 +86,7 @@ export const getCommentsByPost = query({
             email: member.email,
             username: member.email.split('@')[0],
             slug: member.slug,
+            avatarUrl: member.avatarUrl,
           } : null,
         };
       })
@@ -154,6 +155,7 @@ export const getCommentById = query({
         email: member.email,
         username: member.email.split('@')[0],
         slug: member.slug,
+        avatarUrl: member.avatarUrl,
       } : null,
     };
   },

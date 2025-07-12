@@ -6,8 +6,11 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-mona-sans);
+  --font-mono: var(--font-monaspace-argon);
+  --font-heading: var(--font-mono-sans);
+  --font-body: var(--font-mona-sans);
+  --font-code: var(--font-monaspace-argon);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -142,11 +145,21 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-size: 18px;
+    font-weight: 500; /* Using 500 as closest to 450 */
+    letter-spacing: -0.18px;
+    line-height: 30px;
+    color: #1F2328;
+  }
+  
+  .dark body {
+    color: rgb(139, 148, 158);
   }
 
   /* Custom link styles */
   a {
-    @apply text-[#ADADAD] transition-colors duration-200 ease-out;
+    @apply text-[#6B7280] transition-colors duration-200 ease-out;
   }
 
   a:hover {
@@ -154,7 +167,7 @@
   }
 
   .dark a {
-    @apply text-[#707070];
+    @apply text-[#9CA3AF];
   }
 
   .dark a:hover {
@@ -199,6 +212,7 @@
 .prose-editor .ProseMirror h2,
 .prose-editor .ProseMirror h3 {
   margin: 1rem 0 0.5rem 0;
+  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
   font-weight: 600;
   line-height: 1.2;
 }
@@ -239,8 +253,8 @@
   color: hsl(var(--foreground));
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 0.85em;
+  font-family: var(--font-code), 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 13.6px;
   font-weight: 500;
   border: 1px solid hsl(var(--border) / 0.5);
   transition: all 0.2s ease;
@@ -267,8 +281,9 @@
   background: hsl(var(--muted));
   border-radius: 0.5rem;
   color: hsl(var(--foreground));
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 0.875rem;
+  font-family: var(--font-code), 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 13.6px;
+  line-height: 20.4px;
   margin: 1rem 0;
   overflow-x: auto;
   padding: 1rem;
@@ -476,8 +491,8 @@
   color: hsl(var(--foreground));
   padding: 0.125rem 0.375rem;
   border-radius: 0.25rem;
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 0.85em;
+  font-family: var(--font-code), 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 13.6px;
   font-weight: 500;
   border: 1px solid hsl(var(--border) / 0.5);
   transition: all 0.2s ease;
@@ -497,13 +512,36 @@
   border-color: hsl(var(--border) / 0.3);
 }
 
+/* Prose headings */
+.prose h1,
+.prose h2,
+.prose h3 {
+  font-family: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 1.5rem 0 0.75rem 0;
+}
+
+.prose h1 {
+  font-size: 2rem;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+}
+
 /* Code blocks in rendered posts */
 .prose pre {
   background: hsl(var(--muted));
   border-radius: 0.5rem;
   color: hsl(var(--foreground));
-  font-family: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
-  font-size: 0.875rem;
+  font-family: var(--font-code), 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 13.6px;
+  line-height: 20.4px;
   margin: 1rem 0;
   overflow-x: auto;
   padding: 1rem;
@@ -744,7 +782,7 @@
 }
 
 .prose-editor .ProseMirror a {
-  @apply text-[#ADADAD] transition-colors duration-200 ease-out no-underline;
+  @apply text-[#6B7280] transition-colors duration-200 ease-out no-underline;
 }
 
 .prose-editor .ProseMirror a:hover {
@@ -752,7 +790,7 @@
 }
 
 .dark .prose-editor .ProseMirror a {
-  @apply text-[#707070];
+  @apply text-[#9CA3AF];
 }
 
 .dark .prose-editor .ProseMirror a:hover {

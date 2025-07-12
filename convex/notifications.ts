@@ -157,6 +157,7 @@ export const getNotifications = query({
       firstName: v.string(),
       lastName: v.string(),
       slug: v.string(),
+      avatarUrl: v.optional(v.string()),
     }), v.null()),
     timeAgo: v.string(),
     // Additional fields for link construction
@@ -208,6 +209,7 @@ export const getNotifications = query({
             firstName: actor.firstName,
             lastName: actor.lastName,
             slug: actor.slug,
+            avatarUrl: actor.avatarUrl,
           } : null,
           timeAgo,
           postId,

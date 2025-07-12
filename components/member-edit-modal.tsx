@@ -20,6 +20,8 @@ interface Member {
   linkGithub?: string;
   linkX?: string;
   linkYouTube?: string;
+  avatarUrl?: string;
+  websiteUrl?: string;
 }
 
 interface MemberEditModalProps {
