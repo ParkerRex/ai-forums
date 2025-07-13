@@ -212,8 +212,7 @@ export const getCached = query({
   handler: async (ctx, args) => {
     const result = await ctx.db
       .query("newsFeedCache")
-      .withIndex("by_userId_createdAt")
-      .filter((q) => q.eq(q.field("cacheKey"), args.cacheKey))
+      .withIndex("by_cacheKey", (q) => q.eq("cacheKey", args.cacheKey))
       .order("desc")
       .first();
     
@@ -243,6 +242,19 @@ export const cache = mutation({
   handler: async (ctx, args) => {
     const now = Date.now();
     
+    // First, try to find and delete any existing cache entries for this cacheKey
+    // Using a more selective query to reduce data read
+    const existingEntries = await ctx.db
+      .query("newsFeedCache")
+      .withIndex("by_cacheKey", (q) => q.eq("cacheKey", args.cacheKey))
+      .collect();
+    
+    // Delete old entries
+    for (const entry of existingEntries) {
+      await ctx.db.delete(entry._id);
+    }
+    
+    // Insert the new cache entry
     await ctx.db.insert("newsFeedCache", {
       userId: args.userId,
       cacheKey: args.cacheKey,

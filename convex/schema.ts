@@ -990,6 +990,7 @@ const newsFeedCache = defineTable({
   createdAt: v.number(),                    // Cache creation timestamp
   expiresAt: v.number(),                    // Cache expiration timestamp
 })
+  .index("by_cacheKey", ["cacheKey"])       // Primary lookup by cache key
   .index("by_userId_createdAt", ["userId", "createdAt"])
   .index("by_createdAt", ["createdAt"]);
 
