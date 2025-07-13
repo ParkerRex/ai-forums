@@ -73,10 +73,27 @@ export const getCommentsByPost = query({
       .order("asc")
       .take(limit);
 
-    // Enrich comments with member data
+    // Enrich comments with member data and reply-to information
     const enrichedComments = await Promise.all(
       comments.map(async (comment) => {
         const member = await ctx.db.get(comment.memberId);
+        
+        // Get reply-to member information if this is a reply
+        let replyToMember = null;
+        if (comment.replyToMemberId) {
+          const replyTo = await ctx.db.get(comment.replyToMemberId);
+          if (replyTo) {
+            replyToMember = {
+              _id: replyTo._id,
+              firstName: replyTo.firstName,
+              lastName: replyTo.lastName,
+              email: replyTo.email,
+              username: replyTo.email.split('@')[0],
+              slug: replyTo.slug,
+            };
+          }
+        }
+        
         return {
           ...comment,
           member: member ? {
@@ -88,51 +105,15 @@ export const getCommentsByPost = query({
             slug: member.slug,
             avatarUrl: member.avatarUrl,
           } : null,
+          replyToMember,
+          // For backward compatibility, we'll include an empty replies array
+          replies: [],
         };
       })
     );
 
-    // Build nested comment structure
-    type CommentWithReplies = typeof enrichedComments[0] & { replies: CommentWithReplies[] };
-    const commentMap = new Map<Id<"comments">, CommentWithReplies>();
-    const rootComments: CommentWithReplies[] = [];
-
-    // First pass: create map of all comments
-    enrichedComments.forEach(comment => {
-      commentMap.set(comment._id, { ...comment, replies: [] });
-    });
-
-    // Second pass: build tree structure
-    enrichedComments.forEach(comment => {
-      const commentWithReplies = commentMap.get(comment._id);
-      if (commentWithReplies) {
-        if (comment.parentCommentId) {
-          const parent = commentMap.get(comment.parentCommentId);
-          if (parent) {
-            parent.replies.push(commentWithReplies);
-          }
-        } else {
-          rootComments.push(commentWithReplies);
-        }
-      }
-    });
-
-    const sortReplies = (comments: CommentWithReplies[]) => {
-      comments.forEach(comment => {
-        if (comment.replies.length > 0) {
-          comment.replies.sort((a, b) => {
-            const aOrder = 'order' in a ? (a.order as number) : 0;
-            const bOrder = 'order' in b ? (b.order as number) : 0;
-            return aOrder - bOrder;
-          });
-          sortReplies(comment.replies);
-        }
-      });
-    };
-
-    sortReplies(rootComments);
-
-    return rootComments;
+    // Return flat list sorted by creation time (GitHub-style)
+    return enrichedComments;
   },
 });
 
@@ -222,6 +203,9 @@ export const createComment = mutation({
 
     // If replying to a comment, verify it exists
     let depth = 0;
+    let replyToMemberId: Id<"members"> | undefined = undefined;
+    let replyToCommentId: Id<"comments"> | undefined = undefined;
+    
     if (parentCommentId) {
       const parentComment = await ctx.db.get(parentCommentId);
       if (!parentComment || parentComment.status !== "active") {
@@ -230,12 +214,12 @@ export const createComment = mutation({
       if (parentComment.postId !== postId) {
         throw new Error("Parent comment belongs to different post");
       }
-      depth = parentComment.depth + 1;
-
-      // Limit nesting depth to prevent infinite threading
-      if (depth > 5) {
-        throw new Error("Maximum comment depth exceeded");
-      }
+      
+      // For GitHub-style flat comments, we track who we're replying to
+      // but keep depth at 0 for all comments
+      replyToMemberId = parentComment.memberId;
+      replyToCommentId = parentCommentId;
+      depth = 0; // All comments are at the same level in flat structure
     }
 
     const now = Date.now();
@@ -298,6 +282,8 @@ export const createComment = mutation({
       attachments,
       linkPreviews,
       mentions,
+      replyToMemberId,
+      replyToCommentId,
     });
 
     // Update post comment count

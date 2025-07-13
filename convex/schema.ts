@@ -398,6 +398,10 @@ const comments = defineTable({
     childCount: v.number(),                  // Direct child comment count
     order: v.optional(v.number()),           // Sort order within parent
     
+    // GitHub-style flat comment references
+    replyToMemberId: v.optional(v.id("members")),   // Member being replied to (for flat display)
+    replyToCommentId: v.optional(v.id("comments")), // Comment being replied to (for context)
+    
     // Moderation and lifecycle
     status: CommentStatusValidator,          // Visibility and moderation status
     

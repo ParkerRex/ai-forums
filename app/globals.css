@@ -145,7 +145,7 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-mono), ui-sans-serif, system-ui, sans-serif;
     font-size: 18px;
     font-weight: 500; /* Using 500 as closest to 450 */
     letter-spacing: -0.18px;
@@ -156,22 +156,27 @@
   .dark body {
     color: rgb(139, 148, 158);
   }
+  
+  /* Post content should use Mona Sans */
+  .post-content {
+    font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif !important;
+  }
 
   /* Custom link styles */
   a {
-    @apply text-[#6B7280] transition-colors duration-200 ease-out;
+    @apply text-blue-600 transition-colors duration-200 ease-out;
   }
 
   a:hover {
-    @apply text-black;
+    @apply text-blue-700 underline;
   }
 
   .dark a {
-    @apply text-[#9CA3AF];
+    @apply text-blue-400;
   }
 
   .dark a:hover {
-    @apply text-white;
+    @apply text-blue-300 underline;
   }
 }
 
@@ -782,19 +787,19 @@
 }
 
 .prose-editor .ProseMirror a {
-  @apply text-[#6B7280] transition-colors duration-200 ease-out no-underline;
+  @apply text-blue-600 transition-colors duration-200 ease-out no-underline;
 }
 
 .prose-editor .ProseMirror a:hover {
-  @apply text-black underline;
+  @apply text-blue-700 underline;
 }
 
 .dark .prose-editor .ProseMirror a {
-  @apply text-[#9CA3AF];
+  @apply text-blue-400;
 }
 
 .dark .prose-editor .ProseMirror a:hover {
-  @apply text-white;
+  @apply text-blue-300 underline;
 }
 
 .prose-editor .ProseMirror p.is-editor-empty:first-child::before {
@@ -860,5 +865,19 @@
   [data-sonner-toast] {
     width: calc(100vw - 16px) !important;
     max-width: none !important;
+  }
+}
+
+/* Comment highlight animation for deep linking */
+.comment-highlight {
+  animation: highlight-fade 3s ease-out;
+}
+
+@keyframes highlight-fade {
+  0% {
+    background-color: var(--comment-highlight);
+  }
+  100% {
+    background-color: transparent;
   }
 }
