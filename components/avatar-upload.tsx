@@ -242,9 +242,9 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
         try {
           const response = await fetch(uploadUrl, {
             method: "PUT",
-            body: croppedFile,
+            body: optimizedFile,
             headers: {
-              "Content-Type": croppedFile.type,
+              "Content-Type": optimizedFile.type,
               "Cache-Control": "public, max-age=31536000, immutable",
             },
           });

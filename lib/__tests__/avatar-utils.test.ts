@@ -49,7 +49,7 @@ describe('avatar-utils', () => {
     });
 
     it('handles malformed URLs gracefully', () => {
-      const malformedUrl = 'https://[invalid';
+      const malformedUrl = 'https://[invalid.r2.cloudflarestorage.com/file.jpg';
       const result = getAvatarUrl(malformedUrl, 128);
       
       expect(result).toBe(malformedUrl);
@@ -99,7 +99,7 @@ describe('avatar-utils', () => {
     });
 
     it('returns true for successful fetch', async () => {
-      (global.fetch as any).mockResolvedValueOnce({});
+      (global.fetch as jest.Mock).mockResolvedValueOnce({});
       
       const result = await isAvatarAccessible('https://example.com/avatar.jpg');
       expect(result).toBe(true);
@@ -110,7 +110,7 @@ describe('avatar-utils', () => {
     });
 
     it('returns false and logs warning on fetch error', async () => {
-      (global.fetch as any).mockRejectedValueOnce(new Error('Network error'));
+      (global.fetch as jest.Mock).mockRejectedValueOnce(new Error('Network error'));
       
       const result = await isAvatarAccessible('https://example.com/avatar.jpg');
       expect(result).toBe(false);

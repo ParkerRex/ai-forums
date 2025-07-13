@@ -4,9 +4,7 @@ import { api } from '../_generated/api';
 
 // Mock AWS SDK
 vi.mock('@aws-sdk/client-s3', () => ({
-  S3Client: vi.fn().mockImplementation(() => ({
-    send: vi.fn(),
-  })),
+  S3Client: vi.fn(),
   PutObjectCommand: vi.fn(),
   DeleteObjectCommand: vi.fn(),
 }));
@@ -16,7 +14,7 @@ vi.mock('@aws-sdk/s3-request-presigner', () => ({
 }));
 
 describe('storage actions', () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     // Mock environment variables
     process.env.R2_ACCOUNT_ID = 'test-account';
@@ -24,6 +22,10 @@ describe('storage actions', () => {
     process.env.R2_SECRET_KEY = 'test-secret';
     process.env.R2_BUCKET = 'test-bucket';
     process.env.R2_PUBLIC_URL = 'https://test.r2.dev';
+    
+    // Set default S3Client mock
+    const { S3Client } = await import('@aws-sdk/client-s3');
+    (S3Client as any).mockReturnValue({ send: vi.fn().mockResolvedValue({}) });
   });
 
   describe('generateUploadUrl', () => {
@@ -109,11 +111,11 @@ describe('storage actions', () => {
       const t = convexTest();
       
       // Mock S3 client to throw NoSuchKey error
-      const { S3Client } = require('@aws-sdk/client-s3');
+      const { S3Client } = await import('@aws-sdk/client-s3');
       const mockSend = vi.fn().mockRejectedValue(
         Object.assign(new Error('NoSuchKey'), { name: 'NoSuchKey' })
       );
-      S3Client.mockImplementation(() => ({ send: mockSend }));
+      (S3Client as any).mockReturnValue({ send: mockSend });
       
       const result = await t.action(api.storage.deleteObject, {
         objectKey: 'uploads/test.jpg',
@@ -141,9 +143,9 @@ describe('storage actions', () => {
       const t = convexTest();
       
       // Mock successful S3 upload
-      const { S3Client } = require('@aws-sdk/client-s3');
+      const { S3Client } = await import('@aws-sdk/client-s3');
       const mockSend = vi.fn().mockResolvedValue({});
-      S3Client.mockImplementation(() => ({ send: mockSend }));
+      (S3Client as any).mockReturnValue({ send: mockSend });
       
       const result = await t.action(api.storage.uploadFile, {
         fileData: Buffer.from('test image data').toString('base64'),
@@ -172,8 +174,8 @@ describe('storage actions', () => {
       const t = convexTest();
       
       // Mock S3Client to throw error
-      const { S3Client } = require('@aws-sdk/client-s3');
-      S3Client.mockImplementation(() => {
+      const { S3Client } = await import('@aws-sdk/client-s3');
+      (S3Client as any).mockImplementation(() => {
         throw new Error('Invalid credentials');
       });
       

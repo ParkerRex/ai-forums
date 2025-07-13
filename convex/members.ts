@@ -412,7 +412,9 @@ export const getMemberActivity = query({
       post: v.optional(v.object({
         _id: v.id("posts"),
         title: v.string(),
+        slug: v.string(),
         categoryId: v.id("categories"),
+        categoryName: v.string(),
       })),
     })),
     isDone: v.boolean(),
@@ -432,6 +434,9 @@ export const getMemberActivity = query({
         const post = await ctx.db.get(comment.postId);
         const timeAgo = getTimeAgo(comment.createdAt);
 
+        // Fetch category if post exists
+        const category = post ? await ctx.db.get(post.categoryId) : null;
+        
         return {
           _id: comment._id,
           content: comment.content,
@@ -442,7 +447,9 @@ export const getMemberActivity = query({
           post: post ? {
             _id: post._id,
             title: post.title,
+            slug: post.slug,
             categoryId: post.categoryId,
+            categoryName: category?.name || "general",
           } : undefined,
         };
       })

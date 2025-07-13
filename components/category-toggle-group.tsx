@@ -34,7 +34,7 @@ export function CategoryToggleGroup({
           variant="outline"
           disabled={disabled}
           className={cn(
-            "w-full h-12 justify-between text-left",
+            "w-full max-w-sm h-12 justify-between text-left",
             !selectedCategory && "text-muted-foreground",
           )}
         >
@@ -62,7 +62,7 @@ export function CategoryToggleGroup({
           <ChevronDown className="h-4 w-4 flex-shrink-0 ml-2" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-full min-w-[var(--radix-dropdown-menu-trigger-width)] max-h-[300px] overflow-y-auto">
+      <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] max-w-sm max-h-[300px] overflow-y-auto">
         {categories.map((category) => {
           const isSelected = value === category.id;
 
@@ -103,7 +103,7 @@ export function CategoryToggleGroup({
                 <span className="text-xs text-muted-foreground">
                   {category.postCount.toLocaleString()}
                 </span>
-                {isSelected && <Check className="h-4 w-4 text-green-700" />}
+                {isSelected && <Check className="h-4 w-4 text-primary" />}
               </div>
             </DropdownMenuItem>
           );

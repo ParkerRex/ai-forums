@@ -2,8 +2,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import MemberEditForm from '../member-edit-form';
 import { useMutation } from 'convex/react';
-import { api } from '@/convex/_generated/api';
 import { Id } from '@/convex/_generated/dataModel';
+import { useNetworkStatus } from '@/hooks/use-network-status';
 
 // Mock dependencies
 vi.mock('convex/react');
@@ -14,10 +14,10 @@ vi.mock('@/hooks/use-mutation-error', () => ({
   }),
 }));
 vi.mock('@/hooks/use-network-status', () => ({
-  useNetworkStatus: () => ({ isOnline: true }),
+  useNetworkStatus: vi.fn(() => ({ isOnline: true })),
 }));
 vi.mock('@/components/avatar-upload', () => ({
-  AvatarUpload: ({ onUpload, onRemove, initialUrl }: any) => (
+  AvatarUpload: ({ onUpload, onRemove, initialUrl }: { onUpload: (url: string) => void; onRemove: () => void; initialUrl?: string }) => (
     <div data-testid="avatar-upload">
       <button onClick={() => onUpload('https://example.com/new-avatar.jpg')}>
         Upload Avatar
@@ -48,7 +48,7 @@ describe('MemberEditForm', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    (useMutation as any).mockReturnValue(mockUpdateMemberProfile);
+    (useMutation as ReturnType<typeof vi.fn>).mockReturnValue(mockUpdateMemberProfile);
   });
 
   it('renders all form fields including avatar upload', () => {
@@ -118,7 +118,7 @@ describe('MemberEditForm', () => {
       expect(mockUpdateMemberProfile).toHaveBeenCalledWith(
         expect.objectContaining({
           id: mockMember._id,
-          avatarUrl: '',
+          avatarUrl: undefined,
         })
       );
     });
@@ -167,7 +167,10 @@ describe('MemberEditForm', () => {
     const longBio = 'a'.repeat(501);
     
     fireEvent.change(bioField, { target: { value: longBio } });
-    fireEvent.blur(bioField);
+    
+    // Submit form to trigger validation
+    const saveButton = screen.getByRole('button', { name: /save changes/i });
+    fireEvent.click(saveButton);
 
     await waitFor(() => {
       expect(screen.getByText(/bio must be less than 500 characters/i)).toBeInTheDocument();
@@ -186,10 +189,13 @@ describe('MemberEditForm', () => {
     const githubField = screen.getByLabelText(/github/i);
     
     fireEvent.change(githubField, { target: { value: 'invalid@handle!' } });
-    fireEvent.blur(githubField);
+    
+    // Submit form to trigger validation
+    const saveButton = screen.getByRole('button', { name: /save changes/i });
+    fireEvent.click(saveButton);
 
     await waitFor(() => {
-      expect(screen.getByText(/please enter a valid username/i)).toBeInTheDocument();
+      expect(screen.getByText(/Please enter a valid username \(letters, numbers, dots, hyphens, underscores only\)/i)).toBeInTheDocument();
     });
   });
 
@@ -245,7 +251,7 @@ describe('MemberEditForm', () => {
 
   it('disables submit when offline', () => {
     // Mock offline status
-    vi.mocked(require('@/hooks/use-network-status').useNetworkStatus).mockReturnValue({ 
+    vi.mocked(useNetworkStatus).mockReturnValue({ 
       isOnline: false 
     });
 

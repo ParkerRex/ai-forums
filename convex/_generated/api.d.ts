@@ -38,6 +38,7 @@ import type * as linkPreviews from "../linkPreviews.js";
 import type * as locationHelpers from "../locationHelpers.js";
 import type * as members_checkoutStatus from "../members/checkoutStatus.js";
 import type * as members from "../members.js";
+import type * as migrations_add_github_style_comment_fields from "../migrations/add_github_style_comment_fields.js";
 import type * as migrations_add_member_slug from "../migrations/add_member_slug.js";
 import type * as migrations_add_missing_members_20250709 from "../migrations/add_missing_members_20250709.js";
 import type * as migrations_add_post_media_fields from "../migrations/add_post_media_fields.js";
@@ -110,6 +111,7 @@ declare const fullApi: ApiFromModules<{
   locationHelpers: typeof locationHelpers;
   "members/checkoutStatus": typeof members_checkoutStatus;
   members: typeof members;
+  "migrations/add_github_style_comment_fields": typeof migrations_add_github_style_comment_fields;
   "migrations/add_member_slug": typeof migrations_add_member_slug;
   "migrations/add_missing_members_20250709": typeof migrations_add_missing_members_20250709;
   "migrations/add_post_media_fields": typeof migrations_add_post_media_fields;

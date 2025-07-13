@@ -4,7 +4,6 @@ import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Users } from "lucide-react";
 import Link from "next/link";
 import { memberProfileUrl } from "@/lib/slug-utils";
 import { Id } from "@/convex/_generated/dataModel";
@@ -17,14 +16,11 @@ export function OnlineUsers() {
   }
 
   return (
-    <div className="bg-card border rounded-lg p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="text-sm font-medium flex items-center">
-          <Users className="w-4 h-4 mr-1.5" />
-          Online Now ({onlineMembers.length})
-        </h3>
-      </div>
-      <div className="text-xs space-y-1">
+    <div className="space-y-3">
+      <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
+        Online Now ({onlineMembers.length})
+      </h3>
+      <div className="space-y-1">
         {onlineMembers.map((member: {
           _id: Id<"members">;
           firstName: string;
@@ -40,34 +36,23 @@ export function OnlineUsers() {
           });
           
           return (
-            <div key={member._id} className="group">
-              <Link 
-                href={memberUrl} 
-                className="flex items-center space-x-2 hover:text-blue-600 transition-colors"
-              >
-                <Avatar className="h-6 w-6">
-                  <AvatarImage
-                    src={member.avatarUrl || ""}
-                    alt={member.fullName}
-                  />
-                  <AvatarFallback className="text-[10px]">
-                    {member.initials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <span className="flex-1 leading-tight truncate">{member.fullName}</span>
-                    <div className="flex items-center">
-                      <div className="w-1.5 h-1.5 bg-green-500 rounded-full"></div>
-                    </div>
-                  </div>
-                  <div className="text-muted-foreground mt-0.5">
-                    <span className="text-[10px]">[Member]</span>
-                    <span className="ml-2">Online</span>
-                  </div>
-                </div>
-              </Link>
-            </div>
+            <Link 
+              key={member._id}
+              href={memberUrl} 
+              className="flex items-center space-x-2 text-xs py-1 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
+            >
+              <Avatar className="h-5 w-5">
+                <AvatarImage
+                  src={member.avatarUrl || ""}
+                  alt={member.fullName}
+                />
+                <AvatarFallback className="text-[10px]">
+                  {member.initials}
+                </AvatarFallback>
+              </Avatar>
+              <span className="truncate">{member.fullName}</span>
+              <div className="w-1.5 h-1.5 bg-green-500 rounded-full ml-auto"></div>
+            </Link>
           );
         })}
       </div>

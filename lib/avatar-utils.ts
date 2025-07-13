@@ -77,7 +77,7 @@ export async function isAvatarAccessible(url: string): Promise<boolean> {
   if (!url) return false;
   
   try {
-    const response = await fetch(url, { 
+    await fetch(url, { 
       method: 'HEAD',
       mode: 'no-cors' // Avoid CORS issues
     });

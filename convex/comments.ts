@@ -117,6 +117,74 @@ export const getCommentsByPost = query({
   },
 });
 
+/**
+ * Retrieves comments for a post in a flat structure (GitHub-style).
+ * 
+ * Fetches all comments for a post and returns them in chronological order
+ * without nesting, but with reply-to information preserved for display.
+ * 
+ * @param postId - ID of the post to get comments for
+ * @returns Flat array of comments with reply-to member information
+ */
+export const getCommentsByPostFlat = query({
+  args: {
+    postId: v.id("posts"),
+  },
+  handler: async (ctx, { postId }) => {
+    const comments = await ctx.db
+      .query("comments")
+      .withIndex("by_post_and_createdAt", (q) => q.eq("postId", postId))
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .order("asc")
+      .collect();
+
+    // Enrich comments with member data and reply-to information
+    const enrichedComments = await Promise.all(
+      comments.map(async (comment) => {
+        const member = await ctx.db.get(comment.memberId);
+        
+        // Get reply-to member information if this is a reply
+        let replyToMember = null;
+        if (comment.replyToMemberId) {
+          const replyTo = await ctx.db.get(comment.replyToMemberId);
+          if (replyTo) {
+            replyToMember = {
+              _id: replyTo._id,
+              username: replyTo.email.split('@')[0],
+              slug: replyTo.slug,
+            };
+          }
+        }
+        
+        return {
+          _id: comment._id,
+          content: comment.content,
+          createdAt: comment.createdAt,
+          memberId: comment.memberId,
+          upvotes: comment.upvotes,
+          netVotes: comment.netVotes,
+          parentCommentId: comment.parentCommentId,
+          replyToMemberId: comment.replyToMemberId,
+          attachments: comment.attachments,
+          linkPreviews: comment.linkPreviews,
+          editedAt: comment.editedAt,
+          member: member ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split('@')[0],
+            slug: member.slug,
+          } : null,
+          replyToMember,
+        };
+      })
+    );
+
+    return enrichedComments;
+  },
+});
+
 // Get single comment by ID
 export const getCommentById = query({
   args: { commentId: v.id("comments") },

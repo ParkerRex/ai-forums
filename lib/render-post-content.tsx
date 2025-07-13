@@ -23,7 +23,7 @@ export function RenderPostContent({ content, linkPreviews = {} }: RenderPostCont
   const paragraphs = content.split(/\n\s*\n/);
   
   return (
-    <div className="prose prose-sm max-w-none text-foreground">
+    <div className="prose prose-sm max-w-none text-foreground post-content">
       {paragraphs.map((paragraph, index) => {
         if (!paragraph.trim()) return null;
         
@@ -148,7 +148,7 @@ export function RenderTipTapContent({ content }: { content: string }) {
       <>
         <div 
           ref={contentRef}
-          className="prose prose-sm max-w-none text-foreground"
+          className="prose prose-sm max-w-none text-foreground post-content"
           dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
         />
         <style jsx global>{`

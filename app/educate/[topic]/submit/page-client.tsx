@@ -32,16 +32,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, ExternalLink, Loader2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
@@ -93,22 +85,10 @@ export default function ResourceSubmissionPageClient({
     title: "",
     description: "",
     url: "",
-    type: "article", // Default to article type
-    difficulty: "", // Optional field
-    isPaid: false, // Default to free resource
-    isFree: false, // Default to paywalled for VAI members
   });
   
   // UI state for form submission and loading states
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // URL preview state (placeholder implementation)
-  const [urlPreview, setUrlPreview] = useState<{
-    title?: string;
-    description?: string;
-    image?: string;
-  } | null>(null);
-  const [isLoadingPreview, setIsLoadingPreview] = useState(false);
 
   const router = useRouter();
 
@@ -128,43 +108,6 @@ export default function ResourceSubmissionPageClient({
   // Mutation for creating new resources
   const createResource = useMutation(api.resources.createResource);
 
-  /**
-   * Handles URL input changes and generates preview data
-   * 
-   * This function validates the URL format and attempts to fetch preview
-   * information (currently a placeholder implementation). When a valid URL
-   * is entered, it can auto-populate the title field if it's empty.
-   * 
-   * @param {string} url - The URL entered by the user
-   */
-  const handleUrlChange = async (url: string) => {
-    setFormData((prev) => ({ ...prev, url }));
-
-    if (url && isValidUrl(url)) {
-      setIsLoadingPreview(true);
-      try {
-        // Placeholder for URL preview functionality
-        // In production, this would fetch actual metadata from the URL
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setUrlPreview({
-          title: "Sample Title from URL",
-          description: "Sample description extracted from the URL",
-        });
-
-        // Auto-populate title if user hasn't entered one yet
-        if (!formData.title) {
-          setFormData((prev) => ({ ...prev, title: "Sample Title from URL" }));
-        }
-      } catch (error) {
-        console.error("Failed to fetch URL preview:", error);
-      } finally {
-        setIsLoadingPreview(false);
-      }
-    } else {
-      // Clear preview if URL is invalid or empty
-      setUrlPreview(null);
-    }
-  };
 
   /**
    * Validates if a string is a properly formatted URL
@@ -230,10 +173,9 @@ export default function ResourceSubmissionPageClient({
         description: formData.description.trim(),
         url: formData.url.trim(),
         topicId: topic._id,
-        type: formData.type as "article" | "video" | "course" | "documentation" | "tool" | "book" | "other",
-        difficulty: formData.difficulty as "beginner" | "intermediate" | "advanced" | undefined,
-        isPaid: formData.isPaid,
-        isFree: formData.isFree,
+        type: "article",
+        isPaid: false,
+        isFree: true,
       });
 
       // Show success message and redirect to topic page
@@ -254,41 +196,7 @@ export default function ResourceSubmissionPageClient({
 
   // Loading state while fetching topic data
   if (topic === undefined) {
-    return (
-      <div className="max-w-2xl mx-auto px-4 py-6">
-        {/* Page header skeleton */}
-        <div className="mb-6">
-          <div className="flex items-center space-x-2 mb-4">
-            <div className="w-20 h-8 bg-muted rounded animate-pulse" />
-            <div className="h-5 bg-muted rounded w-24 animate-pulse" />
-          </div>
-          <div className="h-8 bg-muted rounded w-64 animate-pulse mb-2" />
-          <div className="h-5 bg-muted rounded w-96 animate-pulse" />
-        </div>
-
-        {/* Form card skeleton */}
-        <Card>
-          <CardHeader>
-            <div className="h-6 bg-muted rounded w-48 animate-pulse" />
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Form fields skeleton */}
-            {Array.from({ length: 6 }, (_, i) => (
-              <div key={i} className="space-y-2">
-                <div className="h-4 bg-muted rounded w-24 animate-pulse" />
-                <div className="h-10 bg-muted rounded animate-pulse" />
-              </div>
-            ))}
-            
-            {/* Submit button skeleton */}
-            <div className="flex justify-end space-x-2">
-              <div className="w-20 h-10 bg-muted rounded animate-pulse" />
-              <div className="w-24 h-10 bg-muted rounded animate-pulse" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
+    return <div className="max-w-2xl mx-auto px-4 py-6">Loading...</div>;
   }
 
   // Error state when topic doesn't exist
@@ -317,69 +225,34 @@ export default function ResourceSubmissionPageClient({
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
-      {/* Page header with navigation and title */}
       <div className="mb-6">
-        <Button variant="ghost" asChild className="mb-4">
-          <Link href={`/educate/${topicName}`}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to {topic.displayName}
-          </Link>
-        </Button>
-
-        <h1 className="text-2xl font-bold mb-2">
-          Submit {topic.displayName} Resource
+        <h1 className="text-2xl font-bold">
+          Add {topic.displayName} Resource
         </h1>
-        <p className="text-muted-foreground">
-          Share a valuable learning resource with the community
-        </p>
       </div>
 
-      {/* Main form card */}
       <Card>
         <CardHeader>
-          <CardTitle>Resource Details</CardTitle>
+          <CardTitle>Share a Resource</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* URL field with preview functionality */}
+            {/* URL field */}
             <div className="space-y-2">
-              <Label htmlFor="url">URL *</Label>
+              <Label htmlFor="url">URL</Label>
               <Input
                 id="url"
                 type="url"
                 placeholder="https://example.com/resource"
                 value={formData.url}
-                onChange={(e) => handleUrlChange(e.target.value)}
+                onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
                 required
               />
-              {/* Loading state for URL preview */}
-              {isLoadingPreview && (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Loading preview...
-                </div>
-              )}
-              {/* URL preview card */}
-              {urlPreview && (
-                <div className="border rounded-lg p-3 bg-muted/50">
-                  <div className="flex items-start space-x-3">
-                    <ExternalLink className="w-4 h-4 mt-1 text-muted-foreground" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-sm">{urlPreview.title}</p>
-                      {urlPreview.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
-                          {urlPreview.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Title field */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title">Title</Label>
               <Input
                 id="title"
                 placeholder="Resource title"
@@ -393,10 +266,10 @@ export default function ResourceSubmissionPageClient({
 
             {/* Description field with textarea for longer content */}
             <div className="space-y-2">
-              <Label htmlFor="description">Description *</Label>
+              <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
-                placeholder="Describe what this resource covers and why it's valuable..."
+                placeholder="Brief description"
                 value={formData.description}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -404,98 +277,15 @@ export default function ResourceSubmissionPageClient({
                     description: e.target.value,
                   }))
                 }
-                rows={4}
+                rows={3}
                 required
               />
             </div>
 
-            {/* Resource type and difficulty selectors */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="type">Resource Type *</Label>
-                <Select
-                  value={formData.type}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, type: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="article">Article</SelectItem>
-                    <SelectItem value="video">Video</SelectItem>
-                    <SelectItem value="course">Course</SelectItem>
-                    <SelectItem value="documentation">Documentation</SelectItem>
-                    <SelectItem value="tool">Tool</SelectItem>
-                    <SelectItem value="book">Book</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* Optional difficulty level selector */}
-              <div className="space-y-2">
-                <Label htmlFor="difficulty">Difficulty Level</Label>
-                <Select
-                  value={formData.difficulty}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, difficulty: value }))
-                  }
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select difficulty" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="beginner">Beginner</SelectItem>
-                    <SelectItem value="intermediate">Intermediate</SelectItem>
-                    <SelectItem value="advanced">Advanced</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Payment status checkbox */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isPaid"
-                checked={formData.isPaid}
-                onCheckedChange={(checked) =>
-                  setFormData((prev) => ({ ...prev, isPaid: checked === true }))
-                }
-              />
-              <Label htmlFor="isPaid">This is a paid resource</Label>
-            </div>
-
-            {/* Free for all checkbox */}
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="isFree"
-                checked={formData.isFree}
-                onCheckedChange={(checked) =>
-                  setFormData((prev) => ({ ...prev, isFree: checked === true }))
-                }
-              />
-              <Label htmlFor="isFree">Free for all (accessible without VAI membership)</Label>
-            </div>
-
-            {/* Form submission controls */}
-            <div className="flex justify-end space-x-3">
-              <Button type="button" variant="outline" asChild>
-                <Link href={`/educate/${topicName}`}>Cancel</Link>
-              </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? (
-                  // Loading state with spinner during submission
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Submit Resource"
-                )}
-              </Button>
-            </div>
+            {/* Form submission button */}
+            <Button type="submit" disabled={isSubmitting} className="w-full">
+              {isSubmitting ? "Submitting..." : "Submit"}
+            </Button>
           </form>
         </CardContent>
       </Card>

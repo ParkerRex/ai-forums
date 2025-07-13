@@ -59,17 +59,33 @@ type SelectMockProps = {
 };
 
 vi.mock("@/components/ui/select", () => ({
-  Select: ({ children, value, onValueChange }: SelectMockProps) => (
-    <select
-      value={value}
-      onChange={(e) => onValueChange?.(e.target.value)}
-      data-testid="select"
-    >
-      {children}
-    </select>
-  ),
+  Select: ({ value, onValueChange }: SelectMockProps) => {
+    return (
+      <div>
+        <select
+          value={value || ''}
+          onChange={(e) => {
+            if (onValueChange && e.target.value) {
+              onValueChange(e.target.value);
+            }
+          }}
+          data-testid="select"
+        >
+          <option value="all">All Status</option>
+          <option value="active">Active</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="churned">Churned</option>
+          <option value="free">Free</option>
+          <option value="scholarship">Scholarship</option>
+          <option value="founding_member">Founding</option>
+          <option value="early_bird">Early Bird</option>
+          <option value="member">Member</option>
+        </select>
+      </div>
+    );
+  },
   SelectTrigger: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-  SelectValue: ({ placeholder }: { placeholder?: string }) => <>{placeholder}</>,
+  SelectValue: ({ placeholder }: { placeholder?: string }) => <span>{placeholder}</span>,
   SelectContent: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
   SelectItem: ({ value, children }: { value: string; children?: React.ReactNode }) => (
     <option value={value}>{children}</option>

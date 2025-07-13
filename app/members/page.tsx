@@ -103,7 +103,6 @@ function MembersPageContent() {
       postCount: member.postCount,
       commentCount: member.commentCount,
       netVoteCount: member.netVoteCount,
-      lastOnlineRelative: member.lastOnlineRelative,
       // URL slug for member profile routing
       slug: member.slug,
       // Membership tier for badges
@@ -120,7 +119,7 @@ function MembersPageContent() {
   // This prevents layout shift and provides immediate visual feedback
   if (isLoading && !hasSearchTerm) {
     return (
-      <div className="font-mono min-h-screen bg-background">
+      <div className="min-h-screen bg-background">
         <div className="max-w-7xl mx-auto px-4 py-10">
           {/* Page header with title and description */}
           <div className="mb-8">
@@ -155,7 +154,7 @@ function MembersPageContent() {
 
   // Main render - interactive members directory with search functionality
   return (
-    <div className="font-mono min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Page header - consistent across all states */}
         <div className="mb-8">

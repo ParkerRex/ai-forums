@@ -49,7 +49,7 @@ export function PostContentTeaser({ content, className }: PostContentTeaserProps
       >
         {/* Content with progressive blur */}
         <div className="relative">
-          <div className="prose prose-lg dark:prose-invert max-w-none">
+          <div className="prose prose-lg dark:prose-invert max-w-none post-content">
             {getTeaserContent().split('\n').map((paragraph, index) => (
               <p
                 key={index}

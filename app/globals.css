@@ -168,7 +168,7 @@
   }
 
   a:hover {
-    @apply text-blue-700 underline;
+    @apply text-blue-800 underline;
   }
 
   .dark a {
@@ -791,7 +791,7 @@
 }
 
 .prose-editor .ProseMirror a:hover {
-  @apply text-blue-700 underline;
+  @apply text-blue-800 underline;
 }
 
 .dark .prose-editor .ProseMirror a {

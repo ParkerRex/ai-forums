@@ -144,7 +144,7 @@ export default function CreatePostPage() {
   return (
     // Main page container with full viewport height and background
     // Uses CSS custom properties for theme-aware background colors
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       {/* Authenticated user section - shows when user is logged in */}
       {/* Convex automatically manages auth state and renders children conditionally */}
       <Authenticated>

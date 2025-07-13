@@ -159,6 +159,12 @@ export const uploadFile = action({
       throw new Error("R2_BUCKET environment variable is not set");
     }
 
+    // Validate content type
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validImageTypes.includes(args.contentType.toLowerCase())) {
+      throw new Error("Invalid image type");
+    }
+
     try {
       const s3Client = createR2Client();
       

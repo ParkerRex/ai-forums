@@ -135,7 +135,16 @@ export function ProfileFieldModal({
     setIsSubmitting(true);
 
     try {
-      const updateData: any = { id: memberId };
+      const updateData: {
+        id: Id<"members">;
+        bio?: string;
+        location?: string;
+        linkGithub?: string;
+        linkX?: string;
+        linkYouTube?: string;
+        websiteUrl?: string;
+        avatarUrl?: string;
+      } = { id: memberId };
       
       if (field === "bio") {
         updateData.bio = data.value.trim() || undefined;
