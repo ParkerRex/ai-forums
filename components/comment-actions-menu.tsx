@@ -132,7 +132,6 @@ export default function CommentActionsMenu({
           {!isOwnComment && (
             <DropdownMenuItem
               onClick={() => setShowReportDialog(true)}
-              className="text-red-600"
             >
               <Flag className="mr-2 h-4 w-4" />
               Report

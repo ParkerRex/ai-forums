@@ -11,12 +11,13 @@ import {
   ArrowLeft,
   Pin,
   PinOff,
+  MessageSquare,
+  Upload,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MessageSquareIcon } from "@/components/ui/message-square";
-import { UploadIcon } from "@/components/ui/upload";
 import { Card, CardContent } from "@/components/ui/card";
 import { VoteButton } from "@/components/ui/vote-button";
+import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +42,7 @@ import { AttachmentGrid } from "@/components/attachment-grid";
 import { toast } from "sonner";
 import { Paywall } from "@/components/paywall";
 import { MemberHoverCardWrapper } from "@/components/member-hover-card";
+import { PostEditInline } from "@/components/post-edit-inline";
 
 interface Post {
   _id: Id<"posts">;
@@ -117,6 +119,8 @@ interface PostDetailProps {
   onEdit?: () => void;
   onDelete?: () => void;
   onViewHistory?: () => void;
+  isEditing?: boolean;
+  onCancelEdit?: () => void;
 }
 
 /**
@@ -128,12 +132,12 @@ function getTimeAgo(timestamp: number): string {
   const now = Date.now();
   const diff = now - timestamp;
   const minutes = Math.floor(diff / (1000 * 60));
+  if (minutes < 1) return "just now";
+  if (minutes < 60) return `${minutes}m ago`;
   const hours = Math.floor(diff / (1000 * 60 * 60));
+  if (hours < 24) return `${hours}h ago`;
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-
-  if (minutes < 60) return `${minutes}m`;
-  if (hours < 24) return `${hours}h`;
-  return `${days}d`;
+  return `${days}d ago`;
 }
 
 /**
@@ -153,6 +157,8 @@ export default function PostDetail({
   onEdit,
   onDelete,
   onViewHistory,
+  isEditing = false,
+  onCancelEdit,
 }: PostDetailProps) {
   // Video playback state
   const [isVideoPlaying, setIsVideoPlaying] = useState(false);
@@ -177,15 +183,6 @@ export default function PostDetail({
       ? getYouTubeVideoId(post.linkUrl)
       : null;
 
-  // Animation refs for interactive icons
-  const commentIconRef = React.useRef<{
-    startAnimation: () => void;
-    stopAnimation: () => void;
-  }>(null);
-  const shareIconRef = React.useRef<{
-    startAnimation: () => void;
-    stopAnimation: () => void;
-  }>(null);
 
   // Convex queries and mutations
   const currentMember = useQuery(api.members.getCurrentMember);
@@ -195,7 +192,7 @@ export default function PostDetail({
     targetType: "post",
   });
   const { handleMutationError } = useMutationError();
-  
+
   // Highlight mutations for admins
   const highlightPost = useMutation(api.posts.pinPost);
   const unhighlightPost = useMutation(api.posts.unpinPost);
@@ -207,7 +204,7 @@ export default function PostDetail({
   // Check if current user owns this post
   const isMemberPost =
     currentMember && post.member && currentMember._id === post.member?._id;
-  
+
   // Check if current user is an admin
   const isAdmin = currentMember?.role === "admin";
 
@@ -300,11 +297,12 @@ export default function PostDetail({
   const handleHighlight = async (scope: "category" | "global" | "both") => {
     try {
       await highlightPost({ postId: post._id, scope });
-      const scopeText = scope === "both" 
-        ? "in both category and globally" 
-        : scope === "global" 
-        ? "globally" 
-        : `in ${post.category?.displayName || "category"}`;
+      const scopeText =
+        scope === "both"
+          ? "in both category and globally"
+          : scope === "global"
+            ? "globally"
+            : `in ${post.category?.displayName || "category"}`;
       toast.success(`Post highlighted ${scopeText}`);
     } catch (error) {
       toast.error((error as Error).message);
@@ -321,308 +319,325 @@ export default function PostDetail({
   };
 
   return (
-    <div className="space-y-6">
-      {/* Main Post */}
-      <div className="space-y-6">
-        {/* Header with back button and category */}
-        <div className="flex items-center py-4">
+    <div className="bg-gray-50 dark:bg-gray-950 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="flex items-center mb-4">
           <Button
             variant="ghost"
             size="icon"
-            className="h-10 w-10 rounded-full hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/30 mr-2 bg-muted/50"
+            className="h-9 w-9 rounded-full mr-2"
             onClick={() => window.history.back()}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <Link
-            href={`/${post.category?.name || "general"}`}
-            className="text-primary hover:underline font-medium"
-          >
-            r/{post.category?.name || "general"}
-          </Link>
-          <span className="mx-2 text-muted-foreground">•</span>
-          <span className="text-sm text-muted-foreground">
-            {getTimeAgo(post.createdAt)} ago
-          </span>
+          <div className="text-sm text-muted-foreground">
+            <Link href={`/${post.category?.name || "general"}`} className="font-medium text-foreground hover:underline">
+              r/{post.category?.displayName || post.category?.name || "general"}
+            </Link>
+          </div>
         </div>
 
-        {/* Content */}
-        <div className="space-y-6">
-          {/* Post metadata */}
-          <div className="flex items-center text-sm text-muted-foreground mb-4">
-            <span>posted by</span>
-            <MemberHoverCardWrapper member={post.member ?? null}>
-              <Link
-                href={
-                  post.member
-                    ? memberProfileUrl({
-                        slug: post.member!.slug!,
-                        _id: post.member!._id,
-                      })
-                    : "#"
-                }
-                className="ml-1 text-primary hover:underline"
-                data-testid="member-link"
-              >
-                /u/{post.member?.username || "unknown"}
-              </Link>
-            </MemberHoverCardWrapper>
-          </div>
-
-          <h1 className="text-2xl font-bold mb-6">{post.title}</h1>
-
-          {/* Media Content Rendering */}
-          {postType === "image" && post.mediaUrl && (
-            <div className="mb-6 rounded-lg overflow-hidden">
-              <Image
-                src={post.mediaUrl}
-                alt={post.title}
-                width={800}
-                height={600}
-                className="w-full h-auto object-contain max-h-[600px]"
-                placeholder="blur"
-                blurDataURL={getMediaPlaceholder()}
+        <Card className="w-full overflow-hidden shadow-sm">
+          <div className="flex">
+            <div className="hidden sm:flex flex-col items-center p-2 bg-muted/50 dark:bg-muted/20">
+              <VoteButton
+                targetId={post._id}
+                targetType="post"
+                voteCount={optimisticNetVotes}
+                isVoted={currentUserVote === "upvote"}
+                isVoting={isVoting}
+                onVote={handleUpvote}
+                size="sm"
               />
             </div>
-          )}
 
-          {postType === "video" && post.mediaUrl && (
-            <>
-              {mediaYouTubeId ? (
-                <YouTubeEmbed videoId={mediaYouTubeId} title={post.title} />
-              ) : isYouTubeUrl(post.mediaUrl) ? (
-                <a
-                  href={post.mediaUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="mb-6 block text-primary underline"
-                >
-                  View on YouTube
-                </a>
-              ) : (
-                <div className="mb-6 rounded-lg overflow-hidden relative bg-background">
-                  <video
-                    ref={videoRef}
-                    src={post.mediaUrl}
-                    className="w-full h-auto max-h-[600px]"
-                    controls
-                    poster={post.thumbnailUrl}
-                    onPlay={() => setIsVideoPlaying(true)}
-                    onPause={() => setIsVideoPlaying(false)}
-                  />
-                  {!isVideoPlaying && post.thumbnailUrl && (
-                    <div
-                      className="absolute inset-0 flex items-center justify-center cursor-pointer"
-                      onClick={handleVideoPlay}
-                    >
-                      <div className="bg-background/80 rounded-full p-4 hover:bg-background/90 transition-colors">
-                        <Play className="h-12 w-12 text-primary-foreground fill-primary-foreground" />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-
-          {postType === "link" && post.linkUrl && (
-            <>
-              {linkYouTubeId ? (
-                <YouTubeEmbed
-                  videoId={linkYouTubeId}
-                  title={post.linkTitle || post.title}
-                />
-              ) : (
-                <Card className="mb-6 overflow-hidden hover:shadow-md transition-shadow">
-                  <a
-                    href={post.linkUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="block"
-                  >
-                    {post.linkImage && (
-                      <div className="relative h-48 bg-muted">
-                        <Image
-                          src={post.linkImage}
-                          alt={post.linkTitle || "Link preview"}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
+            <div className="p-4 sm:p-6 flex-grow min-w-0">
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex-grow">
+                  <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-2">
+                    <MemberHoverCardWrapper member={post.member ?? null}>
+                      <Link
+                        href={
+                          post.member
+                            ? memberProfileUrl({
+                                slug: post.member!.slug!,
+                                _id: post.member!._id,
+                              })
+                            : "#"
+                        }
+                        className="font-semibold text-foreground hover:underline"
+                        data-testid="member-link"
+                      >
+                        u/{post.member?.username || "unknown"}
+                      </Link>
+                    </MemberHoverCardWrapper>
+                    <span className="text-gray-400 dark:text-gray-600">•</span>
+                    <span>{getTimeAgo(post.createdAt)} ago</span>
+                    {post.editedAt && <span className="italic">(edited)</span>}
+                  </div>
+                  <div className="flex items-center gap-2 mt-2">
+                    <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">{post.title}</h1>
+                    {isMemberPost && !isEditing && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={onEdit}
+                        className="ml-2"
+                      >
+                        <Edit className="w-3 h-3 mr-1" />
+                        Edit
+                      </Button>
                     )}
-                    <CardContent className="p-4">
-                      <h3 className="font-semibold text-lg mb-2">
-                        {post.linkTitle || post.linkUrl}
-                      </h3>
-                      {post.linkDescription && (
-                        <p className="text-sm text-muted-foreground mb-2 line-clamp-3">
-                          {post.linkDescription}
-                        </p>
-                      )}
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <ExternalLink className="h-3 w-3" />
-                        <span>{new URL(post.linkUrl).hostname}</span>
-                      </div>
-                    </CardContent>
-                  </a>
-                </Card>
-              )}
-            </>
-          )}
-
-          {postType === "poll" && post.pollOptions && (
-            <div className="mb-6">
-              <PollDisplay
-                pollId={post._id}
-                pollOptions={post.pollOptions}
-                pollEndsAt={post.pollEndsAt}
-                totalVotes={post.totalPollVotes}
-                currentUserId={currentMember?._id}
-              />
-            </div>
-          )}
-
-          {/* Rich Text Content or Paywall */}
-          <div className="mb-6" data-testid="post-content">
-            {post.isPaywalled ? (
-              <Paywall
-                previewContent={post.content}
-                tier={post.fullContentRequiresTier}
-              />
-            ) : (
-              <RenderTipTapContent content={post.content} />
-            )}
-          </div>
-
-          {/* Additional Attachments Grid */}
-          {post.attachments && post.attachments.length > 1 && (
-            <div className="mb-6">
-              <AttachmentGrid attachments={post.attachments.slice(1)} />
-            </div>
-          )}
-
-          {/* Post Actions Bar - Reddit style */}
-          <div className="flex items-center space-x-3 text-sm text-muted-foreground pt-4 mt-6">
-            {/* Upvote section */}
-            <VoteButton
-              targetId={post._id}
-              targetType="post"
-              voteCount={optimisticNetVotes}
-              isVoted={currentUserVote === "upvote"}
-              isVoting={isVoting}
-              onVote={handleUpvote}
-              size="sm"
-              showHoverCard={true}
-            />
-
-            {/* Comments */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
-              onMouseEnter={() => commentIconRef.current?.startAnimation()}
-              onMouseLeave={() => commentIconRef.current?.stopAnimation()}
-            >
-              <MessageSquareIcon
-                ref={commentIconRef}
-                size={14}
-                className="mr-1.5 group-hover:text-foreground transition-colors"
-              />
-              <span className="font-medium">{post.commentCount} Comments</span>
-            </Button>
-
-            {/* Bookmark/Save */}
-            <BookmarkButton
-              targetId={post._id}
-              targetType="post"
-              size="sm"
-              className="h-auto px-2 py-1"
-            />
-
-            {/* Share */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
-              onClick={handleShare}
-              onMouseEnter={() => shareIconRef.current?.startAnimation()}
-              onMouseLeave={() => shareIconRef.current?.stopAnimation()}
-            >
-              <UploadIcon
-                ref={shareIconRef}
-                size={14}
-                className="mr-1.5 group-hover:text-foreground transition-colors"
-              />
-              Share
-            </Button>
-
-            {/* More options */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
-                  data-testid="post-more-menu"
-                >
-                  <MoreHorizontal className="w-3.5 h-3.5 group-hover:text-foreground transition-colors" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onViewHistory}>
-                  <History className="w-4 h-4 mr-2" />
-                  View History
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <Flag className="w-4 h-4 mr-2" />
-                  Report
-                </DropdownMenuItem>
-                {isAdmin && (
-                  <>
-                    <DropdownMenuSeparator />
-                    {post.isPinned ? (
-                      <DropdownMenuItem onClick={handleUnhighlight}>
-                        <PinOff className="w-4 h-4 mr-2" />
-                        Remove Highlight
-                      </DropdownMenuItem>
-                    ) : (
+                  </div>
+                </div>
+                {!isEditing && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" data-testid="post-more-menu">
+                        <MoreHorizontal className="w-4 h-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={onViewHistory}>
+                      <History className="w-4 h-4 mr-2" />
+                      View History
+                    </DropdownMenuItem>
+                    <DropdownMenuItem>
+                      <Flag className="w-4 h-4 mr-2" />
+                      Report
+                    </DropdownMenuItem>
+                    {isAdmin && (
                       <>
-                        <DropdownMenuItem onClick={() => handleHighlight("category")}>
-                          <Pin className="w-4 h-4 mr-2" />
-                          Highlight in {post.category?.displayName || "Category"}
+                        <DropdownMenuSeparator />
+                        {post.isPinned ? (
+                          <DropdownMenuItem onClick={handleUnhighlight}>
+                            <PinOff className="w-4 h-4 mr-2" />
+                            Remove Highlight
+                          </DropdownMenuItem>
+                        ) : (
+                          <>
+                            <DropdownMenuItem
+                              onClick={() => handleHighlight("category")}
+                            >
+                              <Pin className="w-4 h-4 mr-2" />
+                              Highlight in Category
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleHighlight("global")}
+                            >
+                              <Pin className="w-4 h-4 mr-2" />
+                              Highlight Globally
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={() => handleHighlight("both")}
+                            >
+                              <Pin className="w-4 h-4 mr-2" />
+                              Highlight in Both
+                            </DropdownMenuItem>
+                          </>
+                        )}
+                      </>
+                    )}
+                    {isMemberPost && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={onEdit}>
+                          <Edit className="w-4 h-4 mr-2" />
+                          Edit Post
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleHighlight("global")}>
-                          <Pin className="w-4 h-4 mr-2" />
-                          Highlight Globally
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => handleHighlight("both")}>
-                          <Pin className="w-4 h-4 mr-2" />
-                          Highlight in Both
+                        <DropdownMenuItem
+                          onClick={onDelete}
+                          className="text-destructive focus:text-destructive"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Delete Post
                         </DropdownMenuItem>
                       </>
                     )}
-                  </>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 )}
-                {isMemberPost && (
+              </div>
+
+              {post.isPinned && (
+                <Badge variant="secondary" className="mt-3">
+                  Pinned
+                </Badge>
+              )}
+
+              {isEditing && onCancelEdit ? (
+                <div className="mt-4">
+                  <PostEditInline
+                    post={post}
+                    onCancel={onCancelEdit}
+                  />
+                </div>
+              ) : (
+                <div className="mt-4 space-y-4">
+
+                  {postType === "image" && post.mediaUrl && (
+                  <div className="rounded-lg overflow-hidden border dark:border-gray-700">
+                    <Image
+                      src={post.mediaUrl}
+                      alt={post.title}
+                      width={800}
+                      height={600}
+                      className="w-full h-auto object-contain max-h-[70vh] bg-gray-100 dark:bg-gray-800"
+                      placeholder="blur"
+                      blurDataURL={getMediaPlaceholder()}
+                    />
+                  </div>
+                )}
+
+                {postType === "video" && post.mediaUrl && (
                   <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={onEdit}>
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Post
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={onDelete}
-                      className="text-destructive focus:text-destructive"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Post
-                    </DropdownMenuItem>
+                    {mediaYouTubeId ? (
+                      <YouTubeEmbed videoId={mediaYouTubeId} title={post.title} />
+                    ) : isYouTubeUrl(post.mediaUrl) ? (
+                      <a
+                        href={post.mediaUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-primary underline"
+                      >
+                        View on YouTube
+                      </a>
+                    ) : (
+                      <div className="rounded-lg overflow-hidden relative bg-black">
+                        <video
+                          ref={videoRef}
+                          src={post.mediaUrl}
+                          className="w-full h-auto max-h-[70vh]"
+                          controls
+                          poster={post.thumbnailUrl}
+                          onPlay={() => setIsVideoPlaying(true)}
+                          onPause={() => setIsVideoPlaying(false)}
+                        />
+                        {!isVideoPlaying && (
+                          <div
+                            className="absolute inset-0 flex items-center justify-center cursor-pointer bg-black/30"
+                            onClick={handleVideoPlay}
+                          >
+                            <div className="bg-white/80 backdrop-blur-sm rounded-full p-3 hover:bg-white transition-colors">
+                              <Play className="h-10 w-10 text-black fill-black" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+
+                {postType === "link" && post.linkUrl && (
+                  <>
+                    {linkYouTubeId ? (
+                      <YouTubeEmbed
+                        videoId={linkYouTubeId}
+                        title={post.linkTitle || post.title}
+                      />
+                    ) : (
+                      <a
+                        href={post.linkUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block border rounded-lg overflow-hidden hover:border-primary/50 transition-colors"
+                      >
+                        <Card className="shadow-none border-0 rounded-none">
+                          {post.linkImage && (
+                            <div className="relative h-40 sm:h-48 bg-muted">
+                              <Image
+                                src={post.linkImage}
+                                alt={post.linkTitle || "Link preview"}
+                                fill
+                                className="object-cover"
+                              />
+                            </div>
+                          )}
+                          <CardContent className="p-4">
+                            <h3 className="font-semibold text-base mb-1">
+                              {post.linkTitle || post.linkUrl}
+                            </h3>
+                            {post.linkDescription && (
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {post.linkDescription}
+                              </p>
+                            )}
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                              <ExternalLink className="h-3 w-3" />
+                              <span>{new URL(post.linkUrl).hostname}</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </a>
+                    )}
+                  </>
+                )}
+
+                {postType === "poll" && post.pollOptions && (
+                  <PollDisplay
+                    pollId={post._id}
+                    pollOptions={post.pollOptions}
+                    pollEndsAt={post.pollEndsAt}
+                    totalVotes={post.totalPollVotes}
+                    currentUserId={currentMember?._id}
+                  />
+                )}
+
+                {post.content && (
+                  <div className="prose prose-gray dark:prose-invert max-w-none text-foreground" data-testid="post-content">
+                    {post.isPaywalled ? (
+                      <Paywall
+                        previewContent={post.content}
+                        tier={post.fullContentRequiresTier}
+                      />
+                    ) : (
+                      <RenderTipTapContent content={post.content} />
+                    )}
+                  </div>
+                )}
+
+                  {post.attachments && post.attachments.length > 0 && (
+                    <AttachmentGrid attachments={post.attachments} />
+                  )}
+                </div>
+              )}
+
+              {!isEditing && (
+                <div className="mt-6 flex items-center gap-1 sm:gap-2 text-sm text-muted-foreground">
+                <div className="sm:hidden">
+                  <VoteButton
+                    targetId={post._id}
+                    targetType="post"
+                    voteCount={optimisticNetVotes}
+                    isVoted={currentUserVote === "upvote"}
+                    isVoting={isVoting}
+                    onVote={handleUpvote}
+                    size="sm"
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1.5 rounded-md px-3 py-2 text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  <MessageSquare size={18} />
+                  <span className="font-medium">{post.commentCount} Comments</span>
+                </Button>
+                <BookmarkButton targetId={post._id} targetType="post" size="sm" className="h-auto px-2 py-1" />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center gap-1.5 rounded-md px-3 py-2 text-muted-foreground hover:bg-accent hover:text-foreground"
+                  onClick={handleShare}
+                >
+                  <Upload size={18} />
+                  <span className="font-medium hidden sm:inline">Share</span>
+                </Button>
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

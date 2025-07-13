@@ -52,7 +52,7 @@ function BookmarksContent() {
   const bookmarks = bookmarksData?.page || [];
 
   return (
-    <div className="font-mono min-h-screen bg-background">
+    <div className="min-h-screen bg-background">
       <div className="max-w-7xl mx-auto px-4 py-10">
         {/* Page header with title and description */}
         <div className="mb-8">

@@ -26,13 +26,14 @@
  * @version 1.0.0
  */
 
-import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import { ArrowLeftIcon } from "@/components/ui/arrow-left";
+import { ArrowLeft, Bookmark } from "lucide-react";
 import React from "react";
 import MemberProfile from "@/components/member-profile";
 import PostCard from "@/components/post-card";
+import ActivityCard from "@/components/activity-card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   MemberProfileSkeleton,
   PostSkeletonList,
@@ -78,11 +79,8 @@ interface PageProps {
  */
 function MemberDetailContent({ slug }: { slug: string }) {
   const router = useRouter();
-  // Ref for the animated back arrow icon - allows manual control of animation
-  const backIconRef = React.useRef<{
-    startAnimation: () => void;
-    stopAnimation: () => void;
-  }>(null);
+  const [postsCursor, setPostsCursor] = React.useState<string | null>(null);
+  const [allPosts, setAllPosts] = React.useState<Array<NonNullable<typeof memberPostsData>["page"][number]>>([]);
 
   // Fetch member data from Convex using slug - primary data source
   const memberData = useQuery(api.members.getMemberBySlug, { slug });
@@ -94,7 +92,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
     memberData
       ? {
           memberId: memberData._id,
-          paginationOpts: { numItems: 10, cursor: null }, // Get first 10 posts for performance
+          paginationOpts: { numItems: 10, cursor: postsCursor }, // Paginated posts loading
         }
       : "skip", // Skip query if member data not loaded yet
   );
@@ -118,7 +116,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
   const memberBookmarksData = useQuery(
     api.bookmarks.getUserBookmarks,
     isOwnProfile ? {
-      paginationOpts: { numItems: 5, cursor: null } // Show fewer bookmarks in preview
+      paginationOpts: { numItems: 10, cursor: null } // Get more bookmarks for tab view
     } : "skip", // Skip for privacy if not own profile
   );
 
@@ -133,6 +131,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
   const isMemberLoading = memberData === undefined;
   const arePostsLoading = memberPostsData === undefined;
   const isActivityLoading = memberActivityData === undefined;
+  const areBookmarksLoading = memberBookmarksData === undefined;
 
   // Minimal transformation using server-computed data
   // Transform Convex data structure to match MemberProfile component interface
@@ -165,12 +164,33 @@ function MemberDetailContent({ slug }: { slug: string }) {
         subscriptionStatus: memberData.subscriptionStatus,
         subscriptionEndDate: memberData.subscriptionEndDate,
         billingInterval: memberData.billingInterval,
+        // Stats
+        postCount: memberData.postCount,
       }
     : null;
 
   // Transform posts data to match PostCard interface
   // PostCard expects the standard post structure from the API
-  const memberPosts = memberPostsData?.page || [];
+  const memberBookmarks = memberBookmarksData?.page || [];
+
+  // Effect to accumulate posts as we paginate
+  React.useEffect(() => {
+    if (memberPostsData?.page) {
+      if (postsCursor === null) {
+        // First page, replace all posts
+        setAllPosts(memberPostsData.page);
+      } else {
+        // Subsequent pages, append to existing posts
+        setAllPosts(prev => [...prev, ...memberPostsData.page]);
+      }
+    }
+  }, [memberPostsData, postsCursor]);
+
+  // Reset posts when member changes
+  React.useEffect(() => {
+    setPostsCursor(null);
+    setAllPosts([]);
+  }, [slug]);
 
   // Transform activity data for UI display
   // Activity represents member engagement (comments, votes, etc.)
@@ -182,144 +202,147 @@ function MemberDetailContent({ slug }: { slug: string }) {
       timeAgo: activity.timeAgo, // Server-computed relative time
       postId: activity.postId,
       postTitle: activity.post?.title || "Unknown Post", // Fallback for deleted posts
+      postSlug: activity.post?.slug,
+      categoryName: activity.post?.categoryName,
       netVotes: activity.netVotes, // Vote score for the comment
     })) || [];
 
-  // Main render - comprehensive member profile page
+  // Use actual post count from member data
+  const postCount = member?.postCount || 0;
+
+  // Main render - comprehensive member profile page with Twitter-style layout
   return (
-    <div className="font-mono min-h-screen bg-background">
-      <div className="max-w-7xl mx-auto px-4 py-10">
-        {/* Back Navigation with animated icon */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.back()} // Use browser back for better UX
-          className="mb-6"
-          onMouseEnter={() => backIconRef.current?.startAnimation()}
-          onMouseLeave={() => backIconRef.current?.stopAnimation()}
-        >
-          <ArrowLeftIcon ref={backIconRef} size={16} className="mr-2" />
-          Back
-        </Button>
-
-        {/* Member Profile Section - Progressive Loading */}
-        {/* This section loads independently to avoid blocking the entire page */}
-        {isMemberLoading ? (
-          <MemberProfileSkeleton />
-        ) : member ? (
-          <MemberProfile member={member} />
-        ) : null}
-
-        {/* Posts Section - Independent Loading */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold text-foreground mb-6">
-            {/* Dynamic title based on member data availability */}
-            {member ? `Posts by ${member.firstName}` : "Posts by Member"}
-          </h2>
-
-          {/* Error boundary for resilient post loading */}
-          <QueryErrorBoundary context="loading member posts">
-            {arePostsLoading ? (
-              <PostSkeletonList count={3} />
-            ) : memberPosts.length > 0 ? (
-              <div className="space-y-6">
-                {memberPosts.map((post) => (
-                  <PostCard key={post._id} post={post} />
-                ))}
-              </div>
-            ) : (
-              /* Empty state for members with no posts */
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No posts yet.</p>
-                <p className="text-sm text-muted-foreground opacity-80 mt-2">
-                  {member?.firstName || "This member"} hasn&apos;t shared any
-                  posts with the community yet.
-                </p>
-              </div>
-            )}
-          </QueryErrorBoundary>
-        </div>
-
-        {/* Activity Section - Independent Loading */}
-        <div className="mt-12">
-          <h2 className="text-2xl font-semibold text-foreground mb-6">
-            Recent Activity
-          </h2>
-
-          {/* Error boundary for resilient activity loading */}
-          <QueryErrorBoundary context="loading member activity">
-            {isActivityLoading ? (
-              <ActivitySkeletonList count={4} />
-            ) : memberActivity.length > 0 ? (
-              <div className="space-y-4">
-                {memberActivity.map((activity) => (
-                  <div
-                    key={activity.id}
-                    className="bg-muted border rounded-lg p-4"
-                  >
-                    {/* Activity content (comment text) */}
-                    <p className="text-sm text-foreground">
-                      {activity.content}
-                    </p>
-                    {/* Activity metadata with post link */}
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {activity.timeAgo} on{" "}
-                      <span className="text-green-700">
-                        {activity.postTitle}
-                      </span>
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              /* Empty state for members with no activity */
-              <div className="text-center py-8">
-                <p className="text-muted-foreground">No recent activity.</p>
-                <p className="text-sm text-muted-foreground opacity-80 mt-2">
-                  {member?.firstName || "This member"} hasn&apos;t commented on
-                  any posts recently.
-                </p>
-              </div>
-            )}
-          </QueryErrorBoundary>
-        </div>
-
-        {/* Bookmarks Section - Only show for own profile (privacy protection) */}
-        {isOwnProfile && (
-          <div className="mt-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-2xl font-semibold text-foreground">
-                My Bookmarks
-              </h2>
-              {/* Link to full bookmarks page */}
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/bookmarks">View All</Link>
-              </Button>
+    <div className="w-full max-w-4xl mx-auto bg-background text-foreground">
+      <div className="border-x border-b border-border">
+        {/* Twitter-style sticky header */}
+        <header className="flex items-center justify-between p-2 px-4 border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => router.back()}
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+            <div>
+              <h1 className="text-xl font-bold">
+                {member ? `${member.firstName} ${member.lastName}` : "Loading..."}
+              </h1>
+              <p className="text-sm text-muted-foreground">{postCount} posts</p>
             </div>
+          </div>
+        </header>
 
-            {/* Error boundary for resilient bookmark loading */}
-            <QueryErrorBoundary context="loading member bookmarks">
-              {memberBookmarksData === undefined ? (
-                <PostSkeletonList count={3} />
-              ) : memberBookmarksData.page.length > 0 ? (
-                <div className="space-y-4">
-                  {/* Show only first 3 bookmarks as a preview */}
-                  {memberBookmarksData.page.slice(0, 3).map((bookmark) => (
-                    <PostCard key={bookmark._id} post={bookmark.target} size="small" />
-                  ))}
-                </div>
+        <main>
+          {/* Member Profile Section - Progressive Loading */}
+          {isMemberLoading ? (
+            <MemberProfileSkeleton />
+          ) : member ? (
+            <MemberProfile member={member} />
+          ) : null}
+
+          {/* Tabbed Content Section */}
+          <Tabs defaultValue="posts" className="w-full">
+            <TabsList className="grid w-full grid-cols-3 rounded-none border-b border-border">
+              <TabsTrigger value="posts">Posts</TabsTrigger>
+              <TabsTrigger value="recent-activity">Recent Activity</TabsTrigger>
+              <TabsTrigger value="bookmarks">Bookmarks</TabsTrigger>
+            </TabsList>
+
+            {/* Posts Tab */}
+            <TabsContent value="posts">
+              <QueryErrorBoundary context="loading member posts">
+                {arePostsLoading && postsCursor === null ? (
+                  <PostSkeletonList count={3} />
+                ) : allPosts.length > 0 ? (
+                  <>
+                    <div className="divide-y divide-border">
+                      {allPosts.map((post) => (
+                        <div key={post._id} className="p-4">
+                          <PostCard post={post} />
+                        </div>
+                      ))}
+                    </div>
+                    {/* Load More Button */}
+                    {memberPostsData && !memberPostsData.isDone && (
+                      <div className="p-4 text-center border-t border-border">
+                        <Button
+                          variant="outline"
+                          onClick={() => setPostsCursor(memberPostsData.continueCursor)}
+                          disabled={arePostsLoading}
+                        >
+                          {arePostsLoading ? "Loading..." : "Load More Posts"}
+                        </Button>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">
+                    No posts yet.
+                  </div>
+                )}
+              </QueryErrorBoundary>
+            </TabsContent>
+
+            {/* Recent Activity Tab */}
+            <TabsContent value="recent-activity">
+              <QueryErrorBoundary context="loading member activity">
+                {isActivityLoading ? (
+                  <ActivitySkeletonList count={4} />
+                ) : memberActivity.length > 0 ? (
+                  <>
+                    <div className="divide-y divide-border">
+                      {memberActivity.map((activity) => (
+                        <div key={activity.id} className="p-4">
+                          <ActivityCard activity={activity} size="medium" />
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">
+                    No recent activity.
+                  </div>
+                )}
+              </QueryErrorBoundary>
+            </TabsContent>
+
+            {/* Bookmarks Tab */}
+            <TabsContent value="bookmarks">
+              {isOwnProfile ? (
+                <QueryErrorBoundary context="loading member bookmarks">
+                  {areBookmarksLoading ? (
+                    <PostSkeletonList count={3} />
+                  ) : memberBookmarks.length > 0 ? (
+                    <div className="divide-y divide-border">
+                      {memberBookmarks.map((bookmark) => (
+                        <div key={bookmark._id} className="p-4">
+                          <PostCard post={bookmark.target} size="small" />
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="p-4 flex flex-col items-center justify-center text-center h-64">
+                      <Bookmark className="w-12 h-12 text-muted-foreground mb-4" />
+                      <h3 className="text-xl font-bold">Save posts for later</h3>
+                      <p className="text-muted-foreground mt-2 max-w-xs">
+                        Bookmark posts to easily find them again in the future.
+                      </p>
+                    </div>
+                  )}
+                </QueryErrorBoundary>
               ) : (
-                /* Empty state for members with no bookmarks */
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground">No bookmarks yet.</p>
-                  <p className="text-sm text-muted-foreground opacity-80 mt-2">
-                    Start bookmarking posts to see them here.
+                <div className="p-4 flex flex-col items-center justify-center text-center h-64">
+                  <Bookmark className="w-12 h-12 text-muted-foreground mb-4" />
+                  <h3 className="text-xl font-bold">Bookmarks are private</h3>
+                  <p className="text-muted-foreground mt-2 max-w-xs">
+                    Only the member can see their bookmarked posts.
                   </p>
                 </div>
               )}
-            </QueryErrorBoundary>
-          </div>
-        )}
+            </TabsContent>
+          </Tabs>
+        </main>
       </div>
     </div>
   );

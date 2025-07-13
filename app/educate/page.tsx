@@ -20,12 +20,10 @@
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { BookOpen, Users, TrendingUp, Search, Plus } from "lucide-react";
+import { BookOpen, Search } from "lucide-react";
 import { useState } from "react";
-import { Authenticated, Unauthenticated } from "convex/react";
 
 /**
  * Represents a learning topic with its metadata and resource count
@@ -82,24 +80,16 @@ interface Topic {
 function TopicCard({ topic }: { topic: Topic }) {
   return (
     <Link href={`/educate/${topic.name}`}>
-      <Card className="h-full hover:shadow-md transition-shadow cursor-pointer">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              {/* Display topic icon if available */}
-              {topic.icon && <span className="text-2xl">{topic.icon}</span>}
-              <CardTitle className="text-lg">{topic.displayName}</CardTitle>
-            </div>
-            {/* Show resource count for quick reference */}
-            <div className="text-sm text-muted-foreground">
-              {topic.resourceCount} resources
-            </div>
-          </div>
+      <Card className="h-full hover:border-primary transition-colors cursor-pointer">
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center gap-2">
+            {topic.icon && <span>{topic.icon}</span>}
+            {topic.displayName}
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          {/* Truncate description to maintain consistent card heights */}
-          <p className="text-sm text-muted-foreground line-clamp-2">
-            {topic.description}
+        <CardContent className="pt-0">
+          <p className="text-sm text-muted-foreground">
+            {topic.resourceCount} resources
           </p>
         </CardContent>
       </Card>
@@ -243,32 +233,8 @@ export default function EducatePage() {
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Page header with title, description, and action buttons */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Learning Resources</h1>
-            <p className="text-muted-foreground">
-              Discover curated learning resources organized by technology and topic.
-            </p>
-          </div>
-          {/* Authentication-conditional action buttons */}
-          <div className="flex items-center space-x-2">
-            <Authenticated>
-              {/* Authenticated users can add resources */}
-              <Button asChild>
-                <Link href="/educate/submit">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Resource
-                </Link>
-              </Button>
-            </Authenticated>
-            <Unauthenticated>
-              {/* Unauthenticated users see disabled button as a CTA */}
-              <Button disabled>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Resource
-              </Button>
-            </Unauthenticated>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">Learning Resources</h1>
         </div>
 
         {/* Search input with icon */}
@@ -307,61 +273,6 @@ export default function EducatePage() {
         )}
       </div>
 
-      {/* Community statistics section - only shown when not searching */}
-      {!searchTerm.trim() && topics && topics.length > 0 && (
-        <div className="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Total resources across all topics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <BookOpen className="w-5 h-5 mr-2" />
-                Total Resources
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {/* Calculate total resources by summing from all topics */}
-                {topics.reduce((sum: number, topic: Topic) => sum + topic.resourceCount, 0)}
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Across all topics
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Number of active topics */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <TrendingUp className="w-5 h-5 mr-2" />
-                Active Topics
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{topics.length}</div>
-              <p className="text-sm text-muted-foreground">
-                Technologies covered
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Community-driven messaging */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Users className="w-5 h-5 mr-2" />
-                Community Driven
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">100%</div>
-              <p className="text-sm text-muted-foreground">
-                Curated by members
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      )}
     </div>
   );
 }

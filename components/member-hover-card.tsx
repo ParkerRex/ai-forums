@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { TierBadge } from "@/components/ui/tier-badge";
-import { MessageCircle, Clock } from "lucide-react";
+import { MessageCircle, Clock, FileText, Calendar } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, format } from "date-fns";
+import { getFlagEmoji } from "@/lib/country-utils";
 
 interface MemberHoverCardProps {
   memberId: Id<"members">;
@@ -51,10 +51,24 @@ export function MemberHoverCard({
               <AvatarFallback className="text-sm">{initials}</AvatarFallback>
             </Avatar>
             <div className="flex-1 space-y-1">
-              <h4 className="text-sm font-semibold">
-                {member.firstName} {member.lastName}
-              </h4>
-              <TierBadge tier={member.tier} size="sm" />
+              <div className="flex items-center gap-2">
+                <h4 className="text-sm font-semibold">
+                  {member.firstName} {member.lastName}
+                </h4>
+                {member.country && (
+                  <span className="text-base">{getFlagEmoji(member.country)}</span>
+                )}
+              </div>
+              <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                <div className="flex items-center">
+                  <FileText className="mr-1 h-3 w-3" />
+                  <span>{member.postCount} posts</span>
+                </div>
+                <div className="flex items-center">
+                  <Calendar className="mr-1 h-3 w-3" />
+                  <span>Joined {format(new Date(member.joinedDate), "MMM yyyy")}</span>
+                </div>
+              </div>
             </div>
           </div>
 

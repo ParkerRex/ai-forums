@@ -20,7 +20,6 @@
 
 import { Authenticated, Unauthenticated } from "convex/react";
 import PostDetail from "@/components/post-detail";
-import { PostEditModal } from "@/components/post-edit-modal";
 import { PostDeleteModal } from "@/components/post-delete-modal";
 import { PostHistoryModal } from "@/components/post-history-modal";
 import { ReactivateBannerInline } from "@/components/reactivate-banner-inline";
@@ -29,7 +28,7 @@ import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import CommentSection from "@/components/comment-section";
+import CommentSection from "@/components/comment-section-flat";
 import { use, useState, useEffect } from "react";
 import { notFound, useSearchParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
@@ -75,7 +74,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   const commentId = searchParams.get("commentId");
 
   // Modal states for post management actions
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
 
@@ -116,7 +115,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
 
   /** Open the edit modal */
   const handleEdit = () => {
-    setIsEditModalOpen(true);
+    setIsEditing(true);
   };
 
   /** Open the delete confirmation modal */
@@ -129,9 +128,9 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     setIsHistoryModalOpen(true);
   };
 
-  /** Handle successful post edit - refresh data without full page reload */
-  const handleEditSuccess = () => {
-    router.refresh();
+  /** Handle cancel edit - exit edit mode */
+  const handleCancelEdit = () => {
+    setIsEditing(false);
   };
 
   /** Handle successful post deletion - navigate back to home page */
@@ -279,6 +278,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onViewHistory={handleViewHistory}
+                isEditing={isEditing}
+                onCancelEdit={handleCancelEdit}
               />
 
               {/* Comment section with deep linking support */}
@@ -290,12 +291,6 @@ export default function PostPageClient({ params }: PostPageClientProps) {
               {/* Post Management Modals - Only available to authenticated users */}
               {post && (
                 <>
-                  <PostEditModal
-                    post={post}
-                    isOpen={isEditModalOpen}
-                    onClose={() => setIsEditModalOpen(false)}
-                    onSuccess={handleEditSuccess}
-                  />
                   <PostDeleteModal
                     postId={post._id as Id<"posts">}
                     postTitle={post.title}
@@ -337,7 +332,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
 
               {/* Preview Content with Paywall */}
               <div className="relative">
-                <div className="prose prose-lg max-w-none">
+                <div className="prose prose-lg max-w-none post-content">
                   <div className="text-foreground leading-relaxed">
                     {/* Show preview if available, otherwise fallback to truncated content */}
                     {post.preview || post.content?.substring(0, 200) + "..."}
@@ -364,6 +359,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onViewHistory={handleViewHistory}
+                isEditing={isEditing}
+                onCancelEdit={handleCancelEdit}
               />
               <CommentSection
                 postId={post._id as Id<"posts">}
@@ -396,7 +393,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
 
               {/* Preview Content with Overlay */}
               <div className="relative">
-                <div className="prose prose-lg max-w-none">
+                <div className="prose prose-lg max-w-none post-content">
                   <div className="text-foreground leading-relaxed">
                     {/* Show preview if available, otherwise fallback to truncated content */}
                     {post.preview || post.content?.substring(0, 200) + "..."}

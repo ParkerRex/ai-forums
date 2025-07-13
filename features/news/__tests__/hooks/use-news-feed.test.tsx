@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { renderHook, waitFor } from "@testing-library/react";
+import { renderHook, waitFor, act } from "@testing-library/react";
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { useNewsFeed } from "../../hooks/use-news-feed";
 import React from "react";
@@ -157,7 +157,9 @@ describe("useNewsFeed", () => {
     expect(mockGetNews).toHaveBeenCalledTimes(1);
 
     // Refresh
-    await result.current.refresh();
+    await act(async () => {
+      await result.current.refresh();
+    });
 
     // Should call API again
     expect(mockGetNews).toHaveBeenCalledTimes(2);

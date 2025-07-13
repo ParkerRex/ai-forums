@@ -56,7 +56,7 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
         size="sm"
         className={cn(
           "group h-auto px-1.5 py-0.5 rounded-sm hover:bg-muted/50 dark:hover:bg-muted/20",
-          isVoted && "text-primary hover:bg-primary/10 dark:hover:bg-primary/20",
+          isVoted && "text-orange-600 hover:bg-orange-100 dark:text-orange-500 dark:hover:bg-orange-900/20",
           isVoting && "opacity-50 cursor-not-allowed hover:bg-transparent"
         )}
         onClick={onVote}
@@ -69,13 +69,13 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
           size={size === "sm" ? 12 : 16}
           className={cn(
             "transition-colors",
-            isVoted ? "text-primary fill-primary" : "text-muted-foreground hover:text-foreground"
+            isVoted ? "text-orange-600 fill-orange-600 dark:text-orange-500 dark:fill-orange-500" : "text-muted-foreground hover:text-foreground"
           )}
         />
       </Button>
       <span className={cn(
         "text-xs font-medium select-none ml-0.5",
-        isVoted ? "text-primary" : "text-muted-foreground"
+        isVoted ? "text-orange-600 dark:text-orange-500" : "text-muted-foreground"
       )}>
         {voteCount}
       </span>

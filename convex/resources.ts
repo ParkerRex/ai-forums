@@ -2,6 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
+import { canViewResource } from "./helpers/access";
 
 export const getResourcesByTopic = query({
   args: {
@@ -292,8 +293,6 @@ export const canUserViewResource = query({
   },
   returns: v.boolean(),
   handler: async (ctx, { resourceId }) => {
-    const { canViewResource } = await import("./helpers/access");
-    
     const resource = await ctx.db.get(resourceId);
     if (!resource) {
       return false;

@@ -32,29 +32,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { 
   Search, 
   Plus, 
-  ExternalLink, 
   ArrowUpIcon, 
-  BookOpen,
-  Filter,
-  SortAsc,
-  Eye,
-  User,
-  Calendar,
-  Lock
+  BookOpen
 } from "lucide-react";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { BookmarkButton } from "@/components/bookmark-button";
+import { Authenticated } from "convex/react";
 import { Id } from "@/convex/_generated/dataModel";
 
 /**
@@ -257,149 +242,45 @@ function ResourceCard({ resource }: { resource: Resource }) {
     }
   };
 
-  /**
-   * Returns appropriate CSS classes for difficulty level badges
-   * 
-   * @param {string} [difficulty] - Optional difficulty level
-   * @returns {string} CSS classes for styling difficulty badges
-   */
-  const getDifficultyColor = (difficulty?: string) => {
-    switch (difficulty) {
-      case "beginner": return "bg-green-100 text-green-800";
-      case "intermediate": return "bg-yellow-100 text-yellow-800";
-      case "advanced": return "bg-red-100 text-red-800";
-      default: return "bg-muted text-muted-foreground";
-    }
-  };
 
   return (
-    <Card className="hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            {/* Resource type, difficulty, and payment status badges */}
-            <div className="flex items-center space-x-2 mb-2">
-              <span className="text-lg">{getTypeIcon(resource.type)}</span>
-              <Badge variant="secondary" className="text-xs">
-                {resource.type}
-              </Badge>
-              {resource.difficulty && (
-                <Badge className={`text-xs ${getDifficultyColor(resource.difficulty)}`}>
-                  {resource.difficulty}
-                </Badge>
-              )}
-              {resource.isPaid && (
-                <Badge variant="outline" className="text-xs">
-                  Paid
-                </Badge>
-              )}
-              {resource.isFree && (
-                <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
-                  Free
-                </Badge>
-              )}
-            </div>
-            {/* Clickable resource title */}
-            <CardTitle 
-              className={`text-lg cursor-pointer transition-colors flex items-center gap-2 ${
-                canViewResource === false ? 'hover:text-muted-foreground' : 'hover:text-blue-600'
-              }`}
-              onClick={handleResourceClick}
-            >
-              {resource.title}
-              {canViewResource === false && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Lock className="h-4 w-4 text-muted-foreground" />
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Premium resource - Upgrade to access</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </CardTitle>
-          </div>
-          {/* Voting section with authentication handling */}
-          <div className="flex items-center space-x-2">
+    <Card 
+      className="hover:border-primary transition-colors cursor-pointer"
+      onClick={handleResourceClick}
+    >
+      <CardHeader>
+        <CardTitle className="text-lg flex items-center justify-between">
+          <span className="flex items-center gap-2">
+            {getTypeIcon(resource.type)}
+            {resource.title}
+          </span>
+          <div className="flex items-center gap-2">
             <Authenticated>
-              {/* Authenticated users can vote */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="p-1 h-auto"
-                onClick={handleUpvote}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleUpvote(e);
+                }}
                 disabled={isVoting}
+                className={`hover:bg-transparent ${
+                  currentUserVote === "upvote" ? "text-primary" : "text-muted-foreground"
+                }`}
               >
-                <ArrowUpIcon
-                  size={16}
-                  className={`transition-colors ${
-                    currentUserVote === "upvote"
-                      ? "text-orange-500"
-                      : "text-muted-foreground hover:text-orange-500"
-                  }`}
-                />
+                <ArrowUpIcon size={16} />
               </Button>
             </Authenticated>
-            <Unauthenticated>
-              {/* Unauthenticated users see disabled vote button */}
-              <Button variant="ghost" size="sm" className="p-1 h-auto" disabled>
-                <ArrowUpIcon size={16} className="text-muted-foreground" />
-              </Button>
-            </Unauthenticated>
-            {/* Display current vote count */}
-            <span className="text-sm font-medium">{optimisticNetVotes}</span>
+            <span className="text-sm font-medium text-muted-foreground">
+              {optimisticNetVotes}
+            </span>
           </div>
-        </div>
+        </CardTitle>
       </CardHeader>
-      <CardContent>
-        {/* Resource description with text truncation */}
-        <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+      <CardContent className="pt-0">
+        <p className="text-sm text-muted-foreground line-clamp-2">
           {resource.description}
         </p>
-        
-        <div className="flex items-center justify-between">
-          {/* Resource metadata and engagement stats */}
-          <div className="flex items-center space-x-4 text-xs text-muted-foreground">
-            {resource.member && (
-              <div className="flex items-center space-x-1">
-                <User size={12} />
-                <span>{resource.member.firstName} {resource.member.lastName}</span>
-              </div>
-            )}
-            <div className="flex items-center space-x-1">
-              <Eye size={12} />
-              <span>{resource.viewCount} views</span>
-            </div>
-            <div className="flex items-center space-x-1">
-              <Calendar size={12} />
-              <span>{new Date(resource.createdAt).toLocaleDateString()}</span>
-            </div>
-          </div>
-          
-          {/* Action buttons for bookmarking and external navigation */}
-          <div className="flex items-center space-x-2">
-            <BookmarkButton 
-              targetId={resource._id} 
-              targetType="resource" 
-              size="sm" 
-            />
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2 h-auto"
-              onClick={handleResourceClick}
-              disabled={canViewResource === false}
-            >
-              {canViewResource === false ? (
-                <Lock size={12} />
-              ) : (
-                <ExternalLink size={12} />
-              )}
-            </Button>
-          </div>
-        </div>
       </CardContent>
     </Card>
   );
@@ -503,9 +384,6 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
   // Local state for filtering and search functionality
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
-  const [typeFilter, setTypeFilter] = useState<string>("all");
-  const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
-  const [paidFilter, setPaidFilter] = useState<string>("all");
   
   // Track if this is the initial load to prevent skeleton flash
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -519,11 +397,7 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
     api.resources.getResourcesByTopic,
     topic?._id ? {
       topicId: topic._id,
-      sortBy,
-      // Convert "all" filter values to undefined for API
-      type: typeFilter === "all" ? undefined : typeFilter,
-      difficulty: difficultyFilter === "all" ? undefined : difficultyFilter,
-      isPaid: paidFilter === "paid" ? true : paidFilter === "free" ? false : undefined,
+      sortBy
     } : "skip"
   );
 
@@ -614,39 +488,14 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* Page header with topic information and actions */}
       <div className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <div>
-            {/* Topic title with optional icon */}
-            <h1 className="text-3xl font-bold mb-2 flex items-center">
-              {topic.icon && <span className="mr-3 text-4xl">{topic.icon}</span>}
-              {topic.displayName} Resources
-            </h1>
-            <p className="text-muted-foreground">
-              {topic.description}
-            </p>
-            {/* Resource count for quick reference */}
-            <div className="mt-2 text-sm text-muted-foreground">
-              {topic.resourceCount} resources available
-            </div>
-          </div>
-          {/* Authentication-conditional add resource button */}
-          <div className="flex items-center space-x-2">
-            <Authenticated>
-              <Button asChild>
-                <Link href={`/educate/${topicName}/submit`}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Resource
-                </Link>
-              </Button>
-            </Authenticated>
-            <Unauthenticated>
-              {/* Disabled button serves as login CTA */}
-              <Button disabled>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Resource
-              </Button>
-            </Unauthenticated>
-          </div>
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
+            {topic.icon && <span>{topic.icon}</span>}
+            {topic.displayName}
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            {topic.resourceCount} resources
+          </p>
         </div>
 
         {/* Search and filter controls */}
@@ -662,59 +511,16 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
             />
           </div>
           
-          {/* Filter and sort controls */}
-          <div className="flex items-center space-x-2">
-            <Select value={sortBy} onValueChange={(value: "newest" | "popular") => setSortBy(value)}>
-              <SelectTrigger className="w-32">
-                <SortAsc className="w-4 h-4 mr-2" />
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="newest">Newest</SelectItem>
-                <SelectItem value="popular">Popular</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-32">
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="article">Article</SelectItem>
-                <SelectItem value="video">Video</SelectItem>
-                <SelectItem value="course">Course</SelectItem>
-                <SelectItem value="documentation">Docs</SelectItem>
-                <SelectItem value="tool">Tool</SelectItem>
-                <SelectItem value="book">Book</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Level" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Levels</SelectItem>
-                <SelectItem value="beginner">Beginner</SelectItem>
-                <SelectItem value="intermediate">Intermediate</SelectItem>
-                <SelectItem value="advanced">Advanced</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select value={paidFilter} onValueChange={setPaidFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Price" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="paid">Paid</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* Single filter control */}
+          <Select value={sortBy} onValueChange={(value: "newest" | "popular") => setSortBy(value)}>
+            <SelectTrigger className="w-32">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="popular">Popular</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

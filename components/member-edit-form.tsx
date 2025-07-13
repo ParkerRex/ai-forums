@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, X } from "lucide-react";
+import { Loader2, Save, X, Globe } from "lucide-react";
 import { useState } from "react";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useNetworkStatus } from "@/hooks/use-network-status";
+import { AvatarUpload } from "@/components/avatar-upload";
 
 interface Member {
   _id: Id<"members">;
@@ -23,6 +24,8 @@ interface Member {
   linkGithub?: string;
   linkX?: string;
   linkYouTube?: string;
+  avatarUrl?: string;
+  websiteUrl?: string;
 }
 
 interface MemberEditFormProps {
@@ -37,6 +40,7 @@ interface FormData {
   githubHandle: string;
   xHandle: string;
   youtubeHandle: string;
+  websiteUrl: string;
 }
 
 // Helper functions to extract handles from URLs
@@ -81,6 +85,7 @@ export default function MemberEditForm({
   onCancel,
 }: MemberEditFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState(member.avatarUrl || "");
   const updateMemberProfile = useMutation(api.members.updateMemberProfile);
   const { handleMutationError, handleMutationSuccess } = useMutationError();
   const { isOnline } = useNetworkStatus();
@@ -97,11 +102,16 @@ export default function MemberEditForm({
       githubHandle: extractHandle(member.linkGithub || "", "github"),
       xHandle: extractHandle(member.linkX || "", "x"),
       youtubeHandle: extractHandle(member.linkYouTube || "", "youtube"),
+      websiteUrl: member.websiteUrl || "",
     },
   });
 
   const bioValue = watch("bio");
   const bioLength = bioValue?.length || 0;
+  
+  // Check if avatar has changed
+  const isAvatarChanged = avatarUrl !== (member.avatarUrl || "");
+  const isFormDirty = isDirty || isAvatarChanged;
 
   const onSubmit = async (data: FormData) => {
     if (isSubmitting) return;
@@ -115,6 +125,8 @@ export default function MemberEditForm({
       linkGithub: constructUrl(data.githubHandle, "github") || undefined,
       linkX: constructUrl(data.xHandle, "x") || undefined,
       linkYouTube: constructUrl(data.youtubeHandle, "youtube") || undefined,
+      avatarUrl: avatarUrl || undefined,
+      websiteUrl: data.websiteUrl.trim() || undefined,
     };
 
     try {
@@ -139,6 +151,16 @@ export default function MemberEditForm({
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      {/* Avatar Upload */}
+      <div className="space-y-2">
+        <Label>Profile Photo</Label>
+        <AvatarUpload
+          initialUrl={avatarUrl}
+          onUpload={setAvatarUrl}
+          onRemove={() => setAvatarUrl("")}
+        />
+      </div>
+
       {/* Bio Field */}
       <div className="space-y-2">
         <Label htmlFor="bio">Bio</Label>
@@ -265,13 +287,43 @@ export default function MemberEditForm({
             </span>
           )}
         </div>
+
+        {/* Website */}
+        <div className="space-y-2">
+          <Label htmlFor="websiteUrl">Website</Label>
+          <div className="flex">
+            <span className="inline-flex items-center px-3 text-sm text-muted-foreground bg-muted border-r-0 border rounded-l-md">
+              <Globe className="w-4 h-4" />
+            </span>
+            <Input
+              id="websiteUrl"
+              placeholder="https://example.com"
+              className="rounded-l-none"
+              {...register("websiteUrl", {
+                pattern: {
+                  value: /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/,
+                  message: "Please enter a valid URL"
+                },
+                maxLength: {
+                  value: 500,
+                  message: "Website URL must be less than 500 characters"
+                }
+              })}
+            />
+          </div>
+          {errors.websiteUrl && (
+            <span className="text-sm text-red-600">
+              {errors.websiteUrl.message}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Form Actions */}
       <div className="flex justify-end space-x-3 pt-4 border-t">
         <Button
           type="button"
-          variant="outline"
+          variant="ghost"
           onClick={onCancel}
           disabled={isSubmitting}
         >
@@ -280,7 +332,8 @@ export default function MemberEditForm({
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting || !isDirty || !isOnline}
+          variant="default"
+          disabled={isSubmitting || !isFormDirty || !isOnline}
           title={
             !isOnline
               ? "You're offline. Please check your connection."

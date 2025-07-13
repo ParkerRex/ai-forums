@@ -12,7 +12,7 @@ export interface LinkIconHandle {
   stopAnimation: () => void;
 }
 
-interface LinkIconProps extends HTMLAttributes<HTMLDivElement> {
+interface LinkIconProps extends HTMLAttributes<HTMLSpanElement> {
   size?: number;
 }
 
@@ -48,7 +48,7 @@ const LinkIcon = forwardRef<LinkIconHandle, LinkIconProps>(
     });
 
     const handleMouseEnter = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
+      (e: React.MouseEvent<HTMLSpanElement>) => {
         if (!isControlledRef.current) {
           controls.start("animate");
         } else {
@@ -59,7 +59,7 @@ const LinkIcon = forwardRef<LinkIconHandle, LinkIconProps>(
     );
 
     const handleMouseLeave = useCallback(
-      (e: React.MouseEvent<HTMLDivElement>) => {
+      (e: React.MouseEvent<HTMLSpanElement>) => {
         if (!isControlledRef.current) {
           controls.start("normal");
         } else {
@@ -69,10 +69,11 @@ const LinkIcon = forwardRef<LinkIconHandle, LinkIconProps>(
       [controls, onMouseLeave],
     );
     return (
-      <div
+      <span
         className={cn(className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
+        style={{ display: 'inline-block' }}
         {...props}
       >
         <svg
@@ -97,7 +98,7 @@ const LinkIcon = forwardRef<LinkIconHandle, LinkIconProps>(
             animate={controls}
           />
         </svg>
-      </div>
+      </span>
     );
   },
 );

@@ -93,20 +93,38 @@ export const generateUploadUrl = action({
       throw new Error("R2_BUCKET environment variable is not set");
     }
 
+    // Validate content type
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validImageTypes.includes(args.contentType.toLowerCase())) {
+      throw new Error(`Invalid image type. Supported types: ${validImageTypes.join(', ')}`);
+    }
+
+    // Validate file extension
+    const fileExtension = args.fileName.split('.').pop()?.toLowerCase();
+    const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+    if (!fileExtension || !validExtensions.includes(fileExtension)) {
+      throw new Error(`Invalid file extension. Supported extensions: ${validExtensions.join(', ')}`);
+    }
+
     try {
       const s3Client = createR2Client();
       
-      // Generate a unique object key
+      // Generate a unique object key with sanitized filename
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(2, 15);
-      const fileExtension = args.fileName.split('.').pop();
-      const objectKey = `uploads/${timestamp}-${randomId}.${fileExtension}`;
+      const sanitizedExtension = fileExtension.replace(/[^a-z0-9]/gi, '');
+      const objectKey = `uploads/${timestamp}-${randomId}.${sanitizedExtension}`;
 
       // Create the presigned URL for PUT operation
       const command = new PutObjectCommand({
         Bucket: bucket,
         Key: objectKey,
         ContentType: args.contentType,
+        CacheControl: 'public, max-age=31536000, immutable', // 1 year cache
+        Metadata: {
+          'upload-timestamp': timestamp.toString(),
+          'original-filename': args.fileName
+        }
       });
 
       const uploadUrl = await getSignedUrl(s3Client, command, { 
@@ -139,6 +157,12 @@ export const uploadFile = action({
     const bucket = process.env.R2_BUCKET;
     if (!bucket) {
       throw new Error("R2_BUCKET environment variable is not set");
+    }
+
+    // Validate content type
+    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validImageTypes.includes(args.contentType.toLowerCase())) {
+      throw new Error("Invalid image type");
     }
 
     try {
@@ -185,7 +209,14 @@ export const deleteObject = action({
   handler: async (ctx, args) => {
     const bucket = process.env.R2_BUCKET;
     if (!bucket) {
-      throw new Error("R2_BUCKET environment variable is not set");
+      console.error("R2_BUCKET environment variable is not set - skipping deletion");
+      return { success: false, error: "Storage not configured" };
+    }
+
+    // Validate object key format
+    if (!args.objectKey || !args.objectKey.startsWith('uploads/')) {
+      console.error(`Invalid object key format: ${args.objectKey}`);
+      return { success: false, error: "Invalid object key" };
     }
 
     try {
@@ -201,8 +232,23 @@ export const deleteObject = action({
       console.log(`Successfully deleted object: ${args.objectKey}`);
       return { success: true };
     } catch (error) {
+      // Log error but don't throw - deletion failures shouldn't break the app
       console.error("Failed to delete object:", error);
-      throw new Error(`Failed to delete object: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      
+      // Check for specific error types
+      if (error instanceof Error) {
+        if (error.name === 'NoSuchKey' || error.message.includes('404')) {
+          // Object already deleted or doesn't exist
+          return { success: true, note: "Object already deleted" };
+        }
+        if (error.message.includes('credentials') || error.message.includes('auth')) {
+          // Configuration error - log but continue
+          console.error("Storage credentials error - check R2 configuration");
+          return { success: false, error: "Storage configuration error" };
+        }
+      }
+      
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
     }
   },
 });

@@ -83,7 +83,7 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-6">
-        <div className="flex space-x-6 overflow-x-auto pb-2">
+        <div className="flex items-center space-x-6 overflow-x-auto pb-2">
           {/* All Posts Tab */}
           <Button
             variant="ghost"
@@ -133,17 +133,17 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
               );
             })
           )}
-        </div>
 
-        {/* Sort Options */}
-        {onSortChange && (
-          <div className="pr-2">
-            <SortPopover
-              sortBy={sortBy}
-              onSortChange={onSortChange}
-            />
-          </div>
-        )}
+          {/* Sort Options */}
+          {onSortChange && (
+            <div className="ml-6">
+              <SortPopover
+                sortBy={sortBy}
+                onSortChange={onSortChange}
+              />
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
