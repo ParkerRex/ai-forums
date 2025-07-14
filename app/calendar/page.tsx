@@ -27,7 +27,7 @@ import { EventModal } from "@/components/calendar/event-modal";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { MembershipCTAModal } from "@/components/membership-cta-modal";
+import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 
 /**
  * Main calendar page component that renders the VAI community calendar

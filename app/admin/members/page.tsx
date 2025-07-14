@@ -68,27 +68,27 @@ type SortOrder = "asc" | "desc";
 const tierConfig = {
   free: {
     label: "Free",
-    color: "bg-gray-100 text-gray-700 border-gray-200",
+    color: "bg-muted text-muted-foreground border-muted",
     price: "$0",
   },
   scholarship: {
     label: "Scholarship",
-    color: "bg-purple-100 text-purple-700 border-purple-200",
+    color: "bg-chart-5/10 text-chart-5 border-chart-5/20",
     price: "$0",
   },
   founding_member: {
     label: "Founding",
-    color: "bg-amber-100 text-amber-700 border-amber-200",
+    color: "bg-chart-4/10 text-chart-4 border-chart-4/20",
     price: "$39",
   },
   early_bird: {
     label: "Early Bird",
-    color: "bg-blue-100 text-blue-700 border-blue-200",
+    color: "bg-chart-1/10 text-chart-1 border-chart-1/20",
     price: "$50",
   },
   member: {
     label: "Member",
-    color: "bg-green-100 text-green-700 border-green-200",
+    color: "bg-chart-2/10 text-chart-2 border-chart-2/20",
     price: "$99",
   },
 };
@@ -96,17 +96,17 @@ const tierConfig = {
 const statusConfig = {
   active: {
     label: "Active",
-    color: "bg-green-50 text-green-700 border-green-200",
+    color: "bg-chart-2/10 text-chart-2 border-chart-2/20",
     icon: UserCheck,
   },
   cancelled: {
     label: "Cancelled",
-    color: "bg-yellow-50 text-yellow-700 border-yellow-200",
+    color: "bg-chart-4/10 text-chart-4 border-chart-4/20",
     icon: Calendar,
   },
   churned: {
     label: "Churned",
-    color: "bg-red-50 text-red-700 border-red-200",
+    color: "bg-destructive/10 text-destructive border-destructive/20",
     icon: UserX,
   },
 };
@@ -275,36 +275,36 @@ export default function AdminMembersPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="h-8 bg-gray-200 rounded w-32 animate-pulse mb-2" />
-              <div className="h-5 bg-gray-200 rounded w-64 animate-pulse" />
+              <div className="h-8 bg-muted rounded w-32 animate-pulse mb-2" />
+              <div className="h-5 bg-muted rounded w-64 animate-pulse" />
             </div>
-            <div className="h-10 bg-gray-200 rounded w-24 animate-pulse" />
+            <div className="h-10 bg-muted rounded w-24 animate-pulse" />
           </div>
         </div>
 
         {/* Stats Cards skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-white rounded-lg border border-gray-200 p-4">
+            <div key={i} className="bg-card rounded-lg border border-border p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="h-4 bg-gray-200 rounded w-24 animate-pulse mb-2" />
-                  <div className="h-8 bg-gray-200 rounded w-16 animate-pulse" />
+                  <div className="h-4 bg-muted rounded w-24 animate-pulse mb-2" />
+                  <div className="h-8 bg-muted rounded w-16 animate-pulse" />
                 </div>
-                <div className="h-12 w-12 bg-gray-100 rounded-lg animate-pulse" />
+                <div className="h-12 w-12 bg-muted rounded-lg animate-pulse" />
               </div>
             </div>
           ))}
         </div>
 
         {/* Search and filters skeleton */}
-        <div className="bg-white rounded-lg shadow-sm mb-6">
+        <div className="bg-card rounded-lg shadow-sm mb-6">
           <div className="p-4 border-b">
             <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 h-10 bg-gray-200 rounded animate-pulse" />
+              <div className="flex-1 h-10 bg-muted rounded animate-pulse" />
               <div className="flex gap-2">
-                <div className="w-32 h-10 bg-gray-200 rounded animate-pulse" />
-                <div className="w-32 h-10 bg-gray-200 rounded animate-pulse" />
+                <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+                <div className="w-32 h-10 bg-muted rounded animate-pulse" />
               </div>
             </div>
           </div>
@@ -312,30 +312,30 @@ export default function AdminMembersPage() {
           {/* Table skeleton */}
           <div className="overflow-hidden">
             <table className="min-w-full">
-              <thead className="bg-gray-50">
+              <thead className="bg-muted/50">
                 <tr>
                   {Array.from({ length: 6 }).map((_, i) => (
                     <th key={i} className="px-6 py-3">
-                      <div className="h-4 bg-gray-200 rounded animate-pulse" />
+                      <div className="h-4 bg-muted rounded animate-pulse" />
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-card divide-y divide-border">
                 {Array.from({ length: 10 }).map((_, i) => (
                   <tr key={i}>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse mr-3" />
+                        <div className="h-10 w-10 rounded-full bg-muted animate-pulse mr-3" />
                         <div className="flex-1">
-                          <div className="h-4 bg-gray-200 rounded w-32 animate-pulse mb-1" />
-                          <div className="h-3 bg-gray-200 rounded w-24 animate-pulse" />
+                          <div className="h-4 bg-muted rounded w-32 animate-pulse mb-1" />
+                          <div className="h-3 bg-muted rounded w-24 animate-pulse" />
                         </div>
                       </div>
                     </td>
                     {Array.from({ length: 5 }).map((_, j) => (
                       <td key={j} className="px-6 py-4 whitespace-nowrap">
-                        <div className="h-4 bg-gray-200 rounded w-20 animate-pulse" />
+                        <div className="h-4 bg-muted rounded w-20 animate-pulse" />
                       </td>
                     ))}
                   </tr>
@@ -354,8 +354,8 @@ export default function AdminMembersPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold text-gray-900">Members</h1>
-            <p className="text-gray-600 mt-1">
+            <h1 className="text-2xl font-semibold">Members</h1>
+            <p className="text-muted-foreground mt-1">
               Manage member accounts and subscriptions
             </p>
           </div>
@@ -368,30 +368,30 @@ export default function AdminMembersPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total Members</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="text-sm font-medium text-muted-foreground">Total Members</p>
+              <p className="text-2xl font-bold text-foreground mt-1">
                 {stats.totalMembers}
               </p>
             </div>
-            <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <User className="w-6 h-6 text-gray-600" />
+            <div className="h-12 w-12 bg-muted rounded-lg flex items-center justify-center">
+              <User className="w-6 h-6 text-muted-foreground" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-medium text-muted-foreground">
                 Active Subscribers
               </p>
-              <p className="text-2xl font-bold text-green-600 mt-1">
+              <p className="text-2xl font-bold text-chart-2 mt-1">
                 {stats.statusStats.active}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {(
                   (stats.statusStats.active / stats.totalMembers) *
                   100
@@ -399,58 +399,58 @@ export default function AdminMembersPage() {
                 % of total
               </p>
             </div>
-            <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <CreditCard className="w-6 h-6 text-green-600" />
+            <div className="h-12 w-12 bg-chart-2/10 rounded-lg flex items-center justify-center">
+              <CreditCard className="w-6 h-6 text-chart-2" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">
+              <p className="text-sm font-medium text-muted-foreground">
                 Monthly Revenue
               </p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="text-2xl font-bold text-foreground mt-1">
                 {stats.revenue.formattedMrr}
               </p>
-              <p className="text-xs text-gray-500 mt-1">Recurring monthly</p>
+              <p className="text-xs text-muted-foreground mt-1">Recurring monthly</p>
             </div>
-            <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-blue-600" />
+            <div className="h-12 w-12 bg-chart-1/10 rounded-lg flex items-center justify-center">
+              <DollarSign className="w-6 h-6 text-chart-1" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="bg-card rounded-lg border border-border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Churn Rate</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">
+              <p className="text-sm font-medium text-muted-foreground">Churn Rate</p>
+              <p className="text-2xl font-bold text-destructive mt-1">
                 {(
                   (stats.statusStats.churned / stats.totalMembers) *
                   100
                 ).toFixed(1)}
                 %
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {stats.statusStats.churned} churned
               </p>
             </div>
-            <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <UserX className="w-6 h-6 text-red-600" />
+            <div className="h-12 w-12 bg-destructive/10 rounded-lg flex items-center justify-center">
+              <UserX className="w-6 h-6 text-destructive" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+      <div className="bg-card rounded-lg border border-border p-4 mb-6">
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Search */}
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
               <Input
                 type="text"
                 placeholder="Search by name or email..."
@@ -500,7 +500,7 @@ export default function AdminMembersPage() {
         {/* Active filters */}
         {(statusFilter !== "all" || tierFilter !== "all" || search) && (
           <div className="flex items-center gap-2 mt-3">
-            <span className="text-sm text-gray-500">Active filters:</span>
+            <span className="text-sm text-muted-foreground">Active filters:</span>
             {statusFilter !== "all" && (
               <Badge variant="secondary" className="text-xs">
                 Status: {statusFilter}
@@ -534,8 +534,8 @@ export default function AdminMembersPage() {
 
       {/* Bulk Actions */}
       {selectedMembers.size > 0 && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4 flex items-center justify-between">
-          <span className="text-sm text-blue-700">
+        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4 flex items-center justify-between">
+          <span className="text-sm text-primary">
             {selectedMembers.size} member{selectedMembers.size > 1 ? "s" : ""}{" "}
             selected
           </span>
@@ -553,10 +553,10 @@ export default function AdminMembersPage() {
       )}
 
       {/* Members Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="bg-card rounded-lg border border-border overflow-hidden">
         <Table>
           <TableHeader>
-            <TableRow className="bg-gray-50">
+            <TableRow className="bg-muted/50">
               <TableHead className="w-12">
                 <Checkbox
                   checked={
@@ -567,7 +567,7 @@ export default function AdminMembersPage() {
                 />
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => handleSort("name")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -576,7 +576,7 @@ export default function AdminMembersPage() {
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => handleSort("tier")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -585,7 +585,7 @@ export default function AdminMembersPage() {
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => handleSort("status")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -594,7 +594,7 @@ export default function AdminMembersPage() {
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => handleSort("joinedAt")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -603,7 +603,7 @@ export default function AdminMembersPage() {
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-gray-100"
+                className="cursor-pointer hover:bg-muted"
                 onClick={() => handleSort("revenue")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -630,7 +630,7 @@ export default function AdminMembersPage() {
                 statusConfig[member.status as keyof typeof statusConfig];
 
               return (
-                <TableRow key={member._id} className="hover:bg-gray-50">
+                <TableRow key={member._id} className="hover:bg-muted/50">
                   <TableCell>
                     <Checkbox
                       checked={selectedMembers.has(member._id)}
@@ -639,7 +639,7 @@ export default function AdminMembersPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-sm font-medium text-gray-700 flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-muted-foreground flex-shrink-0">
                         {member.avatarUrl ? (
                           <Image
                             src={member.avatarUrl}
@@ -653,10 +653,10 @@ export default function AdminMembersPage() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-medium text-gray-900 truncate">
+                        <div className="font-medium text-foreground truncate">
                           {fullName}
                         </div>
-                        <div className="text-sm text-gray-500 truncate">
+                        <div className="text-sm text-muted-foreground truncate">
                           {member.email}
                         </div>
                         {member.role === "admin" && (
@@ -681,7 +681,7 @@ export default function AdminMembersPage() {
                       {member.billingInterval &&
                         member.tier !== "free" &&
                         member.tier !== "scholarship" && (
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-muted-foreground">
                             {tierInfo?.price}/
                             {member.billingInterval === "monthly" ? "mo" : "yr"}
                           </div>
@@ -698,7 +698,7 @@ export default function AdminMembersPage() {
                     </Badge>
                     {member.status === "cancelled" &&
                       member.subscriptionEndDate && (
-                        <div className="text-xs text-gray-500 mt-1">
+                        <div className="text-xs text-muted-foreground mt-1">
                           Ends{" "}
                           {format(
                             new Date(member.subscriptionEndDate),
@@ -724,7 +724,7 @@ export default function AdminMembersPage() {
                         {member.billingInterval === "monthly" ? "mo" : "yr"}
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-400">—</span>
+                      <span className="text-sm text-muted-foreground">—</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -794,7 +794,7 @@ export default function AdminMembersPage() {
                                   role: "user",
                                 })
                               }
-                              className="text-sm text-red-600"
+                              className="text-sm text-destructive"
                             >
                               <Shield className="w-4 h-4 mr-2" />
                               Remove Admin
@@ -812,8 +812,8 @@ export default function AdminMembersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="border-t border-gray-200 px-4 py-3 flex items-center justify-between">
-            <div className="text-sm text-gray-700">
+          <div className="border-t border-border px-4 py-3 flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
               Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
               {Math.min(
                 currentPage * itemsPerPage,

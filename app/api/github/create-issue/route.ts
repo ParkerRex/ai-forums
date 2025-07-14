@@ -1,43 +1,3 @@
-/**
- * @fileoverview GitHub Issue Creation API Route
- * 
- * This API endpoint creates GitHub issues from user-submitted bug reports through
- * the VAI VEX application. It transforms bug report data into properly formatted
- * GitHub issues with appropriate labels and priority assignments.
- * 
- * @route POST /api/github/create-issue
- * @requires GitHub Personal Access Token (GITHUB_TOKEN environment variable)
- * @returns {object} JSON response containing issue creation details
- * 
- * @example
- * ```typescript
- * // Request body
- * {
- *   "title": "Login button not responding",
- *   "stepsToReproduce": "1. Go to login page\n2. Click login button",
- *   "expectedBehavior": "Should redirect to dashboard",
- *   "actualBehavior": "Nothing happens",
- *   "severity": "high",
- *   "browserInfo": "Chrome 120.0.0.0",
- *   "additionalContext": "Happens only on mobile",
- *   "memberInfo": {
- *     "email": "user@example.com",
- *     "name": "John Doe"
- *   }
- * }
- * 
- * // Success response
- * {
- *   "issueNumber": 123,
- *   "issueUrl": "https://github.com/joinvai/vai-vex/issues/123",
- *   "success": true
- * }
- * ```
- * 
- * @author VAI VEX Team
- * @since 1.0.0
- */
-
 import { NextResponse } from 'next/server';
 
 /** GitHub API base URL for all GitHub API requests */
@@ -50,74 +10,36 @@ const OWNER = 'joinvai';
 const REPO = 'vai-vex';
 
 /**
- * Interface defining the structure of bug report data submitted by users.
- * 
- * @interface BugReportData
- * @property {string} title - Brief description of the bug
- * @property {string} stepsToReproduce - Detailed steps to reproduce the issue
- * @property {string} expectedBehavior - What should happen normally
- * @property {string} actualBehavior - What actually happens (the bug)
- * @property {string} severity - Bug severity level (critical, high, medium, low)
- * @property {string} browserInfo - Browser and version information
- * @property {string} [additionalContext] - Optional additional information
- * @property {object} [memberInfo] - Optional user information for attribution
- * @property {string} memberInfo.email - User's email address
- * @property {string} memberInfo.name - User's display name
+ * Bug report data structure from user submissions
  */
 interface BugReportData {
+  /** Brief description of the bug */
   title: string;
+  /** Detailed steps to reproduce the issue */
   stepsToReproduce: string;
+  /** What should happen normally */
   expectedBehavior: string;
+  /** What actually happens (the bug) */
   actualBehavior: string;
+  /** Bug severity level (critical, high, medium, low) */
   severity: string;
+  /** Browser and version information */
   browserInfo: string;
+  /** Optional additional information */
   additionalContext?: string;
+  /** Optional user information for attribution */
   memberInfo?: {
+    /** User's email address */
     email: string;
+    /** User's display name */
     name: string;
   };
 }
 
 /**
- * Creates a GitHub issue from user-submitted bug report data.
- * 
- * This endpoint accepts bug report data through POST requests and creates
- * properly formatted GitHub issues with structured templates, appropriate
- * labels, and priority assignments based on severity levels.
- * 
- * @param {Request} request - The incoming HTTP request containing bug report data
- * @returns {Promise<NextResponse>} JSON response with issue creation results
- * 
- * @example
- * ```typescript
- * // POST /api/github/create-issue
- * const response = await fetch('/api/github/create-issue', {
- *   method: 'POST',
- *   headers: { 'Content-Type': 'application/json' },
- *   body: JSON.stringify({
- *     title: 'Navigation menu not working',
- *     stepsToReproduce: 'Click on menu button',
- *     expectedBehavior: 'Menu should open',
- *     actualBehavior: 'Menu does not respond',
- *     severity: 'medium',
- *     browserInfo: 'Safari 17.0'
- *   })
- * });
- * ```
- * 
- * @throws {Error} When GitHub API token is missing or invalid
- * @throws {Error} When GitHub API request fails
- * 
- * @security
- * - Requires valid GITHUB_TOKEN environment variable
- * - Uses GitHub API v2022-11-28 for compatibility
- * - Validates all input data before processing
- * 
- * @business_rules
- * - All issues are prefixed with "[Bug]" for easy identification
- * - Severity levels automatically map to GitHub priority labels
- * - User information is included when available for follow-up
- * - Anonymous submissions are supported for privacy
+ * Creates a GitHub issue from user-submitted bug report data
+ * @param request - HTTP request containing bug report data
+ * @returns JSON response with issue creation results
  */
 export async function POST(request: Request) {
   try {

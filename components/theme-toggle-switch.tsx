@@ -1,9 +1,9 @@
 "use client";
 
 import * as React from "react";
-import { SunIcon } from "@/components/ui/sun";
-import { MoonIcon } from "@/components/ui/moon";
-import { LaptopMinimalCheckIcon } from "@/components/ui/laptop-minimal-check";
+import { SunIcon } from "@/components/icons/sun";
+import { MoonIcon } from "@/components/icons/moon";
+import { LaptopMinimalCheckIcon } from "@/components/icons/laptop-minimal-check";
 import { useTheme } from "next-themes";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { cn } from "@/lib/utils";

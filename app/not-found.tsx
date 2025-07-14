@@ -46,7 +46,7 @@ export default function NotFound() {
         <div className="pt-4">
           <button 
             onClick={() => window.history.back()}
-            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50 h-9 px-4 py-2 text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all hover:bg-accent dark:hover:bg-accent/50 h-9 px-4 py-2 text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="w-4 h-4" />
             Go Back

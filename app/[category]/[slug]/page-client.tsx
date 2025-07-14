@@ -19,16 +19,16 @@
 "use client";
 
 import { Authenticated, Unauthenticated } from "convex/react";
-import PostDetail from "@/components/post-detail";
-import { PostDeleteModal } from "@/components/post-delete-modal";
-import { PostHistoryModal } from "@/components/post-history-modal";
-import { ReactivateBannerInline } from "@/components/reactivate-banner-inline";
-import { PostPaywallDirect } from "@/components/post-paywall-direct";
+import PostDetail from "@/components/posts/post-detail";
+import { PostDeleteModal } from "@/components/posts/post-delete-modal";
+import { PostHistoryModal } from "@/components/posts/post-history-modal";
+import { ReactivateBannerInline } from "@/components/payments/reactivate-banner-inline";
+import { PostPaywallDirect } from "@/components/posts/post-paywall-direct";
 import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
-import CommentSection from "@/components/comment-section-flat";
+import CommentSection from "@/components/comments/comment-section-flat";
 import { use, useState, useEffect } from "react";
 import { notFound, useSearchParams, useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";

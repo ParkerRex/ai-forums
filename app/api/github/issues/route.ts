@@ -1,48 +1,3 @@
-/**
- * @fileoverview GitHub Issues Listing API Route
- * 
- * This API endpoint fetches and displays open GitHub issues from the VAI VEX repository.
- * It provides pagination support and returns simplified issue data for display in the
- * application's issue tracking interface.
- * 
- * @route GET /api/github/issues
- * @requires GitHub Personal Access Token (GITHUB_TOKEN environment variable)
- * @returns {array} JSON array of simplified issue objects
- * 
- * @example
- * ```typescript
- * // GET /api/github/issues?page=1&per_page=10
- * 
- * // Success response
- * [
- *   {
- *     "id": 1234567890,
- *     "number": 123,
- *     "title": "[Bug] Login form validation error",
- *     "html_url": "https://github.com/joinvai/vai-vex/issues/123"
- *   },
- *   {
- *     "id": 1234567891,
- *     "number": 124,
- *     "title": "[Feature] Add dark mode support",
- *     "html_url": "https://github.com/joinvai/vai-vex/issues/124"
- *   }
- * ]
- * 
- * // Error response
- * {
- *   "error": "GitHub token not configured"
- * }
- * ```
- * 
- * @query_params
- * - page: Page number for pagination (default: 1)
- * - per_page: Number of issues per page (default: 10)
- * 
- * @author VAI VEX Team
- * @since 1.0.0
- */
-
 import { NextRequest, NextResponse } from 'next/server';
 
 /** GitHub API base URL for all GitHub API requests */
@@ -55,35 +10,10 @@ const OWNER = 'joinvai';
 const REPO = 'vai-vex';
 
 /**
- * Fetches open GitHub issues from the VAI VEX repository with pagination support.
+ * Fetches open GitHub issues from the VAI VEX repository.
  * 
- * This endpoint retrieves a paginated list of open issues from the GitHub repository,
- * returning simplified issue objects optimized for display in the application UI.
- * The response is cached for 60 seconds to balance data freshness with performance.
- * 
- * @param {NextRequest} request - The incoming HTTP request with optional query parameters
- * @returns {Promise<NextResponse>} JSON array of simplified issue objects
- * 
- * @example
- * ```typescript
- * // GET /api/github/issues?page=2&per_page=5
- * const response = await fetch('/api/github/issues?page=2&per_page=5');
- * const issues = await response.json();
- * console.log(`Found ${issues.length} issues`);
- * ```
- * 
- * @throws {Error} When GitHub API token is missing or invalid
- * @throws {Error} When GitHub API request fails
- * 
- * @security
- * - Requires valid GITHUB_TOKEN environment variable
- * - Uses GitHub API v2022-11-28 for compatibility
- * - Only fetches public issue data (no sensitive information)
- * 
- * @performance
- * - Response is cached for 60 seconds with stale-while-revalidate
- * - Returns simplified issue objects to reduce payload size
- * - Supports pagination to handle large numbers of issues
+ * @param request - The incoming HTTP request with optional query parameters
+ * @returns JSON array of simplified issue objects
  */
 export async function GET(request: NextRequest) {
   // Verify GitHub API token is configured
@@ -158,10 +88,7 @@ export async function GET(request: NextRequest) {
 /**
  * Rejects POST requests to the issues endpoint.
  * 
- * This endpoint is read-only and only supports GET requests for fetching issues.
- * Use the /api/github/create-issue endpoint for creating new issues.
- * 
- * @returns {Promise<NextResponse>} 405 Method Not Allowed error response
+ * @returns 405 Method Not Allowed error response
  */
 export async function POST() {
   return NextResponse.json(
@@ -173,10 +100,7 @@ export async function POST() {
 /**
  * Rejects PUT requests to the issues endpoint.
  * 
- * This endpoint is read-only and doesn't support issue modification.
- * Issue updates should be performed directly on GitHub or through dedicated endpoints.
- * 
- * @returns {Promise<NextResponse>} 405 Method Not Allowed error response
+ * @returns 405 Method Not Allowed error response
  */
 export async function PUT() {
   return NextResponse.json(
@@ -188,10 +112,7 @@ export async function PUT() {
 /**
  * Rejects DELETE requests to the issues endpoint.
  * 
- * This endpoint is read-only and doesn't support issue deletion.
- * Issue management should be performed directly on GitHub.
- * 
- * @returns {Promise<NextResponse>} 405 Method Not Allowed error response
+ * @returns 405 Method Not Allowed error response
  */
 export async function DELETE() {
   return NextResponse.json(
@@ -203,10 +124,7 @@ export async function DELETE() {
 /**
  * Rejects PATCH requests to the issues endpoint.
  * 
- * This endpoint is read-only and doesn't support partial issue updates.
- * Issue modifications should be performed directly on GitHub.
- * 
- * @returns {Promise<NextResponse>} 405 Method Not Allowed error response
+ * @returns 405 Method Not Allowed error response
  */
 export async function PATCH() {
   return NextResponse.json(
