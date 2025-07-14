@@ -22,9 +22,9 @@ import { api } from "@/convex/_generated/api";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PostCard from "@/components/post-card";
+import PostCard from "@/components/posts/post-card";
 import { PageErrorBoundary, QueryErrorBoundary } from "@/components/error-boundary";
-import { PostSkeletonList } from "@/components/member-skeleton";
+import { PostSkeletonList } from "@/components/members/member-skeleton";
 
 /**
  * Main content component for the bookmarks page.

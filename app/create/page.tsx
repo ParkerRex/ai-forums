@@ -30,7 +30,7 @@ import { Authenticated, Unauthenticated } from "convex/react";
 
 // Custom post creation form component that handles all content creation logic
 // This is the main component that users interact with to create posts
-import { PostCreationForm } from "@/components/post-creation-form";
+import { PostCreationForm } from "@/components/posts/post-creation-form";
 
 // Shadcn/ui components for consistent styling and layout
 // Card components provide structured container layouts with proper spacing

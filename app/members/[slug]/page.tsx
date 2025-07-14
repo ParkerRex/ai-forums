@@ -30,15 +30,15 @@ import { notFound, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Bookmark } from "lucide-react";
 import React from "react";
-import MemberProfile from "@/components/member-profile";
-import PostCard from "@/components/post-card";
-import ActivityCard from "@/components/activity-card";
+import MemberProfile from "@/components/members/member-profile";
+import PostCard from "@/components/posts/post-card";
+import MemberActivityCard from "@/components/members/member-activity-card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   MemberProfileSkeleton,
   PostSkeletonList,
   ActivitySkeletonList,
-} from "@/components/member-skeleton";
+} from "@/components/members/member-skeleton";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { use } from "react";
@@ -294,7 +294,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
                     <div className="divide-y divide-border">
                       {memberActivity.map((activity) => (
                         <div key={activity.id} className="p-4">
-                          <ActivityCard activity={activity} size="medium" />
+                          <MemberActivityCard activity={activity} size="medium" />
                         </div>
                       ))}
                     </div>

@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import { Mona_Sans, DM_Mono } from "next/font/google";
-import localFont from "next/font/local";
 import "./globals.css";
-import ConvexClientProvider from "@/components/ConvexClientProvider";
+import ConvexClientProvider from "@/components/convex-client-provider";
 import { ClerkProvider } from "@clerk/nextjs";
-import Header from "@/components/header";
+import Header from "@/components/header/header";
 import { Toaster } from "@/components/ui/sonner";
 import { NetworkStatusIndicator } from "@/components/error-display";
 import { ThemeProvider } from "@/components/theme-provider";
-import { GlobalSearch } from "@/components/global-search";
-import { Footer } from "@/components/footer";
-import { ReactivateBannerTop } from "@/components/reactivate-banner-top";
-import { PaymentReminderBanner } from "@/components/payment-reminder-banner";
+import { GlobalSearch } from "@/components/header/global-search";
+import { Footer } from "@/components/header/footer";
+import { ReactivateBannerTop } from "@/components/payments/reactivate-banner-top";
+import { PaymentReminderBanner } from "@/components/payments/payment-reminder-banner";
 
 // Google fonts
 const monaSans = Mona_Sans({
@@ -28,12 +27,6 @@ const dmMono = DM_Mono({
   display: "swap",
 });
 
-// Local font for code
-const monaspaceArgon = localFont({
-  src: "../public/fonts/MonaspaceArgon-Regular.otf",
-  variable: "--font-monaspace-argon",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "The Place AI Engineers Build Together",
@@ -52,7 +45,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${dmMono.variable} ${monaSans.variable} ${monaspaceArgon.variable} antialiased`}
+        className={`${dmMono.variable} ${monaSans.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { X, Loader2, FileText, FileIcon } from "lucide-react";
-import { LinkIcon } from "@/components/ui/link";
+import { LinkIcon } from "@/components/icons/link";
 import { toast } from "sonner";
 import Image from "next/image";
 import { getBrowserInfo } from "@/lib/browser-detection";

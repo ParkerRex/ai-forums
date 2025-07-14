@@ -16,10 +16,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X, Loader2, FileText, FileIcon } from "lucide-react";
-import { LinkIcon } from "@/components/ui/link";
+import { LinkIcon } from "@/components/icons/link";
 import { toast } from "sonner";
 import Image from "next/image";
-import { RichTextEditor } from "@/components/rich-text-editor";
+import { RichTextEditor } from "@/components/posts/rich-text-editor";
 import {
   validateMediaFile,
   getFilePreviewUrl,

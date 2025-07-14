@@ -16,20 +16,6 @@ import {
   ArrowUpRight, ArrowDownRight
 } from "lucide-react";
 
-const CHART_COLORS = {
-  primary: "#000000",
-  secondary: "#6b7280",
-  success: "#10b981",
-  danger: "#ef4444",
-  warning: "#f59e0b",
-  info: "#3b82f6",
-};
-
-const TIER_COLORS = {
-  founding_member: "#8b5cf6",
-  early_bird: "#3b82f6",
-  member: "#10b981",
-};
 
 export default function AnalyticsPage() {
   const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y" | "all">("30d");
@@ -54,10 +40,10 @@ export default function AnalyticsPage() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-8 bg-muted rounded w-1/4"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
+              <div key={i} className="h-32 bg-muted rounded"></div>
             ))}
           </div>
         </div>
@@ -105,13 +91,13 @@ export default function AnalyticsPage() {
             <p className="text-xs text-muted-foreground flex items-center mt-1">
               {mrrGrowth >= 0 ? (
                 <>
-                  <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
-                  <span className="text-green-500">{formatPercent(Math.abs(mrrGrowth))}</span>
+                  <ArrowUpRight className="h-3 w-3 text-chart-2 mr-1" />
+                  <span className="text-chart-2">{formatPercent(Math.abs(mrrGrowth))}</span>
                 </>
               ) : (
                 <>
-                  <ArrowDownRight className="h-3 w-3 text-red-500 mr-1" />
-                  <span className="text-red-500">{formatPercent(Math.abs(mrrGrowth))}</span>
+                  <ArrowDownRight className="h-3 w-3 text-destructive mr-1" />
+                  <span className="text-destructive">{formatPercent(Math.abs(mrrGrowth))}</span>
                 </>
               )}
               <span className="ml-1">from last month</span>
@@ -186,8 +172,8 @@ export default function AnalyticsPage() {
                     <Area 
                       type="monotone" 
                       dataKey="mrr" 
-                      stroke={CHART_COLORS.primary} 
-                      fill={CHART_COLORS.primary}
+                      stroke="hsl(var(--primary))" 
+                      fill="hsl(var(--primary))"
                       fillOpacity={0.1}
                     />
                   </AreaChart>
@@ -216,12 +202,12 @@ export default function AnalyticsPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                        <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
                           <div 
                             className="h-full"
                             style={{
                               width: `${(data.totalRevenue / metrics.revenue.gross) * 100}%`,
-                              backgroundColor: TIER_COLORS[tier as keyof typeof TIER_COLORS] || CHART_COLORS.secondary,
+                              backgroundColor: tier === 'founding_member' ? 'hsl(var(--chart-5))' : tier === 'early_bird' ? 'hsl(var(--chart-1))' : 'hsl(var(--chart-2))',
                             }}
                           />
                         </div>
@@ -257,8 +243,8 @@ export default function AnalyticsPage() {
                         fill="#8884d8"
                         dataKey="value"
                       >
-                        <Cell fill={CHART_COLORS.primary} />
-                        <Cell fill={CHART_COLORS.info} />
+                        <Cell fill="hsl(var(--primary))" />
+                        <Cell fill="hsl(var(--chart-1))" />
                       </Pie>
                       <Tooltip />
                     </PieChart>
@@ -284,15 +270,15 @@ export default function AnalyticsPage() {
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Paid Members</p>
-                    <p className="text-2xl font-bold text-green-600">{metrics.members.paid}</p>
+                    <p className="text-2xl font-bold text-chart-2">{metrics.members.paid}</p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Free Members</p>
-                    <p className="text-2xl font-bold text-gray-600">{metrics.members.free}</p>
+                    <p className="text-2xl font-bold text-muted-foreground">{metrics.members.free}</p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Scholarship</p>
-                    <p className="text-2xl font-bold text-purple-600">{metrics.members.scholarship}</p>
+                    <p className="text-2xl font-bold text-chart-5">{metrics.members.scholarship}</p>
                   </div>
                 </div>
               </div>
@@ -311,7 +297,7 @@ export default function AnalyticsPage() {
                 <div className="space-y-4">
                   <div>
                     <p className="text-sm font-medium">Monthly Retention Rate</p>
-                    <p className="text-2xl font-bold text-green-600">
+                    <p className="text-2xl font-bold text-chart-2">
                       {formatPercent(churnAnalysis.retentionRate)}
                     </p>
                   </div>

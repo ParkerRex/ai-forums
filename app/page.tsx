@@ -1,11 +1,11 @@
 "use client";
-import PostHeader from '@/components/post-header';
-import PostList from '@/components/post-list';
-import PostSidebar from '@/components/post-sidebar';
-import { ReactivateBannerInline } from '@/components/reactivate-banner-inline';
+import PostHeader from '@/components/posts/post-header';
+import PostList from '@/components/posts/post-list';
+import PostSidebar from '@/components/posts/post-sidebar';
+import { ReactivateBannerInline } from '@/components/payments/reactivate-banner-inline';
 import React, { useState, useEffect } from 'react';
-import PostHeaderSkeleton from '@/components/post-header-skeleton';
-import { PostSkeletonList } from '@/components/member-skeleton';
+import PostHeaderSkeleton from '@/components/posts/post-header-skeleton';
+import { PostSkeletonList } from '@/components/members/member-skeleton';
 
 export default function Home() {
   const [sortBy, setSortBy] = useState<"newest" | "popular" | "trending">("newest");

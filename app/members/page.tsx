@@ -25,7 +25,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useState, useEffect } from "react";
 import { PageErrorBoundary } from "@/components/error-boundary";
-import MembersDisplay from "@/components/members-display";
+import MembersDisplay from "@/components/members/members-display";
 
 /**
  * Main content component for the Members Directory page.

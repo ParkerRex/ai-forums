@@ -15,11 +15,11 @@ export default function MonitoringPage() {
   const getHealthIcon = (status: string) => {
     switch (status) {
       case "healthy":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <CheckCircle className="h-5 w-5 text-chart-2" />;
       case "warning":
-        return <AlertCircle className="h-5 w-5 text-yellow-500" />;
+        return <AlertCircle className="h-5 w-5 text-chart-4" />;
       case "critical":
-        return <XCircle className="h-5 w-5 text-red-500" />;
+        return <XCircle className="h-5 w-5 text-destructive" />;
       default:
         return null;
     }
@@ -111,9 +111,9 @@ export default function MonitoringPage() {
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
             {webhookHealth.metrics.failureRate < 0.05 ? (
-              <TrendingUp className="h-4 w-4 text-green-500" />
+              <TrendingUp className="h-4 w-4 text-chart-2" />
             ) : (
-              <TrendingDown className="h-4 w-4 text-red-500" />
+              <TrendingDown className="h-4 w-4 text-destructive" />
             )}
           </CardHeader>
           <CardContent>
@@ -138,11 +138,11 @@ export default function MonitoringPage() {
             </div>
             <p className="text-xs text-muted-foreground">
               {webhookHealth.metrics.avgProcessingTime < 1000 ? (
-                <span className="text-green-500">Excellent</span>
+                <span className="text-chart-2">Excellent</span>
               ) : webhookHealth.metrics.avgProcessingTime < 3000 ? (
-                <span className="text-yellow-500">Good</span>
+                <span className="text-chart-4">Good</span>
               ) : (
-                <span className="text-red-500">Slow</span>
+                <span className="text-destructive">Slow</span>
               )}
             </p>
           </CardContent>
@@ -159,9 +159,9 @@ export default function MonitoringPage() {
             </div>
             <p className="text-xs text-muted-foreground">
               {webhookHealth.metrics.duplicateRate < 0.01 ? (
-                <span className="text-green-500">Normal</span>
+                <span className="text-chart-2">Normal</span>
               ) : (
-                <span className="text-yellow-500">Elevated</span>
+                <span className="text-chart-4">Elevated</span>
               )}
             </p>
           </CardContent>
