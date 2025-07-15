@@ -2,7 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
-import { canViewResource } from "./helpers/subscription-access";
+import { canViewResource } from "./helpers/subscriptionAccess";
 
 export const getResourcesByTopic = query({
   args: {

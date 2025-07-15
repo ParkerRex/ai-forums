@@ -12,7 +12,7 @@ Welcome to the VAI-VEX platform documentation. This directory contains comprehen
 
 ### Quick Links
 
-- **[Main README](../README.md)** - Project overview and getting started
+- **[Project Overview](./PROJECT_README.md)** - Project overview and getting started
 - **[Changelog](../CHANGELOG.md)** - Version history and release notes
 - **[Contributing](../CONTRIBUTING.md)** - Guidelines for contributors
 
@@ -65,7 +65,7 @@ See the [main README](../README.md) for detailed architecture diagrams including
 4. Start development: `npm run dev`
 5. Run tests: `npm test`
 
-For detailed setup instructions, see the [main README](../README.md).
+For detailed setup instructions, see the [Project Overview](./PROJECT_README.md).
 
 ## Documentation Updates
 
@@ -91,4 +91,4 @@ When updating documentation:
 
 ## License
 
-This project is proprietary to the VAI community. See LICENSE file for details.
+This project is proprietary to the VAI community. For licensing details, see the [LICENSE](../../LICENSE) file.

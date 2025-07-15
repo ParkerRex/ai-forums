@@ -1,5 +1,24 @@
 # VAI-VEX Deployment Guide
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Prerequisites](#prerequisites)
+- [Environment Variables](#environment-variables)
+- [Step 1: Database Setup (Convex)](#step-1-database-setup-convex)
+- [Step 2: Stripe Configuration](#step-2-stripe-configuration)
+- [Step 3: Clerk Configuration](#step-3-clerk-configuration)
+- [Step 4: Frontend Deployment (Vercel)](#step-4-frontend-deployment-vercel)
+- [Step 5: Post-Deployment Tasks](#step-5-post-deployment-tasks)
+- [Step 6: Testing Production](#step-6-testing-production)
+- [Step 7: DNS Configuration](#step-7-dns-configuration)
+- [Step 8: Launch Checklist](#step-8-launch-checklist)
+- [Rollback Plan](#rollback-plan)
+- [Maintenance](#maintenance)
+- [Support Contacts](#support-contacts)
+- [Troubleshooting](#troubleshooting)
+- [Security Checklist](#security-checklist)
+
 ## Overview
 
 This guide covers deploying the VAI-VEX platform to production, including the Next.js frontend, Convex backend, and all necessary integrations.
@@ -398,19 +417,19 @@ npx convex deploy --prod
 ### Common Issues
 
 1. **Webhook Failures**
-   - Check webhook secret
-   - Verify endpoint URL
-   - Check Convex function logs
+   - Check webhook secret.
+   - Verify endpoint URL.
+   - Check Convex function logs.
 
 2. **Authentication Issues**
-   - Verify Clerk keys
-   - Check redirect URLs
-   - Review CORS settings
+   - Verify Clerk keys.
+   - Check redirect URLs.
+   - Review CORS settings.
 
 3. **Payment Failures**
-   - Check Stripe API keys
-   - Verify webhook processing
-   - Review customer portal settings
+   - Check Stripe API keys.
+   - Verify webhook processing.
+   - Review customer portal settings.
 
 ### Debug Commands
 
@@ -427,11 +446,11 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 
 ## Security Checklist
 
-- [ ] All secrets in environment variables
-- [ ] HTTPS enforced everywhere
-- [ ] CORS properly configured
-- [ ] Rate limiting enabled
-- [ ] Input validation on all endpoints
-- [ ] SQL injection prevention (N/A for Convex)
-- [ ] XSS protection headers
-- [ ] CSP headers configured
+- [x] All secrets in environment variables
+- [x] HTTPS enforced everywhere
+- [x] CORS properly configured
+- [ ] Rate limiting enabled (consider implementing)
+- [x] Input validation on all endpoints
+- [x] SQL injection prevention (N/A for Convex)
+- [x] XSS protection headers
+- [x] CSP headers configured

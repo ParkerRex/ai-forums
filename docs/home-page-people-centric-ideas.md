@@ -1,5 +1,24 @@
 # People-Centric Home Page Ideas for VAI
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Core Psychological Principles](#core-psychological-principles)
+- [1. "Who's Building Today" - Live Member Grid](#1-whos-building-today---live-member-grid)
+- [2. Member Spotlights Carousel](#2-member-spotlights-carousel)
+- [3. Live Activity Feed (People-First)](#3-live-activity-feed-people-first)
+- [4. Skills & Expertise Cloud](#4-skills--expertise-cloud)
+- [5. "Meet Your Community" Section](#5-meet-your-community-section)
+- [6. Member Contribution Leaderboard](#6-member-contribution-leaderboard)
+- [Psychological Design Principles Summary](#psychological-design-principles-summary)
+- [Additional Ideas](#additional-ideas)
+- [Measuring Psychological Impact](#measuring-psychological-impact)
+- [Conclusion](#conclusion)
+- [Implementation Priority](#implementation-priority)
+- [Success Metrics](#success-metrics)
+- [Technical Considerations](#technical-considerations)
+- [Next Steps](#next-steps)
+
 ## Overview
 Transform the VAI home page from a post-focused feed to a people-focused community showcase. These ideas prioritize showing WHO is in the community and WHAT they're building, creating a more engaging first-time user experience.
 

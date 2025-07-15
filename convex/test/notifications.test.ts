@@ -67,8 +67,8 @@ describe("Notifications System", () => {
           slug: "comment-author",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_author_${Date.now()}`, // Clerk authentication
         });
@@ -84,8 +84,8 @@ describe("Notifications System", () => {
           slug: "mentioned-user", // This slug will be used in @mention
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_mentioned_${Date.now()}`,
         });
@@ -180,8 +180,8 @@ describe("Notifications System", () => {
           slug: "self-mentioner",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_self_${Date.now()}`,
         });
@@ -278,8 +278,8 @@ describe("Notifications System", () => {
           slug: "original-author",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_original_${Date.now()}`,
         });
@@ -295,8 +295,8 @@ describe("Notifications System", () => {
           slug: "reply-author",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_replier_${Date.now()}`,
         });
@@ -399,8 +399,8 @@ describe("Notifications System", () => {
           slug: "self-replier",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_selfreplier_${Date.now()}`,
         });
@@ -506,8 +506,8 @@ describe("Notifications System", () => {
           slug: "post-author",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_postauthor_${Date.now()}`,
         });
@@ -523,8 +523,8 @@ describe("Notifications System", () => {
           slug: "mentioned-in-post", // Slug for @mention targeting
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_mentionedpost_${Date.now()}`,
         });
@@ -598,8 +598,8 @@ describe("Notifications System", () => {
           slug: "self-post-mentioner",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_selfpostmention_${Date.now()}`,
         });
@@ -675,8 +675,8 @@ describe("Notifications System", () => {
           slug: "duplicate-tester",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_duplicate_${Date.now()}`,
         });
@@ -692,8 +692,8 @@ describe("Notifications System", () => {
           slug: "mentioned-twice",
           updatedAt: Date.now(),
           lastOnline: Date.now(),
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test",
           externalId: `user_mentionedtwice_${Date.now()}`,
         });

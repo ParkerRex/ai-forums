@@ -19,10 +19,6 @@ const isPublicRoute = createRouteMatcher([
   "/blog(.*)",
 ]);
 
-// Onboarding routes
-const isOnboardingRoute = createRouteMatcher([
-  "/onboarding(.*)",
-]);
 
 export default clerkMiddleware(async (auth, req) => {
   const authResult = await auth();
@@ -33,16 +29,6 @@ export default clerkMiddleware(async (auth, req) => {
     await auth.protect();
   }
 
-  // If user is authenticated, check onboarding status
-  if (userId && !isPublicRoute(req) && !isOnboardingRoute(req)) {
-    // Check onboarding status from Clerk metadata
-    const publicMetadata = authResult.sessionClaims?.publicMetadata as { onboardingStatus?: string } | undefined;
-    
-    // If onboarding status is still pending, redirect to setup
-    if (publicMetadata?.onboardingStatus === "pending") {
-      return NextResponse.redirect(new URL("/onboarding/setup", req.url));
-    }
-  }
 
   return NextResponse.next();
 });

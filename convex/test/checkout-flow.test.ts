@@ -20,7 +20,7 @@ function createTestMember(overrides: Partial<Doc<"members">>): Omit<Doc<"members
     status: "active",
     joinedDate: Date.now(),
     updatedAt: Date.now(),
-    tier: "free",
+    tier: undefined,
     subscriptionStatus: "none",
     stripeCustomerId: "cus_test123",
     ...overrides,
@@ -39,7 +39,7 @@ describe("Checkout Flow Integration Tests", () => {
         expect(validTiers).toContain(tier);
       }
       
-      // Invalid tiers should be rejected (no free tier - platform operates with zero free users)
+      // Invalid tiers should be rejected (platform operates with paid tiers only)
       const invalidTiers = ["free", "scholarship", "invalid_tier"];
       for (const tier of invalidTiers) {
         expect(validTiers).not.toContain(tier);
@@ -91,7 +91,7 @@ describe("Checkout Flow Integration Tests", () => {
         return await ctx.db.insert("members", createTestMember({
           email: "existing@example.com",
           stripeCustomerId: "cus_existing_real",
-          tier: "free",
+          tier: undefined,
         }));
       });
       
@@ -112,7 +112,7 @@ describe("Checkout Flow Integration Tests", () => {
         return await ctx.db.insert("members", createTestMember({
           email: "new@example.com",
           stripeCustomerId: `cus_temp_new@example.com_${Date.now()}`,
-          tier: "free",
+          tier: undefined,
         }));
       });
       

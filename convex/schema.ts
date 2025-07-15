@@ -91,15 +91,13 @@ const members = defineTable({
     v.literal("active"),           // Active paying or engaged member
     v.literal("cancelled"),        // Subscription cancelled but still in grace period
     v.literal("churned"),          // Previously active, now inactive
-    v.literal("duplicate"),        // Duplicate account marked for cleanup
-    v.literal("pending_onboarding") // Created from checkout, needs password/social auth
+    v.literal("duplicate")         // Duplicate account marked for cleanup
   ),
   joinedDate: v.number(),                   // Unix timestamp of account creation
   updatedAt: v.number(),                    // Last profile update timestamp
   lastOnline: v.number(),                   // Last activity timestamp for presence
   
-  // Onboarding tracking
-  onboardingCompletedAt: v.optional(v.number()),  // When user completed onboarding
+  // Authentication
   authMethod: v.optional(v.union(                 // How user authenticated
     v.literal("password"),
     v.literal("google"),

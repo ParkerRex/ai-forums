@@ -14,6 +14,10 @@ This document provides comprehensive technical documentation for the VAI-VEX aut
 6. [Architecture Diagram](#architecture-diagram)
 7. [Code Examples](#code-examples)
 8. [Environment Configuration](#environment-configuration)
+9. [Best Practices](#best-practices)
+10. [Troubleshooting](#troubleshooting)
+11. [Migration Guide](#migration-guide)
+12. [Conclusion](#conclusion)
 
 ## Authentication Flow Overview
 
@@ -469,7 +473,7 @@ export async function POST(request: Request) {
 
 ### Required Environment Variables
 
-The authentication system requires the following environment variables:
+The authentication system requires the following environment variables. These should be configured in your `.env.local` file for development and in your deployment environment for production. Refer to the `.env.example` file for a complete list and format.
 
 #### Clerk Configuration
 ```bash

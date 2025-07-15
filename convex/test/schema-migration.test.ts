@@ -20,8 +20,8 @@ function createTestMember(overrides: Partial<Doc<"members">>): Omit<Doc<"members
     status: "active",
     joinedDate: Date.now(),
     updatedAt: Date.now(),
-    tier: "free",
-    subscriptionStatus: "none",
+    tier: "member",
+    subscriptionStatus: "active",
     stripeCustomerId: "cus_test123",
     ...overrides,
   } as Omit<Doc<"members">, "_id" | "_creationTime">;
@@ -37,8 +37,8 @@ describe("Payment Schema Migration Tests", () => {
           email: "test@example.com",
           firstName: "Test",
           lastName: "User",
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
           stripeCustomerId: "cus_test123",
         }));
       });
@@ -48,14 +48,14 @@ describe("Payment Schema Migration Tests", () => {
       });
 
       expect(member).toBeTruthy();
-      expect(member?.tier).toBe("free");
-      expect(member?.subscriptionStatus).toBe("none");
+      expect(member?.tier).toBe("member");
+      expect(member?.subscriptionStatus).toBe("active");
       expect(member?.stripeCustomerId).toBe("cus_test123");
     });
 
     test("should validate all tier types", async () => {
       const t = convexTest(schema);
-      const tiers = ["free", "scholarship", "founding_member", "early_bird", "member"];
+      const tiers = ["founding_member", "early_bird", "member"];
       
       for (const tier of tiers) {
         const memberId = await t.run(async (ctx) => {
@@ -63,10 +63,10 @@ describe("Payment Schema Migration Tests", () => {
             email: `${tier}@example.com`,
             firstName: "Test",
             lastName: tier,
-            tier: tier as "free" | "scholarship" | "founding_member" | "early_bird" | "member" | undefined,
-            subscriptionStatus: tier === "free" ? "none" : "active",
+            tier: tier as "founding_member" | "early_bird" | "member" | undefined,
+            subscriptionStatus: "active",
             stripeCustomerId: `cus_${tier}`,
-            billingInterval: tier !== "free" && tier !== "scholarship" ? "monthly" : undefined,
+            billingInterval: "monthly",
           }));
         });
 
@@ -80,7 +80,7 @@ describe("Payment Schema Migration Tests", () => {
 
     test("should validate all subscription status types", async () => {
       const t = convexTest(schema);
-      const statuses = ["active", "cancelled", "past_due", "expired", "none"];
+      const statuses = ["active", "cancelled", "past_due", "expired"];
       
       for (const status of statuses) {
         const memberId = await t.run(async (ctx) => {
@@ -88,8 +88,8 @@ describe("Payment Schema Migration Tests", () => {
             email: `status-${status}@example.com`,
             firstName: "Test",
             lastName: status,
-            tier: status === "none" ? "free" : "member",
-            subscriptionStatus: status as "active" | "cancelled" | "past_due" | "expired" | "none" | undefined,
+            tier: "member",
+            subscriptionStatus: status as "active" | "cancelled" | "past_due" | "expired" | undefined,
             stripeCustomerId: `cus_status_${status}`,
           }));
         });
@@ -134,18 +134,18 @@ describe("Payment Schema Migration Tests", () => {
   });
 
   describe("Migration Data Integrity", () => {
-    test("should correctly migrate scholarship members", async () => {
+    test("should correctly handle members without tier", async () => {
       const t = convexTest(schema);
       
-      // Create a member that should be migrated to scholarship
+      // Create a member without a tier
       const memberId = await t.run(async (ctx) => {
         return await ctx.db.insert("members", createTestMember({
-          email: "scholarship@example.com",
-          firstName: "Scholarship",
-          lastName: "Member",
-          tier: "scholarship",
-          subscriptionStatus: "active", // Scholarship members have active status
-          stripeCustomerId: "cus_scholarship",
+          email: "notier@example.com",
+          firstName: "No",
+          lastName: "Tier",
+          tier: undefined,
+          subscriptionStatus: "none",
+          stripeCustomerId: "cus_notier",
         }));
       });
 
@@ -153,9 +153,9 @@ describe("Payment Schema Migration Tests", () => {
         return await ctx.db.get(memberId);
       });
 
-      expect(member?.tier).toBe("scholarship");
-      expect(member?.subscriptionStatus).toBe("active");
-      expect(member?.billingInterval).toBeUndefined(); // No billing interval for scholarship
+      expect(member?.tier).toBeUndefined();
+      expect(member?.subscriptionStatus).toBe("none");
+      expect(member?.billingInterval).toBeUndefined();
     });
 
     test("should handle cancelled subscriptions with future end dates", async () => {
@@ -225,7 +225,7 @@ describe("Payment Schema Migration Tests", () => {
             firstName: tier,
             lastName: "Monthly",
             joinedDate: Date.now() - 180 * 24 * 60 * 60 * 1000, // 6 months ago
-            tier: tier as "free" | "scholarship" | "founding_member" | "early_bird" | "member" | undefined,
+            tier: tier as "founding_member" | "early_bird" | "member" | undefined,
             subscriptionStatus: "active",
             stripeCustomerId: `cus_${tier}_monthly`,
             billingInterval: "monthly",
@@ -239,7 +239,7 @@ describe("Payment Schema Migration Tests", () => {
             firstName: tier,
             lastName: "Yearly",
             joinedDate: Date.now() - 365 * 24 * 60 * 60 * 1000, // 1 year ago
-            tier: tier as "free" | "scholarship" | "founding_member" | "early_bird" | "member" | undefined,
+            tier: tier as "founding_member" | "early_bird" | "member" | undefined,
             subscriptionStatus: "active",
             stripeCustomerId: `cus_${tier}_yearly`,
             billingInterval: "yearly",

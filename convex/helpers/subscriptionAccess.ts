@@ -19,8 +19,6 @@ export function canViewFullContent(member: Doc<"members"> | null | undefined): b
   // Early return for unauthenticated users
   if (!member) return false;
   
-  // Block members who haven't completed onboarding
-  if (member.status === "pending_onboarding") return false;
   
   // Check subscription status first - active subscriptions get priority evaluation
   if (member.subscriptionStatus !== "active") {
@@ -163,16 +161,13 @@ export async function findMemberByEmail(
   email: string
 ): Promise<Doc<"members"> | null> {
   // Look for member with this email
-  // Include both active and pending_onboarding members
+  // Only include active members
   const members = await ctx.db
     .query("members")
     .filter((q) => 
       q.and(
         q.eq(q.field("email"), email),
-        q.or(
-          q.eq(q.field("status"), "active"),
-          q.eq(q.field("status"), "pending_onboarding")
-        )
+        q.eq(q.field("status"), "active")
       )
     )
     .collect();
@@ -197,5 +192,5 @@ export function isGuestMember(member: Doc<"members"> | null | undefined): boolea
   return !member.externalId && 
          !!member.email && 
          !!member.stripeCustomerId &&
-         (member.status === "active" || member.status === "pending_onboarding");
+         member.status === "active";
 }

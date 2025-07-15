@@ -1,5 +1,17 @@
 # Post-Migration Reactivation Architecture
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture Principles](#architecture-principles)
+- [Reactivation Flow](#reactivation-flow)
+- [Stripe Configuration](#stripe-configuration)
+- [Implementation Steps](#implementation-steps)
+- [Testing Checklist](#testing-checklist)
+- [Deployment Plan](#deployment-plan)
+- [Monitoring](#monitoring)
+- [Maintenance](#maintenance)
+
 ## Overview
 
 This document outlines the architecture for the post-migration reactivation system where all imported members start with expired subscriptions and need to reactivate their accounts.
@@ -110,6 +122,8 @@ await simulateFullMigration();
 - [ ] Access control respects new states
 
 ## 🚀 Deployment Plan
+
+This section outlines the phased deployment plan for the post-migration reactivation system. Each phase includes key actions and considerations.
 
 ### Phase 1: Setup (Pre-Migration)
 1. Create all Stripe products and prices
