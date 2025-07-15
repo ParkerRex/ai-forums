@@ -1,46 +1,46 @@
 # Implementation Plan
 
-- [x] 1. Set up Discord infrastructure and dependencies
+- [ ] 1. Set up Discord infrastructure and dependencies
   - Install discord.js SDK package and configure environment variables
   - Set up bot token configuration in Convex environment
   - Create basic Discord API connection utilities with error handling
   - _Requirements: 5.1, 5.2, 5.3_
 
-- [x] 2. Extend news source type system for Discord integration
+- [ ] 2. Extend news source type system for Discord integration
   - Update SourceType union in features/news/utils/news-sources/types.ts to include "discord"
   - Create DiscordNewsSource interface extending NewsSource with guildId and channels properties
   - Update fetchers record in features/news/utils/news-sources/index.ts to include discord fetcher
   - _Requirements: 3.2, 3.3_
 
-- [x] 3. Implement Discord message fetching and processing
-  - Create features/news/utils/news-sources/discord.ts with fetchItems function
-  - Implement Discord API client to fetch messages from previous day
-  - Add message ranking logic based on reaction count with chronological fallback
-  - Transform Discord messages to NewsItem interface format
+- [ ] 3. Implement Discord message fetching and processing
+  - ✅ Create features/news/utils/news-sources/discord.ts with fetchItems function (NEEDS REFACTOR: change from live API to database reads)
+  - ✅ Implement Discord API client to fetch messages from previous day (PRESERVE: move to scheduled processing)
+  - ✅ Add message ranking logic based on reaction count with chronological fallback (PRESERVE: move to archive processing)
+  - ✅ Transform Discord messages to NewsItem interface format (PRESERVE: use in both archive processing and user queries)
   - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [x] 4. Create Discord-specific Convex backend functions
+- [ ] 4. Create Discord-specific Convex backend functions
   - Create convex/discord.ts with fetchDiscordMessages action
   - Implement getDiscordDigest action for Discord-only content retrieval
   - Add proper error handling and rate limiting for Discord API calls
   - Integrate with existing Exa summarization system for message content
   - _Requirements: 2.5, 3.4, 6.1, 6.2_
 
-- [x] 5. Implement user preference management for Discord sources
+- [ ] 5. Implement user preference management for Discord sources
   - Create convex/newsFeedSources.ts with Discord preference storage functions
   - Add updateDiscordPreferences mutation for enabling/disabling Discord digest
   - Add getDiscordPreferences query for retrieving user Discord settings
   - Extend member schema newsPreferences to include Discord configuration
   - _Requirements: 1.2, 1.3_
 
-- [x] 6. Integrate Discord source into existing news feed system
+- [ ] 6. Integrate Discord source into existing news feed system
   - Update convex/newsFeed.ts to include Discord source when user has it enabled
   - Modify news feed caching to handle Discord data with existing patterns
   - Ensure Discord integration preserves existing news feed functionality
   - Add fallback logic when Discord API is unavailable
   - _Requirements: 3.1, 3.4, 6.1_
 
-- [x] 7. Create Discord-specific React hook for dedicated page
+- [ ] 7. Create Discord-specific React hook for dedicated page
   - Create hooks/use-discord-digest.ts for Discord-only data fetching
   - Implement loading states, error handling, and manual refresh functionality
   - Add proper TypeScript types and error state management

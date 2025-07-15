@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Discord Daily Digest Integration extends the existing Phase 0 news feed infrastructure to include Discord messages from the VAI VEX Discord server. The system will fetch messages from the previous day, rank them by reaction count, and seamlessly integrate them into the existing news feed architecture. This design leverages the established modular source system, dual-layer caching, and user preference management while adding Discord-specific functionality.
+The Discord Daily Digest Integration extends the existing Phase 0 news feed infrastructure to include Discord messages from the VAI VEX Discord server. The system uses an archive-based approach where a scheduled process collects, processes, and stores yesterday's Discord messages in the database. Users then read from this pre-processed archive rather than fetching live data from Discord. This design provides better performance, reliability, and user experience while leveraging the established modular source system and user preference management.
 
 ## Architecture
 
@@ -27,6 +27,17 @@ graph TB
         SourcesAPI[convex/newsFeedSources.ts]
     end
     
+    subgraph "Database Layer"
+        DiscordArchive[(discordDigest Table)]
+        NewsFeedCache[(newsFeedCache Table)]
+        Members[(members Table)]
+    end
+    
+    subgraph "Scheduled Processing"
+        CronJob[Daily Cron Job]
+        Processor[Discord Message Processor]
+    end
+    
     subgraph "Source Layer"
         DiscordSource[discord.ts]
         ExistingSources[Other Sources]
@@ -42,76 +53,157 @@ graph TB
     DiscordPage --> DiscordHook
     NewsFeedHook --> NewsFeedAPI
     DiscordHook --> DiscordAPI
+    
+    NewsFeedAPI --> DiscordArchive
+    DiscordAPI --> DiscordArchive
+    SourcesAPI --> Members
+    
+    CronJob --> Processor
+    Processor --> DiscordBot
+    Processor --> ExaAPI
+    Processor --> DiscordArchive
+    
     NewsFeedAPI --> DiscordSource
-    DiscordSource --> DiscordBot
-    DiscordSource --> ExaAPI
+    DiscordSource --> DiscordArchive
 ```
 
 ### Integration with Existing Architecture
 
-The design builds upon the established Phase 0 infrastructure:
+The archive-based design builds upon the established Phase 0 infrastructure:
 
 - **Modular Source System**: Discord becomes a new source type in `features/news/utils/news-sources/`
-- **Dual-Layer Caching**: Discord data uses existing `newsFeedCache` table and localStorage patterns
+- **Database Storage**: New `discordDigest` table stores processed messages alongside existing tables
+- **Scheduled Processing**: Uses Convex cron jobs for daily message collection and processing
 - **User Preferences**: Extends existing news preferences system in member schema
 - **NewsItem Interface**: Discord messages conform to existing `NewsItem` structure
 - **Error Handling**: Follows established patterns for graceful degradation
+
+### Archive-Based Processing Flow
+
+1. **Daily Collection**: Cron job runs at 6 AM UTC to collect previous day's messages
+2. **Processing Pipeline**: Messages are ranked, summarized, and transformed
+3. **Database Storage**: Processed messages stored in `discordDigest` table
+4. **User Consumption**: Users read from pre-processed archive, not live Discord API
 
 ## Components and Interfaces
 
 ### Core Components
 
-#### 1. Discord Source Module (`features/news/utils/news-sources/discord.ts`)
+#### 1. Discord Archive Schema (`convex/schema.ts`)
 
 ```typescript
-export interface DiscordMessage {
-  id: string;
-  content: string;
-  author: {
-    id: string;
-    username: string;
-    avatar?: string;
-  };
-  timestamp: string;
-  reactions: Array<{
-    emoji: string;
-    count: number;
-  }>;
-  channelId: string;
-  channelName: string;
-}
+// New table for storing processed Discord messages
+discordDigest: defineTable({
+  messageId: v.string(), // Discord message ID
+  content: v.string(),
+  author: v.object({
+    id: v.string(),
+    username: v.string(),
+    avatar: v.optional(v.string()),
+  }),
+  timestamp: v.number(), // Unix timestamp
+  reactions: v.array(v.object({
+    emoji: v.string(),
+    count: v.number(),
+  })),
+  channelId: v.string(),
+  channelName: v.string(),
+  reactionScore: v.number(), // Pre-calculated for sorting
+  summary: v.optional(v.string()), // AI-generated summary
+  digestDate: v.string(), // YYYY-MM-DD format for the digest day
+  processedAt: v.number(), // When this was processed
+})
+.index("by_digest_date", ["digestDate"])
+.index("by_reaction_score", ["digestDate", "reactionScore"])
+.index("by_message_id", ["messageId"]);
+```
 
+#### 2. Discord Source Module (`features/news/utils/news-sources/discord.ts`)
+
+```typescript
 export interface DiscordSourceConfig extends NewsSource {
   type: "discord";
   guildId: string;
   channels?: string[]; // Optional channel filtering
 }
 
-export async function fetchItems(source: DiscordSourceConfig): Promise<RawItem[]>
+// Reads from database archive instead of live Discord API
+export async function fetchItems(source: DiscordSourceConfig): Promise<RawItem[]> {
+  // Fetch from discordDigest table, not Discord API
+  const digestEntries = await ctx.db
+    .query("discordDigest")
+    .withIndex("by_digest_date", (q) => q.eq("digestDate", getYesterdayDate()))
+    .order("desc")
+    .take(50);
+    
+  return digestEntries.map(transformDigestToRawItem);
+}
 ```
 
-#### 2. Discord API Integration (`convex/discord.ts`)
+#### 3. Discord Processing & Archive API (`convex/discord.ts`)
 
 ```typescript
-export const fetchDiscordMessages = action({
+// Scheduled action to collect and process Discord messages
+export const processDiscordDigest = action({
   args: {
-    guildId: v.string(),
-    channels: v.optional(v.array(v.string())),
-    since: v.number(), // Unix timestamp for "yesterday"
+    targetDate: v.string(), // YYYY-MM-DD format
   },
-  handler: async (ctx, args): Promise<DiscordMessage[]>
+  handler: async (ctx, args) => {
+    // 1. Fetch messages from Discord API for target date
+    const messages = await fetchDiscordMessagesFromAPI(args.targetDate);
+    
+    // 2. Process and rank messages
+    const processedMessages = await processMessages(messages);
+    
+    // 3. Store in discordDigest table
+    await storeProcessedMessages(ctx, processedMessages, args.targetDate);
+  }
 });
 
-export const getDiscordDigest = action({
+// Query to get archived Discord digest for users
+export const getDiscordDigest = query({
   args: {
-    userId: v.optional(v.id("members")),
+    digestDate: v.optional(v.string()), // Defaults to yesterday
     limit: v.optional(v.number()),
+    userId: v.optional(v.id("members")),
   },
-  handler: async (ctx, args): Promise<NewsItem[]>
+  handler: async (ctx, args) => {
+    const targetDate = args.digestDate || getYesterdayDateString();
+    
+    return await ctx.db
+      .query("discordDigest")
+      .withIndex("by_reaction_score", (q) => 
+        q.eq("digestDate", targetDate)
+      )
+      .order("desc")
+      .take(args.limit || 50);
+  }
 });
+
+// Internal helper to fetch from Discord API
+async function fetchDiscordMessagesFromAPI(targetDate: string): Promise<DiscordMessage[]> {
+  // Discord API integration logic
+}
+
+// Internal helper to process and rank messages
+async function processMessages(messages: DiscordMessage[]): Promise<ProcessedDiscordMessage[]> {
+  // Ranking, summarization, and processing logic
+}
 ```
 
-#### 3. User Preferences Storage (`convex/newsFeedSources.ts`)
+#### 4. Scheduled Processing (`convex/crons.ts`)
+
+```typescript
+// Daily cron job to process Discord messages
+export const processDiscordDigest = cron(
+  "process discord digest",
+  "0 6 * * *", // 6 AM UTC daily
+  internal.discord.processDiscordDigest,
+  { targetDate: getYesterdayDateString() }
+);
+```
+
+#### 5. User Preferences Storage (`convex/newsFeedSources.ts`)
 
 ```typescript
 export const updateDiscordPreferences = mutation({
@@ -192,12 +284,21 @@ newsPreferences: v.optional(v.object({
 
 ## Data Models
 
-### Discord Message Processing Flow
+### Archive-Based Processing Flow
 
-1. **Raw Discord Message** → **Processed Message** → **NewsItem**
-2. **Reaction Ranking**: Sort by total reaction count (descending)
-3. **Content Summarization**: Use existing Exa API for message summaries
-4. **Deduplication**: Prevent duplicate messages across refreshes
+1. **Daily Collection**: Cron job fetches raw Discord messages from API
+2. **Processing Pipeline**: Messages are ranked, summarized, and deduplicated
+3. **Database Storage**: Processed messages stored in `discordDigest` table
+4. **User Consumption**: Frontend reads from database archive, not Discord API
+
+### Database Schema Design
+
+The `discordDigest` table serves as the central archive with optimized indexes:
+
+- **Primary Storage**: All processed Discord messages with metadata
+- **Indexing Strategy**: Optimized for date-based queries and reaction ranking
+- **Data Retention**: Messages stored indefinitely for historical access
+- **Deduplication**: Unique constraint on `messageId` prevents duplicates
 
 ### Message Ranking Algorithm
 
@@ -250,20 +351,29 @@ function transformDiscordToNewsItem(message: DiscordMessage): NewsItem {
 ### Error Recovery Patterns
 
 ```typescript
-async function fetchDiscordWithFallback(): Promise<NewsItem[]> {
+// Archive-based error handling focuses on processing failures
+async function processDiscordDigestWithFallback(targetDate: string): Promise<void> {
   try {
-    return await fetchDiscordMessages();
+    await processDiscordDigest({ targetDate });
   } catch (error) {
-    console.error('Discord fetch failed:', error);
+    console.error('Discord digest processing failed:', error);
     
-    // Try cached data
-    const cached = await getCachedDiscordData();
-    if (cached && !isExpired(cached)) {
-      return cached.data;
-    }
+    // Log failure for monitoring
+    await logProcessingFailure(targetDate, error);
     
-    // Return empty array to not break news feed
-    return [];
+    // Don't throw - let other cron jobs continue
+    // Users will see previous day's data or empty state
+  }
+}
+
+// User-facing queries always succeed with graceful fallback
+async function getDiscordDigestWithFallback(digestDate: string): Promise<NewsItem[]> {
+  try {
+    const digest = await getDiscordDigest({ digestDate });
+    return digest || [];
+  } catch (error) {
+    console.error('Failed to fetch Discord digest:', error);
+    return []; // Always return empty array, never throw
   }
 }
 ```
