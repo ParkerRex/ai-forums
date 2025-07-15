@@ -26,7 +26,7 @@
   - Integrate with existing Exa summarization system for message content
   - _Requirements: 2.5, 3.4, 6.1, 6.2_
 
-- [ ] 5. Implement user preference management for Discord sources
+- [x] 5. Implement user preference management for Discord sources
   - Create convex/newsFeedSources.ts with Discord preference storage functions
   - Add updateDiscordPreferences mutation for enabling/disabling Discord digest
   - Add getDiscordPreferences query for retrieving user Discord settings

@@ -161,7 +161,7 @@ describe('Discord Convex Functions', () => {
       delete process.env.DISCORD_GUILD_ID;
 
       expect(() => {
-        const guildId = undefined || process.env.DISCORD_GUILD_ID;
+        const guildId = process.env.DISCORD_GUILD_ID;
         if (!guildId) {
           throw new Error("Discord guild ID not provided");
         }
