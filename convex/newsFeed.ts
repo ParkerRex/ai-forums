@@ -59,6 +59,28 @@ function summarizeText(text: string): string {
   return trimmed.substring(0, cutoff).trim() + '...';
 }
 
+// Helper to create meaningful titles for Discord messages
+function createDiscordMessageTitle(entry: any): string {
+  const maxContentLength = 100;
+  const reactionCount = entry.reactionScore || 0;
+  
+  // If message has content, use it (truncated)
+  if (entry.content && entry.content.trim()) {
+    const truncatedContent = entry.content.length > maxContentLength 
+      ? `${entry.content.substring(0, maxContentLength)}...`
+      : entry.content;
+    
+    // Add reaction indicator if there are reactions
+    const reactionIndicator = reactionCount > 0 ? ` (${reactionCount} reactions)` : '';
+    
+    return `${entry.author.username}: ${truncatedContent}${reactionIndicator}`;
+  }
+  
+  // Fallback title for messages without content (e.g., media only)
+  const reactionIndicator = reactionCount > 0 ? ` with ${reactionCount} reactions` : '';
+  return `${entry.author.username} in #${entry.channelName}${reactionIndicator}`;
+}
+
 // Fetch news from Exa API
 async function fetchFromExaAPI(
   query: string,
@@ -215,15 +237,24 @@ export const get = action({
         yesterday.setDate(yesterday.getDate() - 1);
         yesterday.setHours(0, 0, 0, 0);
 
-        // Fetch Discord messages using the Discord API
+        // Fetch Discord digest from database archive
         // Requirements: 6.1 - Add fallback logic when Discord API is unavailable
-        const discordItems = await ctx.runAction(api.discord.getDiscordDigest, {
-          userId,
+        const discordDigestEntries = await ctx.runQuery(api.discord.getDiscordDigest, {
           limit: MAX_ITEMS_PER_SOURCE,
         });
 
-        // Add Discord items to the news feed
-        allArticles.push(...discordItems);
+        // Transform Discord digest entries to NewsItem format
+        for (const entry of discordDigestEntries) {
+          const discordItem: NewsItem = {
+            title: createDiscordMessageTitle(entry),
+            url: `https://discord.com/channels/${process.env.DISCORD_GUILD_ID || "1355280592962453585"}/${entry.channelId}/${entry.messageId}`,
+            publishedDate: new Date(entry.timestamp).toISOString(),
+            author: entry.author.username,
+            summary: entry.summary || (entry.content.length > 150 ? `${entry.content.substring(0, 150)}...` : entry.content),
+            source: "Discord",
+          };
+          allArticles.push(discordItem);
+        }
         
       } catch (error) {
         console.error(`Failed to fetch Discord messages: ${error}`);
