@@ -9,12 +9,12 @@ import { Button } from "@/components/ui/button";
 
 /**
  * ActivateSubscriptionBanner - Consolidated banner for subscription activation
- * 
+ *
  * Shows for:
  * - Churned customers (expired/cancelled subscriptions)
  * - Migrated members without Stripe accounts
  * - Members approaching billing cycle (5 days before)
- * 
+ *
  * Features:
  * - Tier-specific pricing and messaging
  * - Personalized with customer name
@@ -24,14 +24,18 @@ import { Button } from "@/components/ui/button";
 export function ActivateSubscriptionBanner() {
   const router = useRouter();
   const currentMember = useQuery(api.auth.current);
-  const createCheckoutSession = useMutation(api.stripe.checkout.createCheckoutSession);
-  
+  const createCheckoutSession = useMutation(
+    api.stripe.checkout.createCheckoutSession,
+  );
+
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
 
   // Check if banner was dismissed in localStorage
   useEffect(() => {
-    const dismissedUntil = localStorage.getItem("activateSubscriptionBannerDismissedUntil");
+    const dismissedUntil = localStorage.getItem(
+      "activateSubscriptionBannerDismissedUntil",
+    );
     if (dismissedUntil && new Date(dismissedUntil) > new Date()) {
       setIsVisible(false);
     }
@@ -44,18 +48,18 @@ export function ActivateSubscriptionBanner() {
   const getNextBillingDate = (joinedDate: number): Date => {
     const joined = new Date(joinedDate);
     const now = new Date();
-    
+
     // Get the day of month from joined date
     const billingDay = joined.getDate();
-    
+
     // Start with current month
     let nextBilling = new Date(now.getFullYear(), now.getMonth(), billingDay);
-    
+
     // If billing date already passed this month, move to next month
     if (nextBilling <= now) {
       nextBilling = new Date(now.getFullYear(), now.getMonth() + 1, billingDay);
     }
-    
+
     return nextBilling;
   };
 
@@ -69,17 +73,24 @@ export function ActivateSubscriptionBanner() {
     if (currentMember.subscriptionStatus === "active") return false;
 
     // Always show for expired/cancelled (churned customers)
-    if (currentMember.subscriptionStatus === "expired" || 
-        currentMember.subscriptionStatus === "cancelled") {
+    if (
+      currentMember.subscriptionStatus === "expired" ||
+      currentMember.subscriptionStatus === "cancelled"
+    ) {
       return true;
     }
 
     // For members without subscriptions (migrated), check grace period
-    if (currentMember.subscriptionStatus === "none" || !currentMember.subscriptionStatus) {
+    if (
+      currentMember.subscriptionStatus === "none" ||
+      !currentMember.subscriptionStatus
+    ) {
       const nextBilling = getNextBillingDate(currentMember.joinedDate);
       const now = new Date();
-      const daysUntilBilling = Math.ceil((nextBilling.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-      
+      const daysUntilBilling = Math.ceil(
+        (nextBilling.getTime() - now.getTime()) / (1000 * 60 * 60 * 24),
+      );
+
       // Show banner 5 days before billing
       return daysUntilBilling <= 5;
     }
@@ -98,15 +109,13 @@ export function ActivateSubscriptionBanner() {
           monthlyPrice: 39,
           yearlyPrice: 375,
           badge: "Forever Price",
-          color: "bg-purple-500"
         };
       case "early_bird":
         return {
-          name: "Early Bird", 
+          name: "Early Bird",
           monthlyPrice: 50,
           yearlyPrice: 480,
           badge: "Grandfathered",
-          color: "bg-blue-500"
         };
       default:
         return {
@@ -114,7 +123,6 @@ export function ActivateSubscriptionBanner() {
           monthlyPrice: 99,
           yearlyPrice: 950,
           badge: null,
-          color: "bg-primary"
         };
     }
   };
@@ -124,7 +132,7 @@ export function ActivateSubscriptionBanner() {
    */
   const getMessage = () => {
     if (!currentMember) return "";
-    
+
     const firstName = currentMember.firstName || "there";
     const tierInfo = getTierInfo();
 
@@ -137,7 +145,9 @@ export function ActivateSubscriptionBanner() {
     } else {
       // For migrated members approaching billing
       const nextBilling = getNextBillingDate(currentMember.joinedDate);
-      const daysUntil = Math.ceil((nextBilling.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+      const daysUntil = Math.ceil(
+        (nextBilling.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
+      );
       return `Hey ${firstName}! Your ${tierInfo.name} billing starts in ${daysUntil} days`;
     }
   };
@@ -147,14 +157,18 @@ export function ActivateSubscriptionBanner() {
    */
   const handleActivate = async () => {
     if (!currentMember) return;
-    
+
     try {
       setIsCreatingSession(true);
 
       // Get the appropriate price ID for the member's tier
-      const tier = currentMember.tier === "founding_member" ? "founding_member" :
-                   currentMember.tier === "early_bird" ? "early_bird" : "member";
-      
+      const tier =
+        currentMember.tier === "founding_member"
+          ? "founding_member"
+          : currentMember.tier === "early_bird"
+            ? "early_bird"
+            : "member";
+
       // Use member tier pricing for now (you'll set up tier-specific pricing)
       const priceId = process.env.NEXT_PUBLIC_STRIPE_MEMBER_MONTHLY_PRICE_ID!;
 
@@ -180,7 +194,10 @@ export function ActivateSubscriptionBanner() {
   const handleDismiss = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    localStorage.setItem("activateSubscriptionBannerDismissedUntil", tomorrow.toISOString());
+    localStorage.setItem(
+      "activateSubscriptionBannerDismissedUntil",
+      tomorrow.toISOString(),
+    );
     setIsVisible(false);
   };
 
@@ -192,26 +209,26 @@ export function ActivateSubscriptionBanner() {
   const tierInfo = getTierInfo();
 
   return (
-    <div className="w-full bg-orange-50 border-b border-orange-200 dark:bg-orange-950/20 dark:border-orange-800/30">
+    <div className="border-border bg-muted/50 w-full border-b">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4 py-3">
-          <div className="flex items-center gap-6">
+        <div className="relative flex items-center justify-center gap-4 py-3">
+          <div className="flex items-center gap-4">
             <div className="flex items-center gap-3">
               {tierInfo.badge && (
-                <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold text-white ${tierInfo.color}`}>
+                <span className="bg-background text-foreground inline-flex items-center rounded-md border px-2 py-0.5 text-xs font-medium">
                   {tierInfo.badge}
                 </span>
               )}
-              <p className="text-sm font-medium text-orange-800 dark:text-orange-200">
+              <p className="text-foreground text-sm font-medium">
                 {getMessage()}
               </p>
             </div>
-            
+
             <Button
               onClick={handleActivate}
               disabled={isCreatingSession}
               size="sm"
-              className="bg-orange-600 hover:bg-orange-700 text-white whitespace-nowrap"
+              className="whitespace-nowrap"
             >
               {isCreatingSession ? "Loading..." : "Reactivate Pro"}
             </Button>
@@ -221,7 +238,7 @@ export function ActivateSubscriptionBanner() {
             variant="ghost"
             size="sm"
             onClick={handleDismiss}
-            className="h-6 w-6 p-0 text-orange-600 hover:text-orange-700 hover:bg-orange-100 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-900/20"
+            className="text-muted-foreground hover:text-foreground absolute right-0 h-6 w-6 p-0"
             aria-label="Dismiss banner for 24 hours"
           >
             <X className="h-4 w-4" />
