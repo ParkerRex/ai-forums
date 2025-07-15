@@ -19,7 +19,7 @@
   - Transform Discord messages to NewsItem interface format
   - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [ ] 4. Create Discord-specific Convex backend functions
+- [x] 4. Create Discord-specific Convex backend functions
   - Create convex/discord.ts with fetchDiscordMessages action
   - Implement getDiscordDigest action for Discord-only content retrieval
   - Add proper error handling and rate limiting for Discord API calls
