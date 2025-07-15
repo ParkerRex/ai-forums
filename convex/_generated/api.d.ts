@@ -33,6 +33,7 @@ import type * as deduplication from "../deduplication.js";
 import type * as events from "../events.js";
 import type * as github from "../github.js";
 import type * as helpers_access from "../helpers/access.js";
+import type * as helpers_subscription_access from "../helpers/subscription-access.js";
 import type * as linkPreview from "../linkPreview.js";
 import type * as linkPreviews from "../linkPreviews.js";
 import type * as locationHelpers from "../locationHelpers.js";
@@ -53,6 +54,7 @@ import type * as migrations_importMemberBilling from "../migrations/importMember
 import type * as migrations_linkGuestAccounts from "../migrations/linkGuestAccounts.js";
 import type * as migrations_migrate_post_attachments from "../migrations/migrate_post_attachments.js";
 import type * as migrations_populatePaymentFields from "../migrations/populatePaymentFields.js";
+import type * as migrations_testReactivation from "../migrations/testReactivation.js";
 import type * as migrations_verifyImport from "../migrations/verifyImport.js";
 import type * as news from "../news.js";
 import type * as newsFeed from "../newsFeed.js";
@@ -106,6 +108,7 @@ declare const fullApi: ApiFromModules<{
   events: typeof events;
   github: typeof github;
   "helpers/access": typeof helpers_access;
+  "helpers/subscription-access": typeof helpers_subscription_access;
   linkPreview: typeof linkPreview;
   linkPreviews: typeof linkPreviews;
   locationHelpers: typeof locationHelpers;
@@ -126,6 +129,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/linkGuestAccounts": typeof migrations_linkGuestAccounts;
   "migrations/migrate_post_attachments": typeof migrations_migrate_post_attachments;
   "migrations/populatePaymentFields": typeof migrations_populatePaymentFields;
+  "migrations/testReactivation": typeof migrations_testReactivation;
   "migrations/verifyImport": typeof migrations_verifyImport;
   news: typeof news;
   newsFeed: typeof newsFeed;

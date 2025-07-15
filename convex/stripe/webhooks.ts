@@ -312,11 +312,14 @@ async function handleCheckoutSessionCompleted(
     return;
   }
 
+  // Check if this is a scholarship subscription
+  const isScholarship = session.metadata?.isScholarship === "true";
+
   // Update member with subscription info
   await ctx.db.patch(memberId, {
     stripeCustomerId: session.customer as string,
     stripeSubscriptionId: session.subscription as string,
-    tier: session.metadata?.tier as Doc<"members">["tier"],
+    tier: isScholarship ? "scholarship" : (session.metadata?.tier as Doc<"members">["tier"]),
     billingInterval: session.metadata?.billingInterval as Doc<"members">["billingInterval"],
     subscriptionStatus: "active",
   });

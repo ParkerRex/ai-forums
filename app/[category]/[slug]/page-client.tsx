@@ -22,7 +22,7 @@ import { Authenticated, Unauthenticated } from "convex/react";
 import PostDetail from "@/components/posts/post-detail";
 import { PostDeleteModal } from "@/components/posts/post-delete-modal";
 import { PostHistoryModal } from "@/components/posts/post-history-modal";
-import { ReactivateBannerInline } from "@/components/payments/reactivate-banner-inline";
+
 import { PostPaywallDirect } from "@/components/posts/post-paywall-direct";
 import React from "react";
 import { useQuery } from "convex/react";
@@ -98,7 +98,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   // Query to check if the current user can view the full content
   const canViewPost = useQuery(
     api.posts.canUserViewPost,
-    post?._id ? { postId: post._id } : "skip"
+    post?._id ? { postId: post._id } : "skip",
   );
 
   // Debug logging for development (consider removing in production)
@@ -152,9 +152,9 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   // Show user-friendly error message instead of breaking the app
   if (!hasValidParams) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+          <h1 className="text-foreground mb-4 text-2xl font-bold">
             Invalid URL
           </h1>
           <p className="text-muted-foreground">The URL format is invalid.</p>
@@ -167,69 +167,69 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   // In Convex, undefined means loading, null means not found
   if (post === undefined) {
     return (
-      <div className="max-w-4xl mx-auto px-4 py-8">
+      <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Post header skeleton */}
         <div className="mb-6">
           {/* Category badge and metadata */}
-          <div className="flex items-center gap-2 mb-4">
-            <div className="h-6 bg-muted rounded-full w-20 animate-pulse" />
-            <div className="h-4 bg-muted rounded w-48 animate-pulse" />
+          <div className="mb-4 flex items-center gap-2">
+            <div className="bg-muted h-6 w-20 animate-pulse rounded-full" />
+            <div className="bg-muted h-4 w-48 animate-pulse rounded" />
           </div>
-          
+
           {/* Post title */}
-          <div className="h-10 bg-muted rounded mb-4 animate-pulse" />
-          
+          <div className="bg-muted mb-4 h-10 animate-pulse rounded" />
+
           {/* Author and voting section */}
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="w-10 h-10 bg-muted rounded-full animate-pulse" />
+              <div className="bg-muted h-10 w-10 animate-pulse rounded-full" />
               <div>
-                <div className="h-4 bg-muted rounded w-32 animate-pulse mb-2" />
-                <div className="h-3 bg-muted rounded w-24 animate-pulse" />
+                <div className="bg-muted mb-2 h-4 w-32 animate-pulse rounded" />
+                <div className="bg-muted h-3 w-24 animate-pulse rounded" />
               </div>
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-muted rounded animate-pulse" />
-              <div className="h-6 bg-muted rounded w-12 animate-pulse" />
+              <div className="bg-muted h-8 w-8 animate-pulse rounded" />
+              <div className="bg-muted h-6 w-12 animate-pulse rounded" />
             </div>
           </div>
         </div>
-        
+
         {/* Post content skeleton */}
-        <div className="space-y-4 mb-8">
-          <div className="h-4 bg-muted rounded animate-pulse" />
-          <div className="h-4 bg-muted rounded animate-pulse" />
-          <div className="h-4 bg-muted rounded w-5/6 animate-pulse" />
-          <div className="h-32 bg-muted rounded animate-pulse my-6" />
-          <div className="h-4 bg-muted rounded animate-pulse" />
-          <div className="h-4 bg-muted rounded w-4/5 animate-pulse" />
-          <div className="h-4 bg-muted rounded animate-pulse" />
+        <div className="mb-8 space-y-4">
+          <div className="bg-muted h-4 animate-pulse rounded" />
+          <div className="bg-muted h-4 animate-pulse rounded" />
+          <div className="bg-muted h-4 w-5/6 animate-pulse rounded" />
+          <div className="bg-muted my-6 h-32 animate-pulse rounded" />
+          <div className="bg-muted h-4 animate-pulse rounded" />
+          <div className="bg-muted h-4 w-4/5 animate-pulse rounded" />
+          <div className="bg-muted h-4 animate-pulse rounded" />
         </div>
-        
+
         {/* Action buttons skeleton */}
-        <div className="flex items-center justify-between py-4 border-t border-b mb-8">
+        <div className="mb-8 flex items-center justify-between border-b border-t py-4">
           <div className="flex items-center space-x-4">
-            <div className="h-9 bg-muted rounded w-20 animate-pulse" />
-            <div className="h-9 bg-muted rounded w-24 animate-pulse" />
+            <div className="bg-muted h-9 w-20 animate-pulse rounded" />
+            <div className="bg-muted h-9 w-24 animate-pulse rounded" />
           </div>
           <div className="flex items-center space-x-2">
-            <div className="w-9 h-9 bg-muted rounded animate-pulse" />
-            <div className="w-9 h-9 bg-muted rounded animate-pulse" />
+            <div className="bg-muted h-9 w-9 animate-pulse rounded" />
+            <div className="bg-muted h-9 w-9 animate-pulse rounded" />
           </div>
         </div>
-        
+
         {/* Comments section skeleton */}
         <div>
-          <div className="h-6 bg-muted rounded w-32 animate-pulse mb-4" />
+          <div className="bg-muted mb-4 h-6 w-32 animate-pulse rounded" />
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="border rounded-lg p-4">
+              <div key={i} className="rounded-lg border p-4">
                 <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 bg-muted rounded-full animate-pulse" />
+                  <div className="bg-muted h-8 w-8 animate-pulse rounded-full" />
                   <div className="flex-1">
-                    <div className="h-4 bg-muted rounded w-24 animate-pulse mb-2" />
-                    <div className="h-3 bg-muted rounded animate-pulse mb-1" />
-                    <div className="h-3 bg-muted rounded w-4/5 animate-pulse" />
+                    <div className="bg-muted mb-2 h-4 w-24 animate-pulse rounded" />
+                    <div className="bg-muted mb-1 h-3 animate-pulse rounded" />
+                    <div className="bg-muted h-3 w-4/5 animate-pulse rounded" />
                   </div>
                 </div>
               </div>
@@ -258,17 +258,16 @@ export default function PostPageClient({ params }: PostPageClientProps) {
 
   return (
     <>
-      <ReactivateBannerInline />
-      <div className="max-w-4xl mx-auto px-4 py-8 space-y-8">
+      <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
         {/* Authenticated User Experience */}
         <Authenticated>
           {canViewPost === undefined ? (
             // Loading state while checking access
             <div className="animate-pulse space-y-4">
-              <div className="h-8 bg-muted rounded w-3/4" />
-              <div className="h-4 bg-muted rounded w-full" />
-              <div className="h-4 bg-muted rounded w-full" />
-              <div className="h-4 bg-muted rounded w-2/3" />
+              <div className="bg-muted h-8 w-3/4 rounded" />
+              <div className="bg-muted h-4 w-full rounded" />
+              <div className="bg-muted h-4 w-full rounded" />
+              <div className="bg-muted h-4 w-2/3 rounded" />
             </div>
           ) : canViewPost === true ? (
             <>
@@ -311,15 +310,18 @@ export default function PostPageClient({ params }: PostPageClientProps) {
             <div className="space-y-6">
               {/* Post Header */}
               <div className="border-b pb-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/10 text-primary"
+                    >
                       {post.category?.displayName || "General"}
                     </Badge>
                   </div>
                 </div>
-                <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
+                <div className="text-muted-foreground flex items-center space-x-4 text-sm">
                   <span>
                     by {post.member?.firstName} {post.member?.lastName}
                   </span>
@@ -332,18 +334,15 @@ export default function PostPageClient({ params }: PostPageClientProps) {
 
               {/* Preview Content with Paywall */}
               <div className="relative">
-                <div className="prose prose-lg max-w-none post-content">
+                <div className="prose prose-lg post-content max-w-none">
                   <div className="text-foreground leading-relaxed">
                     {/* Show preview if available, otherwise fallback to truncated content */}
                     {post.preview || post.content?.substring(0, 200) + "..."}
                   </div>
                 </div>
-                
+
                 {/* Direct Paywall */}
-                <PostPaywallDirect 
-                  postId={post._id}
-                  postTitle={post.title}
-                />
+                <PostPaywallDirect postId={post._id} postTitle={post.title} />
               </div>
             </div>
           )}
@@ -372,15 +371,18 @@ export default function PostPageClient({ params }: PostPageClientProps) {
             <div className="space-y-6">
               {/* Post Header - Same as authenticated but no interaction */}
               <div className="border-b pb-6">
-                <div className="flex items-center justify-between mb-4">
+                <div className="mb-4 flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    <Badge
+                      variant="secondary"
+                      className="bg-primary/10 text-primary"
+                    >
                       {post.category?.displayName || "General"}
                     </Badge>
                   </div>
                 </div>
-                <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-                <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
+                <div className="text-muted-foreground flex items-center space-x-4 text-sm">
                   <span>
                     by {post.member?.firstName} {post.member?.lastName}
                   </span>
@@ -393,18 +395,15 @@ export default function PostPageClient({ params }: PostPageClientProps) {
 
               {/* Preview Content with Overlay */}
               <div className="relative">
-                <div className="prose prose-lg max-w-none post-content">
+                <div className="prose prose-lg post-content max-w-none">
                   <div className="text-foreground leading-relaxed">
                     {/* Show preview if available, otherwise fallback to truncated content */}
                     {post.preview || post.content?.substring(0, 200) + "..."}
                   </div>
                 </div>
-                
+
                 {/* Direct Paywall */}
-                <PostPaywallDirect 
-                  postId={post._id}
-                  postTitle={post.title}
-                />
+                <PostPaywallDirect postId={post._id} postTitle={post.title} />
               </div>
             </div>
           )}

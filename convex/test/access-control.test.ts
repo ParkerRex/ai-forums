@@ -1,9 +1,9 @@
 import { expect, test, describe } from "vitest";
-import { 
-  canViewFullContent, 
-  needsSubscriptionUpgrade, 
-  getSubscriptionStatusMessage 
-} from "../helpers/access";
+import {
+  canViewFullContent,
+  needsSubscriptionUpgrade,
+  getSubscriptionStatusMessage
+} from "../helpers/subscription-access";
 import { Doc, Id } from "../_generated/dataModel";
 
 // Helper function to create a mock member

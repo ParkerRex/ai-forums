@@ -133,10 +133,8 @@ const members = defineTable({
   commentCount: v.optional(v.number()),     // Total comments made by member
   netVoteCount: v.optional(v.number()),     // Net votes received on all content
   
-  // Payment tier tracking
+  // Payment tier tracking (no free tier, scholarships handled via Stripe coupons)
   tier: v.optional(v.union(
-    v.literal("free"),
-    v.literal("scholarship"),
     v.literal("founding_member"),
     v.literal("early_bird"),
     v.literal("member")

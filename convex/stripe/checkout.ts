@@ -111,6 +111,12 @@ export const createCheckoutSession = mutation({
           coupon: args.couponCode,
         },
       ];
+
+      // If using scholarship coupon, mark in metadata
+      if (args.couponCode.toLowerCase().includes('scholarship')) {
+        sessionParams.metadata!.isScholarship = "true";
+        sessionParams.subscription_data!.metadata!.isScholarship = "true";
+      }
     }
 
     // Create the checkout session

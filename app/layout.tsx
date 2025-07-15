@@ -9,8 +9,7 @@ import { NetworkStatusIndicator } from "@/components/error-display";
 import { ThemeProvider } from "@/components/theme-provider";
 import { GlobalSearch } from "@/components/header/global-search";
 import { Footer } from "@/components/header/footer";
-import { ReactivateBannerTop } from "@/components/payments/reactivate-banner-top";
-import { PaymentReminderBanner } from "@/components/payments/payment-reminder-banner";
+import { ActivateSubscriptionBanner } from "@/components/payments/activate-subscription-banner";
 
 // Google fonts
 const monaSans = Mona_Sans({
@@ -26,7 +25,6 @@ const dmMono = DM_Mono({
   weight: "500", // DM Mono has 300, 400, 500 weights
   display: "swap",
 });
-
 
 export const metadata: Metadata = {
   title: "The Place AI Engineers Build Together",
@@ -44,9 +42,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${dmMono.variable} ${monaSans.variable} antialiased`}
-      >
+      <body className={`${dmMono.variable} ${monaSans.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
@@ -55,8 +51,7 @@ export default function RootLayout({
         >
           <ClerkProvider dynamic>
             <ConvexClientProvider>
-              <ReactivateBannerTop />
-              <PaymentReminderBanner />
+              <ActivateSubscriptionBanner />
               <Header />
               <div className="pb-[24px]">{children}</div>
               <Footer />

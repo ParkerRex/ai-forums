@@ -63,7 +63,7 @@ The VAI-VEX platform implements a comprehensive payment system using Stripe for 
 
 ### Key Components
 
-#### Access Control (`convex/helpers/access.ts`)
+#### Access Control (`convex/helpers/subscription-access.ts`)
 ```typescript
 export function canViewFullContent(member: Doc<"members"> | null): boolean
 export function needsSubscriptionUpgrade(member: Doc<"members"> | null): boolean

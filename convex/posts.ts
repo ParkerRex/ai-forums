@@ -25,7 +25,7 @@ import { Id, Doc } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
 import { insertNotification } from "./notifications";
-import { canViewFullContent, canViewPost } from "./helpers/access";
+import { canViewFullContent, canViewPost } from "./helpers/subscription-access";
 import { api } from "./_generated/api";
 
 /**
