@@ -31,7 +31,7 @@ interface LegacyMemberInput {
   firstName: string; // Given name                                                                
   lastName: string;  // Family name                                                               
   joinedDateISO: string; // ISO-8601 string of join timestamp (UTC midnight)                      
-  tier: "member" | "early_bird" | "founding_member" | "scholarship"; // Pricing tier        
+  tier: "member" | "early_bird" | "founding_member"; // Pricing tier        
   amountCents: number; // Subscription amount in cents (0 for scholarship/free)                   
   billingInterval?: "monthly" | "yearly"; // Optional billing interval                         
 }
@@ -97,7 +97,7 @@ const LEGACY_MEMBERS: LegacyMemberInput[] = [
     firstName: "Bazel",                                                                         
     lastName: "Shaw",                                                                           
     joinedDateISO: "2025-03-16T00:00:00Z",                                                     
-    tier: "scholarship",                                                                        
+    tier: "member",                                                                        
     amountCents: 0,                                                                              
   },                                                                                             
 ];                                                                                               
@@ -160,7 +160,7 @@ export const addMissingMembers7_9 = mutation({
         lastOnline: now,            /* Assumed recently online*/                                   
         slug,                       /* Unique URL slug        */                                   
         tier: legacy.tier,          /* Pricing tier           */                                   
-        subscriptionStatus: legacy.tier === "scholarship" ? "none" : "active",               
+        subscriptionStatus: legacy.amountCents === 0 ? "none" : "active",               
         amountCents: legacy.amountCents, /* Subscription price*/                                  
         billingInterval: legacy.billingInterval, /* May be undefined */                           
         stripeCustomerId: "",      /* No Stripe linkage yet   */                                  

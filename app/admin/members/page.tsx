@@ -65,17 +65,9 @@ type SortField =
   | "revenue";
 type SortOrder = "asc" | "desc";
 
+// Note: No free tier - platform operates with zero free users
+// Scholarships handled via Stripe coupons with early_bird tier
 const tierConfig = {
-  free: {
-    label: "Free",
-    color: "bg-muted text-muted-foreground border-muted",
-    price: "$0",
-  },
-  scholarship: {
-    label: "Scholarship",
-    color: "bg-chart-5/10 text-chart-5 border-chart-5/20",
-    price: "$0",
-  },
   founding_member: {
     label: "Founding",
     color: "bg-chart-4/10 text-chart-4 border-chart-4/20",
@@ -135,12 +127,7 @@ export default function AdminMembersPage() {
   const stats = useQuery(api.admin.members.getMembershipStats) as
     | MembershipStats
     | undefined;
-  const grantScholarship = useMutation(
-    api.admin.grantScholarship.grantScholarshipStatus,
-  );
-  const revokeScholarship = useMutation(
-    api.admin.grantScholarship.revokeScholarshipStatus,
-  );
+  // Note: Scholarships now handled via Stripe coupons, not mutations
   const updateRole = useMutation(api.admin.members.updateMemberRole);
 
   // Client-side filtering and sorting
@@ -262,49 +249,52 @@ export default function AdminMembersPage() {
   const SortIcon = ({ field }: { field: SortField }) => {
     if (sortField !== field) return null;
     return sortOrder === "asc" ? (
-      <ChevronUp className="w-4 h-4" />
+      <ChevronUp className="h-4 w-4" />
     ) : (
-      <ChevronDown className="w-4 h-4" />
+      <ChevronDown className="h-4 w-4" />
     );
   };
 
   if (!members || !stats) {
     return (
-      <div className="p-6 max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl p-6">
         {/* Header skeleton */}
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="h-8 bg-muted rounded w-32 animate-pulse mb-2" />
-              <div className="h-5 bg-muted rounded w-64 animate-pulse" />
+              <div className="bg-muted mb-2 h-8 w-32 animate-pulse rounded" />
+              <div className="bg-muted h-5 w-64 animate-pulse rounded" />
             </div>
-            <div className="h-10 bg-muted rounded w-24 animate-pulse" />
+            <div className="bg-muted h-10 w-24 animate-pulse rounded" />
           </div>
         </div>
 
         {/* Stats Cards skeleton */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="bg-card rounded-lg border border-border p-4">
+            <div
+              key={i}
+              className="bg-card border-border rounded-lg border p-4"
+            >
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="h-4 bg-muted rounded w-24 animate-pulse mb-2" />
-                  <div className="h-8 bg-muted rounded w-16 animate-pulse" />
+                  <div className="bg-muted mb-2 h-4 w-24 animate-pulse rounded" />
+                  <div className="bg-muted h-8 w-16 animate-pulse rounded" />
                 </div>
-                <div className="h-12 w-12 bg-muted rounded-lg animate-pulse" />
+                <div className="bg-muted h-12 w-12 animate-pulse rounded-lg" />
               </div>
             </div>
           ))}
         </div>
 
         {/* Search and filters skeleton */}
-        <div className="bg-card rounded-lg shadow-sm mb-6">
-          <div className="p-4 border-b">
-            <div className="flex flex-col sm:flex-row gap-4">
-              <div className="flex-1 h-10 bg-muted rounded animate-pulse" />
+        <div className="bg-card mb-6 rounded-lg shadow-sm">
+          <div className="border-b p-4">
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="bg-muted h-10 flex-1 animate-pulse rounded" />
               <div className="flex gap-2">
-                <div className="w-32 h-10 bg-muted rounded animate-pulse" />
-                <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+                <div className="bg-muted h-10 w-32 animate-pulse rounded" />
+                <div className="bg-muted h-10 w-32 animate-pulse rounded" />
               </div>
             </div>
           </div>
@@ -316,26 +306,26 @@ export default function AdminMembersPage() {
                 <tr>
                   {Array.from({ length: 6 }).map((_, i) => (
                     <th key={i} className="px-6 py-3">
-                      <div className="h-4 bg-muted rounded animate-pulse" />
+                      <div className="bg-muted h-4 animate-pulse rounded" />
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="bg-card divide-y divide-border">
+              <tbody className="bg-card divide-border divide-y">
                 {Array.from({ length: 10 }).map((_, i) => (
                   <tr key={i}>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="whitespace-nowrap px-6 py-4">
                       <div className="flex items-center">
-                        <div className="h-10 w-10 rounded-full bg-muted animate-pulse mr-3" />
+                        <div className="bg-muted mr-3 h-10 w-10 animate-pulse rounded-full" />
                         <div className="flex-1">
-                          <div className="h-4 bg-muted rounded w-32 animate-pulse mb-1" />
-                          <div className="h-3 bg-muted rounded w-24 animate-pulse" />
+                          <div className="bg-muted mb-1 h-4 w-32 animate-pulse rounded" />
+                          <div className="bg-muted h-3 w-24 animate-pulse rounded" />
                         </div>
                       </div>
                     </td>
                     {Array.from({ length: 5 }).map((_, j) => (
-                      <td key={j} className="px-6 py-4 whitespace-nowrap">
-                        <div className="h-4 bg-muted rounded w-20 animate-pulse" />
+                      <td key={j} className="whitespace-nowrap px-6 py-4">
+                        <div className="bg-muted h-4 w-20 animate-pulse rounded" />
                       </td>
                     ))}
                   </tr>
@@ -349,7 +339,7 @@ export default function AdminMembersPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl p-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
@@ -360,38 +350,40 @@ export default function AdminMembersPage() {
             </p>
           </div>
           <Button onClick={exportMembers} variant="outline">
-            <Download className="w-4 h-4 mr-2" />
+            <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-card rounded-lg border border-border p-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="bg-card border-border rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Members</p>
-              <p className="text-2xl font-bold text-foreground mt-1">
+              <p className="text-muted-foreground text-sm font-medium">
+                Total Members
+              </p>
+              <p className="text-foreground mt-1 text-2xl font-bold">
                 {stats.totalMembers}
               </p>
             </div>
-            <div className="h-12 w-12 bg-muted rounded-lg flex items-center justify-center">
-              <User className="w-6 h-6 text-muted-foreground" />
+            <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-lg">
+              <User className="text-muted-foreground h-6 w-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card rounded-lg border border-border p-4">
+        <div className="bg-card border-border rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-muted-foreground text-sm font-medium">
                 Active Subscribers
               </p>
-              <p className="text-2xl font-bold text-chart-2 mt-1">
+              <p className="text-chart-2 mt-1 text-2xl font-bold">
                 {stats.statusStats.active}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-xs">
                 {(
                   (stats.statusStats.active / stats.totalMembers) *
                   100
@@ -399,58 +391,62 @@ export default function AdminMembersPage() {
                 % of total
               </p>
             </div>
-            <div className="h-12 w-12 bg-chart-2/10 rounded-lg flex items-center justify-center">
-              <CreditCard className="w-6 h-6 text-chart-2" />
+            <div className="bg-chart-2/10 flex h-12 w-12 items-center justify-center rounded-lg">
+              <CreditCard className="text-chart-2 h-6 w-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card rounded-lg border border-border p-4">
+        <div className="bg-card border-border rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">
+              <p className="text-muted-foreground text-sm font-medium">
                 Monthly Revenue
               </p>
-              <p className="text-2xl font-bold text-foreground mt-1">
+              <p className="text-foreground mt-1 text-2xl font-bold">
                 {stats.revenue.formattedMrr}
               </p>
-              <p className="text-xs text-muted-foreground mt-1">Recurring monthly</p>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Recurring monthly
+              </p>
             </div>
-            <div className="h-12 w-12 bg-chart-1/10 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-chart-1" />
+            <div className="bg-chart-1/10 flex h-12 w-12 items-center justify-center rounded-lg">
+              <DollarSign className="text-chart-1 h-6 w-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card rounded-lg border border-border p-4">
+        <div className="bg-card border-border rounded-lg border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-muted-foreground">Churn Rate</p>
-              <p className="text-2xl font-bold text-destructive mt-1">
+              <p className="text-muted-foreground text-sm font-medium">
+                Churn Rate
+              </p>
+              <p className="text-destructive mt-1 text-2xl font-bold">
                 {(
                   (stats.statusStats.churned / stats.totalMembers) *
                   100
                 ).toFixed(1)}
                 %
               </p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 text-xs">
                 {stats.statusStats.churned} churned
               </p>
             </div>
-            <div className="h-12 w-12 bg-destructive/10 rounded-lg flex items-center justify-center">
-              <UserX className="w-6 h-6 text-destructive" />
+            <div className="bg-destructive/10 flex h-12 w-12 items-center justify-center rounded-lg">
+              <UserX className="text-destructive h-6 w-6" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-card rounded-lg border border-border p-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <div className="bg-card border-border mb-6 rounded-lg border p-4">
+        <div className="flex flex-col gap-4 lg:flex-row">
           {/* Search */}
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+              <Search className="text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 type="text"
                 placeholder="Search by name or email..."
@@ -466,10 +462,14 @@ export default function AdminMembersPage() {
             {/* Status Filter */}
             <Select
               value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as "all" | "active" | "cancelled" | "churned")}
+              onValueChange={(value) =>
+                setStatusFilter(
+                  value as "all" | "active" | "cancelled" | "churned",
+                )
+              }
             >
               <SelectTrigger className="w-[140px]">
-                <Filter className="w-4 h-4 mr-2" />
+                <Filter className="mr-2 h-4 w-4" />
                 <SelectValue placeholder="Status" />
               </SelectTrigger>
               <SelectContent>
@@ -499,8 +499,10 @@ export default function AdminMembersPage() {
 
         {/* Active filters */}
         {(statusFilter !== "all" || tierFilter !== "all" || search) && (
-          <div className="flex items-center gap-2 mt-3">
-            <span className="text-sm text-muted-foreground">Active filters:</span>
+          <div className="mt-3 flex items-center gap-2">
+            <span className="text-muted-foreground text-sm">
+              Active filters:
+            </span>
             {statusFilter !== "all" && (
               <Badge variant="secondary" className="text-xs">
                 Status: {statusFilter}
@@ -534,18 +536,18 @@ export default function AdminMembersPage() {
 
       {/* Bulk Actions */}
       {selectedMembers.size > 0 && (
-        <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 mb-4 flex items-center justify-between">
-          <span className="text-sm text-primary">
+        <div className="bg-primary/5 border-primary/20 mb-4 flex items-center justify-between rounded-lg border p-3">
+          <span className="text-primary text-sm">
             {selectedMembers.size} member{selectedMembers.size > 1 ? "s" : ""}{" "}
             selected
           </span>
           <div className="flex gap-2">
             <Button size="sm" variant="outline">
-              <Gift className="w-4 h-4 mr-1" />
+              <Gift className="mr-1 h-4 w-4" />
               Grant Scholarship
             </Button>
             <Button size="sm" variant="outline">
-              <Mail className="w-4 h-4 mr-1" />
+              <Mail className="mr-1 h-4 w-4" />
               Send Email
             </Button>
           </div>
@@ -553,7 +555,7 @@ export default function AdminMembersPage() {
       )}
 
       {/* Members Table */}
-      <div className="bg-card rounded-lg border border-border overflow-hidden">
+      <div className="bg-card border-border overflow-hidden rounded-lg border">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">
@@ -567,7 +569,7 @@ export default function AdminMembersPage() {
                 />
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted"
+                className="hover:bg-muted cursor-pointer"
                 onClick={() => handleSort("name")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -576,7 +578,7 @@ export default function AdminMembersPage() {
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted"
+                className="hover:bg-muted cursor-pointer"
                 onClick={() => handleSort("tier")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -585,7 +587,7 @@ export default function AdminMembersPage() {
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted"
+                className="hover:bg-muted cursor-pointer"
                 onClick={() => handleSort("status")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -594,7 +596,7 @@ export default function AdminMembersPage() {
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted"
+                className="hover:bg-muted cursor-pointer"
                 onClick={() => handleSort("joinedAt")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -603,7 +605,7 @@ export default function AdminMembersPage() {
                 </div>
               </TableHead>
               <TableHead
-                className="cursor-pointer hover:bg-muted"
+                className="hover:bg-muted cursor-pointer"
                 onClick={() => handleSort("revenue")}
               >
                 <div className="flex items-center gap-1 font-medium">
@@ -639,29 +641,29 @@ export default function AdminMembersPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-sm font-medium text-muted-foreground flex-shrink-0">
+                      <div className="bg-muted text-muted-foreground flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-medium">
                         {member.avatarUrl ? (
                           <Image
                             src={member.avatarUrl}
                             alt={fullName}
                             width={40}
                             height={40}
-                            className="w-full h-full rounded-full object-cover"
+                            className="h-full w-full rounded-full object-cover"
                           />
                         ) : (
                           initials
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="font-medium text-foreground truncate">
+                        <div className="text-foreground truncate font-medium">
                           {fullName}
                         </div>
-                        <div className="text-sm text-muted-foreground truncate">
+                        <div className="text-muted-foreground truncate text-sm">
                           {member.email}
                         </div>
                         {member.role === "admin" && (
                           <Badge variant="secondary" className="mt-1 text-xs">
-                            <Shield className="w-3 h-3 mr-1" />
+                            <Shield className="mr-1 h-3 w-3" />
                             Admin
                           </Badge>
                         )}
@@ -678,14 +680,12 @@ export default function AdminMembersPage() {
                           {tierInfo.label}
                         </Badge>
                       )}
-                      {member.billingInterval &&
-                        member.tier !== "free" &&
-                        member.tier !== "scholarship" && (
-                          <div className="text-xs text-muted-foreground">
-                            {tierInfo?.price}/
-                            {member.billingInterval === "monthly" ? "mo" : "yr"}
-                          </div>
-                        )}
+                      {member.billingInterval && (
+                        <div className="text-muted-foreground text-xs">
+                          {tierInfo?.price}/
+                          {member.billingInterval === "monthly" ? "mo" : "yr"}
+                        </div>
+                      )}
                     </div>
                   </TableCell>
                   <TableCell>
@@ -693,12 +693,12 @@ export default function AdminMembersPage() {
                       variant="outline"
                       className={cn("text-xs", statusInfo.color)}
                     >
-                      <statusInfo.icon className="w-3 h-3 mr-1" />
+                      <statusInfo.icon className="mr-1 h-3 w-3" />
                       {statusInfo.label}
                     </Badge>
                     {member.status === "cancelled" &&
                       member.subscriptionEndDate && (
-                        <div className="text-xs text-muted-foreground mt-1">
+                        <div className="text-muted-foreground mt-1 text-xs">
                           Ends{" "}
                           {format(
                             new Date(member.subscriptionEndDate),
@@ -716,15 +716,13 @@ export default function AdminMembersPage() {
                     {/* No lastActive field in schema */}
                   </TableCell>
                   <TableCell>
-                    {member.amountCents &&
-                    member.tier !== "free" &&
-                    member.tier !== "scholarship" ? (
+                    {member.amountCents ? (
                       <div className="text-sm font-medium">
                         ${(member.amountCents / 100).toFixed(0)}/
                         {member.billingInterval === "monthly" ? "mo" : "yr"}
                       </div>
                     ) : (
-                      <span className="text-sm text-muted-foreground">—</span>
+                      <span className="text-muted-foreground text-sm">—</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -734,41 +732,20 @@ export default function AdminMembersPage() {
                         size="sm"
                         onClick={() => setSelectedMemberId(member._id)}
                       >
-                        <Eye className="w-4 h-4" />
+                        <Eye className="h-4 w-4" />
                       </Button>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" size="sm">
-                            <MoreVertical className="w-4 h-4" />
+                            <MoreVertical className="h-4 w-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="w-48">
                           <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
                           <DropdownMenuSeparator />
-                          {member.tier !== "scholarship" && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                grantScholarship({ memberId: member._id })
-                              }
-                              className="text-sm"
-                            >
-                              <Gift className="w-4 h-4 mr-2" />
-                              Grant Scholarship
-                            </DropdownMenuItem>
-                          )}
-                          {member.tier === "scholarship" && (
-                            <DropdownMenuItem
-                              onClick={() =>
-                                revokeScholarship({ memberId: member._id })
-                              }
-                              className="text-sm"
-                            >
-                              <UserX className="w-4 h-4 mr-2" />
-                              Revoke Scholarship
-                            </DropdownMenuItem>
-                          )}
+                          {/* Note: Scholarships now handled via Stripe coupons, not tier-based */}
                           <DropdownMenuItem className="text-sm">
-                            <Mail className="w-4 h-4 mr-2" />
+                            <Mail className="mr-2 h-4 w-4" />
                             Send Email
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
@@ -782,7 +759,7 @@ export default function AdminMembersPage() {
                               }
                               className="text-sm"
                             >
-                              <Shield className="w-4 h-4 mr-2" />
+                              <Shield className="mr-2 h-4 w-4" />
                               Make Admin
                             </DropdownMenuItem>
                           )}
@@ -794,9 +771,9 @@ export default function AdminMembersPage() {
                                   role: "user",
                                 })
                               }
-                              className="text-sm text-destructive"
+                              className="text-destructive text-sm"
                             >
-                              <Shield className="w-4 h-4 mr-2" />
+                              <Shield className="mr-2 h-4 w-4" />
                               Remove Admin
                             </DropdownMenuItem>
                           )}
@@ -812,8 +789,8 @@ export default function AdminMembersPage() {
 
         {/* Pagination */}
         {totalPages > 1 && (
-          <div className="border-t border-border px-4 py-3 flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
+          <div className="border-border flex items-center justify-between border-t px-4 py-3">
+            <div className="text-muted-foreground text-sm">
               Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
               {Math.min(
                 currentPage * itemsPerPage,

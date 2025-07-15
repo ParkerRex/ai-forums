@@ -33,8 +33,8 @@ All imported members start with:
 ### 1. **Banner Display Logic**
 Members see reactivation banners when:
 - `subscriptionStatus !== "active"`
-- `tier !== "scholarship"`
 - Not dismissed recently
+- Note: No tier exclusions needed (no free tier, scholarships via coupons)
 
 ### 2. **Banner Messages**
 - **Expired**: "Welcome back [name]! Your Pro access has expired"
@@ -95,10 +95,10 @@ await simulateFullMigration();
 4. Confirm webhook updates member status
 
 ### 5. **Create Scholarship System**
-1. Create Stripe coupons for scholarships
+1. Create Stripe coupons for scholarships (100% discount)
 2. Update checkout to handle scholarship metadata
 3. Webhook recognizes scholarship coupons
-4. Sets member tier to "scholarship"
+4. Assigns member to "early_bird" tier with coupon discount
 
 ## 📊 Testing Checklist
 

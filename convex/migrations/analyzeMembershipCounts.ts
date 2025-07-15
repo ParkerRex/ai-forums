@@ -7,7 +7,7 @@ export const analyzeMembershipCounts = query({
     
     // Count paid members (excluding free and scholarship)
     const paidMembers = allMembers.filter(m => 
-      m.tier && m.tier !== "free" && m.tier !== "scholarship"
+      m.tier && m.amountCents && m.amountCents > 0
     );
     
     // Count by subscription status for paid tiers
@@ -39,8 +39,7 @@ export const analyzeMembershipCounts = query({
         early_bird: allMembers.filter(m => m.tier === "early_bird").length,
         founding_member: allMembers.filter(m => m.tier === "founding_member").length,
         member: allMembers.filter(m => m.tier === "member").length,
-        scholarship: allMembers.filter(m => m.tier === "scholarship").length,
-        free: allMembers.filter(m => m.tier === "free").length,
+        scholarship: allMembers.filter(m => m.tier && m.amountCents === 0).length,
       }
     };
   },

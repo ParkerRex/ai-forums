@@ -448,6 +448,7 @@ export const getPostById = query({
  */
 export const getPostBySlug = query({
   args: { slug: v.string() },
+  returns: v.any(),
   handler: async (ctx, { slug }) => {
     const post = await ctx.db
       .query("posts")

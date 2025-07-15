@@ -2,31 +2,24 @@
 
 ## Overview
 
-The VAI-VEX platform implements a comprehensive payment system using Stripe for subscription management, content paywalls, and member tier tracking. The system supports 5 membership tiers with grandfathered pricing for early supporters.
+The VAI-VEX platform implements a comprehensive payment system using Stripe for subscription management, content paywalls, and member tier tracking. The system operates with **zero free users** and supports 3 paid membership tiers with grandfathered pricing for early supporters.
+
+**Important**: Scholarships are now handled via Stripe coupon codes (100% discount) applied to the Early Bird tier, rather than as a separate tier.
 
 ## Membership Tiers
 
-### 1. **Free** - $0/mo
-- Limited access to content (50 character preview)
-- Sees paywalls on premium posts
-- Can upgrade to paid membership
-
-### 2. **Scholarship** - $0/mo
-- Full access to all content
-- Granted by admin for special cases
-- No payment required
-
-### 3. **Founding Member** - $39/mo or $375/yr
+### 1. **Founding Member** - $39/mo or $375/yr
 - Early supporter pricing (locked forever)
 - Full access to all content
 - 20% savings on yearly plan
 
-### 4. **Early Bird** - $50/mo or $480/yr
+### 2. **Early Bird** - $50/mo or $480/yr
 - Grandfathered rate for existing members
 - Full access to all content
 - 20% savings on yearly plan
+- **Scholarship discounts applied via Stripe coupons**
 
-### 5. **Member** - $99/mo
+### 3. **Member** - $99/mo
 - Standard pricing for new members
 - Full access to all content
 - Monthly billing only

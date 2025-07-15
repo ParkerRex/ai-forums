@@ -50,7 +50,7 @@ export const createCheckoutSession = mutation({
     }
 
     // Check if member already has an active subscription
-    if (member.subscriptionStatus === "active" && member.tier !== "free") {
+    if (member.subscriptionStatus === "active") {
       throw new Error("Member already has an active subscription");
     }
 

@@ -93,7 +93,8 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   const post = useQuery(
     api.posts.getPostBySlug,
     hasValidParams ? { slug } : "skip",
-  );
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) as any;
 
   // Query to check if the current user can view the full content
   const canViewPost = useQuery(

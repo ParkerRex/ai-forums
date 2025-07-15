@@ -19,36 +19,11 @@ export const grantScholarshipStatus = mutation({
       throw new Error("Member not found");
     }
 
-    // Check if member already has scholarship status
-    if (member.tier === "scholarship") {
-      return { success: true, message: "Member already has scholarship status" };
-    }
-
-    // Cancel any existing Stripe subscription if they have one
-    if (member.stripeSubscriptionId) {
-      // Note: In production, you'd want to call Stripe API to cancel the subscription
-      // For now, we'll just update the database
-      await ctx.db.patch(args.memberId, {
-        tier: "scholarship",
-        subscriptionStatus: "active",
-        stripeSubscriptionId: undefined,
-        subscriptionEndDate: undefined,
-        billingInterval: undefined,
-      });
-
-      // Log the scholarship grant
-      console.log(`Scholarship granted to ${member.email} by ${admin.email}`);
-    } else {
-      // No existing subscription, just grant scholarship
-      await ctx.db.patch(args.memberId, {
-        tier: "scholarship",
-        subscriptionStatus: "active",
-      });
-    }
-
-    return { 
-      success: true, 
-      message: `Scholarship status granted to ${member.firstName} ${member.lastName}` 
+    // Note: Scholarships are now handled via Stripe coupons, not tier-based
+    // This function is deprecated - scholarships should be granted via Stripe coupons
+    return {
+      success: false,
+      message: "Scholarships are now handled via Stripe coupons. Use early_bird tier with 100% discount coupon."
     };
   },
 });
@@ -70,23 +45,11 @@ export const revokeScholarshipStatus = mutation({
       throw new Error("Member not found");
     }
 
-    // Check if member has scholarship status
-    if (member.tier !== "scholarship") {
-      return { success: true, message: "Member does not have scholarship status" };
-    }
-
-    // Revoke scholarship by setting to free tier
-    await ctx.db.patch(args.memberId, {
-      tier: "free",
-      subscriptionStatus: "none",
-    });
-
-    // Log the revocation
-    console.log(`Scholarship revoked from ${member.email} by ${admin.email}`);
-
-    return { 
-      success: true, 
-      message: `Scholarship status revoked from ${member.firstName} ${member.lastName}` 
+    // Note: Scholarships are now handled via Stripe coupons, not tier-based
+    // This function is deprecated - scholarships should be managed via Stripe dashboard
+    return {
+      success: false,
+      message: "Scholarships are now handled via Stripe coupons. Manage via Stripe dashboard."
     };
   },
 });

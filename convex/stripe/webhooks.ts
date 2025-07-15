@@ -319,7 +319,7 @@ async function handleCheckoutSessionCompleted(
   await ctx.db.patch(memberId, {
     stripeCustomerId: session.customer as string,
     stripeSubscriptionId: session.subscription as string,
-    tier: isScholarship ? "scholarship" : (session.metadata?.tier as Doc<"members">["tier"]),
+    tier: isScholarship ? "early_bird" : (session.metadata?.tier as Doc<"members">["tier"]),
     billingInterval: session.metadata?.billingInterval as Doc<"members">["billingInterval"],
     subscriptionStatus: "active",
   });

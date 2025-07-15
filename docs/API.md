@@ -191,11 +191,11 @@ Check if the current member can view full content.
 
 ```typescript
 // This is typically used internally, but the logic is:
-// - Free tier: false (50 character preview only)
-// - Scholarship: true
+// - No free tier (platform operates with zero free users)
 // - Paid tiers (active): true
 // - Cancelled (before end date): true
 // - Expired/Past due: false
+// - Scholarships: handled via Stripe coupons with early_bird tier
 ```
 
 ### Mutations

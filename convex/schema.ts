@@ -91,7 +91,6 @@ const members = defineTable({
     v.literal("active"),           // Active paying or engaged member
     v.literal("cancelled"),        // Subscription cancelled but still in grace period
     v.literal("churned"),          // Previously active, now inactive
-    v.literal("free"),             // Free tier member
     v.literal("duplicate"),        // Duplicate account marked for cleanup
     v.literal("pending_onboarding") // Created from checkout, needs password/social auth
   ),
@@ -146,7 +145,7 @@ const members = defineTable({
     v.literal("cancelled"),
     v.literal("past_due"),
     v.literal("expired"),
-    v.literal("none")          // For free tier or no subscription
+    v.literal("none")          // For members without active subscriptions
   )),
   subscriptionEndDate: v.optional(v.number()), // Unix timestamp
   billingInterval: v.optional(v.union(

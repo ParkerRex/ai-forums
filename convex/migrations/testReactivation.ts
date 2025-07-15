@@ -68,7 +68,8 @@ export const resetToActiveState = mutation({
 
     const updates = {
       subscriptionStatus: "active" as const,
-      tier: "scholarship" as const, // Reset to scholarship for testing
+      tier: "member" as const, // Reset to scholarship for testing
+      amountCents: 0,
       updatedAt: Date.now(),
     };
 
@@ -95,18 +96,21 @@ export const migrateAllMembers = mutation({
     const allMembers = await ctx.db.query("members").collect();
     const updates = [];
 
+    const initialScholarshipCount = allMembers.filter(m => m.amountCents === 0 && m.tier).length;
+    const initialFreeCount = allMembers.filter(m => !m.tier).length;
+
     for (const member of allMembers) {
       let newTier = member.tier;
       let newStatus = member.subscriptionStatus;
 
-      // Move scholarship members to early_bird
-      if (member.tier === "scholarship") {
+      // MIGRATION: Move scholarship members to early_bird (scholarships now handled via Stripe coupons)
+      if (member.amountCents === 0 && member.tier) {
         newTier = "early_bird";
         newStatus = "expired"; // They'll need to reactivate with coupon
       }
 
-      // Eliminate free tier - move to member tier
-      if (member.tier === "free" || !member.tier) {
+      // MIGRATION: Eliminate free tier - move to member tier (no free tier - platform operates with zero free users)
+      if (!member.tier) {
         newTier = "member";
         newStatus = "expired";
       }
@@ -118,7 +122,7 @@ export const migrateAllMembers = mutation({
 
       const memberUpdates = {
         tier: newTier,
-        subscriptionStatus: newStatus as const,
+        subscriptionStatus: newStatus,
         subscriptionEndDate: undefined,
         stripeSubscriptionId: undefined,
         updatedAt: Date.now(),
@@ -138,8 +142,8 @@ export const migrateAllMembers = mutation({
     return {
       success: true,
       totalUpdated: updates.length,
-      scholarshipsMovedToEarlyBird: updates.filter(u => u.previousTier === "scholarship").length,
-      freeMovedToMember: updates.filter(u => u.previousTier === "free").length,
+      scholarshipsMovedToEarlyBird: initialScholarshipCount,
+      freeMovedToMember: initialFreeCount,
       updates: updates.slice(0, 10),
     };
   },
