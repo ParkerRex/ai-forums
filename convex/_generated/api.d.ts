@@ -31,6 +31,7 @@ import type * as crons_cleanupTokens from "../crons/cleanupTokens.js";
 import type * as crons_generateMissingPreviews from "../crons/generateMissingPreviews.js";
 import type * as crons from "../crons.js";
 import type * as deduplication from "../deduplication.js";
+import type * as discord from "../discord.js";
 import type * as events from "../events.js";
 import type * as github from "../github.js";
 import type * as helpers_access from "../helpers/access.js";
@@ -110,6 +111,7 @@ declare const fullApi: ApiFromModules<{
   "crons/generateMissingPreviews": typeof crons_generateMissingPreviews;
   crons: typeof crons;
   deduplication: typeof deduplication;
+  discord: typeof discord;
   events: typeof events;
   github: typeof github;
   "helpers/access": typeof helpers_access;
