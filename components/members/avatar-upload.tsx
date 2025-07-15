@@ -1,5 +1,4 @@
 "use client";
-import Image from "next/image";
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -379,7 +378,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
                 aspect={1}
                 className="max-h-[60vh]"
               >
-                <Image
+                <img
                   ref={imgRef}
                   alt="Crop preview"
                   src={previewUrl}
