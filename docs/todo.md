@@ -19,18 +19,15 @@ This checklist outlines all documentation files, categorized by their new locati
 
 **AI-Related Documentation (`docs/ai/`)**
 
-*   `docs/ai/convex-llms.txt`: (Moved from `ai_docs/`) - **Needs Review**: Likely contains notes or plans related to Convex and LLMs. Check for relevance and update.
+
 *   `docs/ai/github-comment-plan.md`: (Moved from `ai_docs/`) - **Needs Review**: Review if this plan is still active or if it's a historical document.
-*   `docs/ai/stripe-llms.txt`: (Moved from `ai_docs/`) - **Needs Review**: Similar to `convex-llms.txt`, check for relevance and update.
-*   `docs/ai/vai-llms.txt`: (Moved from `ai_docs/`) - **Needs Review**: General notes on VAI and LLMs. Check for relevance and update.
-*   `docs/ai/todo/auth-bug.md`: (Moved from `ai_docs/plan/todo/`) - **Needs Review**: This is a specific bug documentation. Verify if the bug is resolved or if the document is still relevant.
+
+
+
 
 **Convex-Related Documentation (`docs/convex/`)**
 
 *   `docs/convex/migrations-README.md`: (Moved from `convex/migrations/README.md`) - **Needs Review**: This README is specific to Convex migrations. Ensure it's up-to-date with current migration practices.
 *   `docs/convex/README.md`: (Moved from `convex/README.md`) - **Needs Review**: This README is for the Convex directory. Ensure it's up-to-date with current Convex setup and usage.
 
-**Files that were explicitly excluded from moving:**
 
-*   `.claude/CLAUDE.md` (and other files in `.claude/commands/`) - These are likely internal configuration/documentation for the Claude AI tool and should remain in their original location.
-*   `.github/CODEOWNERS.md` - This is a GitHub-specific configuration file and should remain in `.github`.
