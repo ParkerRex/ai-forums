@@ -33,7 +33,7 @@
   - Extend member schema newsPreferences to include Discord configuration
   - _Requirements: 1.2, 1.3_
 
-- [ ] 6. Integrate Discord source into existing news feed system
+- [x] 6. Integrate Discord source into existing news feed system
   - Update convex/newsFeed.ts to include Discord source when user has it enabled
   - Modify news feed caching to handle Discord data with existing patterns
   - Ensure Discord integration preserves existing news feed functionality

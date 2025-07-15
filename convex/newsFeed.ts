@@ -6,9 +6,11 @@ const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 const MAX_ITEMS_PER_SOURCE = 5;
 
 type NewsSource = {
-  type: "rss" | "youtube" | "podcast" | "blog" | "x" | "website";
+  type: "rss" | "youtube" | "podcast" | "blog" | "x" | "website" | "discord";
   url: string;
   name: string;
+  guildId?: string;
+  channels?: string[];
 };
 
 type NewsItem = {
@@ -115,9 +117,27 @@ export const get = action({
     }
 
     // Get user's custom sources or use defaults
-    // For Phase 0, we'll use the default sources only
-    // Future phases will add user preferences to the schema
     let sources = DEFAULT_SOURCES;
+    let discordEnabled = false;
+    
+    // Check if user has Discord enabled in their preferences
+    if (userId) {
+      try {
+        const isDiscordEnabledResult = await ctx.runQuery(api.newsFeedSources.isDiscordEnabled, { userId });
+        discordEnabled = isDiscordEnabledResult;
+        
+        // If Discord is enabled, get the Discord source configuration
+        if (discordEnabled) {
+          const discordSource = await ctx.runQuery(api.newsFeedSources.getDiscordSourceConfig, { userId });
+          if (discordSource) {
+            sources = [...sources, discordSource];
+          }
+        }
+      } catch (error) {
+        console.error("Failed to check Discord preferences:", error);
+        // Continue without Discord if preference check fails
+      }
+    }
 
     // Fetch news from all sources
     const allArticles: NewsItem[] = [];
@@ -144,8 +164,12 @@ export const get = action({
       console.error("Failed to fetch general AI news:", error);
     }
 
-    // Then fetch from custom sources (up to 2 sources)
-    for (const source of sources.slice(0, 2)) {
+    // Then fetch from custom sources (up to 2 non-Discord sources + Discord if enabled)
+    const nonDiscordSources = sources.filter(s => s.type !== "discord");
+    const discordSources = sources.filter(s => s.type === "discord");
+    
+    // Process non-Discord sources (limit to 2)
+    for (const source of nonDiscordSources.slice(0, 2)) {
       try {
         // Extract domain for website/blog sources
         let includeDomains: string[] | undefined;
@@ -179,6 +203,32 @@ export const get = action({
         }
       } catch (error) {
         console.error(`Failed to fetch from ${source.name}:`, error);
+      }
+    }
+
+    // Process Discord sources separately using Discord API
+    // Requirements: 3.1, 3.4 - Discord integration with existing patterns
+    for (const discordSource of discordSources) {
+      try {
+        // Calculate yesterday's timestamp for Discord messages
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(0, 0, 0, 0);
+
+        // Fetch Discord messages using the Discord API
+        // Requirements: 6.1 - Add fallback logic when Discord API is unavailable
+        const discordItems = await ctx.runAction(api.discord.getDiscordDigest, {
+          userId,
+          limit: MAX_ITEMS_PER_SOURCE,
+        });
+
+        // Add Discord items to the news feed
+        allArticles.push(...discordItems);
+        
+      } catch (error) {
+        console.error(`Failed to fetch Discord messages: ${error}`);
+        // Requirements: 6.1 - Graceful degradation when Discord API fails
+        // Continue processing other sources without breaking the news feed
       }
     }
 
@@ -236,6 +286,8 @@ export const cache = mutation({
       type: v.string(),
       url: v.string(),
       name: v.string(),
+      guildId: v.optional(v.string()),
+      channels: v.optional(v.array(v.string())),
     })),
     expiresAt: v.number(),
   },

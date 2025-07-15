@@ -177,12 +177,17 @@ const members = defineTable({
     customSources: v.array(v.object({        // Custom news sources
       type: v.union(
         v.literal("repository"),   // GitHub repository
-        v.literal("website")       // RSS/website feed
+        v.literal("website"),      // RSS/website feed
+        v.literal("discord")       // Discord guild/channels
       ),
       url: v.string(),              // Source URL
       name: v.string(),             // Display name
+      // Discord-specific config
+      guildId: v.optional(v.string()),        // Discord guild ID
+      channels: v.optional(v.array(v.string())), // Channel IDs to monitor
     })),
     refreshInterval: v.number(),    // Feed refresh frequency in minutes
+    discordEnabled: v.optional(v.boolean()), // Quick toggle for Discord digest
   })),
 })
   // Indexes for efficient member queries
@@ -981,6 +986,9 @@ const newsFeedCache = defineTable({
     type: v.string(),
     url: v.string(),
     name: v.string(),
+    // Discord-specific fields
+    guildId: v.optional(v.string()),
+    channels: v.optional(v.array(v.string())),
   })),
   createdAt: v.number(),                    // Cache creation timestamp
   expiresAt: v.number(),                    // Cache expiration timestamp
