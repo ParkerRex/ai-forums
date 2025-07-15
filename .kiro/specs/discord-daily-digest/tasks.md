@@ -6,7 +6,7 @@
   - Create basic Discord API connection utilities with error handling
   - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 2. Extend news source type system for Discord integration
+- [x] 2. Extend news source type system for Discord integration
   - Update SourceType union in features/news/utils/news-sources/types.ts to include "discord"
   - Create DiscordNewsSource interface extending NewsSource with guildId and channels properties
   - Update fetchers record in features/news/utils/news-sources/index.ts to include discord fetcher

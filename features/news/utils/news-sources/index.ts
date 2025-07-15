@@ -5,6 +5,7 @@ import * as xTwitter from "./x-twitter";
 import * as podcast from "./podcast";
 import * as blog from "./blog";
 import * as website from "./website";
+import * as discord from "./discord";
 
 const fetchers: Record<SourceType, (source: NewsSource) => Promise<RawItem[]>> = {
   rss: rss.fetchItems,
@@ -13,6 +14,7 @@ const fetchers: Record<SourceType, (source: NewsSource) => Promise<RawItem[]>> =
   podcast: podcast.fetchItems,
   blog: blog.fetchItems,
   website: website.fetchItems,
+  discord: discord.fetchItems,
 };
 
 export async function fetchFromSource(source: NewsSource): Promise<RawItem[]> {
