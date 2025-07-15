@@ -12,7 +12,7 @@
   - Update fetchers record in features/news/utils/news-sources/index.ts to include discord fetcher
   - _Requirements: 3.2, 3.3_
 
-- [ ] 3. Implement Discord message fetching and processing
+- [x] 3. Implement Discord message fetching and processing
   - Create features/news/utils/news-sources/discord.ts with fetchItems function
   - Implement Discord API client to fetch messages from previous day
   - Add message ranking logic based on reaction count with chronological fallback
