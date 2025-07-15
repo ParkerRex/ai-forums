@@ -20,7 +20,7 @@ function createTestMember(overrides: Partial<Doc<"members">>): Omit<Doc<"members
     status: "active",
     joinedDate: Date.now(),
     updatedAt: Date.now(),
-    tier: "free",
+    tier: undefined,
     subscriptionStatus: "none",
     stripeCustomerId: "cus_test123",
     ...overrides,
@@ -39,7 +39,7 @@ describe("Checkout Flow Integration Tests", () => {
         expect(validTiers).toContain(tier);
       }
       
-      // Invalid tiers should be rejected
+      // Invalid tiers should be rejected (platform operates with paid tiers only)
       const invalidTiers = ["free", "scholarship", "invalid_tier"];
       for (const tier of invalidTiers) {
         expect(validTiers).not.toContain(tier);
@@ -91,7 +91,7 @@ describe("Checkout Flow Integration Tests", () => {
         return await ctx.db.insert("members", createTestMember({
           email: "existing@example.com",
           stripeCustomerId: "cus_existing_real",
-          tier: "free",
+          tier: undefined,
         }));
       });
       
@@ -112,7 +112,7 @@ describe("Checkout Flow Integration Tests", () => {
         return await ctx.db.insert("members", createTestMember({
           email: "new@example.com",
           stripeCustomerId: `cus_temp_new@example.com_${Date.now()}`,
-          tier: "free",
+          tier: undefined,
         }));
       });
       
@@ -127,30 +127,20 @@ describe("Checkout Flow Integration Tests", () => {
   });
 
   describe("Subscription Tier Rules", () => {
-    test("should prevent free tier from creating checkout", async () => {
+    test("should validate only paid tiers are allowed", async () => {
       const t = convexTest(schema);
-      
-      const member = createTestMember({
-        tier: "free",
-        subscriptionStatus: "none",
-      });
-      
-      // Free tier can upgrade
-      expect(member.tier).toBe("free");
-      expect(["founding_member", "early_bird", "member"]).not.toContain(member.tier);
-    });
 
-    test("should prevent scholarship tier from checkout", async () => {
-      const t = convexTest(schema);
-      
-      const member = createTestMember({
-        tier: "scholarship",
-        subscriptionStatus: "active",
-      });
-      
-      // Scholarship tier should not be able to checkout
-      expect(member.tier).toBe("scholarship");
-      expect(["founding_member", "early_bird", "member"]).not.toContain(member.tier);
+      // Only paid tiers should be valid (no free tier - platform operates with zero free users)
+      const validTiers = ["founding_member", "early_bird", "member"];
+      const invalidTiers = ["free", "scholarship"];
+
+      for (const tier of validTiers) {
+        expect(validTiers).toContain(tier);
+      }
+
+      for (const tier of invalidTiers) {
+        expect(validTiers).not.toContain(tier);
+      }
     });
 
     test("should allow tier upgrades", async () => {

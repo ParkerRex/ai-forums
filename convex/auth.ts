@@ -184,13 +184,13 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     lastName,
     email,
     externalId,
-    status: "free" as const,
+    status: "active" as const,
     joinedDate: now,
     slug,
     updatedAt: now,
     lastOnline: now,
-    // Payment fields - new members start as free tier
-    tier: "free" as const,
+    // Payment fields - new members start without a tier
+    tier: undefined,
     subscriptionStatus: "none" as const,
     stripeCustomerId: `cus_temp_${email.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`, // TODO: Replace with Stripe API call
   };

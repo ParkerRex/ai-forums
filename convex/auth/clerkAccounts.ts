@@ -39,7 +39,6 @@ export const createClerkAccount = internalAction({
           public_metadata: {
             checkoutSessionId: args.checkoutSessionId,
             createdFromCheckout: true,
-            onboardingStatus: "pending",
           },
           private_metadata: {
             memberId: args.memberId,
@@ -160,7 +159,7 @@ export const createClerkAccount = internalAction({
 });
 
 /**
- * Internal mutation to update member with Clerk ID and set onboarding status.
+ * Internal mutation to update member with Clerk ID.
  */
 export const internalUpdateMemberWithClerkId = internalMutation({
   args: {
@@ -191,54 +190,6 @@ export const internalUpdateMemberWithClerkId = internalMutation({
     }
 
     await ctx.db.patch(args.memberId, updateData);
-
-    return { success: true };
-  },
-});
-
-/**
- * Mutation to complete onboarding after user sets password or connects social auth.
- */
-export const completeOnboarding = mutation({
-  args: {
-    memberId: v.id("members"),
-    authMethod: v.union(
-      v.literal("password"),
-      v.literal("google"),
-      v.literal("discord")
-    ),
-  },
-  handler: async (ctx, args) => {
-    // Verify the user is authenticated and owns this member record
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Must be authenticated");
-    }
-
-    const member = await ctx.db.get(args.memberId);
-    if (!member) {
-      throw new Error("Member not found");
-    }
-
-    // Verify this is the correct member
-    if (member.externalId !== identity.subject) {
-      throw new Error("Unauthorized");
-    }
-
-    // Clear sign-in token and update member status to active
-    await ctx.db.patch(args.memberId, {
-      status: "active" as const,
-      onboardingCompletedAt: Date.now(),
-      authMethod: args.authMethod,
-      signInToken: undefined, // Clear the temporary token
-      updatedAt: Date.now(),
-    });
-
-    // Update Clerk metadata to reflect completed onboarding
-    await ctx.scheduler.runAfter(0, internal.auth.updateClerkMetadata.updateClerkOnboardingStatus, {
-      clerkUserId: member.externalId,
-      status: "complete",
-    });
 
     return { success: true };
   },

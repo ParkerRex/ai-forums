@@ -25,7 +25,7 @@ import { Id, Doc } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
 import { insertNotification } from "./notifications";
-import { canViewFullContent, canViewPost } from "./helpers/access";
+import { canViewFullContent, canViewPost } from "./helpers/subscriptionAccess";
 import { api } from "./_generated/api";
 
 /**
@@ -448,6 +448,7 @@ export const getPostById = query({
  */
 export const getPostBySlug = query({
   args: { slug: v.string() },
+  returns: v.any(),
   handler: async (ctx, { slug }) => {
     const post = await ctx.db
       .query("posts")

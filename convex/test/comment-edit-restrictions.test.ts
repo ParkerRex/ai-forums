@@ -53,8 +53,8 @@ describe("Comment Edit Time Restrictions", () => {
         slug: "test-user",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
-        tier: "free",
-        subscriptionStatus: "none",
+        tier: "member",
+        subscriptionStatus: "active",
         stripeCustomerId: "cus_test",
         externalId: `user_test_${Date.now()}`, // Unique Clerk external ID
       });
@@ -142,8 +142,8 @@ describe("Comment Edit Time Restrictions", () => {
         slug: "admin-user",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
-        tier: "free",
-        subscriptionStatus: "none",
+        tier: "member",
+        subscriptionStatus: "active",
         stripeCustomerId: "cus_test",
         externalId: `user_admin_${Date.now()}`,
         role: "admin", // Critical: admin role for bypassing restrictions
@@ -161,8 +161,8 @@ describe("Comment Edit Time Restrictions", () => {
         slug: "regular-user",
         updatedAt: Date.now(),
         lastOnline: Date.now(),
-        tier: "free",
-        subscriptionStatus: "none",
+        tier: "member",
+        subscriptionStatus: "active",
         stripeCustomerId: "cus_test",
         externalId: `user_regular_${Date.now()}`,
       });

@@ -20,7 +20,7 @@ export const populatePaymentFields = mutation({
       
       // Set default tier if not set
       if (!member.tier) {
-        updates.tier = "free";
+        updates.tier = "member";
       }
       
       // Set default subscription status if not set

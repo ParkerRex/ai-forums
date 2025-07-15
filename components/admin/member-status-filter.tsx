@@ -14,7 +14,7 @@ import {
 import { tierConfig } from "@/lib/admin-config";
 
 export type StatusFilter = "all" | "active" | "cancelled" | "churned";
-export type TierFilter = "all" | "free" | "scholarship" | "founding_member" | "early_bird" | "member";
+export type TierFilter = "all" | "founding_member" | "early_bird" | "member";
 
 interface MemberStatusFilterProps {
   search: string;
@@ -46,7 +46,8 @@ export function MemberStatusFilter({
   showTierFilter = true,
   className = "",
 }: MemberStatusFilterProps) {
-  const hasActiveFilters = statusFilter !== "all" || tierFilter !== "all" || search;
+  const hasActiveFilters =
+    statusFilter !== "all" || tierFilter !== "all" || search;
 
   const clearAllFilters = () => {
     onSearchChange("");
@@ -55,13 +56,15 @@ export function MemberStatusFilter({
   };
 
   return (
-    <div className={`bg-white rounded-lg border border-gray-200 p-4 ${className}`}>
-      <div className="flex flex-col lg:flex-row gap-4">
+    <div
+      className={`rounded-lg border border-gray-200 bg-white p-4 ${className}`}
+    >
+      <div className="flex flex-col gap-4 lg:flex-row">
         {/* Search */}
         {showSearch && (
           <div className="flex-1">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
               <Input
                 type="text"
                 placeholder="Search by name or email..."
@@ -78,10 +81,12 @@ export function MemberStatusFilter({
           {/* Status Filter */}
           <Select
             value={statusFilter}
-            onValueChange={(value) => onStatusFilterChange(value as StatusFilter)}
+            onValueChange={(value) =>
+              onStatusFilterChange(value as StatusFilter)
+            }
           >
             <SelectTrigger className="w-[140px]">
-              <Filter className="w-4 h-4 mr-2" />
+              <Filter className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
@@ -103,8 +108,6 @@ export function MemberStatusFilter({
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Tiers</SelectItem>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="scholarship">Scholarship</SelectItem>
                 <SelectItem value="founding_member">Founding</SelectItem>
                 <SelectItem value="early_bird">Early Bird</SelectItem>
                 <SelectItem value="member">Member</SelectItem>
@@ -116,36 +119,36 @@ export function MemberStatusFilter({
 
       {/* Active filters */}
       {hasActiveFilters && (
-        <div className="flex items-center gap-2 mt-3 flex-wrap">
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <span className="text-sm text-gray-500">Active filters:</span>
           {statusFilter !== "all" && (
             <Badge
               variant="secondary"
-              className="text-xs cursor-pointer hover:bg-gray-200"
+              className="cursor-pointer text-xs hover:bg-gray-200"
               onClick={() => onStatusFilterChange("all")}
             >
               Status: {statusLabels[statusFilter]}
-              <X className="w-3 h-3 ml-1" />
+              <X className="ml-1 h-3 w-3" />
             </Badge>
           )}
           {tierFilter !== "all" && (
             <Badge
               variant="secondary"
-              className="text-xs cursor-pointer hover:bg-gray-200"
+              className="cursor-pointer text-xs hover:bg-gray-200"
               onClick={() => onTierFilterChange("all")}
             >
               Tier: {tierConfig[tierFilter as keyof typeof tierConfig]?.label}
-              <X className="w-3 h-3 ml-1" />
+              <X className="ml-1 h-3 w-3" />
             </Badge>
           )}
           {search && (
             <Badge
               variant="secondary"
-              className="text-xs cursor-pointer hover:bg-gray-200"
+              className="cursor-pointer text-xs hover:bg-gray-200"
               onClick={() => onSearchChange("")}
             >
               Search: {search}
-              <X className="w-3 h-3 ml-1" />
+              <X className="ml-1 h-3 w-3" />
             </Badge>
           )}
           <Button
@@ -180,30 +183,27 @@ export function StatusFilterBadges({
   counts,
 }: StatusFilterBadgesProps) {
   const filters: StatusFilter[] = ["all", "active", "cancelled", "churned"];
-  
+
   return (
     <div className="flex gap-2">
       {filters.map((filter) => {
         const isActive = statusFilter === filter;
-        const count = filter === "all" 
-          ? counts?.total 
-          : counts?.[filter as keyof Omit<typeof counts, "total">];
-        
+        const count =
+          filter === "all"
+            ? counts?.total
+            : counts?.[filter as keyof Omit<typeof counts, "total">];
+
         return (
           <Badge
             key={filter}
             variant={isActive ? "default" : "outline"}
             className={`cursor-pointer transition-colors ${
-              isActive 
-                ? "" 
-                : "hover:bg-gray-100 text-gray-600"
+              isActive ? "" : "text-gray-600 hover:bg-gray-100"
             }`}
             onClick={() => onStatusFilterChange(filter)}
           >
             {statusLabels[filter]}
-            {count !== undefined && (
-              <span className="ml-1">({count})</span>
-            )}
+            {count !== undefined && <span className="ml-1">({count})</span>}
           </Badge>
         );
       })}

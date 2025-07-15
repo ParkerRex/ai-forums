@@ -21,7 +21,7 @@ export const verifyImportResults = query({
     
     // Sample some members with payment data
     const membersWithPaymentData = allMembers
-      .filter(m => m.tier && m.tier !== "free")
+      .filter(m => m.amountCents && m.amountCents > 0)
       .slice(0, 5)
       .map(m => ({
         email: m.email,

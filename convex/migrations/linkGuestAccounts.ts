@@ -68,7 +68,7 @@ export const linkGuestAccounts = internalMutation({
           if (guestMember.stripeSubscriptionId && !authMember.stripeSubscriptionId) {
             updates.stripeSubscriptionId = guestMember.stripeSubscriptionId;
           }
-          if (guestMember.tier && guestMember.tier !== "free" && (!authMember.tier || authMember.tier === "free")) {
+          if (guestMember.tier && !authMember.tier) {
             updates.tier = guestMember.tier;
           }
           if (guestMember.billingInterval && !authMember.billingInterval) {
@@ -162,7 +162,7 @@ export const linkSpecificGuestAccount = internalMutation({
     if (guestMember.stripeSubscriptionId) {
       updates.stripeSubscriptionId = guestMember.stripeSubscriptionId;
     }
-    if (guestMember.tier && guestMember.tier !== "free") {
+    if (guestMember.tier) {
       updates.tier = guestMember.tier;
     }
     if (guestMember.billingInterval) {

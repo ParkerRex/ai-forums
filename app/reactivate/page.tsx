@@ -87,7 +87,7 @@ export default function ReactivatePage() {
   useEffect(() => {
     // Redirect if user has active subscription or no previous subscription
     if (subscriptionInfo) {
-      if (subscriptionInfo.isActive || subscriptionInfo.tier === "free") {
+      if (subscriptionInfo.isActive) {
         router.push("/pricing");
       }
     }
@@ -95,7 +95,7 @@ export default function ReactivatePage() {
 
   // Early return during loading or for ineligible users
   // Prevents flash of content before redirects complete
-  if (!subscriptionInfo || subscriptionInfo.tier === "free") {
+  if (!subscriptionInfo) {
     return null;
   }
 
@@ -223,17 +223,17 @@ export default function ReactivatePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background py-16">
-      <div className="container mx-auto px-4 max-w-2xl">
+    <div className="bg-background min-h-screen py-16">
+      <div className="container mx-auto max-w-2xl px-4">
         {/* Page Header Section */}
         {/* Welcome message with sparkles icon to create positive, celebratory feeling */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 flex items-center justify-center gap-3">
+        <div className="mb-12 text-center">
+          <h1 className="mb-4 flex items-center justify-center gap-3 text-4xl font-bold">
             <Sparkles className="h-8 w-8 text-yellow-500" />
             Welcome Back!
           </h1>
           {/* Personalized subtitle showing their specific tier name */}
-          <p className="text-xl text-muted-foreground">
+          <p className="text-muted-foreground text-xl">
             Reactivate your {tierInfo.name} membership at your special rate
           </p>
         </div>
@@ -258,11 +258,11 @@ export default function ReactivatePage() {
           <CardContent>
             {/* Billing Period Toggle Section */}
             {/* Two-button toggle allowing users to compare monthly vs yearly pricing */}
-            <div className="flex items-center gap-4 mb-6">
+            <div className="mb-6 flex items-center gap-4">
               {/* Monthly billing option button */}
               <button
                 onClick={() => setBillingPeriod("monthly")}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors ${
+                className={`flex-1 rounded-lg px-4 py-3 font-medium transition-colors ${
                   billingPeriod === "monthly"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -270,7 +270,7 @@ export default function ReactivatePage() {
               >
                 <div>Monthly</div>
                 {/* Large price display to make cost comparison easy */}
-                <div className="text-2xl font-bold mt-1">
+                <div className="mt-1 text-2xl font-bold">
                   ${tierInfo.monthlyPrice}/mo
                 </div>
               </button>
@@ -278,7 +278,7 @@ export default function ReactivatePage() {
               {/* Yearly billing option button with savings badge */}
               <button
                 onClick={() => setBillingPeriod("yearly")}
-                className={`flex-1 py-3 px-4 rounded-lg font-medium transition-colors relative ${
+                className={`relative flex-1 rounded-lg px-4 py-3 font-medium transition-colors ${
                   billingPeriod === "yearly"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -286,13 +286,13 @@ export default function ReactivatePage() {
               >
                 {/* Savings badge positioned absolutely to draw attention */}
                 {savingsPercent > 0 && (
-                  <Badge className="absolute -top-2 -right-2 bg-green-500 text-white">
+                  <Badge className="absolute -right-2 -top-2 bg-green-500 text-white">
                     Save {savingsPercent}%
                   </Badge>
                 )}
                 <div>Yearly</div>
                 {/* Monthly equivalent price for easy comparison */}
-                <div className="text-2xl font-bold mt-1">
+                <div className="mt-1 text-2xl font-bold">
                   ${Math.round(tierInfo.yearlyPrice / 12)}/mo
                 </div>
                 {/* Annual total for transparency */}
@@ -304,8 +304,8 @@ export default function ReactivatePage() {
 
             {/* Savings Information Section */}
             {/* Highlighted box showing potential savings to encourage yearly billing */}
-            <div className="bg-muted/50 rounded-lg p-4 mb-6">
-              <p className="text-sm text-center">
+            <div className="bg-muted/50 mb-6 rounded-lg p-4">
+              <p className="text-center text-sm">
                 {billingPeriod === "yearly" ? (
                   // Message for users who selected yearly billing
                   <>
@@ -327,7 +327,7 @@ export default function ReactivatePage() {
             {/* Primary Reactivation Button */}
             {/* Large, prominent button with dynamic pricing and loading state */}
             <Button
-              className="w-full h-12 text-lg"
+              className="h-12 w-full text-lg"
               size="lg"
               onClick={handleReactivate}
               disabled={isLoading}
@@ -363,7 +363,7 @@ export default function ReactivatePage() {
 
         {/* Support Contact Information */}
         {/* Provides users with a way to get help if they have questions */}
-        <p className="text-center text-sm text-muted-foreground mt-8">
+        <p className="text-muted-foreground mt-8 text-center text-sm">
           Questions? Contact us at support@vai.ai
         </p>
       </div>

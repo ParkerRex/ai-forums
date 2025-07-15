@@ -3,7 +3,15 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Check, Zap, Shield, Users, Code, Sparkles, ArrowRight } from "lucide-react";
+import {
+  Check,
+  Zap,
+  Shield,
+  Users,
+  Code,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
@@ -16,12 +24,16 @@ export default function PricingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { isSignedIn } = useAuth();
-  const createDirectCheckout = useAction(api.stripe.directCheckout.createDirectCheckout);
-  const subscriptionInfo = useQuery(api.stripe.getSubscriptionInfo.getSubscriptionInfo);
+  const createDirectCheckout = useAction(
+    api.stripe.directCheckout.createDirectCheckout,
+  );
+  const subscriptionInfo = useQuery(
+    api.stripe.getSubscriptionInfo.getSubscriptionInfo,
+  );
 
   const handleCheckout = async () => {
-    // Check if already subscribed
-    if (isSignedIn && subscriptionInfo?.isActive && subscriptionInfo?.tier !== "free") {
+    // Check if already subscribed (no free tier - all subscriptions are paid)
+    if (isSignedIn && subscriptionInfo?.isActive) {
       toast.info("You already have an active subscription");
       router.push("/settings/billing");
       return;
@@ -43,27 +55,28 @@ export default function PricingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-16 max-w-6xl">
+    <div className="bg-background min-h-screen">
+      <div className="container mx-auto max-w-6xl px-4 py-16">
         {/* Hero Section */}
-        <div className="text-center mb-16">
+        <div className="mb-16 text-center">
           <Badge variant="outline" className="mb-4">
-            <Sparkles className="w-3 h-3 mr-1" />
+            <Sparkles className="mr-1 h-3 w-3" />
             Members Only Community
           </Badge>
-          
-          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-foreground">
+
+          <h1 className="text-foreground mb-6 text-5xl font-bold md:text-6xl">
             $99/month. That&apos;s it.
           </h1>
 
-          <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Join the private community where engineers from OpenAI, Anthropic, Google, 
-            and Meta share their AI workflows and implementation details.
+          <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-xl">
+            Join the private community where engineers from OpenAI, Anthropic,
+            Google, and Meta share their AI workflows and implementation
+            details.
           </p>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Button 
-              size="lg" 
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <Button
+              size="lg"
               onClick={handleCheckout}
               disabled={isLoading}
               className="min-w-[200px]"
@@ -71,45 +84,49 @@ export default function PricingPage() {
               {isLoading ? "Loading..." : "Get Access Now"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Cancel anytime. No BS.
             </p>
           </div>
         </div>
 
         {/* Value Props Grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-16">
+        <div className="mb-16 grid gap-6 md:grid-cols-3">
           <Card className="border-muted">
             <CardHeader className="pb-3">
-              <Code className="h-8 w-8 mb-2 text-primary" />
-              <CardTitle className="text-lg">Real Implementation Details</CardTitle>
+              <Code className="text-primary mb-2 h-8 w-8" />
+              <CardTitle className="text-lg">
+                Real Implementation Details
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Production code, architectures, and prompts from engineers building at scale.
+              <p className="text-muted-foreground text-sm">
+                Production code, architectures, and prompts from engineers
+                building at scale.
               </p>
             </CardContent>
           </Card>
 
           <Card className="border-muted">
             <CardHeader className="pb-3">
-              <Shield className="h-8 w-8 mb-2 text-primary" />
+              <Shield className="text-primary mb-2 h-8 w-8" />
               <CardTitle className="text-lg">Private & Unfiltered</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
-                Share freely without corporate PR. What works, what doesn&apos;t, and why.
+              <p className="text-muted-foreground text-sm">
+                Share freely without corporate PR. What works, what
+                doesn&apos;t, and why.
               </p>
             </CardContent>
           </Card>
 
           <Card className="border-muted">
             <CardHeader className="pb-3">
-              <Users className="h-8 w-8 mb-2 text-primary" />
+              <Users className="text-primary mb-2 h-8 w-8" />
               <CardTitle className="text-lg">Engineers Only</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-muted-foreground text-sm">
                 No recruiters, no spam. Just engineers who build AI systems.
               </p>
             </CardContent>
@@ -117,15 +134,15 @@ export default function PricingPage() {
         </div>
 
         {/* What You Get */}
-        <Card className="mb-16 border-primary/20">
+        <Card className="border-primary/20 mb-16">
           <CardHeader>
-            <div className="flex items-center gap-2 mb-2">
-              <Zap className="h-5 w-5 text-primary" />
+            <div className="mb-2 flex items-center gap-2">
+              <Zap className="text-primary h-5 w-5" />
               <h2 className="text-2xl font-bold">What you get</h2>
             </div>
           </CardHeader>
           <CardContent>
-            <div className="grid md:grid-cols-2 gap-x-12 gap-y-4">
+            <div className="grid gap-x-12 gap-y-4 md:grid-cols-2">
               {[
                 "Access to all AI workflows and implementations",
                 "Direct conversations with engineers from top AI labs",
@@ -134,10 +151,10 @@ export default function PricingPage() {
                 "Private Discord with verified engineers",
                 "Early access to new AI tools and techniques",
                 "No ads, no tracking, no bullshit",
-                "Cancel anytime, data export on request"
+                "Cancel anytime, data export on request",
               ].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3">
-                  <Check className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                  <Check className="text-primary mt-0.5 h-5 w-5 flex-shrink-0" />
                   <span className="text-sm">{feature}</span>
                 </div>
               ))}
@@ -146,44 +163,49 @@ export default function PricingPage() {
         </Card>
 
         {/* FAQ Section */}
-        <div className="max-w-3xl mx-auto">
-          <h2 className="text-2xl font-bold mb-8 text-center">Quick answers</h2>
-          
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-8 text-center text-2xl font-bold">Quick answers</h2>
+
           <div className="space-y-6">
             <div>
-              <h3 className="font-semibold mb-2">Why $99/month?</h3>
+              <h3 className="mb-2 font-semibold">Why $99/month?</h3>
               <p className="text-muted-foreground">
-                It keeps the community small and signal high. We&apos;re not trying to be Reddit.
+                It keeps the community small and signal high. We&apos;re not
+                trying to be Reddit.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Who&apos;s actually in here?</h3>
+              <h3 className="mb-2 font-semibold">
+                Who&apos;s actually in here?
+              </h3>
               <p className="text-muted-foreground">
-                Engineers from OpenAI, Anthropic, Google DeepMind, Meta, and similar. 
-                Verified through work email or commits.
+                Engineers from OpenAI, Anthropic, Google DeepMind, Meta, and
+                similar. Verified through work email or commits.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">Can I expense this?</h3>
+              <h3 className="mb-2 font-semibold">Can I expense this?</h3>
               <p className="text-muted-foreground">
-                Yes. We provide invoices with all the right tax info. Most engineers expense it as &quot;professional development&quot; or &quot;technical resources&quot;.
+                Yes. We provide invoices with all the right tax info. Most
+                engineers expense it as &quot;professional development&quot; or
+                &quot;technical resources&quot;.
               </p>
             </div>
 
             <div>
-              <h3 className="font-semibold mb-2">What if it sucks?</h3>
+              <h3 className="mb-2 font-semibold">What if it sucks?</h3>
               <p className="text-muted-foreground">
-                Cancel anytime from your account. No calls, no retention BS. 
-                If you cancel in the first week, we&apos;ll refund you.
+                Cancel anytime from your account. No calls, no retention BS. If
+                you cancel in the first week, we&apos;ll refund you.
               </p>
             </div>
           </div>
 
           <div className="mt-12 text-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               onClick={handleCheckout}
               disabled={isLoading}
               className="min-w-[200px]"

@@ -49,7 +49,6 @@ interface MembersDisplayProps {
   isLoading?: boolean;
 }
 
-
 // Loading skeleton for table view
 function TableSkeleton() {
   return (
@@ -67,18 +66,18 @@ function TableSkeleton() {
           <TableRow key={i}>
             <TableCell>
               <div className="flex items-center gap-3">
-                <div className="h-8 w-8 bg-muted rounded-full animate-pulse" />
+                <div className="bg-muted h-8 w-8 animate-pulse rounded-full" />
                 <div className="space-y-1">
-                  <div className="h-4 bg-muted rounded w-32 animate-pulse" />
-                  <div className="h-3 bg-muted rounded w-24 animate-pulse" />
+                  <div className="bg-muted h-4 w-32 animate-pulse rounded" />
+                  <div className="bg-muted h-3 w-24 animate-pulse rounded" />
                 </div>
               </div>
             </TableCell>
             <TableCell>
-              <div className="h-5 bg-muted rounded w-20 animate-pulse" />
+              <div className="bg-muted h-5 w-20 animate-pulse rounded" />
             </TableCell>
             <TableCell>
-              <div className="h-4 bg-muted rounded w-12 animate-pulse" />
+              <div className="bg-muted h-4 w-12 animate-pulse rounded" />
             </TableCell>
           </TableRow>
         ))}
@@ -87,7 +86,10 @@ function TableSkeleton() {
   );
 }
 
-export default function MembersDisplay({ members, isLoading }: MembersDisplayProps) {
+export default function MembersDisplay({
+  members,
+  isLoading,
+}: MembersDisplayProps) {
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const router = useRouter();
@@ -113,12 +115,12 @@ export default function MembersDisplay({ members, isLoading }: MembersDisplayPro
           bValue = b.postCount || 0;
           break;
         case "tier":
-          const tierOrder = { 
-            founding_member: 0, 
-            early_bird: 1, 
-            member: 2, 
-            scholarship: 3, 
-            free: 4 
+          const tierOrder = {
+            founding_member: 0,
+            early_bird: 1,
+            member: 2,
+            scholarship: 3,
+            free: 4,
           };
           aValue = tierOrder[a.tier || "free"];
           bValue = tierOrder[b.tier || "free"];
@@ -132,56 +134,59 @@ export default function MembersDisplay({ members, isLoading }: MembersDisplayPro
   }, [members, sortField, sortDirection]);
 
   // Handle sort column click - memoized to prevent recreation on every render
-  const handleSort = React.useCallback((field: SortField) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("asc");
-    }
-  }, [sortField, sortDirection]);
+  const handleSort = React.useCallback(
+    (field: SortField) => {
+      if (sortField === field) {
+        setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+      } else {
+        setSortField(field);
+        setSortDirection("asc");
+      }
+    },
+    [sortField, sortDirection],
+  );
 
   // Sort indicator component
   const SortIndicator = ({ field }: { field: SortField }) => {
     if (sortField !== field) return null;
     return sortDirection === "asc" ? (
-      <ChevronUp className="h-3 w-3 ml-1 inline" />
+      <ChevronUp className="ml-1 inline h-3 w-3" />
     ) : (
-      <ChevronDown className="h-3 w-3 ml-1 inline" />
+      <ChevronDown className="ml-1 inline h-3 w-3" />
     );
   };
 
   return (
     <div className="space-y-4">
       {/* Member count */}
-      <div className="text-sm text-muted-foreground mb-2">
-        {members.length} {members.length === 1 ? 'member' : 'members'}
+      <div className="text-muted-foreground mb-2 text-sm">
+        {members.length} {members.length === 1 ? "member" : "members"}
       </div>
 
       {/* Display Content */}
       {isLoading ? (
         <TableSkeleton />
       ) : (
-        <div className="border border-border/50 rounded-xl overflow-hidden">
+        <div className="border-border/50 overflow-hidden rounded-xl border">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent">
-                <TableHead 
-                  className="cursor-pointer hover:text-foreground font-medium"
+                <TableHead
+                  className="hover:text-foreground cursor-pointer font-medium"
                   onClick={() => handleSort("name")}
                 >
                   Member
                   <SortIndicator field="name" />
                 </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:text-foreground font-medium"
+                <TableHead
+                  className="hover:text-foreground cursor-pointer font-medium"
                   onClick={() => handleSort("tier")}
                 >
                   Tier
                   <SortIndicator field="tier" />
                 </TableHead>
-                <TableHead 
-                  className="cursor-pointer hover:text-foreground font-medium"
+                <TableHead
+                  className="hover:text-foreground cursor-pointer font-medium"
                   onClick={() => handleSort("posts")}
                 >
                   Posts
@@ -191,57 +196,77 @@ export default function MembersDisplay({ members, isLoading }: MembersDisplayPro
             </TableHeader>
             <TableBody>
               {sortedMembers.map((member) => {
-                const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
-                const memberUrl = memberProfileUrl({ 
-                  slug: member.slug!, 
-                  _id: member.id as Id<"members"> 
+                const initials =
+                  `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
+                const memberUrl = memberProfileUrl({
+                  slug: member.slug!,
+                  _id: member.id as Id<"members">,
                 });
 
                 return (
-                  <TableRow 
-                    key={member.id} 
+                  <TableRow
+                    key={member.id}
                     className="hover:bg-muted/30 cursor-pointer"
                     onClick={(e) => {
                       // Only navigate if the click wasn't on a button or link
                       const target = e.target as HTMLElement;
-                      if (!target.closest('button') && !target.closest('a')) {
+                      if (!target.closest("button") && !target.closest("a")) {
                         router.push(memberUrl);
                       }
                     }}
                   >
                     <TableCell className="py-3">
                       <div className="flex items-center gap-3">
-                        <MemberHoverCardWrapper member={{
-                          _id: member.id as Id<"members">,
-                          firstName: member.firstName,
-                          lastName: member.lastName,
-                          slug: member.slug,
-                          avatarUrl: member.avatarUrl
-                        }}>
-                          <Avatar className="h-9 w-9 cursor-pointer ring-1 ring-border/50">
+                        <MemberHoverCardWrapper
+                          member={{
+                            _id: member.id as Id<"members">,
+                            firstName: member.firstName,
+                            lastName: member.lastName,
+                            slug: member.slug,
+                            avatarUrl: member.avatarUrl,
+                          }}
+                        >
+                          <Avatar className="ring-border/50 h-9 w-9 cursor-pointer ring-1">
                             <AvatarImage src={member.avatarUrl || ""} />
-                            <AvatarFallback className="text-xs bg-muted">{initials}</AvatarFallback>
+                            <AvatarFallback className="bg-muted text-xs">
+                              {initials}
+                            </AvatarFallback>
                           </Avatar>
                         </MemberHoverCardWrapper>
                         <div>
-                          <Link 
-                            href={memberUrl} 
-                            className="font-medium text-sm hover:text-primary transition-colors"
+                          <Link
+                            href={memberUrl}
+                            className="hover:text-primary text-sm font-medium transition-colors"
                             onClick={(e) => e.stopPropagation()}
                           >
                             {member.firstName} {member.lastName}
                           </Link>
                           {member.location && (
-                            <div className="text-xs text-muted-foreground mt-0.5">{member.location}</div>
+                            <div className="text-muted-foreground mt-0.5 text-xs">
+                              {member.location}
+                            </div>
                           )}
                         </div>
                       </div>
                     </TableCell>
                     <TableCell className="py-3">
-                      {member.tier && member.tier !== "free" ? (
-                        <TierBadge tier={member.tier} size="sm" />
+                      {member.tier &&
+                      ["founding_member", "early_bird", "member"].includes(
+                        member.tier,
+                      ) ? (
+                        <TierBadge
+                          tier={
+                            member.tier as
+                              | "founding_member"
+                              | "early_bird"
+                              | "member"
+                          }
+                          size="sm"
+                        />
                       ) : (
-                        <span className="text-xs text-muted-foreground">Free</span>
+                        <span className="text-muted-foreground text-xs">
+                          No Tier
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="py-3">
@@ -257,7 +282,7 @@ export default function MembersDisplay({ members, isLoading }: MembersDisplayPro
 
       {/* Empty state */}
       {!isLoading && members.length === 0 && (
-        <div className="text-center py-12">
+        <div className="py-12 text-center">
           <p className="text-muted-foreground">No members found</p>
         </div>
       )}

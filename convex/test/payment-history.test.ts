@@ -20,8 +20,8 @@ function createTestMember(overrides: Partial<Doc<"members">>): Omit<Doc<"members
     status: "active",
     joinedDate: Date.now(),
     updatedAt: Date.now(),
-    tier: "free",
-    subscriptionStatus: "none",
+    tier: "member",
+    subscriptionStatus: "active",
     stripeCustomerId: "cus_test123",
     ...overrides,
   } as Omit<Doc<"members">, "_id" | "_creationTime">;
@@ -485,7 +485,7 @@ describe("Payment History Tracking Integration Tests", () => {
           return await ctx.db.insert("members", createTestMember({
             email: `${tier}@example.com`,
             stripeCustomerId: `cus_${tier}_metrics`,
-            tier: tier as "free" | "scholarship" | "founding_member" | "early_bird" | "member" | undefined,
+            tier: tier as "founding_member" | "early_bird" | "member" | undefined,
           }));
         });
         

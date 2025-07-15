@@ -37,7 +37,7 @@ const MemberUIValidator = v.object({
   firstName: v.string(),
   lastName: v.string(),
   email: v.string(),
-  status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
+  status: v.union(v.literal("active"), v.literal("churned")),
   joinedDate: v.number(),
   country: v.string(),
   updatedAt: v.number(),
@@ -67,13 +67,11 @@ const MemberUIValidator = v.object({
   // Role
   role: v.optional(v.union(v.literal("user"), v.literal("admin"))),
   // Subscription fields
-  tier: v.union(
-    v.literal("free"),
-    v.literal("scholarship"),
+  tier: v.optional(v.union(
     v.literal("founding_member"),
     v.literal("early_bird"),
     v.literal("member")
-  ),
+  )),
   subscriptionStatus: v.union(
     v.literal("active"),
     v.literal("cancelled"),
@@ -146,7 +144,7 @@ function transformMemberForUI(member: Doc<"members">) {
     firstName: member.firstName,
     lastName: member.lastName,
     email: member.email,
-    status: member.status as "active" | "churned" | "free", // Cast to exclude "duplicate"
+    status: member.status as "active" | "churned", // Cast to exclude "duplicate" and "free" (no free tier)
     joinedDate: member.joinedDate,
     country: member.country || "",
     updatedAt: member.updatedAt,
@@ -185,7 +183,7 @@ function transformMemberForUI(member: Doc<"members">) {
     // URL slug
     slug: member.slug,
     // Subscription fields
-    tier: member.tier || "free",
+    tier: member.tier, // No fallback - tier is optional (no free tier)
     subscriptionStatus: member.subscriptionStatus || "none",
     subscriptionEndDate: member.subscriptionEndDate,
     billingInterval: member.billingInterval,
@@ -199,7 +197,7 @@ function transformMemberForUI(member: Doc<"members">) {
 export const getMembers = query({
   args: {
     paginationOpts: paginationOptsValidator,
-    status: v.optional(v.union(v.literal("active"), v.literal("churned"), v.literal("free"))),
+    status: v.optional(v.union(v.literal("active"), v.literal("churned"))),
   },
   returns: v.object({
     page: v.array(MemberUIValidator),
@@ -833,7 +831,7 @@ export const updateMemberProfile = mutation({
 export const updateMemberStatus = mutation({
   args: {
     id: v.id("members"),
-    status: v.union(v.literal("active"), v.literal("churned"), v.literal("free")),
+    status: v.union(v.literal("active"), v.literal("churned")),
   },
   returns: v.null(),
   handler: async (ctx, args) => {

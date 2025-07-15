@@ -161,9 +161,7 @@ export const getMembershipStats = query({
     const members = await ctx.db.query("members").collect();
     
     // Calculate stats by tier
-    const tierStats = {
-      free: 0,
-      scholarship: 0,
+    const tierStats: Record<"founding_member" | "early_bird" | "member", number> = {
       founding_member: 0,
       early_bird: 0,
       member: 0,
@@ -191,7 +189,7 @@ export const getMembershipStats = query({
       statusStats[status]++;
       
       // Revenue calculation (only for active paid members)
-      if (member.subscriptionStatus === "active" && member.tier !== "free" && member.tier !== "scholarship") {
+      if (member.subscriptionStatus === "active") {
         if (member.billingInterval === "monthly" && member.amountCents) {
           monthlyRevenue += member.amountCents;
         } else if (member.billingInterval === "yearly" && member.amountCents) {
@@ -223,8 +221,6 @@ export const updateMemberTier = mutation({
   args: {
     memberId: v.id("members"),
     tier: v.union(
-      v.literal("free"),
-      v.literal("scholarship"),
       v.literal("founding_member"),
       v.literal("early_bird"),
       v.literal("member")
@@ -235,8 +231,7 @@ export const updateMemberTier = mutation({
     
     await ctx.db.patch(args.memberId, {
       tier: args.tier,
-      // If changing to scholarship, set status to active
-      ...(args.tier === "scholarship" ? { subscriptionStatus: "active" } : {})
+      // No additional side effects for tier change now that scholarships are handled via coupons
     });
     
     return { success: true };

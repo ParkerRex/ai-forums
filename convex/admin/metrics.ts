@@ -157,16 +157,13 @@ export const getChurnAnalysis = query({
     
     const now = Date.now();
     const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
-    const sixtyDaysAgo = now - 60 * 24 * 60 * 60 * 1000;
     
     // Get all members
     const members = await ctx.db.query("members").collect();
     
     // Categorize members
     const activeMembers = members.filter(m => 
-      m.subscriptionStatus === "active" && 
-      m.tier !== "free" && 
-      m.tier !== "scholarship"
+      m.subscriptionStatus === "active"
     );
     
     const cancelledMembers = members.filter(m => 
@@ -174,8 +171,7 @@ export const getChurnAnalysis = query({
     );
     
     const churnedMembers = members.filter(m => 
-      (m.subscriptionStatus === "expired" || m.status === "churned") &&
-      m.tier !== "free"
+      (m.subscriptionStatus === "expired" || m.status === "churned")
     );
     
     // Recent churns (last 30 days)
@@ -272,13 +268,11 @@ function calculateRevenueMetrics(payments: Doc<"payments">[]) {
 
 function calculateMemberMetrics(members: Doc<"members">[], cutoffTime: number) {
   const paidMembers = members.filter(m => 
-    m.tier !== "free" && 
     m.subscriptionStatus === "active"
   );
   
   const newMembers = members.filter(m => 
-    m.joinedDate >= cutoffTime && 
-    m.tier !== "free"
+    m.joinedDate >= cutoffTime
   );
   
   const cancelledMembers = members.filter(m => 
@@ -293,8 +287,6 @@ function calculateMemberMetrics(members: Doc<"members">[], cutoffTime: number) {
   return {
     total: members.length,
     paid: paidMembers.length,
-    free: members.filter(m => m.tier === "free").length,
-    scholarship: members.filter(m => m.tier === "scholarship").length,
     new: newMembers.length,
     cancelled: cancelledMembers.length,
     billingBreakdown: {

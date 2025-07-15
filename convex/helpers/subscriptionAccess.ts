@@ -79,7 +79,7 @@ export function getSubscriptionStatusMessage(member: Doc<"members">): string {
   if (!member.subscriptionStatus) {
     return "No subscription - Upgrade to access full content";
   }
-
+  
   // Active subscriptions - show tier information
   if (member.subscriptionStatus === "active") {
     // Format tier name for display (convert snake_case to Title Case)

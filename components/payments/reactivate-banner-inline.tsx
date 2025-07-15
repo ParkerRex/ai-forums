@@ -8,31 +8,35 @@ import { useState, useEffect } from "react";
 /**
  * ReactivateBannerInline component displays a subtle banner prompting users to reactivate their account.
  * This banner appears when a user's subscription has been cancelled, expired, or they're on the free tier.
- * 
+ *
  * The banner is positioned:
  * - Above posts on the home page
  * - Above post details on the post detail page
- * 
+ *
  * Features:
  * - Dynamically renders based on user's tier
  * - Shows only if the user isn't paying
  * - Displays the user's name when available
  * - Subtle, beautiful styling inspired by the design mockup
- * 
+ *
  * @returns JSX.Element | null - The reactivate banner component or null if not needed
  */
 export function ReactivateBannerInline() {
   const router = useRouter();
   const currentMember = useQuery(api.auth.current);
-  const createCheckoutSession = useMutation(api.stripe.checkout.createCheckoutSession);
+  const createCheckoutSession = useMutation(
+    api.stripe.checkout.createCheckoutSession,
+  );
   const [isCreatingSession, setIsCreatingSession] = useState(false);
-  
+
   // Track if banner has been dismissed in this session
   const [isDismissed, setIsDismissed] = useState(false);
-  
+
   // Check if banner was dismissed in localStorage
   useEffect(() => {
-    const dismissedUntil = localStorage.getItem('reactivateBannerDismissedUntil');
+    const dismissedUntil = localStorage.getItem(
+      "reactivateBannerDismissedUntil",
+    );
     if (dismissedUntil && new Date(dismissedUntil) > new Date()) {
       setIsDismissed(true);
     }
@@ -41,20 +45,30 @@ export function ReactivateBannerInline() {
   // Check if member has full access (client-side version of canViewFullContent)
   const hasFullAccess = () => {
     if (!currentMember) return false;
-    
+
     // Check subscription status first
     if (currentMember.subscriptionStatus !== "active") {
       // If subscription is not active, check if it's cancelled but still within the period
-      if (currentMember.subscriptionStatus === "cancelled" && currentMember.subscriptionEndDate) {
+      if (
+        currentMember.subscriptionStatus === "cancelled" &&
+        currentMember.subscriptionEndDate
+      ) {
         const now = Date.now();
         return currentMember.subscriptionEndDate > now;
       }
       return false;
     }
-    
+
     // Check tier - all paid tiers and scholarship have full access
-    const fullAccessTiers = ["scholarship", "founding_member", "early_bird", "member"];
-    return currentMember.tier ? fullAccessTiers.includes(currentMember.tier) : false;
+    const fullAccessTiers = [
+      "scholarship",
+      "founding_member",
+      "early_bird",
+      "member",
+    ];
+    return currentMember.tier
+      ? fullAccessTiers.includes(currentMember.tier)
+      : false;
   };
 
   // Don't show banner if:
@@ -72,16 +86,21 @@ export function ReactivateBannerInline() {
   const handleReactivate = async () => {
     try {
       setIsCreatingSession(true);
-      
-      // Determine the appropriate price ID based on previous tier or default to member tier
+
+      // Use member tier pricing for testing (you'll need to set up tier-specific pricing later)
       const priceId = process.env.NEXT_PUBLIC_STRIPE_MEMBER_MONTHLY_PRICE_ID!;
-      
+
       const result = await createCheckoutSession({
         priceId,
-        tier: "member",
+        tier:
+          currentMember.tier === "founding_member"
+            ? "founding_member"
+            : currentMember.tier === "early_bird"
+              ? "early_bird"
+              : "member",
         billingInterval: "monthly",
       });
-      
+
       if (result.checkoutUrl) {
         router.push(result.checkoutUrl);
       }
@@ -98,51 +117,55 @@ export function ReactivateBannerInline() {
   const handleDismiss = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    localStorage.setItem('reactivateBannerDismissedUntil', tomorrow.toISOString());
+    localStorage.setItem(
+      "reactivateBannerDismissedUntil",
+      tomorrow.toISOString(),
+    );
     setIsDismissed(true);
   };
 
   // Get personalized message based on member status
   const getMessage = () => {
     const firstName = currentMember.firstName || "there";
-    
-    if (currentMember.tier === "free") {
-      return `Hey ${firstName}! Upgrade for full access to Shop and 1,000 other apps`;
-    } else if (currentMember.subscriptionStatus === "cancelled") {
+
+    // No free tier - all users should have paid tiers
+    if (currentMember.subscriptionStatus === "cancelled") {
       return `Welcome back ${firstName}! Your Pro access has expired`;
     } else if (currentMember.subscriptionStatus === "past_due") {
       return `${firstName}, please update your payment method to restore Pro access`;
+    } else if (currentMember.subscriptionStatus === "expired") {
+      return `Welcome back ${firstName}! Your Pro access has expired`;
     }
-    
-    return "Upgrade for full access to Shop and 1,000 other apps";
+
+    return `Hey ${firstName}! Reactivate your Pro access to continue`;
   };
 
   return (
-    <div className="relative w-full bg-black dark:bg-white border-b border-white/10 dark:border-black/10">
+    <div className="relative w-full border-b border-white/10 bg-black dark:border-black/10 dark:bg-white">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between py-3">
           {/* Left side: Badge and message */}
           <div className="flex items-center gap-3">
-            <span className="inline-flex items-center rounded-full bg-white dark:bg-black px-2.5 py-0.5 text-xs font-semibold text-black dark:text-white">
+            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-semibold text-black dark:bg-black dark:text-white">
               PRO
             </span>
             <p className="text-sm text-white dark:text-black">
               {getMessage()}
-              <span className="text-white/60 dark:text-black/60 mx-2">•</span>
+              <span className="mx-2 text-white/60 dark:text-black/60">•</span>
               <button
                 onClick={handleReactivate}
                 disabled={isCreatingSession}
-                className="font-semibold text-white dark:text-black hover:text-white/80 dark:hover:text-black/80 transition-colors underline decoration-white/30 dark:decoration-black/30 hover:decoration-white/60 dark:hover:decoration-black/60 underline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="font-semibold text-white underline decoration-white/30 underline-offset-2 transition-colors hover:text-white/80 hover:decoration-white/60 disabled:cursor-not-allowed disabled:opacity-50 dark:text-black dark:decoration-black/30 dark:hover:text-black/80 dark:hover:decoration-black/60"
               >
                 {isCreatingSession ? "Loading..." : "Reactivate Pro"}
               </button>
             </p>
           </div>
-          
+
           {/* Right side: Dismiss button */}
           <button
             onClick={handleDismiss}
-            className="text-white/60 dark:text-black/60 hover:text-white dark:hover:text-black transition-colors p-1 hover:bg-white/10 dark:hover:bg-black/10 rounded focus:outline-none focus:ring-2 focus:ring-white/20 dark:focus:ring-black/20 focus:ring-offset-2 focus:ring-offset-black dark:focus:ring-offset-white"
+            className="rounded p-1 text-white/60 transition-colors hover:bg-white/10 hover:text-white focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2 focus:ring-offset-black dark:text-black/60 dark:hover:bg-black/10 dark:hover:text-black dark:focus:ring-black/20 dark:focus:ring-offset-white"
             aria-label="Dismiss banner for 24 hours"
           >
             <svg

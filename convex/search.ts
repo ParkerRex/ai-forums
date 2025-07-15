@@ -3,7 +3,7 @@ import { v } from "convex/values";
 import { api } from "./_generated/api";
 import { Doc, Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
-import { canViewPost } from "./helpers/access";
+import { canViewPost } from "./helpers/subscriptionAccess";
 
 // Search result types - using a more flexible type to handle various result shapes
 type SearchResult = {

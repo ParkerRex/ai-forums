@@ -36,7 +36,7 @@ Create reusable infrastructure for blurring member information based on viewer's
      - Viewer's authentication status
      - Viewer's subscription status
      - Whether viewer can access full member info
-   - Reuse existing ``canViewFullContent`` helper from ``convex/helpers/access.ts``
+   - Reuse existing ``canViewFullContent`` helper from ``convex/helpers/subscription-access.ts``
 
 **Unit Tests:**
 - Test blur wrapper with different blur states

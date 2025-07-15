@@ -28,7 +28,7 @@ export const checkSubscriptionStatuses = query({
         billingInterval: m.billingInterval,
         amountCents: m.amountCents,
         lastPaymentDate: m.lastPaymentDate ? new Date(m.lastPaymentDate).toLocaleDateString() : "N/A",
-        notes: m.tier === "scholarship" ? "Scholarship/Lifetime" : "Free tier"
+        notes: m.amountCents === 0 ? "Scholarship/Lifetime" : "No active subscription"
       }));
     
     // Get past_due members

@@ -50,7 +50,7 @@ export const createCheckoutSession = mutation({
     }
 
     // Check if member already has an active subscription
-    if (member.subscriptionStatus === "active" && member.tier !== "free") {
+    if (member.subscriptionStatus === "active") {
       throw new Error("Member already has an active subscription");
     }
 
@@ -111,6 +111,12 @@ export const createCheckoutSession = mutation({
           coupon: args.couponCode,
         },
       ];
+
+      // If using scholarship coupon, mark in metadata
+      if (args.couponCode.toLowerCase().includes('scholarship')) {
+        sessionParams.metadata!.isScholarship = "true";
+        sessionParams.subscription_data!.metadata!.isScholarship = "true";
+      }
     }
 
     // Create the checkout session

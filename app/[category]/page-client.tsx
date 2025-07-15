@@ -76,21 +76,21 @@ export default function CategoryPageClient({
   // In Convex, undefined means loading, null means not found
   if (category === undefined) {
     return (
-      <div className="max-w-7xl mx-auto px-4 py-6">
+      <div className="mx-auto max-w-7xl px-4 py-6">
         <div className="animate-pulse">
           {/* Category header skeleton */}
-          <div className="h-8 bg-muted rounded mb-4 w-48"></div>
-          <div className="h-4 bg-muted rounded mb-2 w-96"></div>
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mt-6">
+          <div className="bg-muted mb-4 h-8 w-48 rounded"></div>
+          <div className="bg-muted mb-2 h-4 w-96 rounded"></div>
+          <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-4">
             {/* Post list skeleton */}
-            <div className="lg:col-span-3 space-y-4">
+            <div className="space-y-4 lg:col-span-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-32 bg-muted rounded"></div>
+                <div key={i} className="bg-muted h-32 rounded"></div>
               ))}
             </div>
             {/* Sidebar skeleton */}
             <div className="lg:col-span-1">
-              <div className="h-64 bg-muted rounded"></div>
+              <div className="bg-muted h-64 rounded"></div>
             </div>
           </div>
         </div>
@@ -105,30 +105,27 @@ export default function CategoryPageClient({
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
+    <div className="mx-auto max-w-7xl px-4 py-6">
       {/* Category Header - Shows category info and post count */}
       <div className="mb-6">
-        <div className="flex items-center gap-2 mb-2">
+        <div className="mb-2 flex items-center gap-2">
           {/* Optional category icon */}
           {category.icon && <span className="text-2xl">{category.icon}</span>}
-          <h1 className="text-3xl font-bold text-foreground">
+          <h1 className="text-foreground text-3xl font-bold">
             {category.displayName}
           </h1>
         </div>
         <p className="text-muted-foreground">{category.description}</p>
-        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+        <div className="text-muted-foreground mt-2 flex items-center gap-4 text-sm">
           <span>{category.postCount} posts</span>
         </div>
       </div>
 
       {/* Post Header with sorting controls */}
-      <PostHeader
-        sortBy={sortBy}
-        onSortChange={setSortBy}
-      />
+      <PostHeader sortBy={sortBy} onSortChange={setSortBy} />
 
       {/* Posts Grid - Responsive layout with main content and sidebar */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main post list - takes 3/4 of the width on large screens */}
         <div className="lg:col-span-3">
           <PostList categoryId={category._id} sortBy={sortBy} />

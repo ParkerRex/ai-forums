@@ -22,43 +22,23 @@ We are committed to providing a welcoming and inclusive environment. Please:
 
 ## Getting Started
 
-### Prerequisites
-
-- Node.js 18+ installed
-- npm (we use npm, not pnpm or bun)
-- Git for version control
-- A Convex account (free tier is fine for development)
-- A Clerk account for authentication testing
+For initial project setup, including cloning the repository, installing dependencies, and setting up environment variables, please refer to the [Project Overview](../docs/PROJECT_README.md).
 
 ### Local Development Setup
 
-1. **Fork and Clone**
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/vai-vex.git
-   cd vai-vex
-   ```
+Once you have completed the initial setup, you can start your local development environment:
 
-2. **Install Dependencies**
+1. **Start Convex backend**
    ```bash
-   npm install
-   ```
-
-3. **Set Up Environment Variables**
-   ```bash
-   cp .env.example .env.local
-   # Edit .env.local with your development keys
-   ```
-
-4. **Start Development Environment**
-   ```bash
-   # Terminal 1: Start Convex backend
    npx convex dev
+   ```
 
-   # Terminal 2: Start Next.js frontend
+2. **Start Next.js frontend**
+   ```bash
    npm run dev
    ```
 
-5. **Run Tests**
+3. **Run Tests**
    ```bash
    npm test          # Unit tests
    npm run test:e2e  # E2E tests (if available)
@@ -81,7 +61,7 @@ Use descriptive branch names:
 2. Make your changes following our code style
 3. Add or update tests as needed
 4. Update documentation if required
-5. Commit with clear, descriptive messages
+4. Commit with clear, descriptive messages
 
 ### Commit Messages
 
@@ -269,27 +249,32 @@ Test complete flows:
 
 ## Payment System Guidelines
 
-When working on payment features:
+When working on payment features, adhere to these guidelines:
 
 ### Security First
-- Never log sensitive payment data
-- Always validate webhook signatures
-- Use idempotency for critical operations
-- Test with Stripe test mode
+- Never log sensitive payment data.
+- Always validate webhook signatures.
+- Use idempotency for critical operations.
+- Test with Stripe test mode.
 
 ### Follow Patterns
-- Use existing payment types
-- Maintain tier hierarchy
-- Preserve grandfathered pricing
-- Update documentation
+- Use existing payment types.
+- Maintain tier hierarchy.
+- Preserve grandfathered pricing.
+- Update documentation as needed.
 
 ### Testing Payments
+Use the following test card numbers for different scenarios:
 ```bash
-# Use test card numbers
-4242 4242 4242 4242  # Success
-4000 0000 0000 0002  # Decline
+# Success
+4242 4242 4242 4242
 
-# Test webhook locally
+# Decline
+4000 0000 0000 0002
+```
+
+To test webhooks locally, use the Stripe CLI:
+```bash
 stripe listen --forward-to localhost:3000/api/stripe/webhook
 ```
 
@@ -315,6 +300,21 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 - Verify webhook secret
 - Check Stripe dashboard for errors
 - Use webhook CLI for local testing
+
+## Convex Patterns
+- **Schema-first design** in `convex/schema.ts`
+- **Query functions** for reads, **mutations** for writes
+- **Internal functions** prefixed with `internal`
+- **Comprehensive JSDoc** on all functions
+- **Organized structure**: main functions in root, grouped features in subdirectories
+- **Test files** in `convex/test/`
+- **Migrations** in `convex/migrations/` with README
+
+## UI Guidelines
+- **Animated icons**: https://icons.pqoqubbw.dev/
+- **Static icons**: https://www.radix-ui.com/icons
+- **Colors**: Follow Radix UI color guidelines for backgrounds, interactive components, borders, and accessible text
+- **Components**: Use existing Radix UI + shadcn patterns
 
 ## Recognition
 

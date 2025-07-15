@@ -1,5 +1,27 @@
 # VAI-VEX API Documentation
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Authentication](#authentication)
+- [Member API](#member-api)
+- [Posts API](#posts-api)
+- [Comments API](#comments-api)
+- [Payment API](#payment-api)
+- [Notifications API](#notifications-api)
+- [Search API](#search-api)
+- [Categories API](#categories-api)
+- [Bookmarks API](#bookmarks-api)
+- [Admin API](#admin-api)
+- [Webhook Events](#webhook-events)
+- [Error Handling](#error-handling)
+- [Rate Limits](#rate-limits)
+- [Webhooks](#webhooks)
+- [TypeScript Types](#typescript-types)
+- [Real-time Updates](#real-time-updates)
+- [Best Practices](#best-practices)
+- [Support](#support)
+
 ## Overview
 
 The VAI-VEX platform provides a comprehensive API built on Convex for real-time data synchronization, authentication, and payment processing. This documentation covers the public-facing queries and mutations available to developers.
@@ -191,11 +213,11 @@ Check if the current member can view full content.
 
 ```typescript
 // This is typically used internally, but the logic is:
-// - Free tier: false (50 character preview only)
-// - Scholarship: true
+// - No free tier (platform operates with zero free users)
 // - Paid tiers (active): true
 // - Cancelled (before end date): true
 // - Expired/Past due: false
+// - Scholarships: handled via Stripe coupons with early_bird tier
 ```
 
 ### Mutations
@@ -461,9 +483,13 @@ const posts = useQuery(api.posts.listPosts);
 4. **Caching**: Queries are automatically cached and synchronized
 5. **Security**: Never expose sensitive data in queries
 
+## Versioning
+
+The VAI-VEX API is currently not explicitly versioned. Backward-compatible changes are introduced directly. For breaking changes, a new API version will be introduced with clear migration paths.
+
 ## Support
 
 For API support and questions:
-- GitHub Issues: https://github.com/vai-vex/vai-vex/issues
+- GitHub Issues: [https://github.com/vai-vex/vai-vex/issues](https://github.com/vai-vex/vai-vex/issues)
 - Discord: #dev-support channel
 - Email: dev@vai.community

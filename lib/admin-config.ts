@@ -17,24 +17,10 @@ import {
 
 /**
  * Tier configuration with display names, colors, and pricing
+ * Note: No free tier - platform operates with zero free users
+ * Scholarships handled via Stripe coupons with early_bird tier
  */
 export const tierConfig = {
-  free: {
-    label: "Free",
-    color: "bg-gray-100 text-gray-700",
-    borderColor: "border-gray-200",
-    price: "$0",
-    priceMonthly: 0,
-    priceYearly: 0,
-  },
-  scholarship: {
-    label: "Scholarship",
-    color: "bg-purple-100 text-purple-700",
-    borderColor: "border-purple-200",
-    price: "$0",
-    priceMonthly: 0,
-    priceYearly: 0,
-  },
   founding_member: {
     label: "Founding",
     color: "bg-amber-100 text-amber-700",

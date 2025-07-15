@@ -39,11 +39,11 @@ export type PaymentDetailsResponse = {
 };
 
 // Membership stats
+// Note: No free tier - platform operates with zero free users
+// Scholarships handled via Stripe coupons with early_bird tier
 export type MembershipStats = {
   totalMembers: number;
   tierStats: {
-    free: number;
-    scholarship: number;
     founding_member: number;
     early_bird: number;
     member: number;

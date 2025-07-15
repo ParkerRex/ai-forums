@@ -107,18 +107,20 @@ function mapSubscriptionStatus(status: string, renewalStr: string): "active" | "
 }
 
 /**
- * Map tier from CSV
+ * Map tier from CSV (LEGACY MIGRATION ONLY)
+ * Note: This maps to deprecated tiers which are then migrated by testReactivation.ts
+ * Final state: no free tier, scholarships via Stripe coupons with early_bird tier
  */
-function mapTier(tier: string, status: string, renewalStr: string): "free" | "scholarship" | "founding_member" | "early_bird" | "member" {
+function mapTier(tier: string, status: string, renewalStr: string): "founding_member" | "early_bird" | "member" {
   if (status === "Free" || renewalStr === "Lifetime access") {
-    return "scholarship";
+    return "member"; // Will be migrated to early_bird with coupon
   }
-  
+
   if (tier === "founding_member") return "founding_member";
   if (tier === "early_bird") return "early_bird";
   if (tier === "member") return "member";
-  
-  return "free";
+
+  return "member"; // Will be migrated to member tier
 }
 
 /**
@@ -363,7 +365,7 @@ export const importMemberBilling = mutation({
               slug: "parker-rex",
               
               // Payment fields
-              tier: "scholarship", // Lifetime/Free becomes scholarship
+              tier: "member", // Lifetime/Free becomes scholarship
               subscriptionStatus: "none",
               billingInterval: "monthly",
               amountCents: 0,

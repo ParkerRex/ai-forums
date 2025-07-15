@@ -40,8 +40,7 @@ export function getMemberInitials(member: {
 export function getMemberStatus(member: Partial<Doc<"members">>): string {
   // If member has an explicit status field, use it
   if (member.status) {
-    // Map "free" and "duplicate" to appropriate display status
-    if (member.status === "free") return "active"; // Free members are considered active
+    // Map "duplicate" to appropriate display status (no free tier)
     if (member.status === "duplicate") return "churned"; // Duplicates are churned
     return member.status;
   }
@@ -111,8 +110,17 @@ export function formatTierPrice(
   if (!pricing) return "";
   
   if (billingInterval === "yearly" && pricing.yearly > 0) {
-    return `$${pricing.yearly}/yr`;
+    return `${pricing.yearly}/yr`;
   }
   
-  return `$${pricing.monthly}/mo`;
+  return `${pricing.monthly}/mo`;
+}
+
+/**
+ * Check if a member has a scholarship.
+ * A member is considered to have a scholarship if their subscription is active
+ * and their payment amount is zero.
+ */
+export function isScholarshipMember(member: Partial<Doc<"members">>): boolean {
+  return member.subscriptionStatus === "active" && member.amountCents === 0;
 }

@@ -7,18 +7,20 @@ import { cn } from "@/lib/utils";
 import { formatTierName } from "@/lib/format";
 
 interface TierBadgeProps {
-  tier: "free" | "scholarship" | "founding_member" | "early_bird" | "member";
+  tier: "founding_member" | "early_bird" | "member";
   size?: "sm" | "md" | "lg";
   className?: string;
   showIcon?: boolean;
 }
 
 // Tier badge colors matching member-profile.tsx
+// Note: No free tier - platform operates with zero free users
+// Scholarships handled via Stripe coupons with early_bird tier
 const tierVariants = {
-  free: "bg-muted text-muted-foreground border-border",
-  scholarship: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800",
-  founding_member: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800",
-  early_bird: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
+  founding_member:
+    "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800",
+  early_bird:
+    "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800",
   member: "bg-foreground text-background border-foreground",
 };
 
@@ -34,14 +36,14 @@ const iconSizes = {
   lg: 16,
 };
 
-export function TierBadge({ 
-  tier, 
-  size = "md", 
+export function TierBadge({
+  tier,
+  size = "md",
   className,
-  showIcon = true 
+  showIcon = true,
 }: TierBadgeProps) {
   const isFoundingMember = tier === "founding_member";
-  
+
   return (
     <Badge
       variant="outline"
@@ -49,14 +51,11 @@ export function TierBadge({
         tierVariants[tier],
         sizeClasses[size],
         "font-medium",
-        className
+        className,
       )}
     >
       {isFoundingMember && showIcon && (
-        <Star 
-          className="mr-1 fill-current" 
-          size={iconSizes[size]} 
-        />
+        <Star className="mr-1 fill-current" size={iconSizes[size]} />
       )}
       {formatTierName(tier)}
     </Badge>

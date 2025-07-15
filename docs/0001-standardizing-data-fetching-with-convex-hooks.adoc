@@ -1,0 +1,23 @@
+= 0001. Standardizing Data Fetching with Convex Hooks
+:Author: Gemini CLI
+:Date: 2025-07-15
+:Status: Proposed
+
+== Context
+Our project utilizes Convex for its backend and Next.js for its frontend. As the application grows, it's crucial to establish a consistent and efficient pattern for data fetching and state management. Currently, there might be various approaches to interacting with the Convex backend, leading to potential inconsistencies, boilerplate, and difficulties in maintaining a unified data flow.
+
+== Decision
+We will standardize all data fetching and mutations in the Next.js frontend by exclusively using Convex's client-side hooks (`useQuery`, `useMutation`, `useAction`). This approach leverages Convex's built-in reactivity, caching, and optimistic updates, simplifying data synchronization and reducing the need for external state management libraries for server-side data.
+
+== Consequences
+*   **Positive:**
+    *   **Consistency:** All data interactions follow a single, predictable pattern.
+    *   **Reduced Boilerplate:** Convex hooks abstract away much of the complexity of data fetching, error handling, and loading states.
+    *   **Real-time Reactivity:** Automatic re-rendering of components when underlying data changes in Convex, providing a seamless user experience.
+    *   **Optimistic Updates:** Easier implementation of optimistic UI updates, improving perceived performance.
+    *   **Simplified State Management:** Reduces the need for complex global state management solutions for server-side data, as Convex handles much of it.
+    *   **Improved Developer Experience:** Developers can quickly understand and contribute to data-related logic.
+*   **Negative:**
+    *   **Learning Curve:** New team members unfamiliar with Convex hooks will need to learn this paradigm.
+    *   **Tight Coupling:** Frontend components become tightly coupled to Convex's data fetching mechanisms. While beneficial for this stack, it could be a consideration if the backend were to change significantly.
+    *   **Potential for Over-fetching/Under-fetching:** Requires careful design of Convex queries to avoid fetching unnecessary data or making too many small requests. (Mitigation: Encourage use of `join` and `with` in Convex queries, and consider `useQueries` for parallel fetching).

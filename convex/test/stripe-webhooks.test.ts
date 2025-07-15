@@ -29,8 +29,8 @@ function createTestMember(overrides: Partial<Doc<"members">>): Omit<Doc<"members
     status: "active",
     joinedDate: Date.now(),
     updatedAt: Date.now(),
-    tier: "free",
-    subscriptionStatus: "none",
+    tier: "member",
+    subscriptionStatus: "active",
     stripeCustomerId: "cus_test123",
     ...overrides,
   } as Omit<Doc<"members">, "_id" | "_creationTime">;
@@ -99,8 +99,8 @@ describe("Stripe Webhook Integration Tests", () => {
         return await ctx.db.insert("members", createTestMember({
           email: "subscription@example.com",
           stripeCustomerId: "cus_subscription",
-          tier: "free",
-          subscriptionStatus: "none",
+          tier: "member",
+          subscriptionStatus: "active",
         }));
       });
       
@@ -487,13 +487,13 @@ describe("Stripe Webhook Integration Tests", () => {
             email: `${from}-to-${to}@example.com`,
             stripeCustomerId: `cus_${from}_${to}`,
             tier: "member",
-            subscriptionStatus: from as "active" | "cancelled" | "past_due" | "expired" | "none" | undefined,
+            subscriptionStatus: from as "active" | "cancelled" | "past_due" | "expired" | undefined,
           }));
         });
         
         await t.run(async (ctx) => {
           await ctx.db.patch(memberId, {
-            subscriptionStatus: to as "active" | "cancelled" | "past_due" | "expired" | "none" | undefined,
+            subscriptionStatus: to as "active" | "cancelled" | "past_due" | "expired" | undefined,
           });
         });
         

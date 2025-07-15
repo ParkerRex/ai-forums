@@ -1,0 +1,21 @@
+= 0001. Initial ADR Template
+:Author: Your Name
+:Date: 2025-07-15
+:Status: Proposed
+
+== Context
+This is a template for Architecture Decision Records (ADRs). ADRs are short text documents that record a significant architectural decision made about the system. An ADR describes a decision, its context, and its consequences.
+
+== Decision
+To adopt the Architecture Decision Record (ADR) process for documenting significant architectural decisions within this project. This will help in maintaining a historical log of decisions, providing context for future team members, and facilitating discussions around architectural changes.
+
+== Consequences
+*   **Positive:**
+    *   Improved clarity and transparency around architectural choices.
+    *   Easier onboarding for new team members who can review past decisions.
+    *   Reduced risk of repeating past mistakes or re-litigating decisions.
+    *   Provides a structured way to discuss and agree upon significant changes.
+*   **Negative:**
+    *   Requires discipline from the team to write and maintain ADRs.
+    *   Initial overhead in learning the ADR process and AsciiDoc format.
+    *   Potential for "analysis paralysis" if every minor decision is documented. (Mitigation: Focus only on *significant* architectural decisions.)

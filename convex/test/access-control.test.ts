@@ -1,9 +1,9 @@
 import { expect, test, describe } from "vitest";
-import { 
-  canViewFullContent, 
-  needsSubscriptionUpgrade, 
-  getSubscriptionStatusMessage 
-} from "../helpers/access";
+import {
+  canViewFullContent,
+  needsSubscriptionUpgrade,
+  getSubscriptionStatusMessage
+} from "../helpers/subscriptionAccess";
 import { Doc, Id } from "../_generated/dataModel";
 
 // Helper function to create a mock member
@@ -30,20 +30,20 @@ describe("canViewFullContent", () => {
     expect(canViewFullContent(undefined)).toBe(false);
   });
 
-  test("should return false for free tier members", () => {
-    const freeMember = createMockMember({
-      tier: "free",
+  test("should return false for members without a tier", () => {
+    const memberWithoutTier = createMockMember({
+      tier: undefined,
       subscriptionStatus: "none",
     });
-    expect(canViewFullContent(freeMember)).toBe(false);
+    expect(canViewFullContent(memberWithoutTier)).toBe(false);
   });
 
-  test("should return true for active scholarship members", () => {
-    const scholarshipMember = createMockMember({
-      tier: "scholarship",
+  test("should return false for members with no tier even if active", () => {
+    const memberWithoutTier = createMockMember({
+      tier: undefined,
       subscriptionStatus: "active",
     });
-    expect(canViewFullContent(scholarshipMember)).toBe(true);
+    expect(canViewFullContent(memberWithoutTier)).toBe(false);
   });
 
   test("should return true for all active paid tiers", () => {
@@ -125,12 +125,12 @@ describe("needsSubscriptionUpgrade", () => {
     expect(needsSubscriptionUpgrade(undefined)).toBe(true);
   });
 
-  test("should return true for free tier members", () => {
-    const freeMember = createMockMember({
-      tier: "free",
+  test("should return true for members without a tier", () => {
+    const memberWithoutTier = createMockMember({
+      tier: undefined,
       subscriptionStatus: "none",
     });
-    expect(needsSubscriptionUpgrade(freeMember)).toBe(true);
+    expect(needsSubscriptionUpgrade(memberWithoutTier)).toBe(true);
   });
 
   test("should return false for active paid subscriptions", () => {
@@ -149,12 +149,12 @@ describe("needsSubscriptionUpgrade", () => {
     }
   });
 
-  test("should return false for active scholarship members", () => {
-    const scholarshipMember = createMockMember({
-      tier: "scholarship",
+  test("should return true for members with no tier even if active", () => {
+    const memberWithoutTier = createMockMember({
+      tier: undefined,
       subscriptionStatus: "active",
     });
-    expect(needsSubscriptionUpgrade(scholarshipMember)).toBe(false);
+    expect(needsSubscriptionUpgrade(memberWithoutTier)).toBe(true);
   });
 
   test("should return true for past_due subscriptions", () => {
@@ -204,9 +204,9 @@ describe("needsSubscriptionUpgrade", () => {
 
   test("needsSubscriptionUpgrade should be inverse of canViewFullContent", () => {
     const testCases = [
-      createMockMember({ tier: "free", subscriptionStatus: "none" }),
+      createMockMember({ tier: undefined, subscriptionStatus: "none" }),
       createMockMember({ tier: "member", subscriptionStatus: "active" }),
-      createMockMember({ tier: "scholarship", subscriptionStatus: "active" }),
+      createMockMember({ tier: "founding_member", subscriptionStatus: "active" }),
       createMockMember({ tier: "member", subscriptionStatus: "past_due" }),
       createMockMember({ 
         tier: "member", 
@@ -228,23 +228,23 @@ describe("needsSubscriptionUpgrade", () => {
 });
 
 describe("getSubscriptionStatusMessage", () => {
-  test("should show upgrade message for free tier", () => {
-    const freeMember = createMockMember({
-      tier: "free",
+  test("should show upgrade message for members without tier", () => {
+    const memberWithoutTier = createMockMember({
+      tier: undefined,
       subscriptionStatus: "none",
     });
-    expect(getSubscriptionStatusMessage(freeMember)).toBe(
-      "Free tier - Upgrade to access full content"
+    expect(getSubscriptionStatusMessage(memberWithoutTier)).toBe(
+      "No subscription - Upgrade to access full content"
     );
   });
 
-  test("should show scholarship message", () => {
-    const scholarshipMember = createMockMember({
-      tier: "scholarship",
+  test("should show active tier message for all paid tiers", () => {
+    const foundingMember = createMockMember({
+      tier: "founding_member",
       subscriptionStatus: "active",
     });
-    expect(getSubscriptionStatusMessage(scholarshipMember)).toBe(
-      "Scholarship member - Full access"
+    expect(getSubscriptionStatusMessage(foundingMember)).toBe(
+      "Active founding member subscription"
     );
   });
 
@@ -344,7 +344,7 @@ describe("getSubscriptionStatusMessage", () => {
       subscriptionStatus: undefined,
     });
     expect(getSubscriptionStatusMessage(member)).toBe(
-      "Free tier - Upgrade to access full content"
+      "No subscription - Upgrade to access full content"
     );
   });
 });

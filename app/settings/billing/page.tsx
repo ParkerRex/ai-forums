@@ -2,7 +2,6 @@
 
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -43,9 +42,7 @@ import { useState } from "react";
  * @returns {JSX.Element} The complete billing management interface
  */
 export default function BillingPage() {
-  // Next.js router for programmatic navigation to pricing page
-  // Used when free tier users want to upgrade their subscription
-  const router = useRouter();
+  // Note: Router removed since no free tier upgrade functionality needed
 
   // Loading state for the Stripe portal button to prevent double-clicks
   // This ensures users don't accidentally create multiple portal sessions
@@ -178,7 +175,9 @@ export default function BillingPage() {
           <div className="flex items-center justify-between">
             <CardTitle>Current Plan</CardTitle>
             {/* Tier badge with dynamic colors based on subscription level */}
-            <Badge className={getTierBadgeColor(subscriptionInfo.tier || "free")}>
+            <Badge
+              className={getTierBadgeColor(subscriptionInfo.tier || "free")}
+            >
               {subscriptionInfo.tierDisplay}
             </Badge>
           </div>
@@ -188,8 +187,8 @@ export default function BillingPage() {
             {/* Subscription Status Section */}
             {/* Shows current status with color-coded badges for quick recognition */}
             <div>
-              <p className="text-sm text-muted-foreground">Status</p>
-              <div className="flex items-center gap-2 mt-1">
+              <p className="text-muted-foreground text-sm">Status</p>
+              <div className="mt-1 flex items-center gap-2">
                 {/* Active status badge - green to indicate positive state */}
                 {subscriptionInfo.isActive && (
                   <Badge
@@ -231,153 +230,127 @@ export default function BillingPage() {
 
             {/* Billing Details Section */}
             {/* Only shown for paid tiers that have actual billing information */}
-            {/* Free and scholarship users don't need to see billing details */}
-            {subscriptionInfo.tier !== "free" &&
-              subscriptionInfo.tier !== "scholarship" && (
-                <>
-                  <Separator />
-                  {/* Two-column grid for billing interval and last payment info */}
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Billing Interval
-                      </p>
-                      {/* Shows whether user is billed monthly or yearly */}
-                      <p className="font-medium">
-                        {subscriptionInfo.billingIntervalDisplay || "N/A"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">
-                        Last Payment
-                      </p>
-                      {/* Shows last payment amount and date for transparency */}
-                      <p className="font-medium">
-                        {subscriptionInfo.lastPaymentAmount || "N/A"}
-                        {subscriptionInfo.lastPaymentDate && (
-                          <span className="text-sm text-muted-foreground ml-1">
-                            on {subscriptionInfo.lastPaymentDate}
-                          </span>
-                        )}
-                      </p>
-                    </div>
+            {/* Note: No free tier - platform operates with zero free users */}
+            {/* Scholarships handled via Stripe coupons, still show billing details */}
+            {subscriptionInfo.tier && (
+              <>
+                <Separator />
+                {/* Two-column grid for billing interval and last payment info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-muted-foreground text-sm">
+                      Billing Interval
+                    </p>
+                    {/* Shows whether user is billed monthly or yearly */}
+                    <p className="font-medium">
+                      {subscriptionInfo.billingIntervalDisplay || "N/A"}
+                    </p>
                   </div>
+                  <div>
+                    <p className="text-muted-foreground text-sm">
+                      Last Payment
+                    </p>
+                    {/* Shows last payment amount and date for transparency */}
+                    <p className="font-medium">
+                      {subscriptionInfo.lastPaymentAmount || "N/A"}
+                      {subscriptionInfo.lastPaymentDate && (
+                        <span className="text-muted-foreground ml-1 text-sm">
+                          on {subscriptionInfo.lastPaymentDate}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                </div>
 
-                  {/* Renewal Information Section */}
-                  {/* Only shown for active subscriptions that will auto-renew */}
-                  {/* Helps users understand when their next payment will occur */}
-                  {subscriptionInfo.renewalInfo &&
-                    subscriptionInfo.isActive &&
-                    !subscriptionInfo.cancelAtPeriodEnd && (
-                      <>
-                        <Separator />
-                        <div>
-                          <p className="text-sm text-muted-foreground">
-                            Next Billing Date
-                          </p>
-                          {/* Shows next billing date with descriptive renewal text */}
-                          <p className="font-medium">
-                            {subscriptionInfo.renewalInfo.nextBillingDate}
-                            <span className="text-sm text-muted-foreground ml-2">
-                              ({subscriptionInfo.renewalInfo.renewalText})
-                            </span>
-                          </p>
-                        </div>
-                      </>
-                    )}
+                {/* Renewal Information Section */}
+                {/* Only shown for active subscriptions that will auto-renew */}
+                {/* Helps users understand when their next payment will occur */}
+                {subscriptionInfo.renewalInfo &&
+                  subscriptionInfo.isActive &&
+                  !subscriptionInfo.cancelAtPeriodEnd && (
+                    <>
+                      <Separator />
+                      <div>
+                        <p className="text-muted-foreground text-sm">
+                          Next Billing Date
+                        </p>
+                        {/* Shows next billing date with descriptive renewal text */}
+                        <p className="font-medium">
+                          {subscriptionInfo.renewalInfo.nextBillingDate}
+                          <span className="text-muted-foreground ml-2 text-sm">
+                            ({subscriptionInfo.renewalInfo.renewalText})
+                          </span>
+                        </p>
+                      </div>
+                    </>
+                  )}
 
-                  {/* Cancellation Notice Section */}
-                  {/* Warning banner for subscriptions set to cancel at period end */}
-                  {/* Uses yellow color scheme to indicate important information */}
-                  {subscriptionInfo.cancelAtPeriodEnd && (
-                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-3">
-                      <div className="flex items-start gap-2">
-                        {/* Alert icon to draw attention to the cancellation notice */}
-                        <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
-                        <div className="text-sm">
-                          <p className="font-medium text-yellow-800 dark:text-yellow-200">
-                            Subscription set to cancel
-                          </p>
-                          {/* Clear information about when the subscription will end */}
-                          <p className="text-yellow-700 dark:text-yellow-300 mt-1">
-                            Your subscription will end on{" "}
-                            {subscriptionInfo.renewalInfo?.nextBillingDate}
-                          </p>
-                        </div>
+                {/* Cancellation Notice Section */}
+                {/* Warning banner for subscriptions set to cancel at period end */}
+                {/* Uses yellow color scheme to indicate important information */}
+                {subscriptionInfo.cancelAtPeriodEnd && (
+                  <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
+                    <div className="flex items-start gap-2">
+                      {/* Alert icon to draw attention to the cancellation notice */}
+                      <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />
+                      <div className="text-sm">
+                        <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                          Subscription set to cancel
+                        </p>
+                        {/* Clear information about when the subscription will end */}
+                        <p className="mt-1 text-yellow-700 dark:text-yellow-300">
+                          Your subscription will end on{" "}
+                          {subscriptionInfo.renewalInfo?.nextBillingDate}
+                        </p>
                       </div>
                     </div>
-                  )}
-                </>
-              )}
-
-            {/* Special Status Messages Section */}
-            {/* Different messages for scholarship and free tier users */}
-
-            {/* Scholarship user message - green background for positive association */}
-            {subscriptionInfo.tier === "scholarship" && (
-              <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-3">
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  You have been granted scholarship access with full member
-                  benefits at no cost.
-                </p>
-              </div>
+                  </div>
+                )}
+              </>
             )}
 
-            {/* Free tier user message with upgrade call-to-action */}
-            {subscriptionInfo.tier === "free" && (
-              <div className="bg-muted rounded-lg p-3">
-                <p className="text-sm">
-                  Upgrade to Pro to unlock all features and join the community.
-                </p>
-                {/* Button to navigate to pricing page for upgrade */}
-                <Button
-                  className="mt-3"
-                  onClick={() => router.push("/pricing")}
-                >
-                  View Pricing
-                </Button>
-              </div>
-            )}
+            {/* Note: No free tier - platform operates with zero free users */}
+            {/* Scholarships handled via Stripe coupons with early_bird tier */}
           </div>
         </CardContent>
       </Card>
 
       {/* Subscription Management Actions Card */}
       {/* Only shown for paid subscribers who can manage their subscription */}
-      {/* Free and scholarship users don't need subscription management options */}
-      {subscriptionInfo.tier !== "free" &&
-        subscriptionInfo.tier !== "scholarship" && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Subscription Management</CardTitle>
-              <CardDescription>
-                Update your payment method, download invoices, or cancel your
-                subscription
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {/* Main action button to access Stripe customer portal */}
-              {/* Responsive width - full on mobile, auto on larger screens */}
-              <Button
-                onClick={handleManageSubscription}
-                disabled={isLoadingPortal}
-                className="w-full sm:w-auto"
-              >
-                {/* Credit card icon to indicate billing/payment functionality */}
-                <CreditCard className="h-4 w-4 mr-2" />
-                {/* Dynamic text based on loading state */}
-                {isLoadingPortal ? "Loading..." : "Manage Subscription"}
-                {/* External link icon to indicate navigation to external site */}
-                <ExternalLink className="h-3 w-3 ml-2" />
-              </Button>
-              {/* Informational text about the redirect to build user trust */}
-              <p className="text-sm text-muted-foreground mt-3">
-                You&apos;ll be redirected to our secure billing portal powered
-                by Stripe
-              </p>
-            </CardContent>
-          </Card>
-        )}
+      {/* Note: No free tier - all users have paid subscriptions */}
+      {/* Scholarships handled via Stripe coupons, still show management options */}
+      {subscriptionInfo.tier && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Subscription Management</CardTitle>
+            <CardDescription>
+              Update your payment method, download invoices, or cancel your
+              subscription
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {/* Main action button to access Stripe customer portal */}
+            {/* Responsive width - full on mobile, auto on larger screens */}
+            <Button
+              onClick={handleManageSubscription}
+              disabled={isLoadingPortal}
+              className="w-full sm:w-auto"
+            >
+              {/* Credit card icon to indicate billing/payment functionality */}
+              <CreditCard className="mr-2 h-4 w-4" />
+              {/* Dynamic text based on loading state */}
+              {isLoadingPortal ? "Loading..." : "Manage Subscription"}
+              {/* External link icon to indicate navigation to external site */}
+              <ExternalLink className="ml-2 h-3 w-3" />
+            </Button>
+            {/* Informational text about the redirect to build user trust */}
+            <p className="text-muted-foreground mt-3 text-sm">
+              You&apos;ll be redirected to our secure billing portal powered by
+              Stripe
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Payments History Card */}
       {/* Only shown if user has payment history to display */}
@@ -391,47 +364,49 @@ export default function BillingPage() {
             <CardContent>
               <div className="space-y-3">
                 {/* Map through recent payments to display each transaction */}
-                {subscriptionInfo.recentPayments.map((payment: {
-                  id: string;
-                  date: string;
-                  amount: string;
-                  status: string;
-                  description: string;
-                }) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between py-2"
-                  >
-                    {/* Left side: Payment details with receipt icon */}
-                    <div className="flex items-center gap-3">
-                      {/* Receipt icon for visual consistency */}
-                      <Receipt className="h-4 w-4 text-muted-foreground" />
-                      <div>
-                        {/* Payment amount in bold for emphasis */}
-                        <p className="font-medium">{payment.amount}</p>
-                        {/* Payment date in muted color for hierarchy */}
-                        <p className="text-sm text-muted-foreground">
-                          {payment.date}
-                        </p>
-                      </div>
-                    </div>
-                    {/* Right side: Payment status badge with conditional styling */}
-                    <Badge
-                      variant={
-                        payment.status === "succeeded"
-                          ? "outline"
-                          : "destructive"
-                      }
-                      className={
-                        payment.status === "succeeded"
-                          ? "border-green-500 text-green-600"
-                          : ""
-                      }
+                {subscriptionInfo.recentPayments.map(
+                  (payment: {
+                    id: string;
+                    date: string;
+                    amount: string;
+                    status: string;
+                    description: string;
+                  }) => (
+                    <div
+                      key={payment.id}
+                      className="flex items-center justify-between py-2"
                     >
-                      {payment.status}
-                    </Badge>
-                  </div>
-                ))}
+                      {/* Left side: Payment details with receipt icon */}
+                      <div className="flex items-center gap-3">
+                        {/* Receipt icon for visual consistency */}
+                        <Receipt className="text-muted-foreground h-4 w-4" />
+                        <div>
+                          {/* Payment amount in bold for emphasis */}
+                          <p className="font-medium">{payment.amount}</p>
+                          {/* Payment date in muted color for hierarchy */}
+                          <p className="text-muted-foreground text-sm">
+                            {payment.date}
+                          </p>
+                        </div>
+                      </div>
+                      {/* Right side: Payment status badge with conditional styling */}
+                      <Badge
+                        variant={
+                          payment.status === "succeeded"
+                            ? "outline"
+                            : "destructive"
+                        }
+                        className={
+                          payment.status === "succeeded"
+                            ? "border-green-500 text-green-600"
+                            : ""
+                        }
+                      >
+                        {payment.status}
+                      </Badge>
+                    </div>
+                  ),
+                )}
               </div>
             </CardContent>
           </Card>

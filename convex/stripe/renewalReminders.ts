@@ -8,11 +8,7 @@ export const checkAndSendReminders = internalMutation({
     const activeMembers = await ctx.db
       .query("members")
       .filter((q) => 
-        q.and(
-          q.eq(q.field("subscriptionStatus"), "active"),
-          q.neq(q.field("tier"), "free"),
-          q.neq(q.field("tier"), "scholarship")
-        )
+        q.eq(q.field("subscriptionStatus"), "active")
       )
       .collect();
 
