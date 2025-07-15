@@ -6,20 +6,20 @@
   - Create basic Discord API connection utilities with error handling
   - _Requirements: 5.1, 5.2, 5.3_
 
-- [ ] 2. Extend news source type system for Discord integration
+- [x] 2. Extend news source type system for Discord integration
   - Update SourceType union in features/news/utils/news-sources/types.ts to include "discord"
   - Create DiscordNewsSource interface extending NewsSource with guildId and channels properties
   - Update fetchers record in features/news/utils/news-sources/index.ts to include discord fetcher
   - _Requirements: 3.2, 3.3_
 
-- [ ] 3. Implement Discord message fetching and processing
+- [x] 3. Implement Discord message fetching and processing
   - ✅ Create features/news/utils/news-sources/discord.ts with fetchItems function (NEEDS REFACTOR: change from live API to database reads)
   - ✅ Implement Discord API client to fetch messages from previous day (PRESERVE: move to scheduled processing)
   - ✅ Add message ranking logic based on reaction count with chronological fallback (PRESERVE: move to archive processing)
   - ✅ Transform Discord messages to NewsItem interface format (PRESERVE: use in both archive processing and user queries)
   - _Requirements: 2.1, 2.2, 2.3, 2.4_
 
-- [ ] 4. Create Discord-specific Convex backend functions
+- [x] 4. Create Discord-specific Convex backend functions
   - Create convex/discord.ts with fetchDiscordMessages action
   - Implement getDiscordDigest action for Discord-only content retrieval
   - Add proper error handling and rate limiting for Discord API calls

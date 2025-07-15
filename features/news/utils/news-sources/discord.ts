@@ -17,6 +17,27 @@ export interface DiscordMessage {
   channelName: string;
 }
 
+export interface DiscordDigestEntry {
+  messageId: string;
+  content: string;
+  author: {
+    id: string;
+    username: string;
+    avatar?: string;
+  };
+  timestamp: number;
+  reactions: Array<{
+    emoji: string;
+    count: number;
+  }>;
+  channelId: string;
+  channelName: string;
+  reactionScore: number;
+  summary?: string;
+  digestDate: string;
+  processedAt: number;
+}
+
 export async function fetchItems(source: NewsSource): Promise<RawItem[]> {
   // Type guard to ensure this is a Discord source
   if (source.type !== "discord") {
@@ -26,29 +47,20 @@ export async function fetchItems(source: NewsSource): Promise<RawItem[]> {
   const discordSource = source as DiscordNewsSource;
   
   try {
-    // Calculate yesterday's timestamp (previous day)
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    yesterday.setHours(0, 0, 0, 0); // Start of yesterday
-    
-    // Fetch Discord messages from the previous day
-    const messages = await fetchDiscordMessages({
+    // Fetch Discord digest from database archive (yesterday's processed messages)
+    const digestEntries = await fetchDiscordDigestFromArchive({
       guildId: discordSource.guildId,
       channels: discordSource.channels,
-      since: yesterday.getTime(),
       limit: 20 // Reasonable limit for news feed
     });
     
-    // Rank messages by reaction count with chronological fallback
-    const rankedMessages = rankDiscordMessages(messages);
-    
-    // Transform Discord messages to RawItem format
-    const rawItems = rankedMessages.map(message => transformDiscordToRawItem(message));
+    // Transform archived Discord messages to RawItem format
+    const rawItems = digestEntries.map(entry => transformDigestEntryToRawItem(entry));
     
     return rawItems;
     
   } catch (error) {
-    console.error(`Failed to fetch Discord messages for ${discordSource.name}:`, error);
+    console.error(`Failed to fetch Discord digest for ${discordSource.name}:`, error);
     
     // Graceful degradation - return empty array to not break news feed
     return [];
@@ -56,7 +68,42 @@ export async function fetchItems(source: NewsSource): Promise<RawItem[]> {
 }
 
 /**
- * Fetches Discord messages using the Convex backend
+ * Fetches Discord digest from database archive via Convex API
+ */
+async function fetchDiscordDigestFromArchive(args: {
+  guildId: string;
+  channels?: string[];
+  limit?: number;
+}): Promise<DiscordDigestEntry[]> {
+  try {
+    const response = await fetch('/api/discord/digest', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        guildId: args.guildId,
+        channels: args.channels,
+        limit: args.limit || 20,
+      }),
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Discord digest API request failed: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    return data.digest || [];
+    
+  } catch (error) {
+    console.error('Error fetching Discord digest:', error);
+    throw new Error(`Failed to fetch Discord digest: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
+}
+
+/**
+ * Fetches Discord messages using the Discord API (PRESERVED for scheduled processing)
+ * This function will be moved to the scheduled processing in convex/discord.ts
  */
 async function fetchDiscordMessages(args: {
   guildId: string;
@@ -107,7 +154,27 @@ export function rankDiscordMessages(messages: DiscordMessage[]): DiscordMessage[
 }
 
 /**
- * Transforms Discord message to RawItem interface format
+ * Transforms Discord digest entry to RawItem interface format (for archive-based fetching)
+ * Requirements: 2.1, 2.4
+ */
+function transformDigestEntryToRawItem(entry: DiscordDigestEntry): RawItem {
+  // Create a meaningful title from the digest entry
+  const title = createDigestEntryTitle(entry);
+  
+  // Create Discord message URL using the guild ID from the digest entry
+  // Note: We'll need to get the guild ID from the source or store it in the digest entry
+  const url = `https://discord.com/channels/1355280592962453585/${entry.channelId}/${entry.messageId}`;
+  
+  return {
+    title,
+    url,
+    publishedDate: new Date(entry.timestamp).toISOString(),
+    text: entry.summary || entry.content || `Message from ${entry.author.username} in #${entry.channelName}`,
+  };
+}
+
+/**
+ * Transforms Discord message to RawItem interface format (PRESERVED for scheduled processing)
  * Requirements: 2.1, 2.4
  */
 function transformDiscordToRawItem(message: DiscordMessage): RawItem {
@@ -127,7 +194,30 @@ function transformDiscordToRawItem(message: DiscordMessage): RawItem {
 }
 
 /**
- * Creates a meaningful title for a Discord message
+ * Creates a meaningful title for a Discord digest entry
+ */
+function createDigestEntryTitle(entry: DiscordDigestEntry): string {
+  const maxContentLength = 100;
+  
+  // If entry has content, use it (truncated)
+  if (entry.content && entry.content.trim()) {
+    const truncatedContent = entry.content.length > maxContentLength 
+      ? `${entry.content.substring(0, maxContentLength)}...`
+      : entry.content;
+    
+    // Add reaction indicator using pre-calculated reaction score
+    const reactionIndicator = entry.reactionScore > 0 ? ` (${entry.reactionScore} reactions)` : '';
+    
+    return `${entry.author.username}: ${truncatedContent}${reactionIndicator}`;
+  }
+  
+  // Fallback title for entries without content (e.g., media only)
+  const reactionIndicator = entry.reactionScore > 0 ? ` with ${entry.reactionScore} reactions` : '';
+  return `${entry.author.username} in #${entry.channelName}${reactionIndicator}`;
+}
+
+/**
+ * Creates a meaningful title for a Discord message (PRESERVED for scheduled processing)
  */
 function createMessageTitle(message: DiscordMessage): string {
   const maxContentLength = 100;

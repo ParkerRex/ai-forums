@@ -998,6 +998,39 @@ const newsFeedCache = defineTable({
   .index("by_createdAt", ["createdAt"]);
 
 /**
+ * Discord Digest table - Archive of processed Discord messages for daily digest
+ * 
+ * Stores processed Discord messages from the previous day with pre-calculated rankings
+ * and AI-generated summaries. This archive-based approach provides better performance
+ * and reliability than live Discord API calls for the news feed integration.
+ */
+const discordDigest = defineTable({
+  messageId: v.string(),                     // Discord message ID (unique)
+  content: v.string(),                       // Original message content
+  author: v.object({                         // Message author information
+    id: v.string(),                          // Discord user ID
+    username: v.string(),                    // Discord username
+    avatar: v.optional(v.string()),          // Avatar URL
+  }),
+  timestamp: v.number(),                     // Unix timestamp of original message
+  reactions: v.array(v.object({              // Reaction data from Discord
+    emoji: v.string(),                       // Emoji identifier
+    count: v.number(),                       // Number of reactions
+  })),
+  channelId: v.string(),                     // Discord channel ID
+  channelName: v.string(),                   // Human-readable channel name
+  reactionScore: v.number(),                 // Pre-calculated total reaction count for sorting
+  summary: v.optional(v.string()),           // AI-generated summary via Exa
+  digestDate: v.string(),                    // YYYY-MM-DD format for the digest day
+  processedAt: v.number(),                   // When this entry was processed and stored
+})
+  // Indexes for efficient Discord digest queries
+  .index("by_digest_date", ["digestDate"])                    // Get messages for specific date
+  .index("by_reaction_score", ["digestDate", "reactionScore"]) // Ranked messages for date
+  .index("by_message_id", ["messageId"])                      // Prevent duplicate processing
+  .index("by_processed_at", ["processedAt"]);                 // Processing audit trail
+
+/**
  * Complete database schema export for the VAI community platform.
  * 
  * This schema defines a comprehensive social platform with:
@@ -1031,4 +1064,5 @@ export default defineSchema({
   payments,         // Payment transaction history
   stripeWebhookEvents, // Webhook event processing
   newsFeedCache,    // News feed caching system
+  discordDigest,    // Discord daily digest archive
 });

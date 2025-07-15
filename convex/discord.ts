@@ -1,11 +1,33 @@
 "use node";
 
-import { action } from "./_generated/server";
+import { action, query, mutation, internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { createDiscordClient, DiscordMessage, handleDiscordError, RateLimiter } from "../lib/discord";
 import { summarize } from "../lib/exa-client";
 
-// NewsItem interface for Discord digest
+// Discord digest entry interface matching the database schema
+interface DiscordDigestEntry {
+  messageId: string;
+  content: string;
+  author: {
+    id: string;
+    username: string;
+    avatar?: string;
+  };
+  timestamp: number;
+  reactions: Array<{
+    emoji: string;
+    count: number;
+  }>;
+  channelId: string;
+  channelName: string;
+  reactionScore: number;
+  summary?: string;
+  digestDate: string;
+  processedAt: number;
+}
+
+// NewsItem interface for Discord digest (matches the news feed system)
 interface NewsItem {
   title: string;
   url: string;
@@ -17,6 +39,18 @@ interface NewsItem {
 
 // Rate limiter instance for Discord API calls
 const rateLimiter = new RateLimiter(50, 60000); // 50 requests per minute
+
+// Helper function to get yesterday's date in YYYY-MM-DD format
+function getYesterdayDateString(): string {
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  return yesterday.toISOString().split('T')[0];
+}
+
+// Helper function to get date string from timestamp
+function getDateString(timestamp: number): string {
+  return new Date(timestamp).toISOString().split('T')[0];
+}
 
 export const testDiscordConnection = action({
   args: {},
@@ -222,33 +256,144 @@ function createMessageTitle(message: DiscordMessage): string {
   return `${message.author.username} in #${message.channelName}${reactionIndicator}`;
 }
 
-export const getDiscordDigest = action({
+// Scheduled action to collect and process Discord messages (for cron job)
+// Requirements: 2.1, 2.2, 2.3, 2.4, 2.5 - Daily collection, ranking, and summarization
+export const processDiscordDigest = internalAction({
   args: {
-    userId: v.optional(v.id("members")),
-    limit: v.optional(v.number()),
+    targetDate: v.string(), // YYYY-MM-DD format
   },
-  handler: async (_ctx, args) => {
+  handler: async (ctx, args) => {
     try {
-      // Calculate yesterday's timestamp
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      yesterday.setHours(0, 0, 0, 0); // Start of yesterday
+      console.log(`Processing Discord digest for ${args.targetDate}`);
       
+      // Calculate timestamp range for the target date
+      const targetDateObj = new Date(args.targetDate);
+      const startOfDay = new Date(targetDateObj);
+      startOfDay.setHours(0, 0, 0, 0);
+      const endOfDay = new Date(targetDateObj);
+      endOfDay.setHours(23, 59, 59, 999);
+      
+      // Fetch messages from Discord API for the target date
       const messages = await _fetchDiscordMessages({
-        since: yesterday.getTime(),
-        limit: args.limit || 20,
+        since: startOfDay.getTime(),
+        limit: 100, // Higher limit for processing
       });
       
-      // Transform Discord messages to NewsItem format with Exa summarization
-      const newsItems = await Promise.all(
-        messages.map(async (message) => await transformDiscordToNewsItem(message))
-      );
+      // Filter messages to only include those from the target date
+      const targetDateMessages = messages.filter(message => {
+        const messageDate = getDateString(new Date(message.timestamp).getTime());
+        return messageDate === args.targetDate;
+      });
       
-      return newsItems;
+      console.log(`Found ${targetDateMessages.length} messages for ${args.targetDate}`);
+      
+      // Process and store messages in database
+      const processedCount = await processAndStoreMessages(ctx, targetDateMessages, args.targetDate);
+      
+      console.log(`Successfully processed ${processedCount} Discord messages for ${args.targetDate}`);
+      return { success: true, processedCount };
       
     } catch (error) {
-      console.error("Failed to get Discord digest:", error);
-      throw new Error(`Discord digest failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error(`Discord digest processing failed for ${args.targetDate}:`, error);
+      // Don't throw - let other cron jobs continue
+      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+    }
+  },
+});
+
+// Helper function to process messages and store them in the database
+async function processAndStoreMessages(
+  ctx: any,
+  messages: DiscordMessage[],
+  digestDate: string
+): Promise<number> {
+  let processedCount = 0;
+  const processedAt = Date.now();
+  
+  for (const message of messages) {
+    try {
+      // Check if message already exists to prevent duplicates
+      const existing = await ctx.db
+        .query("discordDigest")
+        .withIndex("by_message_id", (q: any) => q.eq("messageId", message.id))
+        .first();
+      
+      if (existing) {
+        console.log(`Skipping duplicate message ${message.id}`);
+        continue;
+      }
+      
+      // Calculate reaction score
+      const reactionScore = message.reactions.reduce((sum, r) => sum + r.count, 0);
+      
+      // Generate summary using Exa
+      let summary: string | undefined;
+      try {
+        if (message.content && message.content.trim()) {
+          const contentForSummary = `Discord message from ${message.author.username} in #${message.channelName}: ${message.content}`;
+          summary = await summarize(contentForSummary);
+        }
+      } catch (error) {
+        console.error(`Failed to summarize message ${message.id}:`, error);
+        // Continue without summary
+      }
+      
+      // Store in database
+      await ctx.db.insert("discordDigest", {
+        messageId: message.id,
+        content: message.content,
+        author: {
+          id: message.author.id,
+          username: message.author.username,
+          avatar: message.author.avatar,
+        },
+        timestamp: new Date(message.timestamp).getTime(),
+        reactions: message.reactions,
+        channelId: message.channelId,
+        channelName: message.channelName,
+        reactionScore,
+        summary,
+        digestDate,
+        processedAt,
+      });
+      
+      processedCount++;
+      
+    } catch (error) {
+      console.error(`Failed to process message ${message.id}:`, error);
+      // Continue with other messages
+    }
+  }
+  
+  return processedCount;
+}
+
+// Query to get archived Discord digest for users (replaces the old action)
+// Requirements: 4.1, 4.2, 4.3 - Database-based digest retrieval
+export const getDiscordDigest = query({
+  args: {
+    digestDate: v.optional(v.string()), // Defaults to yesterday
+    limit: v.optional(v.number()),
+    userId: v.optional(v.id("members")),
+  },
+  handler: async (ctx, args) => {
+    const targetDate = args.digestDate || getYesterdayDateString();
+    
+    try {
+      // Fetch from database archive, sorted by reaction score
+      const digestEntries = await ctx.db
+        .query("discordDigest")
+        .withIndex("by_reaction_score", (q) => 
+          q.eq("digestDate", targetDate)
+        )
+        .order("desc")
+        .take(args.limit || 50);
+      
+      return digestEntries;
+      
+    } catch (error) {
+      console.error('Failed to fetch Discord digest:', error);
+      return []; // Always return empty array, never throw
     }
   },
 });
