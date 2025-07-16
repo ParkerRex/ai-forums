@@ -1,7 +1,9 @@
+
 import { v } from "convex/values";
 import { action, mutation } from "../_generated/server";
 import { api } from "../_generated/api";
 import Stripe from "stripe";
+import { getStripePrice, type Tier, type BillingInterval } from "./pricing";
 
 // Lazily instantiate the Stripe client so Convex's module analyzer
 // doesn't require the secret key at import-time.
@@ -55,10 +57,9 @@ export const getMemberAndUpdateStripeCustomer = mutation({
 
 export const createCheckoutSession = action({
   args: {
-    priceId: v.string(),
     tier: v.union(
       v.literal("founding_member"),
-      v.literal("early_bird"),
+      v.literal("early_bird"), 
       v.literal("member")
     ),
     billingInterval: v.union(
@@ -68,6 +69,9 @@ export const createCheckoutSession = action({
     couponCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    // Server-side price lookup
+    const priceId = getStripePrice(args.tier, args.billingInterval);
+    
     // Get member data from database
     const member = await ctx.runMutation(api.stripe.checkout.getMemberAndUpdateStripeCustomer, {});
 
@@ -100,7 +104,7 @@ export const createCheckoutSession = action({
       mode: "subscription",
       line_items: [
         {
-          price: args.priceId,
+          price: priceId,
           quantity: 1,
         },
       ],

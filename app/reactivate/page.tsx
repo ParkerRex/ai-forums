@@ -188,19 +188,8 @@ export default function ReactivatePage() {
         throw new Error("No subscription tier found");
       }
 
-      // Construct the environment variable key for the specific tier and billing period
-      // Format: NEXT_PUBLIC_STRIPE_FOUNDING_MEMBER_YEARLY_PRICE_ID
-      const priceIdKey = `NEXT_PUBLIC_STRIPE_${subscriptionInfo.tier.toUpperCase()}_${billingPeriod.toUpperCase()}_PRICE_ID`;
-      const priceId = process.env[priceIdKey];
-
-      // Validate that the price configuration exists for this tier/period combination
-      if (!priceId) {
-        throw new Error("Price configuration not found");
-      }
-
       // Create Stripe checkout session with tier-specific parameters
       const { checkoutUrl } = await createCheckoutSession({
-        priceId,
         tier: subscriptionInfo.tier as
           | "founding_member"
           | "early_bird"

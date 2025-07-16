@@ -17,6 +17,7 @@
 import { action } from "../_generated/server";
 import { v } from "convex/values";
 import Stripe from "stripe";
+import { getStripePrice } from "./pricing";
 
 // Initialize Stripe client
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
@@ -48,11 +49,8 @@ export const createDirectCheckout = action({
   },
   handler: async (ctx, { email, sourcePostId }) => {
     try {
-      // Get the monthly price ID from environment
-      const priceId = process.env.STRIPE_MEMBER_MONTHLY_PRICE_ID;
-      if (!priceId) {
-        throw new Error("Stripe monthly price ID not configured");
-      }
+      // Get the monthly price ID from centralized configuration
+      const priceId = getStripePrice("member", "monthly");
 
       // Create metadata for tracking
       const metadata: Record<string, string> = {
@@ -118,11 +116,8 @@ export const createDirectCheckoutYearly = action({
   },
   handler: async (ctx, { email, sourcePostId }) => {
     try {
-      // Get the yearly price ID from environment
-      const priceId = process.env.STRIPE_MEMBER_YEARLY_PRICE_ID;
-      if (!priceId) {
-        throw new Error("Stripe yearly price ID not configured");
-      }
+      // Get the yearly price ID from centralized configuration
+      const priceId = getStripePrice("member", "yearly");
 
       // Create metadata for tracking
       const metadata: Record<string, string> = {

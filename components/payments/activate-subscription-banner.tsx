@@ -171,10 +171,8 @@ export function ActivateSubscriptionBanner() {
             : "member";
 
       // Use member tier pricing for now (you'll set up tier-specific pricing)
-      const priceId = process.env.NEXT_PUBLIC_STRIPE_MEMBER_MONTHLY_PRICE_ID!;
 
       const result = await createCheckoutSession({
-        priceId,
         tier,
         billingInterval: "monthly",
       });

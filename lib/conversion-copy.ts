@@ -27,7 +27,7 @@ export interface SuccessCopy {
  */
 export const paywallCopy: Record<PaywallVariant, PaywallCopy> = {
   default: {
-    headline: "The good stuff is behind the paywall 🎯",
+    headline: "The good stuff is behind the paywall",
     subheadline: "No BS. No annual contracts. Just $99/mo for everything.",
     cta: "Get instant access → $99/mo",
     trustSignals: [

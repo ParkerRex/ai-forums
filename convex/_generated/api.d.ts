@@ -73,6 +73,7 @@ import type * as stripe_directCheckout from "../stripe/directCheckout.js";
 import type * as stripe_getSubscriptionInfo from "../stripe/getSubscriptionInfo.js";
 import type * as stripe_monitoring from "../stripe/monitoring.js";
 import type * as stripe_portal from "../stripe/portal.js";
+import type * as stripe_pricing from "../stripe/pricing.js";
 import type * as stripe_refund from "../stripe/refund.js";
 import type * as stripe_renewalReminders from "../stripe/renewalReminders.js";
 import type * as stripe_retryFailedPayment from "../stripe/retryFailedPayment.js";
@@ -149,6 +150,7 @@ declare const fullApi: ApiFromModules<{
   "stripe/getSubscriptionInfo": typeof stripe_getSubscriptionInfo;
   "stripe/monitoring": typeof stripe_monitoring;
   "stripe/portal": typeof stripe_portal;
+  "stripe/pricing": typeof stripe_pricing;
   "stripe/refund": typeof stripe_refund;
   "stripe/renewalReminders": typeof stripe_renewalReminders;
   "stripe/retryFailedPayment": typeof stripe_retryFailedPayment;

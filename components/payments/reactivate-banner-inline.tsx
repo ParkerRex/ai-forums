@@ -87,11 +87,7 @@ export function ReactivateBannerInline() {
     try {
       setIsCreatingSession(true);
 
-      // Use member tier pricing for testing (you'll need to set up tier-specific pricing later)
-      const priceId = process.env.NEXT_PUBLIC_STRIPE_MEMBER_MONTHLY_PRICE_ID!;
-
       const result = await createCheckoutSession({
-        priceId,
         tier:
           currentMember.tier === "founding_member"
             ? "founding_member"

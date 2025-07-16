@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 import { SignInModal } from "../auth/sign-in-modal";
 import { toast } from "sonner";
-import { getStripeConfig, isStripeConfigured } from "@/lib/stripe-config";
+
 import { formatCurrency } from "@/lib/format";
 import { checkoutAnalytics } from "@/lib/analytics";
 
@@ -117,8 +117,11 @@ export function MembershipCTAModal({
     }
   }, [open, source]);
 
-  // Get Stripe configuration with validation
-  const stripeConfig = isStripeConfigured() ? getStripeConfig() : null;
+  // Pricing configuration (now handled server-side)
+  const PRICING = {
+    memberMonthlyPrice: 99,
+    memberYearlyPrice: 990,
+  };
 
   const features = [
     {
@@ -159,8 +162,8 @@ export function MembershipCTAModal({
     member: {
       name: "VAI Pro",
       description: "Everything you need to excel in AI",
-      monthlyPrice: stripeConfig?.memberMonthlyPrice || 99,
-      yearlyPrice: stripeConfig?.memberYearlyPrice || 990,
+      monthlyPrice: PRICING.memberMonthlyPrice,
+      yearlyPrice: PRICING.memberYearlyPrice,
       badge: "Most Popular",
       badgeVariant: "default" as const,
     },
@@ -180,27 +183,13 @@ export function MembershipCTAModal({
       return;
     }
 
-    if (!stripeConfig) {
-      console.error("Stripe configuration not found");
-      toast.error(
-        "Payment system is not properly configured. Please contact support.",
-      );
-      return;
-    }
-
     // Track checkout initiation
     const price = billingInterval === "monthly" ? monthlyPrice : yearlyPrice;
     checkoutAnalytics.checkoutInitiated(selectedTier, billingInterval, price);
 
     setIsLoading(true);
     try {
-      const priceId =
-        billingInterval === "monthly"
-          ? stripeConfig.memberMonthlyPriceId
-          : stripeConfig.memberYearlyPriceId;
-
       const result = await createCheckoutSession({
-        priceId,
         tier: selectedTier,
         billingInterval,
       });
