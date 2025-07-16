@@ -2,6 +2,7 @@
 
 import { action, query, mutation, internalAction } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { createDiscordClient, DiscordMessage, handleDiscordError, RateLimiter } from "../lib/discord";
 import { summarize } from "../lib/exa-client";
 
@@ -315,7 +316,7 @@ async function processAndStoreMessages(
       // Check if message already exists to prevent duplicates
       const existing = await ctx.db
         .query("discordDigest")
-        .withIndex("by_message_id", (q: any) => q.eq("messageId", message.id))
+        .withIndex("by_message_id", (q) => q.eq("messageId", message.id))
         .first();
       
       if (existing) {
@@ -368,32 +369,34 @@ async function processAndStoreMessages(
   return processedCount;
 }
 
-// Query to get archived Discord digest for users (replaces the old action)
-// Requirements: 4.1, 4.2, 4.3 - Database-based digest retrieval
-export const getDiscordDigest = query({
+
+
+// Manual trigger for Discord digest processing (for testing)
+export const manualProcessDiscordDigest = action({
   args: {
-    digestDate: v.optional(v.string()), // Defaults to yesterday
-    limit: v.optional(v.number()),
-    userId: v.optional(v.id("members")),
+    targetDate: v.optional(v.string()), // Defaults to yesterday
   },
   handler: async (ctx, args) => {
-    const targetDate = args.digestDate || getYesterdayDateString();
+    const targetDate = args.targetDate || getYesterdayDateString();
     
     try {
-      // Fetch from database archive, sorted by reaction score
-      const digestEntries = await ctx.db
-        .query("discordDigest")
-        .withIndex("by_reaction_score", (q) => 
-          q.eq("digestDate", targetDate)
-        )
-        .order("desc")
-        .take(args.limit || 50);
+      // Call the internal action
+      const result = await ctx.runAction(internal.discord.processDiscordDigest, {
+        targetDate
+      });
       
-      return digestEntries;
-      
+      return {
+        success: true,
+        message: `Discord digest processing completed for ${targetDate}`,
+        result
+      };
     } catch (error) {
-      console.error('Failed to fetch Discord digest:', error);
-      return []; // Always return empty array, never throw
+      console.error("Manual Discord digest processing failed:", error);
+      return {
+        success: false,
+        message: `Discord digest processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        targetDate
+      };
     }
   },
 });

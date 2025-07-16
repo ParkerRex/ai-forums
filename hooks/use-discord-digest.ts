@@ -94,7 +94,7 @@ export function useDiscordDigest(limit?: number) {
 
   // Convex queries
   const discordDigestData = useQuery(
-    api.discord.getDiscordDigest,
+    api.discordQueries.getDiscordDigest,
     member ? { 
       userId: member._id, 
       limit: limit || 20
