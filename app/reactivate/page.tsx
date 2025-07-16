@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -56,9 +56,9 @@ export default function ReactivatePage() {
     api.stripe.getSubscriptionInfo.getSubscriptionInfo,
   );
 
-  // Convex mutation to create Stripe checkout sessions for subscription reactivation
+  // Convex action to create Stripe checkout sessions for subscription reactivation
   // Handles server-side Stripe integration with tier-specific pricing
-  const createCheckoutSession = useMutation(
+  const createCheckoutSession = useAction(
     api.stripe.checkout.createCheckoutSession,
   );
 

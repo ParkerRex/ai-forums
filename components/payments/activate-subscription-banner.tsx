@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -24,7 +24,7 @@ import { Button } from "@/components/ui/button";
 export function ActivateSubscriptionBanner() {
   const router = useRouter();
   const currentMember = useQuery(api.auth.current);
-  const createCheckoutSession = useMutation(
+  const createCheckoutSession = useAction(
     api.stripe.checkout.createCheckoutSession,
   );
 
@@ -97,6 +97,7 @@ export function ActivateSubscriptionBanner() {
 
     return false;
   };
+  //  TODO: update this to be dynamic
 
   /**
    * Get tier-specific pricing information

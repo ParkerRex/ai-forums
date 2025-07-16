@@ -3,7 +3,7 @@
 import { useState } from "react";
 import React from "react";
 import { useAuth } from "@clerk/nextjs";
-import { useMutation } from "convex/react";
+import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import {
   Dialog,
@@ -106,7 +106,7 @@ export function MembershipCTAModal({
   );
   const [isLoading, setIsLoading] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
-  const createCheckoutSession = useMutation(
+  const createCheckoutSession = useAction(
     api.stripe.checkout.createCheckoutSession,
   );
 
@@ -122,33 +122,33 @@ export function MembershipCTAModal({
 
   const features = [
     {
-      icon: <BookOpen className="w-5 h-5" />,
+      icon: <BookOpen className="h-5 w-5" />,
       title: "Unlimited Premium Content",
       description: "Access all posts, tutorials, and exclusive AI insights",
     },
     {
-      icon: <Users className="w-5 h-5" />,
+      icon: <Users className="h-5 w-5" />,
       title: "Elite Network Access",
       description:
         "Connect with AI engineers from Google, OpenAI, Anthropic & more",
     },
     {
-      icon: <MessageCircle className="w-5 h-5" />,
+      icon: <MessageCircle className="h-5 w-5" />,
       title: "Private Community",
       description: "Join exclusive discussions and get insider knowledge",
     },
     {
-      icon: <Zap className="w-5 h-5" />,
+      icon: <Zap className="h-5 w-5" />,
       title: "Priority Support",
       description: "Get fast responses and early access to new features",
     },
     {
-      icon: <Shield className="w-5 h-5" />,
+      icon: <Shield className="h-5 w-5" />,
       title: "Risk-Free Membership",
       description: "Cancel anytime with our 30-day money-back guarantee",
     },
     {
-      icon: <Rocket className="w-5 h-5" />,
+      icon: <Rocket className="h-5 w-5" />,
       title: "Career Acceleration",
       description: "Access job opportunities and career advancement resources",
     },
@@ -231,24 +231,24 @@ export function MembershipCTAModal({
         {/* Trigger (optional) */}
         {children && <DialogTrigger asChild>{children}</DialogTrigger>}
 
-        <DialogContent className="sm:max-w-4xl max-h-[95vh] overflow-y-auto bg-gradient-to-br from-background via-background to-muted/20">
+        <DialogContent className="from-background via-background to-muted/20 max-h-[95vh] overflow-y-auto bg-gradient-to-br sm:max-w-4xl">
           {/* Premium Header with Gradient Background */}
-          <div className="relative -mx-6 -mt-6 mb-6 bg-gradient-to-r from-primary/10 via-primary/5 to-accent/10 px-6 pt-6 pb-6 border-b border-primary/20">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-50" />
+          <div className="from-primary/10 via-primary/5 to-accent/10 border-primary/20 relative -mx-6 -mt-6 mb-6 border-b bg-gradient-to-r px-6 pb-6 pt-6">
+            <div className="from-primary/5 absolute inset-0 bg-gradient-to-r to-transparent opacity-50" />
             <div className="relative">
-              <DialogHeader className="text-center space-y-3">
-                <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-foreground to-foreground/80 bg-clip-text text-transparent">
+              <DialogHeader className="space-y-3 text-center">
+                <DialogTitle className="from-foreground to-foreground/80 bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent">
                   {title}
                 </DialogTitle>
-                <DialogDescription className="text-base text-muted-foreground max-w-2xl mx-auto">
+                <DialogDescription className="text-muted-foreground mx-auto max-w-2xl text-base">
                   {description}
                 </DialogDescription>
-                <div className="flex items-center justify-center gap-4 text-sm text-muted-foreground">
+                <div className="text-muted-foreground flex items-center justify-center gap-4 text-sm">
                   <span>Members from</span>
                   <div className="flex items-center gap-3">
                     {/* Microsoft logo */}
                     <div className="flex items-center gap-1.5">
-                      <svg className="w-5 h-5" viewBox="0 0 23 23" fill="none">
+                      <svg className="h-5 w-5" viewBox="0 0 23 23" fill="none">
                         <path d="M11 11V0H0v11h11z" fill="#f25022" />
                         <path d="M23 11V0H12v11h11z" fill="#7fba00" />
                         <path d="M11 23V12H0v11h11z" fill="#00a4ef" />
@@ -258,7 +258,7 @@ export function MembershipCTAModal({
                     </div>
                     {/* Google logo */}
                     <div className="flex items-center gap-1.5">
-                      <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none">
+                      <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none">
                         <path
                           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                           fill="#4285f4"
@@ -288,7 +288,7 @@ export function MembershipCTAModal({
             {/* Billing Toggle - Premium Design */}
             <div className="space-y-4">
               <div className="flex items-center justify-center">
-                <div className="bg-muted/50 rounded-full p-1.5 border border-border/50">
+                <div className="bg-muted/50 border-border/50 rounded-full border p-1.5">
                   <ToggleGroup
                     type="single"
                     value={billingInterval}
@@ -306,19 +306,19 @@ export function MembershipCTAModal({
                   >
                     <ToggleGroupItem
                       value="monthly"
-                      className="rounded-full px-6 py-2 data-[state=on]:bg-background data-[state=on]:shadow-md data-[state=on]:text-foreground font-medium"
+                      className="data-[state=on]:bg-background data-[state=on]:text-foreground rounded-full px-6 py-2 font-medium data-[state=on]:shadow-md"
                     >
                       Monthly
                     </ToggleGroupItem>
                     <ToggleGroupItem
                       value="yearly"
-                      className="rounded-full px-6 py-2 data-[state=on]:bg-background data-[state=on]:shadow-md data-[state=on]:text-foreground font-medium relative"
+                      className="data-[state=on]:bg-background data-[state=on]:text-foreground relative rounded-full px-6 py-2 font-medium data-[state=on]:shadow-md"
                     >
                       Yearly
                       {billingInterval === "yearly" && (
                         <Badge
                           variant="secondary"
-                          className="absolute -top-2 -right-2 bg-green-500 text-white hover:bg-green-500 text-xs px-2 py-0.5 shadow-sm"
+                          className="absolute -right-2 -top-2 bg-green-500 px-2 py-0.5 text-xs text-white shadow-sm hover:bg-green-500"
                         >
                           Save {yearlySavingsPercent}%
                         </Badge>
@@ -329,44 +329,44 @@ export function MembershipCTAModal({
               </div>
 
               {/* Pricing Card - Premium Design */}
-              <div className="max-w-sm mx-auto">
-                <div className="relative rounded-xl border-2 border-primary/20 bg-gradient-to-br from-background to-muted/10 p-6 shadow-xl">
+              <div className="mx-auto max-w-sm">
+                <div className="border-primary/20 from-background to-muted/10 relative rounded-xl border-2 bg-gradient-to-br p-6 shadow-xl">
                   {/* Premium Badge */}
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge
                       variant="default"
-                      className="bg-gradient-to-r from-primary to-primary/80 text-primary-foreground px-3 py-1 shadow-lg text-xs"
+                      className="from-primary to-primary/80 text-primary-foreground bg-gradient-to-r px-3 py-1 text-xs shadow-lg"
                     >
-                      <Star className="w-3 h-3 mr-1" />
+                      <Star className="mr-1 h-3 w-3" />
                       {selectedTierData.badge}
                     </Badge>
                   </div>
 
-                  <div className="text-center space-y-3">
+                  <div className="space-y-3 text-center">
                     <div>
-                      <h3 className="text-xl font-bold text-foreground">
+                      <h3 className="text-foreground text-xl font-bold">
                         {selectedTierData.name}
                       </h3>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-muted-foreground mt-1 text-sm">
                         {selectedTierData.description}
                       </p>
                     </div>
 
                     <div className="space-y-1">
                       <div className="flex items-baseline justify-center gap-2">
-                        <span className="text-4xl font-bold text-foreground">
+                        <span className="text-foreground text-4xl font-bold">
                           {formatCurrency(
                             billingInterval === "monthly"
                               ? monthlyPrice
                               : yearlyPrice,
                           )}
                         </span>
-                        <span className="text-base text-muted-foreground">
+                        <span className="text-muted-foreground text-base">
                           {billingInterval === "monthly" ? "/month" : "/year"}
                         </span>
                       </div>
                       {billingInterval === "yearly" && (
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-muted-foreground text-xs">
                           Just {formatCurrency(yearlyPrice / 12)}/month when
                           paid annually
                         </div>
@@ -374,7 +374,7 @@ export function MembershipCTAModal({
                     </div>
 
                     {billingInterval === "yearly" && (
-                      <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-2 border border-green-200 dark:border-green-800">
+                      <div className="rounded-lg border border-green-200 bg-green-50 p-2 dark:border-green-800 dark:bg-green-900/20">
                         <p className="text-xs font-medium text-green-700 dark:text-green-400">
                           💰 Save {formatCurrency(yearlySavings)} per year
                         </p>
@@ -388,28 +388,28 @@ export function MembershipCTAModal({
             {/* Features Grid - Compact Layout */}
             <div className="space-y-4">
               <div className="text-center">
-                <h4 className="text-lg font-semibold text-foreground mb-1">
+                <h4 className="text-foreground mb-1 text-lg font-semibold">
                   Everything You Need to Excel
                 </h4>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Join the most exclusive AI community
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                 {features.map((feature, index) => (
                   <div
                     key={index}
-                    className="flex items-start gap-3 p-3 rounded-lg bg-gradient-to-br from-muted/20 to-muted/10 border border-border/50 hover:border-primary/20 transition-all duration-300"
+                    className="from-muted/20 to-muted/10 border-border/50 hover:border-primary/20 flex items-start gap-3 rounded-lg border bg-gradient-to-br p-3 transition-all duration-300"
                   >
-                    <div className="flex-shrink-0 w-8 h-8 bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg flex items-center justify-center text-primary">
+                    <div className="from-primary/10 to-primary/5 text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br">
                       {feature.icon}
                     </div>
                     <div className="space-y-0.5">
-                      <h5 className="font-medium text-foreground text-sm">
+                      <h5 className="text-foreground text-sm font-medium">
                         {feature.title}
                       </h5>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-muted-foreground text-xs">
                         {feature.description}
                       </p>
                     </div>
@@ -419,20 +419,20 @@ export function MembershipCTAModal({
             </div>
 
             {/* CTA Section - Premium Design */}
-            <div className="space-y-4 pt-4 border-t border-border/50">
+            <div className="border-border/50 space-y-4 border-t pt-4">
               <Button
-                className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg hover:shadow-xl transition-all duration-300"
+                className="from-primary to-primary/90 hover:from-primary/90 hover:to-primary h-14 w-full bg-gradient-to-r text-lg font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
                 onClick={handleCheckout}
                 disabled={isLoading}
               >
                 {isLoading ? (
                   <>
-                    <div className="animate-spin rounded-full h-5 w-5 border-2 border-primary-foreground border-t-transparent mr-3" />
+                    <div className="border-primary-foreground mr-3 h-5 w-5 animate-spin rounded-full border-2 border-t-transparent" />
                     Processing...
                   </>
                 ) : (
                   <>
-                    <Zap className="w-5 h-5 mr-2" />
+                    <Zap className="mr-2 h-5 w-5" />
                     Join VAI Pro Today
                     <span className="ml-2 opacity-90">
                       {billingInterval === "monthly"
@@ -443,14 +443,14 @@ export function MembershipCTAModal({
                 )}
               </Button>
 
-              <div className="flex items-center justify-center gap-4 text-xs text-muted-foreground">
+              <div className="text-muted-foreground flex items-center justify-center gap-4 text-xs">
                 <div className="flex items-center gap-1">
-                  <Shield className="w-3 h-3" />
+                  <Shield className="h-3 w-3" />
                   <span>Secure payment via Stripe</span>
                 </div>
                 <span>•</span>
                 <div className="flex items-center gap-1">
-                  <CheckCircle className="w-3 h-3" />
+                  <CheckCircle className="h-3 w-3" />
                   <span>30-day money-back guarantee</span>
                 </div>
                 <span>•</span>

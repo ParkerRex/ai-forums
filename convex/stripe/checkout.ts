@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { mutation } from "../_generated/server";
+import { action, mutation } from "../_generated/server";
+import { api } from "../_generated/api";
 import Stripe from "stripe";
 
 // Lazily instantiate the Stripe client so Convex's module analyzer
@@ -16,7 +17,43 @@ function getStripeClient(): Stripe {
   return stripe;
 }
 
-export const createCheckoutSession = mutation({
+// Internal mutation to get member data and update stripe customer ID
+export const getMemberAndUpdateStripeCustomer = mutation({
+  args: {
+    stripeCustomerId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const member = await ctx.db
+      .query("members")
+      .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
+      .first();
+
+    if (!member) {
+      throw new Error("Member not found");
+    }
+
+    // Check if member already has an active subscription
+    if (member.subscriptionStatus === "active") {
+      throw new Error("Member already has an active subscription");
+    }
+
+    // Update member with real Stripe customer ID if provided
+    if (args.stripeCustomerId) {
+      await ctx.db.patch(member._id, {
+        stripeCustomerId: args.stripeCustomerId,
+      });
+    }
+
+    return member;
+  },
+});
+
+export const createCheckoutSession = action({
   args: {
     priceId: v.string(),
     tier: v.union(
@@ -31,28 +68,8 @@ export const createCheckoutSession = mutation({
     couponCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Unauthorized");
-    }
-
-    // Get the current member
-    const member = await ctx.db
-      .query("members")
-      // NOTE: We store Clerk's `subject` (e.g. "user_abc123") in the `externalId` field.
-      // identity.tokenIdentifier can include a prefix (e.g. "clerk:user_abc123"), which
-      // will not match existing records. We therefore query by `subject` to ensure a match.
-      .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
-      .first();
-
-    if (!member) {
-      throw new Error("Member not found");
-    }
-
-    // Check if member already has an active subscription
-    if (member.subscriptionStatus === "active") {
-      throw new Error("Member already has an active subscription");
-    }
+    // Get member data from database
+    const member = await ctx.runMutation(api.stripe.checkout.getMemberAndUpdateStripeCustomer, {});
 
     let stripeCustomerId = member.stripeCustomerId;
 
@@ -71,7 +88,7 @@ export const createCheckoutSession = mutation({
       stripeCustomerId = customer.id;
       
       // Update member with real Stripe customer ID
-      await ctx.db.patch(member._id, {
+      await ctx.runMutation(api.stripe.checkout.getMemberAndUpdateStripeCustomer, {
         stripeCustomerId: customer.id,
       });
     }

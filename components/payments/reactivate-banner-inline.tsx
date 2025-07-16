@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
@@ -24,7 +24,7 @@ import { useState, useEffect } from "react";
 export function ReactivateBannerInline() {
   const router = useRouter();
   const currentMember = useQuery(api.auth.current);
-  const createCheckoutSession = useMutation(
+  const createCheckoutSession = useAction(
     api.stripe.checkout.createCheckoutSession,
   );
   const [isCreatingSession, setIsCreatingSession] = useState(false);
