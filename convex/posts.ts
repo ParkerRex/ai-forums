@@ -81,7 +81,7 @@ function validateContentUrls(content: string): void {
   }
   
   // Validate each URL
-  for (const url of urls) {
+  for (const url of Array.from(urls)) {
     try {
       const parsedUrl = new URL(url);
       
@@ -257,8 +257,8 @@ export const getPosts = query({
 
     // Fetch all members and categories in parallel
     const [members, categories] = await Promise.all([
-      Promise.all(memberIds.map(id => ctx.db.get(id))),
-      Promise.all(categoryIds.map(id => ctx.db.get(id)))
+      Promise.all(memberIds.map(id => ctx.db.get(id) as Promise<Doc<"members"> | null>)),
+      Promise.all(categoryIds.map(id => ctx.db.get(id) as Promise<Doc<"categories"> | null>))
     ]);
 
     // Create lookup maps for fast access
