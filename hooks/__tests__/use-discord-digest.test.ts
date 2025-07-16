@@ -1,250 +1,329 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+/**
+ * @vitest-environment jsdom
+ */
+
 import { renderHook, waitFor } from '@testing-library/react';
-import type { Id } from '../../convex/_generated/dataModel';
-
-// Mock the Convex hooks
-vi.mock('convex/react', () => ({
-  useAction: vi.fn(),
-  useQuery: vi.fn(),
-}));
-
-vi.mock('../use-current-member', () => ({
-  useCurrentMember: vi.fn(),
-}));
-
-// Import the hooks after mocking
+import { vi, describe, it, expect, beforeEach, afterEach, afterAll } from 'vitest';
 import { useDiscordDigest, useDiscordPreferences } from '../use-discord-digest';
-import { useAction, useQuery } from 'convex/react';
 import { useCurrentMember } from '../use-current-member';
+import { useQuery } from 'convex/react';
 
-// Get the mocked functions
-const mockUseAction = vi.mocked(useAction);
-const mockUseQuery = vi.mocked(useQuery);
+// Mock dependencies
+vi.mock('../use-current-member');
+vi.mock('convex/react');
+
 const mockUseCurrentMember = vi.mocked(useCurrentMember);
+const mockUseQuery = vi.mocked(useQuery);
 
 // Mock localStorage
-const localStorageMock = {
+const mockLocalStorage = {
   getItem: vi.fn(),
   setItem: vi.fn(),
   removeItem: vi.fn(),
 };
 Object.defineProperty(window, 'localStorage', {
-  value: localStorageMock,
+  value: mockLocalStorage,
 });
 
+// Mock console methods
+const mockConsoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+
 describe('useDiscordDigest', () => {
-  const mockMember = { 
-    _id: 'member123' as Id<"members">,
-    _creationTime: Date.now(),
-    firstName: 'Test',
-    lastName: 'User',
-    email: 'test@example.com',
-    slug: 'test-user'
+  const mockMember = {
+    _id: 'member123' as any,
+    name: 'Test User',
   };
+
+  const mockDiscordDigestEntry = {
+    messageId: 'msg123',
+    content: 'Test message content',
+    author: {
+      id: 'user123',
+      username: 'testuser',
+      avatar: 'avatar.png',
+    },
+    timestamp: Date.now(),
+    reactions: [{ emoji: '👍', count: 5 }],
+    channelId: 'channel123',
+    channelName: 'general',
+    reactionScore: 5,
+    summary: 'Test summary',
+    digestDate: '2024-01-15',
+    processedAt: Date.now(),
+  };
+
   const mockPreferences = {
     enabled: true,
     guildId: '1355280592962453585',
-    channels: undefined,
+    channels: ['channel123'],
   };
-  const mockMessages = [
-    {
-      title: 'Test Discord Message',
-      url: 'https://discord.com/channels/123/456/789',
-      publishedDate: '2025-01-14T10:00:00Z',
-      author: 'testuser',
-      summary: 'This is a test Discord message',
-      source: 'Discord',
-    },
-  ];
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    // Setup default mocks
-    mockUseCurrentMember.mockReturnValue({ member: mockMember, isLoading: false });
-    mockUseQuery.mockReturnValue(mockPreferences);
-    
-    // Mock the action function properly
-    const mockGetDiscordDigest = vi.fn().mockResolvedValue(mockMessages);
-    mockUseAction.mockReturnValue(mockGetDiscordDigest);
+    mockLocalStorage.getItem.mockReturnValue(null);
   });
 
   afterEach(() => {
-    vi.clearAllMocks();
+    mockConsoleError.mockClear();
   });
 
-  it('should initialize with loading state', () => {
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    expect(result.current.loading).toBe(true);
-    expect(result.current.messages).toEqual([]);
-    expect(result.current.error).toBe(null);
+  afterAll(() => {
+    mockConsoleError.mockRestore();
   });
 
-  it('should handle user not signed in', async () => {
-    mockUseCurrentMember.mockReturnValue({ member: null, isLoading: false });
-
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-      expect(result.current.error).toBe('Please sign in to view Discord digest');
+  describe('when user is not authenticated', () => {
+    beforeEach(() => {
+      mockUseCurrentMember.mockReturnValue({ member: null, isLoading: false });
+      mockUseQuery.mockReturnValue(undefined);
     });
-  });
 
-  it('should handle Discord not enabled', async () => {
-    mockUseQuery.mockReturnValue({ ...mockPreferences, enabled: false });
+    it('should return authentication error', () => {
+      const { result } = renderHook(() => useDiscordDigest());
 
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-      expect(result.current.error).toBe('Discord digest is not enabled. Please enable it in your news source settings.');
+      expect(result.current.error).toBe('Please sign in to view Discord digest');
+      expect(result.current.loading).toBe(true); // Still loading preferences
+      expect(result.current.messages).toEqual([]);
       expect(result.current.isEnabled).toBe(false);
     });
   });
 
-  it('should load messages successfully', async () => {
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-      expect(result.current.messages).toEqual(mockMessages);
-      expect(result.current.error).toBe(null);
-      expect(result.current.hasMessages).toBe(true);
-    });
-  });
-
-  it('should handle cache loading and saving', async () => {
-    const cachedData = {
-      data: mockMessages,
-      timestamp: Date.now(),
-      expiresAt: Date.now() + 30 * 60 * 1000,
-    };
-    
-    localStorageMock.getItem.mockReturnValue(JSON.stringify(cachedData));
-
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    await waitFor(() => {
-      expect(result.current.messages).toEqual(mockMessages);
-      expect(localStorageMock.getItem).toHaveBeenCalledWith('discord-digest');
-    });
-  });
-
-  it('should handle expired cache', async () => {
-    const expiredCachedData = {
-      data: mockMessages,
-      timestamp: Date.now() - 60 * 60 * 1000, // 1 hour ago
-      expiresAt: Date.now() - 30 * 60 * 1000, // Expired 30 minutes ago
-    };
-    
-    localStorageMock.getItem.mockReturnValue(JSON.stringify(expiredCachedData));
-
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    await waitFor(() => {
-      expect(localStorageMock.removeItem).toHaveBeenCalledWith('discord-digest');
-    });
-  });
-
-  it('should provide manual refresh functionality', async () => {
-    const mockGetDiscordDigest = vi.fn().mockResolvedValue(mockMessages);
-    mockUseAction.mockImplementation(() => mockGetDiscordDigest);
-
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
+  describe('when user is authenticated', () => {
+    beforeEach(() => {
+      mockUseCurrentMember.mockReturnValue({ member: mockMember, isLoading: false });
     });
 
-    // Call refresh
-    await result.current.refresh();
-    
-    expect(mockGetDiscordDigest).toHaveBeenCalledWith({
-      userId: mockMember._id,
-      limit: 20,
+    describe('and Discord is disabled', () => {
+      beforeEach(() => {
+        mockUseQuery
+          .mockReturnValueOnce([]) // Discord digest data
+          .mockReturnValueOnce({ ...mockPreferences, enabled: false }); // Preferences
+      });
+
+      it('should return disabled error', () => {
+        const { result } = renderHook(() => useDiscordDigest());
+
+        expect(result.current.error).toBe(
+          'Discord digest is not enabled. Please enable it in your news source settings.'
+        );
+        expect(result.current.loading).toBe(false);
+        expect(result.current.messages).toEqual([]);
+        expect(result.current.isEnabled).toBe(false);
+      });
     });
-  });
 
-  it('should handle API errors gracefully', async () => {
-    const mockGetDiscordDigest = vi.fn().mockRejectedValue(new Error('Discord API error'));
-    mockUseAction.mockImplementation(() => mockGetDiscordDigest);
+    describe('and Discord is enabled', () => {
+      beforeEach(() => {
+        mockUseQuery
+          .mockReturnValueOnce([mockDiscordDigestEntry]) // Discord digest data
+          .mockReturnValueOnce(mockPreferences); // Preferences
+      });
 
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    await waitFor(() => {
-      expect(result.current.loading).toBe(false);
-      expect(result.current.error).toContain('Failed to load Discord messages');
+      it('should return transformed messages', () => {
+        const { result } = renderHook(() => useDiscordDigest());
+
+        expect(result.current.loading).toBe(false);
+        expect(result.current.error).toBe(null);
+        expect(result.current.messages).toHaveLength(1);
+        expect(result.current.isEnabled).toBe(true);
+        expect(result.current.hasMessages).toBe(true);
+        expect(result.current.isEmpty).toBe(false);
+
+        const message = result.current.messages[0];
+        expect(message.title).toBe('testuser: Test message content (5 reactions)');
+        expect(message.url).toBe(
+          'https://discord.com/channels/1355280592962453585/channel123/msg123'
+        );
+        expect(message.author).toBe('testuser');
+        expect(message.summary).toBe('Test summary');
+        expect(message.source).toBe('Discord');
+      });
+
+      it('should cache messages to localStorage', async () => {
+        renderHook(() => useDiscordDigest());
+
+        await waitFor(() => {
+          expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+            'discord-digest',
+            expect.stringContaining('"data"')
+          );
+        });
+      });
+
+      it('should handle custom limit parameter', () => {
+        renderHook(() => useDiscordDigest(10));
+
+        expect(mockUseQuery).toHaveBeenCalledWith(
+          expect.anything(),
+          expect.objectContaining({
+            userId: mockMember._id,
+            limit: 10,
+          })
+        );
+      });
     });
-  });
 
-  it('should provide user-friendly error messages', async () => {
-    const mockGetDiscordDigest = vi.fn().mockRejectedValue(new Error('bot token not configured'));
-    mockUseAction.mockImplementation(() => mockGetDiscordDigest);
+    describe('with cached data', () => {
+      const cachedData = {
+        data: [
+          {
+            title: 'Cached message',
+            url: 'https://discord.com/channels/123/456/789',
+            author: 'cacheduser',
+            summary: 'Cached summary',
+            source: 'Discord',
+          },
+        ],
+        timestamp: Date.now(),
+        expiresAt: Date.now() + 30 * 60 * 1000, // 30 minutes from now
+      };
 
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    await waitFor(() => {
-      expect(result.current.error).toBe('Discord integration is not available. Please contact support.');
+      beforeEach(() => {
+        mockLocalStorage.getItem.mockReturnValue(JSON.stringify(cachedData));
+        mockUseQuery
+          .mockReturnValueOnce([]) // Empty fresh data
+          .mockReturnValueOnce(mockPreferences);
+      });
+
+      it('should show cached content when fresh data is unavailable', () => {
+        const { result } = renderHook(() => useDiscordDigest());
+
+        expect(result.current.error).toBe(
+          'Unable to load fresh Discord data (showing cached content)'
+        );
+        expect(result.current.messages).toEqual(cachedData.data);
+      });
     });
-  });
 
-  it('should clear cache when requested', () => {
-    const { result } = renderHook(() => useDiscordDigest());
-    
-    result.current.clearCache();
-    
-    expect(localStorageMock.removeItem).toHaveBeenCalledWith('discord-digest');
+    describe('refresh functionality', () => {
+      beforeEach(() => {
+        mockUseQuery
+          .mockReturnValueOnce([mockDiscordDigestEntry])
+          .mockReturnValueOnce(mockPreferences);
+      });
+
+      it('should clear cache when refresh is called', () => {
+        const { result } = renderHook(() => useDiscordDigest());
+
+        result.current.refresh();
+
+        expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('discord-digest');
+      });
+
+      it('should handle localStorage errors gracefully', () => {
+        mockLocalStorage.removeItem.mockImplementation(() => {
+          throw new Error('localStorage error');
+        });
+
+        const { result } = renderHook(() => useDiscordDigest());
+
+        expect(() => result.current.refresh()).not.toThrow();
+        expect(mockConsoleError).toHaveBeenCalledWith(
+          'Failed to clear cache during refresh:',
+          expect.any(Error)
+        );
+      });
+    });
+
+    describe('clearCache functionality', () => {
+      beforeEach(() => {
+        mockUseQuery
+          .mockReturnValueOnce([mockDiscordDigestEntry])
+          .mockReturnValueOnce(mockPreferences);
+      });
+
+      it('should clear cache when clearCache is called', () => {
+        const { result } = renderHook(() => useDiscordDigest());
+
+        result.current.clearCache();
+
+        expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('discord-digest');
+      });
+    });
+
+    describe('error handling', () => {
+      beforeEach(() => {
+        // Create truly invalid data that would cause transformation to fail
+        mockUseQuery
+          .mockReturnValueOnce([{ ...mockDiscordDigestEntry, author: null }]) // Invalid data - missing required author
+          .mockReturnValueOnce(mockPreferences);
+      });
+
+      it('should handle transformation errors gracefully', () => {
+        const { result } = renderHook(() => useDiscordDigest());
+
+        expect(result.current.messages).toEqual([]);
+        expect(mockConsoleError).toHaveBeenCalledWith(
+          'Failed to transform Discord digest data:',
+          expect.any(Error)
+        );
+      });
+    });
   });
 });
 
 describe('useDiscordPreferences', () => {
-  const mockMember = { 
-    _id: 'member123' as Id<"members">,
-    _creationTime: Date.now(),
-    firstName: 'Test',
-    lastName: 'User',
-    email: 'test@example.com',
-    slug: 'test-user'
+  const mockMember = {
+    _id: 'member123' as unknown,
+    name: 'Test User',
   };
+
   const mockPreferences = {
     enabled: true,
     guildId: '1355280592962453585',
+    channels: ['channel123'],
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    mockUseCurrentMember.mockReturnValue({ member: mockMember, isLoading: false });
-    mockUseQuery.mockReturnValue(mockPreferences);
   });
 
-  it('should return preferences and loading state', () => {
-    const { result } = renderHook(() => useDiscordPreferences());
-    
-    expect(result.current.preferences).toEqual(mockPreferences);
-    expect(result.current.loading).toBe(false);
-    expect(result.current.isEnabled).toBe(true);
+  describe('when user is not authenticated', () => {
+    beforeEach(() => {
+      mockUseCurrentMember.mockReturnValue({ member: null, isLoading: false });
+      mockUseQuery.mockReturnValue(undefined);
+    });
+
+    it('should return loading state', () => {
+      const { result } = renderHook(() => useDiscordPreferences());
+
+      expect(result.current.loading).toBe(true);
+      expect(result.current.preferences).toBe(undefined);
+      expect(result.current.isEnabled).toBe(false);
+    });
   });
 
-  it('should handle loading state', () => {
-    mockUseQuery.mockReturnValue(undefined);
+  describe('when user is authenticated', () => {
+    beforeEach(() => {
+      mockUseCurrentMember.mockReturnValue({ member: mockMember, isLoading: false });
+    });
 
-    const { result } = renderHook(() => useDiscordPreferences());
-    
-    expect(result.current.loading).toBe(true);
-    expect(result.current.isEnabled).toBe(false);
-  });
+    it('should return preferences when available', () => {
+      mockUseQuery.mockReturnValue(mockPreferences);
 
-  it('should handle user not signed in', () => {
-    mockUseCurrentMember.mockReturnValue({ member: null, isLoading: false });
-    // When user is not signed in, the query should be skipped and return undefined
-    mockUseQuery.mockReturnValue(undefined);
+      const { result } = renderHook(() => useDiscordPreferences());
 
-    const { result } = renderHook(() => useDiscordPreferences());
-    
-    expect(result.current.preferences).toBe(undefined);
-    expect(result.current.isEnabled).toBe(false);
+      expect(result.current.loading).toBe(false);
+      expect(result.current.preferences).toEqual(mockPreferences);
+      expect(result.current.isEnabled).toBe(true);
+    });
+
+    it('should handle disabled preferences', () => {
+      mockUseQuery.mockReturnValue({ ...mockPreferences, enabled: false });
+
+      const { result } = renderHook(() => useDiscordPreferences());
+
+      expect(result.current.loading).toBe(false);
+      expect(result.current.isEnabled).toBe(false);
+    });
+
+    it('should handle loading state', () => {
+      mockUseQuery.mockReturnValue(undefined);
+
+      const { result } = renderHook(() => useDiscordPreferences());
+
+      expect(result.current.loading).toBe(true);
+      expect(result.current.preferences).toBe(undefined);
+      expect(result.current.isEnabled).toBe(false);
+    });
   });
 });

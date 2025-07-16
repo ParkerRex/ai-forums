@@ -1,32 +1,36 @@
-import { useState, useCallback, useEffect } from "react";
-import { useAction, useQuery } from "convex/react";
+import { useCallback, useEffect, useMemo } from "react";
+import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useCurrentMember } from "./use-current-member";
+import type { NewsItem } from "../features/news/utils/news-sources/types";
 
-// NewsItem interface matching the Discord API response
-interface NewsItem {
-  title: string;
-  url: string;
-  publishedDate?: string;
-  author?: string;
+// Discord digest entry interface (matches database schema)
+interface DiscordDigestEntry {
+  messageId: string;
+  content: string;
+  author: {
+    id: string;
+    username: string;
+    avatar?: string;
+  };
+  timestamp: number;
+  reactions: Array<{
+    emoji: string;
+    count: number;
+  }>;
+  channelId: string;
+  channelName: string;
+  reactionScore: number;
   summary?: string;
-  source: string;
+  digestDate: string;
+  processedAt: number;
 }
 
 // Discord preferences interface
 interface DiscordPreferences {
   enabled: boolean;
-  guildId: string;
+  guildId?: string;
   channels?: string[];
-}
-
-// Hook state interface
-interface DiscordDigestState {
-  messages: NewsItem[];
-  loading: boolean;
-  error: string | null;
-  preferences: DiscordPreferences | null;
-  preferencesLoading: boolean;
 }
 
 // Cache configuration
@@ -41,26 +45,96 @@ interface CachedDiscordData {
 }
 
 /**
+ * Transform Discord digest entry to NewsItem format
+ * Requirements: 2.4 - Transform Discord messages to NewsItem interface format
+ */
+function transformDiscordEntryToNewsItem(entry: DiscordDigestEntry): NewsItem {
+  const defaultGuildId = "1355280592962453585"; // VAI VEX Discord server
+  
+  // Create meaningful title from the message
+  const maxContentLength = 100;
+  const reactionCount = entry.reactions.reduce((sum, r) => sum + r.count, 0);
+  
+  let title: string;
+  if (entry.content && entry.content.trim()) {
+    const truncatedContent = entry.content.length > maxContentLength 
+      ? `${entry.content.substring(0, maxContentLength)}...`
+      : entry.content;
+    
+    const reactionIndicator = reactionCount > 0 ? ` (${reactionCount} reactions)` : '';
+    title = `${entry.author.username}: ${truncatedContent}${reactionIndicator}`;
+  } else {
+    const reactionIndicator = reactionCount > 0 ? ` with ${reactionCount} reactions` : '';
+    title = `${entry.author.username} in #${entry.channelName}${reactionIndicator}`;
+  }
+  
+  // Create Discord message URL
+  const url = `https://discord.com/channels/${defaultGuildId}/${entry.channelId}/${entry.messageId}`;
+  
+  return {
+    title,
+    url,
+    publishedDate: new Date(entry.timestamp).toISOString(),
+    author: entry.author.username,
+    summary: entry.summary || (entry.content ? 
+      (entry.content.length > 150 ? `${entry.content.substring(0, 150)}...` : entry.content) :
+      `Message from ${entry.author.username} in #${entry.channelName}`
+    ),
+    source: "Discord",
+  };
+}
+
+/**
  * Custom hook for Discord digest functionality on the dedicated Discord page
  * Provides Discord-only data fetching with loading states, error handling, and manual refresh
  * Requirements: 4.2, 4.3 - Discord digest page functionality and manual refresh
  */
 export function useDiscordDigest(limit?: number) {
   const { member } = useCurrentMember();
-  const [state, setState] = useState<DiscordDigestState>({
-    messages: [],
-    loading: true,
-    error: null,
-    preferences: null,
-    preferencesLoading: true,
-  });
 
-  // Convex actions and queries
-  const getDiscordDigest = useAction(api.discord.getDiscordDigest);
+  // Convex queries
+  const discordDigestData = useQuery(
+    api.discord.getDiscordDigest,
+    member ? { 
+      userId: member._id, 
+      limit: limit || 20
+    } : "skip"
+  );
   const discordPreferences = useQuery(
     api.newsFeedSources.getDiscordPreferences,
     member ? { userId: member._id } : "skip"
   );
+
+  // Transform raw Discord digest data to NewsItems
+  const messages = useMemo(() => {
+    if (!discordDigestData || !Array.isArray(discordDigestData)) {
+      return [];
+    }
+    
+    try {
+      return discordDigestData.map(transformDiscordEntryToNewsItem);
+    } catch (error) {
+      console.error("Failed to transform Discord digest data:", error);
+      return [];
+    }
+  }, [discordDigestData]);
+
+  // Save to localStorage cache when data changes
+  useEffect(() => {
+    if (messages.length > 0) {
+      try {
+        const now = Date.now();
+        const cacheData: CachedDiscordData = {
+          data: messages,
+          timestamp: now,
+          expiresAt: now + CACHE_DURATION,
+        };
+        localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+      } catch (error) {
+        console.error("Failed to save Discord digest to cache:", error);
+      }
+    }
+  }, [messages]);
 
   // Load cached data from localStorage
   const loadFromCache = useCallback((): NewsItem[] | null => {
@@ -86,171 +160,19 @@ export function useDiscordDigest(limit?: number) {
     }
   }, []);
 
-  // Save data to localStorage cache
-  const saveToCache = useCallback((data: NewsItem[]) => {
+  // Manual refresh function - clears cache and forces component re-render
+  const refresh = useCallback(() => {
+    // Clear the cache to force fresh data
     try {
-      const now = Date.now();
-      const cacheData: CachedDiscordData = {
-        data,
-        timestamp: now,
-        expiresAt: now + CACHE_DURATION,
-      };
-      localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+      localStorage.removeItem(CACHE_KEY);
     } catch (error) {
-      console.error("Failed to save Discord digest to cache:", error);
+      console.error("Failed to clear cache during refresh:", error);
     }
+    
+    // Note: Convex queries automatically refetch when their dependencies change
+    // The cache clearing will ensure we don't show stale cached data
+    // The query will naturally refetch due to Convex's reactive nature
   }, []);
-
-  // Fetch Discord messages with error handling and retry logic
-  const fetchDiscordMessages = useCallback(async (skipCache = false): Promise<NewsItem[]> => {
-    // Try cache first unless explicitly skipping
-    if (!skipCache) {
-      const cachedData = loadFromCache();
-      if (cachedData) {
-        return cachedData;
-      }
-    }
-
-    try {
-      const messages = await getDiscordDigest({
-        userId: member?._id,
-        limit: limit || 20,
-      });
-
-      // Save to cache for future use
-      saveToCache(messages);
-      return messages;
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-      
-      // Provide user-friendly error messages based on error type
-      if (errorMessage.includes("bot token")) {
-        throw new Error("Discord integration is not available. Please contact support.");
-      } else if (errorMessage.includes("permission")) {
-        throw new Error("Unable to access Discord messages. Bot permissions may need updating.");
-      } else if (errorMessage.includes("rate limit")) {
-        throw new Error("Discord data temporarily unavailable. Please try again in a few minutes.");
-      } else if (errorMessage.includes("network") || errorMessage.includes("fetch")) {
-        throw new Error("Connection to Discord failed. Please check your internet connection.");
-      } else {
-        throw new Error(`Failed to load Discord messages: ${errorMessage}`);
-      }
-    }
-  }, [getDiscordDigest, member?._id, limit, loadFromCache, saveToCache]);
-
-  // Manual refresh function
-  const refresh = useCallback(async () => {
-    if (!member) {
-      setState(prev => ({
-        ...prev,
-        error: "Please sign in to view Discord digest",
-        loading: false,
-      }));
-      return;
-    }
-
-    // Check if Discord is enabled
-    if (!discordPreferences?.enabled) {
-      setState(prev => ({
-        ...prev,
-        messages: [],
-        error: "Discord digest is not enabled. Please enable it in your news source settings.",
-        loading: false,
-      }));
-      return;
-    }
-
-    setState(prev => ({ ...prev, loading: true, error: null }));
-
-    try {
-      const messages = await fetchDiscordMessages(true); // Skip cache for manual refresh
-      setState(prev => ({
-        ...prev,
-        messages,
-        loading: false,
-        error: null,
-      }));
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to refresh Discord messages";
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        error: errorMessage,
-      }));
-    }
-  }, [member, discordPreferences?.enabled, fetchDiscordMessages]);
-
-  // Initial load effect
-  useEffect(() => {
-    if (!member) {
-      setState(prev => ({
-        ...prev,
-        loading: false,
-        preferencesLoading: false,
-        error: "Please sign in to view Discord digest",
-      }));
-      return;
-    }
-
-    // Update preferences state
-    setState(prev => ({
-      ...prev,
-      preferences: discordPreferences || null,
-      preferencesLoading: discordPreferences === undefined,
-    }));
-
-    // Don't fetch if preferences are still loading
-    if (discordPreferences === undefined) {
-      return;
-    }
-
-    // Check if Discord is enabled
-    if (!discordPreferences?.enabled) {
-      setState(prev => ({
-        ...prev,
-        messages: [],
-        loading: false,
-        error: "Discord digest is not enabled. Please enable it in your news source settings.",
-      }));
-      return;
-    }
-
-    // Fetch Discord messages
-    const loadMessages = async () => {
-      setState(prev => ({ ...prev, loading: true, error: null }));
-
-      try {
-        const messages = await fetchDiscordMessages();
-        setState(prev => ({
-          ...prev,
-          messages,
-          loading: false,
-          error: null,
-        }));
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : "Failed to load Discord messages";
-        
-        // Try to load from cache as fallback
-        const cachedData = loadFromCache();
-        if (cachedData) {
-          setState(prev => ({
-            ...prev,
-            messages: cachedData,
-            loading: false,
-            error: `${errorMessage} (showing cached content)`,
-          }));
-        } else {
-          setState(prev => ({
-            ...prev,
-            loading: false,
-            error: errorMessage,
-          }));
-        }
-      }
-    };
-
-    loadMessages();
-  }, [member, discordPreferences, fetchDiscordMessages, loadFromCache]);
 
   // Clear cache utility function
   const clearCache = useCallback(() => {
@@ -261,18 +183,63 @@ export function useDiscordDigest(limit?: number) {
     }
   }, []);
 
+  // Determine loading state
+  const loading = discordDigestData === undefined || discordPreferences === undefined;
+  
+  // Determine error state
+  const error = useMemo(() => {
+    if (!member) {
+      return "Please sign in to view Discord digest";
+    }
+    
+    if (discordPreferences === undefined) {
+      return null; // Still loading preferences
+    }
+    
+    if (!discordPreferences?.enabled) {
+      return "Discord digest is not enabled. Please enable it in your news source settings.";
+    }
+    
+    // If we have no data and we're not loading, there might be an issue
+    if (!loading && (!discordDigestData || discordDigestData.length === 0)) {
+      // Try to load from cache as fallback
+      const cachedData = loadFromCache();
+      if (cachedData && cachedData.length > 0) {
+        return "Unable to load fresh Discord data (showing cached content)";
+      }
+      return null; // No error, just no data available
+    }
+    
+    return null;
+  }, [member, discordPreferences, loading, discordDigestData, loadFromCache]);
+
+  // Use cached data if we have an error and no fresh data
+  const finalMessages = useMemo(() => {
+    if (messages.length > 0) {
+      return messages;
+    }
+    
+    // If we have an error but no fresh data, try to use cached data
+    if (error && error.includes("cached content")) {
+      const cachedData = loadFromCache();
+      return cachedData || [];
+    }
+    
+    return messages;
+  }, [messages, error, loadFromCache]);
+
   return {
-    messages: state.messages,
-    loading: state.loading,
-    error: state.error,
-    preferences: state.preferences,
-    preferencesLoading: state.preferencesLoading,
+    messages: finalMessages,
+    loading,
+    error,
+    preferences: discordPreferences || null,
+    preferencesLoading: discordPreferences === undefined,
     refresh,
     clearCache,
     // Computed properties for convenience
-    isEnabled: state.preferences?.enabled || false,
-    hasMessages: state.messages.length > 0,
-    isEmpty: !state.loading && state.messages.length === 0 && !state.error,
+    isEnabled: discordPreferences?.enabled || false,
+    hasMessages: finalMessages.length > 0,
+    isEmpty: !loading && finalMessages.length === 0 && !error,
   };
 }
 
