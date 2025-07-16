@@ -63,7 +63,7 @@ export const getAllPayments = query({
     // Get member info for each payment
     const paymentsWithMembers = await Promise.all(
       payments.map(async (payment) => {
-        const member = await ctx.db.get(payment.memberId);
+        const member = await ctx.db.get(payment.memberId) as Doc<"members"> | null;
         return {
           ...payment,
           member: member ? {

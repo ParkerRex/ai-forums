@@ -196,7 +196,7 @@ export function getFlagEmoji(countryCode: string): string | null {
   if (!countryCode || countryCode.length !== 2) return null;
   
   const code = countryCode.toUpperCase();
-  const codePoints = [...code].map(char => 127397 + char.charCodeAt(0));
+  const codePoints = Array.from(code).map(char => 127397 + char.charCodeAt(0));
   return String.fromCodePoint(...codePoints);
 }
 

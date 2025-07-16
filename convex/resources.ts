@@ -1,6 +1,6 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { Id, Doc } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
 import { canViewResource } from "./helpers/subscriptionAccess";
 
@@ -92,7 +92,7 @@ export const getResourcesByTopic = query({
     
     const enrichedResources = await Promise.all(
       resources.map(async (resource) => {
-        const member = await ctx.db.get(resource.memberId);
+        const member = await ctx.db.get(resource.memberId) as Doc<"members"> | null;
         return {
           ...resource,
           member: member ? {
@@ -249,7 +249,7 @@ export const searchResources = query({
 
     const enrichedResources = await Promise.all(
       resources.map(async (resource) => {
-        const member = await ctx.db.get(resource.memberId);
+        const member = await ctx.db.get(resource.memberId) as Doc<"members"> | null;
         return {
           ...resource,
           member: member ? {
