@@ -134,7 +134,8 @@ const members = defineTable({
   tier: v.optional(v.union(
     v.literal("founding_member"),
     v.literal("early_bird"),
-    v.literal("member")
+    v.literal("member"),
+    v.literal("scholarship")
   )),
   
   // Subscription management
@@ -884,7 +885,8 @@ const subscriptions = defineTable({
   tier: v.union(
     v.literal("founding_member"),
     v.literal("early_bird"),
-    v.literal("member")
+    v.literal("member"),
+    v.literal("scholarship")
   ),
   billingInterval: v.union(
     v.literal("monthly"),

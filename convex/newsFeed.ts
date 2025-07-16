@@ -239,7 +239,7 @@ export const get = action({
 
         // Fetch Discord digest from database archive
         // Requirements: 6.1 - Add fallback logic when Discord API is unavailable
-        const discordDigestEntries = await ctx.runQuery(api.discord.getDiscordDigest, {
+        const discordDigestEntries = await ctx.runQuery(api.discordQueries.getDiscordDigest, {
           limit: MAX_ITEMS_PER_SOURCE,
         });
 

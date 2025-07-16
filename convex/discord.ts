@@ -5,7 +5,7 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { createDiscordClient, DiscordMessage, handleDiscordError, RateLimiter } from "../lib/discord";
 import { summarize } from "../lib/exa-client";
-import type { ActionCtx, InternalActionCtx } from "./_generated/server";
+import type { ActionCtx } from "./_generated/server";
 
 // Discord digest entry interface matching the database schema
 interface DiscordDigestEntry {
@@ -311,7 +311,7 @@ export const processDiscordDigest = internalAction({
 
 // Helper function to process messages and store them in the database
 async function processAndStoreMessages(
-  ctx: InternalActionCtx,
+  ctx: ActionCtx,
   messages: DiscordMessage[],
   digestDate: string
 ): Promise<number> {

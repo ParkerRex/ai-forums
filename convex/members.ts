@@ -70,7 +70,8 @@ const MemberUIValidator = v.object({
   tier: v.optional(v.union(
     v.literal("founding_member"),
     v.literal("early_bird"),
-    v.literal("member")
+    v.literal("member"),
+    v.literal("scholarship")
   )),
   subscriptionStatus: v.union(
     v.literal("active"),
