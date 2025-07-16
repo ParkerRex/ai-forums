@@ -1,6 +1,6 @@
 "use node";
 
-import { action, internalAction, query } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { createDiscordClient, DiscordMessage, handleDiscordError, RateLimiter } from "../lib/discord";
@@ -268,19 +268,17 @@ export const processDiscordDigest = internalAction({
     try {
       console.log(`Processing Discord digest for ${args.targetDate}`);
       
-      // Calculate timestamp range for the target date
-      const targetDateObj = new Date(args.targetDate);
-      const startOfDay = new Date(targetDateObj);
-      startOfDay.setHours(0, 0, 0, 0);
-      const endOfDay = new Date(targetDateObj);
-      endOfDay.setHours(23, 59, 59, 999);
+      // Calculate timestamp range for the target date (in UTC)
+      const startOfDay = new Date(args.targetDate + 'T00:00:00.000Z');
+      const endOfDay = new Date(args.targetDate + 'T23:59:59.999Z');
       
-      console.log(`Fetching messages since ${startOfDay.toISOString()}`);
+      console.log(`Fetching messages from ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
       
       // Fetch messages from Discord API for the target date
+      // Use a higher limit to ensure we get all messages for the day
       const messages = await _fetchDiscordMessages({
         since: startOfDay.getTime(),
-        limit: 50, // Reduced limit to avoid Convex return size limits
+        limit: 200, // Increased limit to handle busy Discord servers
       });
       
       console.log(`Fetched ${messages.length} total messages`);
@@ -313,7 +311,7 @@ export const processDiscordDigest = internalAction({
 
 // Helper function to process messages and store them in the database
 async function processAndStoreMessages(
-  ctx: ActionCtx,
+  ctx: InternalActionCtx,
   messages: DiscordMessage[],
   digestDate: string
 ): Promise<number> {
@@ -351,7 +349,7 @@ async function processAndStoreMessages(
         channelId: message.channelId,
         channelName: message.channelName || "Unknown Channel",
         reactionScore,
-        summary,
+        ...(summary && { summary }), // Only include summary if it's not undefined/null
         digestDate,
         processedAt,
       });
@@ -362,6 +360,7 @@ async function processAndStoreMessages(
       
     } catch (error) {
       console.error(`Failed to process message ${message.id}:`, error);
+      console.error('Message data:', JSON.stringify(message, null, 2));
       // Continue with other messages
     }
   }
@@ -477,36 +476,4 @@ export const testBotPermissions = action({
   },
 });
 
-// Query function to retrieve Discord digest entries from database
-export const getDiscordDigest = query({
-  args: {
-    digestDate: v.optional(v.string()), // YYYY-MM-DD format, defaults to yesterday
-    limit: v.optional(v.number()), // Maximum number of entries to return
-  },
-  handler: async (ctx, args): Promise<DiscordDigestEntry[]> => {
-    const targetDate = args.digestDate || getYesterdayDateString();
-    const limit = args.limit || 20;
-    
-    // Query Discord digest entries for the specified date
-    const entries = await ctx.db
-      .query("discordDigest")
-      .withIndex("by_digest_date", (q) => q.eq("digestDate", targetDate))
-      .order("desc") // Most recent first
-      .take(limit);
-    
-    // Transform database entries to match DiscordDigestEntry interface
-    return entries.map(entry => ({
-      messageId: entry.messageId,
-      content: entry.content,
-      author: entry.author,
-      timestamp: entry.timestamp,
-      reactions: entry.reactions,
-      channelId: entry.channelId,
-      channelName: entry.channelName,
-      reactionScore: entry.reactionScore,
-      summary: entry.summary,
-      digestDate: entry.digestDate,
-      processedAt: entry.processedAt,
-    }));
-  },
-});
+// Note: getDiscordDigest query moved to discordQueries.ts since Node.js files can only contain actions
