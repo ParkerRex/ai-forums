@@ -54,7 +54,7 @@
   - Implement channel selection interface if configurable channels are needed
   - _Requirements: 1.1, 1.2_
 
-- [ ] 9. Implement dedicated Discord digest page
+- [x] 9. Implement dedicated Discord digest page
   - Create app/discord-digest/page.tsx for Discord-only content display
   - Display top Discord messages with summaries using existing UI patterns
   - Add manual refresh functionality and loading states

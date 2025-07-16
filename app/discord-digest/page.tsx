@@ -284,7 +284,7 @@ export default function DiscordDigestPage() {
                 </Button>
                 <Button asChild variant="outline">
                   <a
-                    href="https://discord.gg/your-discord-invite"
+                    href={process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || "#"}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
@@ -357,7 +357,7 @@ export default function DiscordDigestPage() {
           </p>
           <Button asChild variant="outline" size="sm">
             <a
-              href="https://discord.gg/your-discord-invite"
+              href={process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || "#"}
               target="_blank"
               rel="noopener noreferrer"
             >
