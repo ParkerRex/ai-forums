@@ -32,6 +32,7 @@ import type * as crons_generateMissingPreviews from "../crons/generateMissingPre
 import type * as crons from "../crons.js";
 import type * as deduplication from "../deduplication.js";
 import type * as discord from "../discord.js";
+import type * as discordMutations from "../discordMutations.js";
 import type * as discordQueries from "../discordQueries.js";
 import type * as events from "../events.js";
 import type * as github from "../github.js";
@@ -114,6 +115,7 @@ declare const fullApi: ApiFromModules<{
   crons: typeof crons;
   deduplication: typeof deduplication;
   discord: typeof discord;
+  discordMutations: typeof discordMutations;
   discordQueries: typeof discordQueries;
   events: typeof events;
   github: typeof github;

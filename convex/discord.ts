@@ -1,10 +1,11 @@
 "use node";
 
-import { action, query, mutation, internalAction } from "./_generated/server";
+import { action, internalAction, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { createDiscordClient, DiscordMessage, handleDiscordError, RateLimiter } from "../lib/discord";
 import { summarize } from "../lib/exa-client";
+import type { ActionCtx, InternalActionCtx } from "./_generated/server";
 
 // Discord digest entry interface matching the database schema
 interface DiscordDigestEntry {
@@ -274,15 +275,21 @@ export const processDiscordDigest = internalAction({
       const endOfDay = new Date(targetDateObj);
       endOfDay.setHours(23, 59, 59, 999);
       
+      console.log(`Fetching messages since ${startOfDay.toISOString()}`);
+      
       // Fetch messages from Discord API for the target date
       const messages = await _fetchDiscordMessages({
         since: startOfDay.getTime(),
-        limit: 100, // Higher limit for processing
+        limit: 50, // Reduced limit to avoid Convex return size limits
       });
+      
+      console.log(`Fetched ${messages.length} total messages`);
       
       // Filter messages to only include those from the target date
       const targetDateMessages = messages.filter(message => {
-        const messageDate = getDateString(new Date(message.timestamp).getTime());
+        // message.timestamp is already an ISO string, so we can extract the date directly
+        const messageDate = message.timestamp.split('T')[0];
+        console.log(`Message ${message.id}: date=${messageDate}, target=${args.targetDate}, match=${messageDate === args.targetDate}`);
         return messageDate === args.targetDate;
       });
       
@@ -302,9 +309,11 @@ export const processDiscordDigest = internalAction({
   },
 });
 
+// Note: storeDiscordMessage moved to discordMutations.ts since Node.js files can only contain actions
+
 // Helper function to process messages and store them in the database
 async function processAndStoreMessages(
-  ctx: any,
+  ctx: ActionCtx,
   messages: DiscordMessage[],
   digestDate: string
 ): Promise<number> {
@@ -313,17 +322,6 @@ async function processAndStoreMessages(
   
   for (const message of messages) {
     try {
-      // Check if message already exists to prevent duplicates
-      const existing = await ctx.db
-        .query("discordDigest")
-        .withIndex("by_message_id", (q) => q.eq("messageId", message.id))
-        .first();
-      
-      if (existing) {
-        console.log(`Skipping duplicate message ${message.id}`);
-        continue;
-      }
-      
       // Calculate reaction score
       const reactionScore = message.reactions.reduce((sum, r) => sum + r.count, 0);
       
@@ -339,26 +337,28 @@ async function processAndStoreMessages(
         // Continue without summary
       }
       
-      // Store in database
-      await ctx.db.insert("discordDigest", {
+      // Store in database using internal mutation
+      const result = await ctx.runMutation(internal.discordMutations.storeDiscordMessage, {
         messageId: message.id,
-        content: message.content,
+        content: message.content || "", // Ensure content is never null/undefined
         author: {
           id: message.author.id,
-          username: message.author.username,
+          username: message.author.username || "Unknown User",
           avatar: message.author.avatar,
         },
         timestamp: new Date(message.timestamp).getTime(),
-        reactions: message.reactions,
+        reactions: message.reactions || [],
         channelId: message.channelId,
-        channelName: message.channelName,
+        channelName: message.channelName || "Unknown Channel",
         reactionScore,
         summary,
         digestDate,
         processedAt,
       });
       
-      processedCount++;
+      if (result.inserted) {
+        processedCount++;
+      }
       
     } catch (error) {
       console.error(`Failed to process message ${message.id}:`, error);
@@ -376,12 +376,17 @@ export const manualProcessDiscordDigest = action({
   args: {
     targetDate: v.optional(v.string()), // Defaults to yesterday
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx: ActionCtx, args): Promise<{
+    success: boolean;
+    message: string;
+    result?: any;
+    targetDate?: string;
+  }> => {
     const targetDate = args.targetDate || getYesterdayDateString();
     
     try {
       // Call the internal action
-      const result = await ctx.runAction(internal.discord.processDiscordDigest, {
+      const result: any = await ctx.runAction(internal.discord.processDiscordDigest, {
         targetDate
       });
       
@@ -469,5 +474,39 @@ export const testBotPermissions = action({
         message: `Permission test failed: ${discordError.message}`
       };
     }
+  },
+});
+
+// Query function to retrieve Discord digest entries from database
+export const getDiscordDigest = query({
+  args: {
+    digestDate: v.optional(v.string()), // YYYY-MM-DD format, defaults to yesterday
+    limit: v.optional(v.number()), // Maximum number of entries to return
+  },
+  handler: async (ctx, args): Promise<DiscordDigestEntry[]> => {
+    const targetDate = args.digestDate || getYesterdayDateString();
+    const limit = args.limit || 20;
+    
+    // Query Discord digest entries for the specified date
+    const entries = await ctx.db
+      .query("discordDigest")
+      .withIndex("by_digest_date", (q) => q.eq("digestDate", targetDate))
+      .order("desc") // Most recent first
+      .take(limit);
+    
+    // Transform database entries to match DiscordDigestEntry interface
+    return entries.map(entry => ({
+      messageId: entry.messageId,
+      content: entry.content,
+      author: entry.author,
+      timestamp: entry.timestamp,
+      reactions: entry.reactions,
+      channelId: entry.channelId,
+      channelName: entry.channelName,
+      reactionScore: entry.reactionScore,
+      summary: entry.summary,
+      digestDate: entry.digestDate,
+      processedAt: entry.processedAt,
+    }));
   },
 });

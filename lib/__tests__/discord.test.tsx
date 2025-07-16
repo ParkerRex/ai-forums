@@ -53,7 +53,7 @@ describe('Discord Connection Utilities', () => {
       }
 
       const { Client } = await import('discord.js')
-      vi.mocked(Client).mockImplementation(() => mockClient as any)
+      vi.mocked(Client).mockImplementation(() => mockClient as unknown as import('discord.js').Client)
 
       const client = new DiscordClient()
       await client.connect('fake-token')
@@ -74,7 +74,7 @@ describe('Discord Connection Utilities', () => {
       }
 
       const { Client } = await import('discord.js')
-      vi.mocked(Client).mockImplementation(() => mockClient as any)
+      vi.mocked(Client).mockImplementation(() => mockClient as unknown as import('discord.js').Client)
 
       const client = new DiscordClient()
       
@@ -92,7 +92,7 @@ describe('Discord Connection Utilities', () => {
       }
 
       const { Client } = await import('discord.js')
-      vi.mocked(Client).mockImplementation(() => mockClient as any)
+      vi.mocked(Client).mockImplementation(() => mockClient as unknown as import('discord.js').Client)
 
       const client = new DiscordClient()
       await client.disconnect()
@@ -193,7 +193,7 @@ describe('Discord Connection Utilities', () => {
       }
 
       const { Client } = await import('discord.js')
-      vi.mocked(Client).mockImplementation(() => mockClient as any)
+      vi.mocked(Client).mockImplementation(() => mockClient as unknown as import('discord.js').Client)
 
       const client = await createDiscordClient('fake-token')
       
