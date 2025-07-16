@@ -47,7 +47,7 @@
   - Integrate with existing caching patterns for consistency
   - _Requirements: 4.2, 4.3_
 
-- [ ] 8. Build Discord settings UI components
+- [x] 8. Build Discord settings UI components
   - Create app/settings/news-sources/page.tsx for news source management
   - Create components/news/discord-settings.tsx for Discord-specific toggles
   - Add Discord enable/disable toggle with immediate preference updates

@@ -43,7 +43,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { ConvexHttpClient } from 'convex/browser';
-import { api } from '../../../../../convex/_generated/api';
+import { api } from '../../../../convex/_generated/api';
 
 // Initialize Convex client for server-side API calls
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json();
-    const { guildId, channels, limit, digestDate } = body;
+    const { channels, limit, digestDate } = body;
 
     // Call Convex query to fetch Discord digest from database archive
     const digestEntries = await convex.query(api.discord.getDiscordDigest, {
