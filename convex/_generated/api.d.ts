@@ -14,9 +14,11 @@ import type {
   FunctionReference,
 } from "convex/server";
 import type * as admin_grantScholarship from "../admin/grantScholarship.js";
+import type * as admin_manualWebhookProcessing from "../admin/manualWebhookProcessing.js";
 import type * as admin_members from "../admin/members.js";
 import type * as admin_metrics from "../admin/metrics.js";
 import type * as admin_payments from "../admin/payments.js";
+import type * as admin_webhookDiagnostics from "../admin/webhookDiagnostics.js";
 import type * as admin from "../admin.js";
 import type * as auth_cleanupExpiredTokens from "../auth/cleanupExpiredTokens.js";
 import type * as auth_clerkAccounts from "../auth/clerkAccounts.js";
@@ -91,9 +93,11 @@ import type * as votes from "../votes.js";
  */
 declare const fullApi: ApiFromModules<{
   "admin/grantScholarship": typeof admin_grantScholarship;
+  "admin/manualWebhookProcessing": typeof admin_manualWebhookProcessing;
   "admin/members": typeof admin_members;
   "admin/metrics": typeof admin_metrics;
   "admin/payments": typeof admin_payments;
+  "admin/webhookDiagnostics": typeof admin_webhookDiagnostics;
   admin: typeof admin;
   "auth/cleanupExpiredTokens": typeof auth_cleanupExpiredTokens;
   "auth/clerkAccounts": typeof auth_clerkAccounts;
