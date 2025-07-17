@@ -1,3 +1,16 @@
+/**
+ * @fileoverview Auto-sign-in helper used by the checkout success page.
+ *
+ * When a guest finishes a Stripe checkout the webhook stores a one-time
+ * Clerk `signInToken` on their new Convex member record.  This component
+ * consumes that token, performs the Clerk ticket sign-in flow on the
+ * client, then redirects the user to the desired page.
+ *
+ * Existing members (who won’t have a token) bypass this component.
+ *
+ * NOTE: Once the success flow is migrated to an Edge route this component
+ * can be removed entirely.
+ */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -12,10 +25,16 @@ interface AutoSignInProps {
   sourcePostId?: string;
 }
 
-export function AutoSignIn({ signInToken, email, sourcePostId }: AutoSignInProps) {
+export function AutoSignIn({
+  signInToken,
+  email,
+  sourcePostId,
+}: AutoSignInProps) {
   const { signIn, isLoaded } = useSignIn();
   const router = useRouter();
-  const [status, setStatus] = useState<"loading" | "signing-in" | "error">("loading");
+  const [status, setStatus] = useState<"loading" | "signing-in" | "error">(
+    "loading",
+  );
   const [error, setError] = useState<string>("");
 
   useEffect(() => {
@@ -24,7 +43,7 @@ export function AutoSignIn({ signInToken, email, sourcePostId }: AutoSignInProps
 
       try {
         setStatus("signing-in");
-        
+
         if (signInToken) {
           // Use the sign-in token for passwordless authentication
           const signInResult = await signIn.create({
@@ -49,20 +68,26 @@ export function AutoSignIn({ signInToken, email, sourcePostId }: AutoSignInProps
             strategy: "email_link",
             identifier: email,
           });
-          
+
           // This will send an email, but we want immediate access
           // So we'll redirect to a page explaining the email was sent
-          router.push(`/sign-in/verify-email?email=${encodeURIComponent(email)}`);
+          router.push(
+            `/sign-in/verify-email?email=${encodeURIComponent(email)}`,
+          );
         }
       } catch (err) {
         console.error("Auto sign-in error:", err);
         setStatus("error");
         setError("Unable to sign in automatically. Please sign in manually.");
-        
+
         // Redirect to sign-in page after a delay
         setTimeout(() => {
-          const redirectUrl = sourcePostId ? `/?source_post_id=${sourcePostId}` : "/";
-          router.push(`/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}&prefill_email=${encodeURIComponent(email)}`);
+          const redirectUrl = sourcePostId
+            ? `/?source_post_id=${sourcePostId}`
+            : "/";
+          router.push(
+            `/sign-in?redirect_url=${encodeURIComponent(redirectUrl)}&prefill_email=${encodeURIComponent(email)}`,
+          );
         }, 3000);
       }
     };
@@ -73,9 +98,11 @@ export function AutoSignIn({ signInToken, email, sourcePostId }: AutoSignInProps
   if (status === "loading" || status === "signing-in") {
     return (
       <Card className="p-8 text-center">
-        <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-        <h3 className="text-lg font-semibold mb-2">Setting up your account...</h3>
-        <p className="text-sm text-muted-foreground">
+        <Loader2 className="mx-auto mb-4 h-8 w-8 animate-spin" />
+        <h3 className="mb-2 text-lg font-semibold">
+          Setting up your account...
+        </h3>
+        <p className="text-muted-foreground text-sm">
           Please wait while we create your account and sign you in.
         </p>
       </Card>
@@ -84,10 +111,12 @@ export function AutoSignIn({ signInToken, email, sourcePostId }: AutoSignInProps
 
   if (status === "error") {
     return (
-      <Card className="p-8 text-center border-red-200 bg-red-50">
-        <h3 className="text-lg font-semibold mb-2 text-red-800">Sign-in Issue</h3>
-        <p className="text-sm text-red-600 mb-4">{error}</p>
-        <p className="text-sm text-muted-foreground">
+      <Card className="border-red-200 bg-red-50 p-8 text-center">
+        <h3 className="mb-2 text-lg font-semibold text-red-800">
+          Sign-in Issue
+        </h3>
+        <p className="mb-4 text-sm text-red-600">{error}</p>
+        <p className="text-muted-foreground text-sm">
           Redirecting to sign-in page...
         </p>
       </Card>

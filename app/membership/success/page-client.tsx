@@ -1,3 +1,24 @@
+/**
+ * @fileoverview Membership checkout success page (client)
+ *
+ * This component handles **two** different post-checkout scenarios:
+ * 1. Existing Clerk users that just upgraded their subscription.
+ *    – Webhook activates their Convex member immediately.
+ *    – No `signInToken` is required, we simply wait for `memberStatus` to
+ *      show the subscription is active then redirect.
+ * 2. Guest / password-less checkouts.
+ *    – Convex creates a temporary member and stores a one-time Clerk
+ *      `signInToken` when the webhook finishes.
+ *    – When the query returns the token we render <AutoSignIn/> which
+ *      exchanges the ticket with Clerk and redirects afterwards.
+ *
+ * NOTE: All of this logic should be replaced by a small **Edge/server route**
+ * that validates the `session_id`, sets a Clerk ticket cookie (if needed)
+ * and issues a 302 so users never get “stuck”.
+ *
+ * TODO(MVP-CLEANUP): Move success flow to an Edge handler once webhook
+ * latency is <1s.
+ */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -15,6 +36,7 @@ import {
   getPaywallVariant,
   type PaywallVariant,
 } from "@/lib/conversion-copy";
+import { useRouter } from "next/navigation";
 
 interface SessionData {
   email: string;
@@ -36,6 +58,9 @@ export function SuccessPageClient() {
   // Get the messaging variant
   const variant = getPaywallVariant(variantParam || undefined);
   const copy = successCopy[variant];
+
+  // Added: router for redirects
+  const router = useRouter();
 
   // Get post routing information if we have a source post
   // TODO: Use this to redirect back to the original post after onboarding
@@ -107,6 +132,16 @@ export function SuccessPageClient() {
       }, 250);
     }
   }, [hasTriggeredConfetti]);
+
+  // Redirect users who are already fully set up (have an active member record but no sign-in token required)
+  // TODO(MVP-CLEANUP): This redirect logic becomes obsolete once we move the entire flow to the Edge handler.
+  useEffect(() => {
+    if (memberStatus && !memberStatus.signInToken) {
+      // If we have the source post id, send the user back there, otherwise home
+      const target = sourcePostId ? "/" : "/"; // TODO: map postId to URL when routing util is available
+      router.replace(target);
+    }
+  }, [memberStatus, router, sourcePostId]);
 
   if (isLoading || !sessionData) {
     return (
