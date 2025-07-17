@@ -1,7 +1,7 @@
 /**
  * @fileoverview Discord Presence Count API Route
  * 
- * This API endpoint fetches the current online member count from the VAI VEX Discord server
+ * This API endpoint fetches the current online member count from the VAI Discord server
  * using Discord's Guild Widget API. The endpoint provides real-time presence information
  * for display in the application's UI components.
  * 
@@ -22,20 +22,20 @@
  * }
  * ```
  * 
- * @author VAI VEX Team
+ * @author VAI Team
  * @since 1.0.0
  */
 
 import { NextResponse } from 'next/server'
 
-/** Discord Guild ID for the VAI VEX server */
+/** Discord Guild ID for the VAI server */
 const DISCORD_GUILD_ID = '1355280592962453585'
 
 /** Discord Widget API URL for fetching guild presence information */
 const DISCORD_WIDGET_URL = `https://discord.com/api/guilds/${DISCORD_GUILD_ID}/widget.json`
 
 /**
- * Fetches the current online member count from the VAI VEX Discord server.
+ * Fetches the current online member count from the VAI Discord server.
  * 
  * This endpoint provides real-time presence information by querying Discord's Guild Widget API.
  * The response is cached for 60 seconds to optimize performance and reduce API calls.

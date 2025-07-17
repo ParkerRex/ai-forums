@@ -145,7 +145,7 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Server:</span>
-              <span>VAI VEX Discord</span>
+              <span>VAI Discord</span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Guild ID:</span>

@@ -4,6 +4,8 @@
 
 This feature implements Discord Daily Digest Integration as part of the enhanced news feed Phase 1, building on the completed Phase 0 infrastructure. The system will fetch Discord messages from the previous day, rank them by reaction count, and integrate them seamlessly into the existing news feed architecture. Users will be able to enable/disable this feature and view Discord content both in the main news feed and on a dedicated Discord digest page.
 
+
+<!-- Note: reation count can't always be the barometer. We'll find that out soon. We need it to judge what is helpful and what's not with simple logic. Good for now. -->
 ## Requirements
 
 ### Requirement 1

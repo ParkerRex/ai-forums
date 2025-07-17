@@ -1,7 +1,7 @@
 /**
  * @fileoverview Discord Messages API Route
  * 
- * This API endpoint fetches Discord messages from the VAI VEX Discord server
+ * This API endpoint fetches Discord messages from the VAI Discord server
  * for the Discord Daily Digest feature. It integrates with the Convex backend
  * to retrieve messages from the previous day, ranked by reaction count.
  * 
@@ -34,7 +34,7 @@
  * }
  * ```
  * 
- * @author VAI VEX Team
+ * @author VAI Team
  * @since 1.0.0
  */
 

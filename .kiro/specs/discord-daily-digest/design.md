@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Discord Daily Digest Integration extends the existing Phase 0 news feed infrastructure to include Discord messages from the VAI VEX Discord server. The system uses an archive-based approach where a scheduled process collects, processes, and stores yesterday's Discord messages in the database. Users then read from this pre-processed archive rather than fetching live data from Discord. This design provides better performance, reliability, and user experience while leveraging the established modular source system and user preference management.
+The Discord Daily Digest Integration extends the existing Phase 0 news feed infrastructure to include Discord messages from the VAI Discord server. The system uses an archive-based approach where a scheduled process collects, processes, and stores yesterday's Discord messages in the database. Users then read from this pre-processed archive rather than fetching live data from Discord. This design provides better performance, reliability, and user experience while leveraging the established modular source system and user preference management.
 
 ## Architecture
 
@@ -489,7 +489,7 @@ DISCORD_GUILD_ID=1355280592962453585  # Already configured
 ### Bot Configuration
 1. Create Discord application and bot
 2. Generate bot token
-3. Add bot to VAI VEX Discord server
+3. Add bot to VAI Discord server
 4. Grant necessary permissions
 5. Test bot connectivity
 

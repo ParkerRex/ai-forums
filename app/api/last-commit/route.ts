@@ -1,7 +1,7 @@
 /**
  * @fileoverview Last Commit Information API Route
  * 
- * This API endpoint fetches information about the most recent commit from the VAI VEX
+ * This API endpoint fetches information about the most recent commit from the VAI
  * GitHub repository. It provides commit metadata including timestamp, SHA, message,
  * and author information for display in the application's activity feed or status indicators.
  * 
@@ -31,7 +31,7 @@
  * @fallback_behavior
  * When GitHub API is unavailable, returns mock data to ensure UI functionality
  * 
- * @author VAI VEX Team
+ * @author VAI Team
  * @since 1.0.0
  */
 
@@ -47,7 +47,7 @@ const OWNER = 'joinvai'
 const REPO = 'vai-vex'
 
 /**
- * Fetches information about the most recent commit from the VAI VEX repository.
+ * Fetches information about the most recent commit from the VAI repository.
  * 
  * This endpoint retrieves the latest commit information from the main branch,
  * including commit metadata such as timestamp, SHA, commit message, and author.

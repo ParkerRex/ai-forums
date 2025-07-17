@@ -49,7 +49,7 @@ interface CachedDiscordData {
  * Requirements: 2.4 - Transform Discord messages to NewsItem interface format
  */
 function transformDiscordEntryToNewsItem(entry: DiscordDigestEntry): NewsItem {
-  const defaultGuildId = "1355280592962453585"; // VAI VEX Discord server
+  const defaultGuildId = "1355280592962453585"; // VAI Discord server
   
   // Create meaningful title from the message
   const maxContentLength = 100;

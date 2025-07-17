@@ -32,14 +32,14 @@ describe('Discord News Feed Preferences', () => {
       const mockDiscordSource = {
         type: "discord" as const,
         url: "https://discord.com/channels/1355280592962453585",
-        name: "VAI VEX Discord",
+        name: "VAI Discord",
         guildId: "1355280592962453585",
         channels: ["general", "announcements"],
       };
 
       expect(mockDiscordSource.type).toBe("discord");
       expect(mockDiscordSource.url).toBe("https://discord.com/channels/1355280592962453585");
-      expect(mockDiscordSource.name).toBe("VAI VEX Discord");
+      expect(mockDiscordSource.name).toBe("VAI Discord");
       expect(mockDiscordSource.guildId).toBe("1355280592962453585");
       expect(mockDiscordSource.channels).toEqual(["general", "announcements"]);
     });
@@ -48,7 +48,7 @@ describe('Discord News Feed Preferences', () => {
       const mockDiscordSource = {
         type: "discord" as const,
         url: "https://discord.com/channels/1355280592962453585",
-        name: "VAI VEX Discord",
+        name: "VAI Discord",
         guildId: "1355280592962453585",
         channels: undefined,
       };
@@ -80,7 +80,7 @@ describe('Discord News Feed Preferences', () => {
           {
             type: "discord" as const,
             url: "https://discord.com/channels/1355280592962453585",
-            name: "VAI VEX Discord",
+            name: "VAI Discord",
             guildId: "1355280592962453585",
             channels: undefined,
           }
@@ -113,7 +113,7 @@ describe('Discord News Feed Preferences', () => {
           {
             type: "discord" as const,
             url: "https://discord.com/channels/1355280592962453585",
-            name: "VAI VEX Discord",
+            name: "VAI Discord",
             guildId: "1355280592962453585",
             channels: undefined,
           }
@@ -142,7 +142,7 @@ describe('Discord News Feed Preferences', () => {
       const mockDefaultConfig = {
         type: "discord" as const,
         url: `https://discord.com/channels/${defaultGuildId}`,
-        name: "VAI VEX Discord",
+        name: "VAI Discord",
         guildId: defaultGuildId,
         channels: undefined,
       };
@@ -165,7 +165,7 @@ describe('Discord News Feed Preferences', () => {
           {
             type: "discord" as const,
             url: "https://discord.com/channels/1355280592962453585",
-            name: "VAI VEX Discord",
+            name: "VAI Discord",
             guildId: "1355280592962453585",
             channels: undefined,
           }

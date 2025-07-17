@@ -37,7 +37,7 @@
  * }
  * ```
  * 
- * @author VAI VEX Team
+ * @author VAI Team
  * @since 1.0.0
  */
 

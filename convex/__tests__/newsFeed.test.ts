@@ -31,7 +31,7 @@ describe("News Feed Discord Integration", () => {
       const discordSource: NewsSource = {
         type: "discord",
         url: "https://discord.com/channels/1355280592962453585",
-        name: "VAI VEX Discord",
+        name: "VAI Discord",
         guildId: "1355280592962453585",
         channels: ["general", "announcements"],
       };
@@ -53,7 +53,7 @@ describe("News Feed Discord Integration", () => {
       const discordSource: NewsSource = {
         type: "discord",
         url: "https://discord.com/channels/1355280592962453585",
-        name: "VAI VEX Discord",
+        name: "VAI Discord",
       };
 
       expect(discordSource.type).toBe("discord");
@@ -73,7 +73,7 @@ describe("News Feed Discord Integration", () => {
         {
           type: "discord" as const,
           url: "https://discord.com/channels/1355280592962453585",
-          name: "VAI VEX Discord",
+          name: "VAI Discord",
           guildId: "1355280592962453585",
         },
         {
@@ -105,7 +105,7 @@ describe("News Feed Discord Integration", () => {
       const discordCacheSource: CacheSource = {
         type: "discord",
         url: "https://discord.com/channels/1355280592962453585",
-        name: "VAI VEX Discord",
+        name: "VAI Discord",
         guildId: "1355280592962453585",
         channels: ["general", "announcements"],
       };

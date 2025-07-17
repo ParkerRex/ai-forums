@@ -14,7 +14,7 @@ describe('Discord News Source', () => {
   const mockDiscordSource: DiscordNewsSource = {
     type: 'discord',
     url: 'https://discord.com/channels/1355280592962453585',
-    name: 'VAI VEX Discord',
+    name: 'VAI Discord',
     guildId: '1355280592962453585',
     channels: ['general', 'announcements'],
   };

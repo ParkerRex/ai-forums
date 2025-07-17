@@ -2,7 +2,7 @@
  * @fileoverview Discord Daily Digest Page Component
  *
  * This is the dedicated Discord digest page that displays Discord-only content
- * from the VAI VEX Discord server. It shows the most popular Discord messages
+ * from the VAI Discord server. It shows the most popular Discord messages
  * from the previous day, ranked by reaction count, with summaries and manual
  * refresh functionality.
  *
@@ -22,7 +22,7 @@
  * @requires useDiscordDigest hook for Discord data fetching
  * @requires NewsCard component for message display
  *
- * @author VAI VEX Team
+ * @author VAI Team
  * @since 1.0.0
  */
 
@@ -41,7 +41,7 @@ import { useDiscordDigest } from "@/hooks/use-discord-digest";
  * Discord Daily Digest page component that displays Discord-only content.
  *
  * This component serves as a dedicated interface for users to view Discord
- * messages from the VAI VEX Discord server. It shows the most popular messages
+ * messages from the VAI Discord server. It shows the most popular messages
  * from the previous day, ranked by reaction count, and provides manual refresh
  * functionality with appropriate error handling.
  *
@@ -131,7 +131,7 @@ export default function DiscordDigestPage() {
               <MessageSquare className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">Discord Daily Digest</h3>
               <p className="text-muted-foreground mb-4">
-                Get the most popular Discord messages from the VAI VEX community, ranked by reactions.
+                Get the most popular Discord messages from the VAI community, ranked by reactions.
                 See what discussions you might have missed from yesterday.
               </p>
               <Button asChild>
@@ -309,7 +309,7 @@ export default function DiscordDigestPage() {
           <div>
             <h1 className="text-3xl font-bold">Discord Daily Digest</h1>
             <p className="text-muted-foreground mt-1">
-              Popular messages from the VAI VEX Discord community
+              Popular messages from the VAI Discord community
             </p>
           </div>
 
@@ -362,7 +362,7 @@ export default function DiscordDigestPage() {
               rel="noopener noreferrer"
             >
               <ExternalLink className="w-4 h-4 mr-2" />
-              Join VAI VEX Discord
+              Join VAI Discord
             </a>
           </Button>
         </div>

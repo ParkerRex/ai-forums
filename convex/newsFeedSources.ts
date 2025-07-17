@@ -44,7 +44,7 @@ export const updateDiscordPreferences = mutation({
       const discordSource = {
         type: "discord" as const,
         url: `https://discord.com/channels/${guildId}`,
-        name: "VAI VEX Discord",
+        name: "VAI Discord",
         guildId,
         channels: args.channels,
       };
@@ -149,7 +149,7 @@ export const toggleDiscordDigest = mutation({
       const discordSource = {
         type: "discord" as const,
         url: `https://discord.com/channels/${guildId}`,
-        name: "VAI VEX Discord",
+        name: "VAI Discord",
         guildId,
         channels: undefined,
       };

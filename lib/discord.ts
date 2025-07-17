@@ -36,7 +36,7 @@ export class DiscordClient {
       this.isReady = true;
     });
 
-    this.client.on('error', (error) => {
+    this.client.on('error', (error: Error) => {
       console.error('Discord client error:', error);
     });
   }
@@ -44,7 +44,7 @@ export class DiscordClient {
   async connect(token: string): Promise<void> {
     try {
       await this.client.login(token);
-      
+
       // Wait for the client to be ready
       if (!this.isReady) {
         await new Promise((resolve) => {
@@ -83,10 +83,10 @@ export class DiscordClient {
 
       const allMessages: DiscordMessage[] = [];
       const guildChannels = await guild.channels.fetch();
-      
+
       // Filter to text channels only
       const textChannels = guildChannels.filter(
-        (channel): channel is TextChannel => 
+        (channel): channel is TextChannel =>
           channel?.type === 0 && // GUILD_TEXT
           (!channels || channels.includes(channel.id) || channels.includes(channel.name))
       );
@@ -137,10 +137,10 @@ export class DiscordClient {
         }
 
         lastMessageId = fetchedMessages.last()?.id;
-        
+
         // If we got fewer messages than the limit, we've reached the end
         if (fetchedMessages.size < limit) break;
-        
+
         // Check if the oldest message is before our since date
         const oldestMessage = fetchedMessages.last();
         if (oldestMessage && oldestMessage.createdAt < since) break;
@@ -155,7 +155,7 @@ export class DiscordClient {
 
   private async transformMessage(message: Message, channelName: string): Promise<DiscordMessage> {
     const reactions: Array<{ emoji: string; count: number }> = [];
-    
+
     // Process reactions
     for (const reaction of message.reactions.cache.values()) {
       reactions.push({
@@ -203,11 +203,11 @@ export function handleDiscordError(error: unknown): DiscordError {
   if (error instanceof DiscordError) {
     return error;
   }
-  
+
   if (error instanceof Error) {
     return new DiscordError(error.message);
   }
-  
+
   return new DiscordError('Unknown Discord error occurred');
 }
 
@@ -224,20 +224,20 @@ export class RateLimiter {
 
   async waitIfNeeded(): Promise<void> {
     const now = Date.now();
-    
+
     // Remove old requests outside the time window
     this.requests = this.requests.filter(time => now - time < this.timeWindow);
-    
+
     if (this.requests.length >= this.maxRequests) {
       const oldestRequest = Math.min(...this.requests);
       const waitTime = this.timeWindow - (now - oldestRequest);
-      
+
       if (waitTime > 0) {
         console.log(`Rate limit reached, waiting ${waitTime}ms`);
         await new Promise(resolve => setTimeout(resolve, waitTime));
       }
     }
-    
+
     this.requests.push(now);
   }
 }
