@@ -63,6 +63,10 @@ export function ActivateSubscriptionBanner() {
     return nextBilling;
   };
 
+  // TODO(ENTITLEMENT-REFactor): use api.members.entitlement.getEntitlement
+  // instead of bespoke shouldShowBanner() logic so that visibility updates
+  // instantly and duplicate rules live in one place.
+
   /**
    * Check if member should see the banner
    */

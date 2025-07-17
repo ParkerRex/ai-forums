@@ -42,6 +42,12 @@ export function ReactivateBannerInline() {
     }
   }, []);
 
+  // TODO(ENTITLEMENT-REFactor): Replace hasFullAccess() with a single
+  // real-time query (api.members.entitlement.getEntitlement) once that
+  // query is added. This will remove the need for manual field checks
+  // and ensure the banner hides as soon as the webhook activates the
+  // subscription.
+
   // Check if member has full access (client-side version of canViewFullContent)
   const hasFullAccess = () => {
     if (!currentMember) return false;

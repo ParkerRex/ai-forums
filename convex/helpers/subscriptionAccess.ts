@@ -1,4 +1,11 @@
 /**
+ * TODO(ENTITLEMENT-REFactor): This helper will be deprecated in favour of a
+ * single query `api.members.entitlement.getEntitlement` that returns a
+ * pre-computed `isEntitled` boolean.  Once that exists, client components
+ * should subscribe to it instead of duplicating this logic.
+ */
+
+/**
  * Subscription-based access control for content and features.
  *
  * Rules:
