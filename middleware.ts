@@ -19,8 +19,18 @@ const isPublicRoute = createRouteMatcher([
   "/blog(.*)",
 ]);
 
+// Routes that should bypass all middleware (including Clerk)
+const isBypassRoute = createRouteMatcher([
+  "/api/stripe/webhook",
+]);
+
 
 export default clerkMiddleware(async (auth, req) => {
+  // Bypass middleware entirely for webhook endpoints
+  if (isBypassRoute(req)) {
+    return NextResponse.next();
+  }
+
   const authResult = await auth();
   const { userId } = authResult;
 
@@ -28,7 +38,6 @@ export default clerkMiddleware(async (auth, req) => {
   if (isProtectedRoute(req)) {
     await auth.protect();
   }
-
 
   return NextResponse.next();
 });
