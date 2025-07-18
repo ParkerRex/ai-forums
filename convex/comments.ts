@@ -28,6 +28,7 @@ import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
 import { insertNotification } from "./notifications";
 import { api } from "./_generated/api";
+import { internal } from "./_generated/api";
 
 /**
  * Checks if a member is the author of a comment for authorization purposes.
@@ -77,7 +78,7 @@ export const getCommentsByPost = query({
     const enrichedComments = await Promise.all(
       comments.map(async (comment) => {
         const member = await ctx.db.get(comment.memberId);
-        
+
         // Get reply-to member information if this is a reply
         let replyToMember = null;
         if (comment.replyToMemberId) {
@@ -93,7 +94,7 @@ export const getCommentsByPost = query({
             };
           }
         }
-        
+
         return {
           ...comment,
           member: member ? {
@@ -142,7 +143,7 @@ export const getCommentsByPostFlat = query({
     const enrichedComments = await Promise.all(
       comments.map(async (comment) => {
         const member = await ctx.db.get(comment.memberId);
-        
+
         // Get reply-to member information if this is a reply
         let replyToMember = null;
         if (comment.replyToMemberId) {
@@ -155,7 +156,7 @@ export const getCommentsByPostFlat = query({
             };
           }
         }
-        
+
         return {
           _id: comment._id,
           content: comment.content,
@@ -273,7 +274,7 @@ export const createComment = mutation({
     let depth = 0;
     let replyToMemberId: Id<"members"> | undefined = undefined;
     let replyToCommentId: Id<"comments"> | undefined = undefined;
-    
+
     if (parentCommentId) {
       const parentComment = await ctx.db.get(parentCommentId);
       if (!parentComment || parentComment.status !== "active") {
@@ -282,7 +283,7 @@ export const createComment = mutation({
       if (parentComment.postId !== postId) {
         throw new Error("Parent comment belongs to different post");
       }
-      
+
       // For GitHub-style flat comments, we track who we're replying to
       // but keep depth at 0 for all comments
       replyToMemberId = parentComment.memberId;
@@ -297,7 +298,7 @@ export const createComment = mutation({
     if (parentCommentId) {
       const existingReplies = await ctx.db
         .query("comments")
-        .withIndex("by_parent_and_order", (q) => 
+        .withIndex("by_parent_and_order", (q) =>
           q.eq("parentCommentId", parentCommentId)
         )
         .filter((q) => q.eq(q.field("status"), "active"))
@@ -312,7 +313,7 @@ export const createComment = mutation({
     const existingComments = await ctx.db
       .query("comments")
       .withIndex("by_post_and_createdAt", (q) => q.eq("postId", postId))
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.eq(q.field("memberId"), member._id),
           q.eq(q.field("status"), "active"),
@@ -323,8 +324,8 @@ export const createComment = mutation({
 
     // Check if any existing comment has the same content
     const duplicateComment = existingComments.find(
-      comment => comment.content === trimmedContent && 
-                 comment.parentCommentId === parentCommentId
+      comment => comment.content === trimmedContent &&
+        comment.parentCommentId === parentCommentId
     );
 
     if (duplicateComment) {
@@ -442,7 +443,7 @@ export const updateComment = mutation({
     }
 
     const now = Date.now();
-    
+
     // Create edit history entry
     const editHistory = comment.editHistory || [];
     editHistory.push({
@@ -457,7 +458,7 @@ export const updateComment = mutation({
       editReason: editReason?.trim(),
       editHistory,
     });
-    
+
     return commentId;
   },
 });
@@ -513,7 +514,7 @@ export const editComment = mutation({
     }
 
     const now = Date.now();
-    
+
     // Create edit history entry
     const editHistory = comment.editHistory || [];
     editHistory.push({
@@ -556,7 +557,7 @@ export const editComment = mutation({
       editedAt: now,
       editHistory,
     });
-    
+
     return args.commentId;
   },
 });
@@ -723,10 +724,10 @@ export const reportComment = mutation({
         .query("members")
         .filter((q) => q.eq(q.field("role"), "admin"))
         .collect();
-      
+
       const comment = await ctx.db.get(commentId);
       const post = comment ? await ctx.db.get(comment.postId) : null;
-      
+
       for (const admin of admins) {
         await insertNotification(ctx, {
           recipientId: admin._id,

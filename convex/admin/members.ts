@@ -161,10 +161,11 @@ export const getMembershipStats = query({
     const members = await ctx.db.query("members").collect();
     
     // Calculate stats by tier
-    const tierStats: Record<"founding_member" | "early_bird" | "member", number> = {
+    const tierStats: Record<"founding_member" | "early_bird" | "member" | "scholarship", number> = {
       founding_member: 0,
       early_bird: 0,
       member: 0,
+      scholarship: 0,
     };
     
     // Calculate stats by status

@@ -112,11 +112,14 @@ export const updateNewsPreferences = mutation({
     preferences: v.object({
       enabledCategories: v.array(v.string()),
       customSources: v.array(v.object({
-        type: v.union(v.literal("repository"), v.literal("website")),
+        type: v.union(v.literal("repository"), v.literal("website"), v.literal("discord")),
         url: v.string(),
         name: v.string(),
+        guildId: v.optional(v.string()),
+        channels: v.optional(v.array(v.string())),
       })),
       refreshInterval: v.number(),
+      discordEnabled: v.optional(v.boolean()),
     }),
   },
   returns: v.null(),
@@ -133,11 +136,14 @@ export const getNewsPreferences = query({
   returns: v.union(v.null(), v.object({
     enabledCategories: v.array(v.string()),
     customSources: v.array(v.object({
-      type: v.union(v.literal("repository"), v.literal("website")),
+      type: v.union(v.literal("repository"), v.literal("website"), v.literal("discord")),
       url: v.string(),
       name: v.string(),
+      guildId: v.optional(v.string()),
+      channels: v.optional(v.array(v.string())),
     })),
     refreshInterval: v.number(),
+    discordEnabled: v.optional(v.boolean()),
   })),
   handler: async (ctx, args) => {
     const member = await ctx.db.get(args.memberId);

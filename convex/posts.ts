@@ -66,30 +66,30 @@ function validateContentUrls(content: string): void {
   // Match URLs and markdown links
   const urlPattern = /https?:\/\/[^\s)]+/g;
   const markdownRegex = /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g;
-  
+
   const urls = new Set<string>();
-  
+
   // Extract bare URLs
   let match;
   while ((match = urlPattern.exec(content)) !== null) {
     urls.add(match[0]);
   }
-  
+
   // Extract URLs from markdown links
   while ((match = markdownRegex.exec(content)) !== null) {
     urls.add(match[2]);
   }
-  
+
   // Validate each URL
   for (const url of Array.from(urls)) {
     try {
       const parsedUrl = new URL(url);
-      
+
       // Only allow http and https
       if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
         throw new Error(`Invalid protocol in URL: ${url}`);
       }
-      
+
       // Block localhost and private IPs for security
       const hostname = parsedUrl.hostname.toLowerCase();
       if (
@@ -101,7 +101,7 @@ function validateContentUrls(content: string): void {
       ) {
         throw new Error(`Private/localhost URLs not allowed: ${url}`);
       }
-      
+
       // Block javascript: and data: schemes
       if (url.toLowerCase().startsWith('javascript:') || url.toLowerCase().startsWith('data:')) {
         throw new Error(`Dangerous URL scheme not allowed: ${url}`);
@@ -157,7 +157,7 @@ export const getPosts = query({
       pinnedPosts = await ctx.db
         .query("posts")
         .withIndex("by_pinned_and_category")
-        .filter(q => 
+        .filter(q =>
           q.and(
             q.eq(q.field("isPinned"), true),
             q.eq(q.field("categoryId"), categoryId),
@@ -175,7 +175,7 @@ export const getPosts = query({
       pinnedPosts = await ctx.db
         .query("posts")
         .withIndex("by_pinned_global")
-        .filter(q => 
+        .filter(q =>
           q.and(
             q.eq(q.field("isPinned"), true),
             q.eq(q.field("status"), "active"),
@@ -228,7 +228,7 @@ export const getPosts = query({
 
       // Filter active, non-pinned posts and apply ordering
       let regularPostsQuery = query
-        .filter((q) => 
+        .filter((q) =>
           q.and(
             q.eq(q.field("status"), "active"),
             q.or(
@@ -252,8 +252,8 @@ export const getPosts = query({
     const allPosts = [...pinnedPosts, ...regularPosts];
 
     // Collect unique member and category IDs
-    const memberIds = [...new Set(allPosts.map(post => post.memberId))];
-    const categoryIds = [...new Set(allPosts.map(post => post.categoryId))];
+    const memberIds = Array.from(new Set(allPosts.map(post => post.memberId)));
+    const categoryIds = Array.from(new Set(allPosts.map(post => post.categoryId)));
 
     // Fetch all members and categories in parallel
     const [members, categories] = await Promise.all([
@@ -353,7 +353,7 @@ export const getPostById = query({
       const PREVIEW_LENGTH = 50;
       const preview = post.content.substring(0, PREVIEW_LENGTH);
       const needsEllipsis = post.content.length > PREVIEW_LENGTH;
-      
+
       return {
         ...post,
         content: needsEllipsis ? preview + "..." : preview,
@@ -455,7 +455,7 @@ export const getPostBySlug = query({
       .withIndex("by_slug", (q) => q.eq("slug", slug))
       .filter((q) => q.eq(q.field("status"), "active"))
       .first();
-      
+
     if (!post) {
       return null;
     }
@@ -475,7 +475,7 @@ export const getPostBySlug = query({
       const PREVIEW_LENGTH = 50;
       const preview = post.content.substring(0, PREVIEW_LENGTH);
       const needsEllipsis = post.content.length > PREVIEW_LENGTH;
-      
+
       return {
         ...post,
         content: needsEllipsis ? preview + "..." : preview,
@@ -641,7 +641,7 @@ export const createPost = mutation({
     if (args.attachments && args.attachments.length > 0) {
       // Set legacy fields from first attachment for backward compatibility
       const firstAttachment = args.attachments[0];
-      
+
       // Map attachment type to post type
       if (firstAttachment.type === "image") {
         resolvedType = "image";
@@ -651,7 +651,7 @@ export const createPost = mutation({
         resolvedType = "video"; // YouTube embeds are treated as video posts
       }
       // PDF doesn't map to a specific post type, keep as is
-      
+
       resolvedMediaUrl = resolvedMediaUrl || firstAttachment.url;
       resolvedThumbnailUrl = resolvedThumbnailUrl || firstAttachment.thumbnailUrl;
       resolvedAspectRatio = resolvedAspectRatio || firstAttachment.aspectRatio;
@@ -725,13 +725,13 @@ export const createPost = mutation({
       postCount: (category.postCount || 0) + 1,
       updatedAt: now,
     });
-    
+
     // Schedule preview generation if not provided
     if (!args.preview || args.preview.trim() === "") {
       await ctx.scheduler.runAfter(
         0,
         api.previewGeneration.generateAndUpdatePostPreview,
-        { 
+        {
           postId,
           title: args.title.trim(),
           content: args.content.trim()
@@ -839,7 +839,7 @@ export const updatePost = mutation({
     // If title is being updated, regenerate slug
     if (args.title !== undefined) {
       updates.title = args.title.trim();
-      
+
       // Generate new slug from updated title
       const baseSlug = generateSlug(args.title);
       const posts = await ctx.db
@@ -852,7 +852,7 @@ export const updatePost = mutation({
         .filter((slug): slug is string => slug !== undefined);
       updates.slug = ensureUniqueSlug(baseSlug, existingSlugs);
     }
-    
+
     if (args.content !== undefined) {
       updates.content = args.content.trim();
     }
@@ -965,7 +965,7 @@ export const editPost = mutation({
     if (args.attachments && args.attachments.length > 0) {
       // Set legacy fields from first attachment for backward compatibility
       const firstAttachment = args.attachments[0];
-      
+
       // Map attachment type to post type
       if (firstAttachment.type === "image") {
         resolvedType = "image";
@@ -975,7 +975,7 @@ export const editPost = mutation({
         resolvedType = "video"; // YouTube embeds are treated as video posts
       }
       // PDF doesn't map to a specific post type, keep as is
-      
+
       // Only override if not explicitly provided
       resolvedMediaUrl = args.mediaUrl !== undefined ? args.mediaUrl : firstAttachment.url;
       resolvedThumbnailUrl = args.thumbnailUrl !== undefined ? args.thumbnailUrl : firstAttachment.thumbnailUrl;
@@ -1075,7 +1075,7 @@ export const editPost = mutation({
     // If title is being updated, regenerate slug
     if (args.title !== undefined) {
       updates.title = args.title.trim();
-      
+
       // Generate new slug from updated title
       const baseSlug = generateSlug(args.title);
       const posts = await ctx.db
@@ -1088,7 +1088,7 @@ export const editPost = mutation({
         .filter((slug): slug is string => slug !== undefined);
       updates.slug = ensureUniqueSlug(baseSlug, existingSlugs);
     }
-    
+
     if (args.content !== undefined) {
       updates.content = args.content.trim();
     }
@@ -1127,7 +1127,7 @@ export const editPost = mutation({
     if (args.linkImage !== undefined) {
       updates.linkImage = args.linkImage;
     }
-    
+
     // Handle attachments update
     if (args.attachments !== undefined) {
       updates.attachments = args.attachments;
@@ -1158,29 +1158,29 @@ export const editPost = mutation({
     }
 
     await ctx.db.patch(args.postId, updates);
-    
+
     // Return the updated post data including the new slug
     const updatedPost = await ctx.db.get(args.postId);
     if (!updatedPost) {
       throw new Error("Failed to retrieve updated post");
     }
-    
+
     // Schedule preview regeneration if title or content changed
     if ((args.title !== undefined || args.content !== undefined) && (!updatedPost.preview || updatedPost.preview.trim() === "")) {
       await ctx.scheduler.runAfter(
         0,
         api.previewGeneration.generateAndUpdatePostPreview,
-        { 
+        {
           postId: args.postId,
           title: updatedPost.title,
           content: updatedPost.content
         }
       );
     }
-    
+
     // Get the category for the URL (use updated category if changed)
     const category = await ctx.db.get(updatedPost.categoryId);
-    
+
     return {
       _id: updatedPost._id,
       slug: updatedPost.slug,
@@ -1273,17 +1273,17 @@ export const canUserViewPost = query({
     if (!post) {
       return false;
     }
-    
+
     const identity = await ctx.auth.getUserIdentity();
     let member = null;
-    
+
     if (identity) {
       member = await ctx.db
         .query("members")
         .withIndex("by_externalId", (q) => q.eq("externalId", identity.subject))
         .unique();
     }
-    
+
     return canViewPost(member, post);
   },
 });
@@ -1308,7 +1308,7 @@ export const trackPostView = mutation({
 
     // Check if this user/IP has already viewed this post recently (within 24 hours)
     const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
-    
+
     let existingView;
     if (userId) {
       existingView = await ctx.db
@@ -1320,7 +1320,7 @@ export const trackPostView = mutation({
       existingView = await ctx.db
         .query("postViews")
         .withIndex("by_postId", (q) => q.eq("postId", postId))
-        .filter((q) => 
+        .filter((q) =>
           q.and(
             q.eq(q.field("ipAddress"), ipAddress),
             q.gt(q.field("viewedAt"), oneDayAgo)
@@ -1390,9 +1390,9 @@ export const searchPosts = query({
           }
           return query;
         });
-      
+
       const contentPosts = await contentQuery.take(limit);
-      
+
       // Dedupe by ID, preferring title matches
       const seenIds = new Set(posts.map(p => p._id));
       const uniqueContentPosts = contentPosts.filter(p => !seenIds.has(p._id));
@@ -1472,17 +1472,17 @@ export const addSlugsToExistingPosts = mutation({
   handler: async (ctx) => {
     // Get all posts that don't have slugs yet
     const posts = await ctx.db.query("posts").collect();
-    
+
     console.log(`Processing ${posts.length} posts for slug generation...`);
-    
+
     // Track existing slugs to ensure uniqueness
     const existingSlugs = new Set<string>();
-    
+
     // Process posts in batches to avoid overwhelming the system
     const batchSize = 50;
     for (let i = 0; i < posts.length; i += batchSize) {
       const batch = posts.slice(i, i + batchSize);
-      
+
       await Promise.all(
         batch.map(async (post) => {
           // Skip if post already has slug
@@ -1490,7 +1490,7 @@ export const addSlugsToExistingPosts = mutation({
             existingSlugs.add(post.slug as string);
             return;
           }
-          
+
           // Generate slug from title
           const baseSlug = post.title
             .toLowerCase()
@@ -1500,7 +1500,7 @@ export const addSlugsToExistingPosts = mutation({
             .replace(/^-+|-+$/g, '')
             .substring(0, 60)
             .replace(/-+$/, '');
-          
+
           // Ensure uniqueness
           let slug = baseSlug;
           let counter = 1;
@@ -1508,17 +1508,17 @@ export const addSlugsToExistingPosts = mutation({
             slug = `${baseSlug}-${counter}`;
             counter++;
           }
-          
+
           existingSlugs.add(slug);
-          
+
           // Update the post with the generated slug
           await ctx.db.patch(post._id, { slug });
         })
       );
-      
+
       console.log(`Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(posts.length / batchSize)}`);
     }
-    
+
     console.log("Slug generation migration completed successfully!");
     return { processed: posts.length };
   },
@@ -1567,7 +1567,7 @@ export const pinPost = mutation({
       const categoryPinnedPosts = await ctx.db
         .query("posts")
         .withIndex("by_pinned_and_category")
-        .filter(q => 
+        .filter(q =>
           q.and(
             q.eq(q.field("isPinned"), true),
             q.eq(q.field("categoryId"), post.categoryId),
@@ -1576,11 +1576,11 @@ export const pinPost = mutation({
           )
         )
         .collect();
-      
-      const categoryPinnedCount = categoryPinnedPosts.filter(p => 
+
+      const categoryPinnedCount = categoryPinnedPosts.filter(p =>
         p.pinScope === "category" || p.pinScope === "both"
       ).length;
-      
+
       if (categoryPinnedCount >= 3) {
         throw new Error("Maximum 3 posts can be pinned per category");
       }
@@ -1590,7 +1590,7 @@ export const pinPost = mutation({
       const globalPinnedPosts = await ctx.db
         .query("posts")
         .withIndex("by_pinned_global")
-        .filter(q => 
+        .filter(q =>
           q.and(
             q.eq(q.field("isPinned"), true),
             q.eq(q.field("status"), "active"),
@@ -1598,11 +1598,11 @@ export const pinPost = mutation({
           )
         )
         .collect();
-      
-      const globalPinnedCount = globalPinnedPosts.filter(p => 
+
+      const globalPinnedCount = globalPinnedPosts.filter(p =>
         p.pinScope === "global" || p.pinScope === "both"
       ).length;
-      
+
       if (globalPinnedCount >= 3) {
         throw new Error("Maximum 3 posts can be pinned globally");
       }
@@ -1692,7 +1692,7 @@ export const updatePostPreview = internalMutation({
     if (!post) {
       throw new Error("Post not found");
     }
-    
+
     await ctx.db.patch(postId, {
       preview,
       updatedAt: Date.now(),
@@ -1724,12 +1724,12 @@ export const getPostRouting = query({
     if (!post || post.status !== "active") {
       return null;
     }
-    
+
     const category = await ctx.db.get(post.categoryId);
     if (!category) {
       return null;
     }
-    
+
     return {
       categoryName: category.name,
       slug: post.slug,

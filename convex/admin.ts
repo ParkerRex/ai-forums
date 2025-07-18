@@ -1,7 +1,7 @@
 import { query, mutation, internalMutation, DatabaseReader } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthenticatedMember } from "./auth";
-import { Id } from "./_generated/dataModel";
+import { Id, Doc } from "./_generated/dataModel";
 
 // Helper to check if member is admin
 async function isAdmin(ctx: { db: DatabaseReader }, memberId: Id<"members">) {
@@ -18,7 +18,7 @@ export const getReportedComments = query({
   handler: async (ctx, { status, limit = 50 }) => {
     // Get authenticated member
     const member = await getAuthenticatedMember(ctx);
-    
+
     // Check admin permission
     if (!await isAdmin(ctx, member._id)) {
       throw new Error("Admin access required");
@@ -27,24 +27,24 @@ export const getReportedComments = query({
     // Build query
     const reports = status
       ? await ctx.db
-          .query("commentReports")
-          .withIndex("by_status", (q) => q.eq("status", status))
-          .order("desc")
-          .take(limit)
+        .query("commentReports")
+        .withIndex("by_status", (q) => q.eq("status", status))
+        .order("desc")
+        .take(limit)
       : await ctx.db
-          .query("commentReports")
-          .order("desc")
-          .take(limit);
+        .query("commentReports")
+        .order("desc")
+        .take(limit);
 
     // Enrich with comment and reporter data
     const enrichedReports = await Promise.all(
       reports.map(async (report) => {
         const comment = await ctx.db.get(report.commentId);
         const reporter = await ctx.db.get(report.reporterId);
-        
+
         let commentAuthor = null;
         let post = null;
-        
+
         if (comment) {
           commentAuthor = await ctx.db.get(comment.memberId);
           post = await ctx.db.get(comment.postId);
@@ -91,7 +91,7 @@ export const resolveReport = mutation({
   handler: async (ctx, { reportId, action, deleteComment = false }) => {
     // Get authenticated member
     const member = await getAuthenticatedMember(ctx);
-    
+
     // Check admin permission
     if (!await isAdmin(ctx, member._id)) {
       throw new Error("Admin access required");
@@ -154,7 +154,7 @@ export const deleteAnyComment = mutation({
   handler: async (ctx, { commentId }) => {
     // Get authenticated member
     const member = await getAuthenticatedMember(ctx);
-    
+
     // Check admin permission
     if (!await isAdmin(ctx, member._id)) {
       throw new Error("Admin access required");
@@ -231,7 +231,7 @@ export const setInitialAdmin = mutation({
       .query("members")
       .filter((q) => q.eq(q.field("role"), "admin"))
       .collect();
-    
+
     if (existingAdmins.length > 0) {
       throw new Error("Admin already exists");
     }

@@ -31,6 +31,9 @@ import type * as crons_cleanupTokens from "../crons/cleanupTokens.js";
 import type * as crons_generateMissingPreviews from "../crons/generateMissingPreviews.js";
 import type * as crons from "../crons.js";
 import type * as deduplication from "../deduplication.js";
+import type * as discord from "../discord.js";
+import type * as discordMutations from "../discordMutations.js";
+import type * as discordQueries from "../discordQueries.js";
 import type * as events from "../events.js";
 import type * as github from "../github.js";
 import type * as helpers_access from "../helpers/access.js";
@@ -61,6 +64,7 @@ import type * as migrations_testReactivation from "../migrations/testReactivatio
 import type * as migrations_verifyImport from "../migrations/verifyImport.js";
 import type * as news from "../news.js";
 import type * as newsFeed from "../newsFeed.js";
+import type * as newsFeedSources from "../newsFeedSources.js";
 import type * as notifications from "../notifications.js";
 import type * as polls from "../polls.js";
 import type * as postVersions from "../postVersions.js";
@@ -110,6 +114,9 @@ declare const fullApi: ApiFromModules<{
   "crons/generateMissingPreviews": typeof crons_generateMissingPreviews;
   crons: typeof crons;
   deduplication: typeof deduplication;
+  discord: typeof discord;
+  discordMutations: typeof discordMutations;
+  discordQueries: typeof discordQueries;
   events: typeof events;
   github: typeof github;
   "helpers/access": typeof helpers_access;
@@ -140,6 +147,7 @@ declare const fullApi: ApiFromModules<{
   "migrations/verifyImport": typeof migrations_verifyImport;
   news: typeof news;
   newsFeed: typeof newsFeed;
+  newsFeedSources: typeof newsFeedSources;
   notifications: typeof notifications;
   polls: typeof polls;
   postVersions: typeof postVersions;

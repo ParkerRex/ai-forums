@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { useDiscordPresence } from '@/lib/discord'
+// import { useDiscordPresence } from '@/lib/discord' // TODO: Implement useDiscordPresence hook
 import {
   Tooltip,
   TooltipContent,
@@ -10,7 +10,10 @@ import {
 } from '@/components/ui/tooltip'
 
 export function DiscordStatus() {
-  const { presenceCount, isLoading } = useDiscordPresence()
+  // TODO: Implement useDiscordPresence hook
+  // const { presenceCount, isLoading } = useDiscordPresence()
+  const presenceCount = null;
+  const isLoading = false;
 
   if (isLoading || presenceCount === null) {
     return null

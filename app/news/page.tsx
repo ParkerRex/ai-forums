@@ -20,7 +20,7 @@
  * @requires NewsCard component for article display
  * @requires /api/news endpoint for fetching articles
  *
- * @author VAI VEX Team
+ * @author VAI Team
  * @since 1.0.0
  */
 

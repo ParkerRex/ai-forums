@@ -134,7 +134,8 @@ const members = defineTable({
   tier: v.optional(v.union(
     v.literal("founding_member"),
     v.literal("early_bird"),
-    v.literal("member")
+    v.literal("member"),
+    v.literal("scholarship")
   )),
   
   // Subscription management
@@ -177,12 +178,17 @@ const members = defineTable({
     customSources: v.array(v.object({        // Custom news sources
       type: v.union(
         v.literal("repository"),   // GitHub repository
-        v.literal("website")       // RSS/website feed
+        v.literal("website"),      // RSS/website feed
+        v.literal("discord")       // Discord guild/channels
       ),
       url: v.string(),              // Source URL
       name: v.string(),             // Display name
+      // Discord-specific config
+      guildId: v.optional(v.string()),        // Discord guild ID
+      channels: v.optional(v.array(v.string())), // Channel IDs to monitor
     })),
     refreshInterval: v.number(),    // Feed refresh frequency in minutes
+    discordEnabled: v.optional(v.boolean()), // Quick toggle for Discord digest
   })),
 })
   // Indexes for efficient member queries
@@ -879,7 +885,8 @@ const subscriptions = defineTable({
   tier: v.union(
     v.literal("founding_member"),
     v.literal("early_bird"),
-    v.literal("member")
+    v.literal("member"),
+    v.literal("scholarship")
   ),
   billingInterval: v.union(
     v.literal("monthly"),
@@ -981,6 +988,9 @@ const newsFeedCache = defineTable({
     type: v.string(),
     url: v.string(),
     name: v.string(),
+    // Discord-specific fields
+    guildId: v.optional(v.string()),
+    channels: v.optional(v.array(v.string())),
   })),
   createdAt: v.number(),                    // Cache creation timestamp
   expiresAt: v.number(),                    // Cache expiration timestamp
@@ -988,6 +998,39 @@ const newsFeedCache = defineTable({
   .index("by_cacheKey", ["cacheKey"])       // Primary lookup by cache key
   .index("by_userId_createdAt", ["userId", "createdAt"])
   .index("by_createdAt", ["createdAt"]);
+
+/**
+ * Discord Digest table - Archive of processed Discord messages for daily digest
+ * 
+ * Stores processed Discord messages from the previous day with pre-calculated rankings
+ * and AI-generated summaries. This archive-based approach provides better performance
+ * and reliability than live Discord API calls for the news feed integration.
+ */
+const discordDigest = defineTable({
+  messageId: v.string(),                     // Discord message ID (unique)
+  content: v.string(),                       // Original message content
+  author: v.object({                         // Message author information
+    id: v.string(),                          // Discord user ID
+    username: v.string(),                    // Discord username
+    avatar: v.optional(v.string()),          // Avatar URL
+  }),
+  timestamp: v.number(),                     // Unix timestamp of original message
+  reactions: v.array(v.object({              // Reaction data from Discord
+    emoji: v.string(),                       // Emoji identifier
+    count: v.number(),                       // Number of reactions
+  })),
+  channelId: v.string(),                     // Discord channel ID
+  channelName: v.string(),                   // Human-readable channel name
+  reactionScore: v.number(),                 // Pre-calculated total reaction count for sorting
+  summary: v.optional(v.string()),           // AI-generated summary via Exa
+  digestDate: v.string(),                    // YYYY-MM-DD format for the digest day
+  processedAt: v.number(),                   // When this entry was processed and stored
+})
+  // Indexes for efficient Discord digest queries
+  .index("by_digest_date", ["digestDate"])                    // Get messages for specific date
+  .index("by_reaction_score", ["digestDate", "reactionScore"]) // Ranked messages for date
+  .index("by_message_id", ["messageId"])                      // Prevent duplicate processing
+  .index("by_processed_at", ["processedAt"]);                 // Processing audit trail
 
 /**
  * Complete database schema export for the VAI community platform.
@@ -1023,4 +1066,5 @@ export default defineSchema({
   payments,         // Payment transaction history
   stripeWebhookEvents, // Webhook event processing
   newsFeedCache,    // News feed caching system
+  discordDigest,    // Discord daily digest archive
 });

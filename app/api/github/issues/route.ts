@@ -10,7 +10,7 @@ const OWNER = 'joinvai';
 const REPO = 'vai-vex';
 
 /**
- * Fetches open GitHub issues from the VAI VEX repository.
+ * Fetches open GitHub issues from the VAI repository.
  * 
  * @param request - The incoming HTTP request with optional query parameters
  * @returns JSON array of simplified issue objects
