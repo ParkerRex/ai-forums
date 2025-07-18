@@ -91,7 +91,7 @@ export class DiscordClient {
           (!channels || channels.includes(channel.id) || channels.includes(channel.name))
       );
 
-      for (const channel of textChannels.values()) {
+      for (const channel of Array.from(textChannels.values())) {
         try {
           const messages = await this.fetchMessagesFromChannel(channel, since);
           allMessages.push(...messages);
@@ -131,7 +131,7 @@ export class DiscordClient {
 
         if (relevantMessages.size === 0) break;
 
-        for (const message of relevantMessages.values()) {
+        for (const message of Array.from(relevantMessages.values())) {
           const discordMessage = await this.transformMessage(message, channel.name);
           messages.push(discordMessage);
         }
@@ -157,7 +157,7 @@ export class DiscordClient {
     const reactions: Array<{ emoji: string; count: number }> = [];
 
     // Process reactions
-    for (const reaction of message.reactions.cache.values()) {
+    for (const reaction of Array.from(message.reactions.cache.values())) {
       reactions.push({
         emoji: reaction.emoji.name || reaction.emoji.toString(),
         count: reaction.count,

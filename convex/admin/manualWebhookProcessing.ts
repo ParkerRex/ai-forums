@@ -101,7 +101,7 @@ export const processCheckoutSessionCompleted = internalMutation({
       return { success: true };
     } catch (error) {
       console.error(`[MANUAL WEBHOOK] Error in processCheckoutSessionCompleted:`, error);
-      
+
       // Mark as failed
       const event = await ctx.db
         .query("stripeWebhookEvents")
@@ -134,7 +134,7 @@ async function handleCheckoutSessionCompleted(
   }
 
   const memberId = session.metadata?.memberId;
-  
+
   // Handle direct checkout (no memberId) - this is likely the case for the failing payment
   if (!memberId) {
     // Check if this is a direct checkout
@@ -145,7 +145,7 @@ async function handleCheckoutSessionCompleted(
         console.error("No email found for direct checkout");
         return;
       }
-      
+
       // Extract customer name if available
       const customerName = session.customer_details?.name || "";
       const nameParts = customerName.split(" ");
@@ -160,7 +160,7 @@ async function handleCheckoutSessionCompleted(
 
       if (member) {
         console.log(`[MANUAL WEBHOOK] Updating existing member: ${member._id}`);
-        
+
         // Update existing member with subscription info
         await ctx.db.patch(member._id, {
           stripeCustomerId: session.customer as string,
@@ -177,20 +177,21 @@ async function handleCheckoutSessionCompleted(
 
         // Schedule Clerk account creation if they don't have one
         if (!member.externalId) {
-          await ctx.scheduler.runAfter(0, internal.auth.clerkAccounts.createClerkAccount, {
+          const clerkAccountArgs = {
             email,
             memberId: member._id,
             checkoutSessionId: session.id,
             firstName: firstName || member.firstName,
             lastName: lastName || member.lastName,
-          });
+          };
+          await ctx.scheduler.runAfter(0, internal.auth.clerkAccounts.createClerkAccount, clerkAccountArgs);
         } else {
           // They already have a Clerk account, just generate a sign-in token
           console.log(`[MANUAL WEBHOOK] Member already has Clerk account: ${member.externalId}`);
         }
       } else {
         console.log(`[MANUAL WEBHOOK] Creating new member for email: ${email}`);
-        
+
         // Create new member for guest checkout
         const now = Date.now();
         const newMemberId = await ctx.db.insert("members", {
@@ -211,7 +212,7 @@ async function handleCheckoutSessionCompleted(
           ...(session.customer_details?.address?.country ? { country: session.customer_details.address.country } : {}),
           ...(session.customer_details?.address?.city ? { location: session.customer_details.address.city } : {}),
         });
-        
+
         // Schedule Clerk account creation
         await ctx.scheduler.runAfter(0, internal.auth.clerkAccounts.createClerkAccount, {
           email,
@@ -221,10 +222,10 @@ async function handleCheckoutSessionCompleted(
           lastName,
         });
       }
-      
+
       return;
     }
-    
+
     console.error("Missing memberId in session metadata and not marked as direct checkout");
     return;
   }

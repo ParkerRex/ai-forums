@@ -19,19 +19,19 @@ export const getDiscordDigest = query({
   },
   handler: async (ctx, args) => {
     const targetDate = args.digestDate || getYesterdayDateString();
-    
+
     try {
       // Fetch from database archive, sorted by reaction score
       const digestEntries = await ctx.db
         .query("discordDigest")
-        .withIndex("by_reaction_score", (q) => 
+        .withIndex("by_reaction_score", (q) =>
           q.eq("digestDate", targetDate)
         )
         .order("desc")
         .take(args.limit || 50);
-      
+
       return digestEntries;
-      
+
     } catch (error) {
       console.error('Failed to fetch Discord digest:', error);
       return []; // Always return empty array, never throw

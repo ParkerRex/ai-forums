@@ -6,6 +6,7 @@ import { internal } from "./_generated/api";
 import { createDiscordClient, DiscordMessage, handleDiscordError, RateLimiter } from "../lib/discord";
 import { summarize } from "../lib/exa-client";
 import type { ActionCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 
 // Discord digest entry interface matching the database schema
 interface DiscordDigestEntry {
@@ -58,7 +59,7 @@ export const testDiscordConnection = action({
   args: {},
   handler: async (): Promise<{ success: boolean; message: string; botUser?: string }> => {
     const botToken = process.env.DISCORD_BOT_TOKEN;
-    
+
     if (!botToken) {
       return {
         success: false,
@@ -68,18 +69,18 @@ export const testDiscordConnection = action({
 
     try {
       await rateLimiter.waitIfNeeded();
-      
+
       const client = await createDiscordClient(botToken);
       const isConnected = client.isConnected();
-      
+
       let botUser: string | undefined;
       if (isConnected) {
         // Get bot user info for verification
         botUser = `Bot connected successfully`;
       }
-      
+
       await client.disconnect();
-      
+
       return {
         success: isConnected,
         message: isConnected ? "Discord connection successful" : "Discord connection failed",
@@ -88,7 +89,7 @@ export const testDiscordConnection = action({
     } catch (error) {
       const discordError = handleDiscordError(error);
       console.error("Discord connection test failed:", discordError);
-      
+
       return {
         success: false,
         message: `Discord connection failed: ${discordError.message}`
@@ -107,11 +108,11 @@ async function _fetchDiscordMessages(args: {
 }): Promise<DiscordMessage[]> {
   const botToken = process.env.DISCORD_BOT_TOKEN;
   const defaultGuildId = process.env.DISCORD_GUILD_ID;
-  
+
   if (!botToken) {
     throw new Error("Discord bot token not configured");
   }
-  
+
   const guildId = args.guildId || defaultGuildId;
   if (!guildId) {
     throw new Error("Discord guild ID not provided");
@@ -120,67 +121,67 @@ async function _fetchDiscordMessages(args: {
   // Retry logic with exponential backoff
   const maxRetries = 3;
   let lastError: Error | null = null;
-  
+
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       await rateLimiter.waitIfNeeded();
-      
+
       const client = await createDiscordClient(botToken);
       const sinceDate = new Date(args.since);
-      
+
       console.log(`Fetching Discord messages from guild ${guildId} since ${sinceDate.toISOString()} (attempt ${attempt}/${maxRetries})`);
-      
+
       const messages = await client.fetchMessagesFromGuild(
         guildId,
         sinceDate,
         args.channels
       );
-      
+
       await client.disconnect();
-      
+
       // Sort messages by reaction count (descending), then by timestamp (newest first)
       // Requirements: 2.2, 2.3 - Rank by reaction count with chronological fallback
       const sortedMessages = messages.sort((a, b) => {
         const aReactions = a.reactions.reduce((sum, r) => sum + r.count, 0);
         const bReactions = b.reactions.reduce((sum, r) => sum + r.count, 0);
-        
+
         // Primary: reaction count (descending)
         if (aReactions !== bReactions) {
           return bReactions - aReactions;
         }
-        
+
         // Secondary: timestamp (newest first)
         return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
       });
-      
+
       // Apply limit if specified
       const limitedMessages = args.limit ? sortedMessages.slice(0, args.limit) : sortedMessages;
-      
+
       console.log(`Retrieved ${limitedMessages.length} Discord messages`);
       return limitedMessages;
-      
+
     } catch (error) {
       const discordError = handleDiscordError(error);
       lastError = discordError;
-      
+
       console.error(`Discord fetch attempt ${attempt}/${maxRetries} failed:`, discordError.message);
-      
+
       // If this is the last attempt, throw the error
       if (attempt === maxRetries) {
         break;
       }
-      
+
       // Exponential backoff with jitter
       const baseDelay = 1000; // 1 second
       const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
       const jitter = Math.random() * 1000; // Add up to 1 second of jitter
       const totalDelay = exponentialDelay + jitter;
-      
+
       console.log(`Retrying Discord fetch in ${Math.round(totalDelay)}ms...`);
       await new Promise(resolve => setTimeout(resolve, totalDelay));
     }
   }
-  
+
   // If we get here, all retries failed
   throw new Error(`Discord fetch failed after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`);
 }
@@ -201,30 +202,30 @@ export const fetchDiscordMessages = action({
 // Requirements: 2.5, 3.4 - Integration with existing Exa summarization system
 async function transformDiscordToNewsItem(message: DiscordMessage): Promise<NewsItem> {
   const defaultGuildId = process.env.DISCORD_GUILD_ID;
-  
+
   // Create meaningful title from the message
   const title = createMessageTitle(message);
-  
+
   // Create Discord message URL with proper guild ID
   const url = `https://discord.com/channels/${defaultGuildId}/${message.channelId}/${message.id}`;
-  
+
   // Use Exa summarization system for message content
   let summary: string;
   try {
     // Prepare content for summarization - combine message content with context
-    const contentForSummary = message.content 
+    const contentForSummary = message.content
       ? `Discord message from ${message.author.username} in #${message.channelName}: ${message.content}`
       : `Message from ${message.author.username} in #${message.channelName}`;
-    
+
     summary = await summarize(contentForSummary);
   } catch (error) {
     console.error("Failed to summarize Discord message:", error);
     // Fallback to truncated content if summarization fails
-    summary = message.content 
+    summary = message.content
       ? (message.content.length > 150 ? `${message.content.substring(0, 150)}...` : message.content)
       : `Message from ${message.author.username} in #${message.channelName}`;
   }
-  
+
   return {
     title,
     url,
@@ -240,19 +241,19 @@ async function transformDiscordToNewsItem(message: DiscordMessage): Promise<News
 function createMessageTitle(message: DiscordMessage): string {
   const maxContentLength = 100;
   const reactionCount = message.reactions.reduce((sum, r) => sum + r.count, 0);
-  
+
   // If message has content, use it (truncated)
   if (message.content && message.content.trim()) {
-    const truncatedContent = message.content.length > maxContentLength 
+    const truncatedContent = message.content.length > maxContentLength
       ? `${message.content.substring(0, maxContentLength)}...`
       : message.content;
-    
+
     // Add reaction indicator if there are reactions
     const reactionIndicator = reactionCount > 0 ? ` (${reactionCount} reactions)` : '';
-    
+
     return `${message.author.username}: ${truncatedContent}${reactionIndicator}`;
   }
-  
+
   // Fallback title for messages without content (e.g., media only)
   const reactionIndicator = reactionCount > 0 ? ` with ${reactionCount} reactions` : '';
   return `${message.author.username} in #${message.channelName}${reactionIndicator}`;
@@ -267,22 +268,22 @@ export const processDiscordDigest = internalAction({
   handler: async (ctx, args) => {
     try {
       console.log(`Processing Discord digest for ${args.targetDate}`);
-      
+
       // Calculate timestamp range for the target date (in UTC)
       const startOfDay = new Date(args.targetDate + 'T00:00:00.000Z');
       const endOfDay = new Date(args.targetDate + 'T23:59:59.999Z');
-      
+
       console.log(`Fetching messages from ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
-      
+
       // Fetch messages from Discord API for the target date
       // Use a higher limit to ensure we get all messages for the day
       const messages = await _fetchDiscordMessages({
         since: startOfDay.getTime(),
         limit: 200, // Increased limit to handle busy Discord servers
       });
-      
+
       console.log(`Fetched ${messages.length} total messages`);
-      
+
       // Filter messages to only include those from the target date
       const targetDateMessages = messages.filter(message => {
         // message.timestamp is already an ISO string, so we can extract the date directly
@@ -290,15 +291,15 @@ export const processDiscordDigest = internalAction({
         console.log(`Message ${message.id}: date=${messageDate}, target=${args.targetDate}, match=${messageDate === args.targetDate}`);
         return messageDate === args.targetDate;
       });
-      
+
       console.log(`Found ${targetDateMessages.length} messages for ${args.targetDate}`);
-      
+
       // Process and store messages in database
       const processedCount = await processAndStoreMessages(ctx, targetDateMessages, args.targetDate);
-      
+
       console.log(`Successfully processed ${processedCount} Discord messages for ${args.targetDate}`);
       return { success: true, processedCount };
-      
+
     } catch (error) {
       console.error(`Discord digest processing failed for ${args.targetDate}:`, error);
       // Don't throw - let other cron jobs continue
@@ -317,12 +318,12 @@ async function processAndStoreMessages(
 ): Promise<number> {
   let processedCount = 0;
   const processedAt = Date.now();
-  
+
   for (const message of messages) {
     try {
       // Calculate reaction score
       const reactionScore = message.reactions.reduce((sum, r) => sum + r.count, 0);
-      
+
       // Generate summary using Exa
       let summary: string | undefined;
       try {
@@ -334,7 +335,7 @@ async function processAndStoreMessages(
         console.error(`Failed to summarize message ${message.id}:`, error);
         // Continue without summary
       }
-      
+
       // Store in database using internal mutation
       const result = await ctx.runMutation(internal.discordMutations.storeDiscordMessage, {
         messageId: message.id,
@@ -353,18 +354,18 @@ async function processAndStoreMessages(
         digestDate,
         processedAt,
       });
-      
+
       if (result.inserted) {
         processedCount++;
       }
-      
+
     } catch (error) {
       console.error(`Failed to process message ${message.id}:`, error);
       console.error('Message data:', JSON.stringify(message, null, 2));
       // Continue with other messages
     }
   }
-  
+
   return processedCount;
 }
 
@@ -382,13 +383,13 @@ export const manualProcessDiscordDigest = action({
     targetDate?: string;
   }> => {
     const targetDate = args.targetDate || getYesterdayDateString();
-    
+
     try {
       // Call the internal action
       const result: any = await ctx.runAction(internal.discord.processDiscordDigest, {
         targetDate
       });
-      
+
       return {
         success: true,
         message: `Discord digest processing completed for ${targetDate}`,
@@ -410,22 +411,22 @@ export const testBotPermissions = action({
   args: {
     guildId: v.optional(v.string()),
   },
-  handler: async (_ctx, args): Promise<{ 
-    success: boolean; 
-    message: string; 
+  handler: async (_ctx, args): Promise<{
+    success: boolean;
+    message: string;
     permissions?: string[];
     channels?: Array<{ id: string; name: string; canRead: boolean }>;
   }> => {
     const botToken = process.env.DISCORD_BOT_TOKEN;
     const defaultGuildId = process.env.DISCORD_GUILD_ID;
-    
+
     if (!botToken) {
       return {
         success: false,
         message: "Discord bot token not configured"
       };
     }
-    
+
     const guildId = args.guildId || defaultGuildId;
     if (!guildId) {
       return {
@@ -436,13 +437,13 @@ export const testBotPermissions = action({
 
     try {
       await rateLimiter.waitIfNeeded();
-      
+
       const client = await createDiscordClient(botToken);
-      
+
       // Access the underlying Discord.js client for guild operations
       // Note: This requires proper typing but we'll use a type assertion for now
       const discordClient = (client as unknown as { client: { guilds: { fetch: (id: string) => Promise<unknown> }; user: { id: string } } }).client;
-      
+
       // Test guild access and permissions
       const guild = await discordClient.guilds.fetch(guildId);
       if (!guild) {
@@ -452,22 +453,22 @@ export const testBotPermissions = action({
           message: `Bot is not in guild ${guildId} or guild not found`
         };
       }
-      
+
       // For now, we'll return basic success without detailed permission checking
       // This avoids complex type assertions while maintaining functionality
       await client.disconnect();
-      
+
       return {
         success: true,
         message: "Bot permissions verified successfully",
         permissions: ["Basic guild access confirmed"],
         channels: []
       };
-      
+
     } catch (error) {
       const discordError = handleDiscordError(error);
       console.error("Bot permission test failed:", discordError);
-      
+
       return {
         success: false,
         message: `Permission test failed: ${discordError.message}`
@@ -476,4 +477,15 @@ export const testBotPermissions = action({
   },
 });
 
-// Note: getDiscordDigest query moved to discordQueries.ts since Node.js files can only contain actions
+// Action wrapper for getDiscordDigest query (for API routes)
+export const getDiscordDigestAction = action({
+  args: {
+    digestDate: v.optional(v.string()),
+    limit: v.optional(v.number()),
+    userId: v.optional(v.id("members")),
+  },
+  handler: async (ctx, args): Promise<Doc<"discordDigest">[]> => {
+    // Call the internal query to fetch digest data
+    return await ctx.runQuery(internal.discordMutations.getDiscordDigestQuery, args);
+  },
+});

@@ -44,9 +44,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ConvexHttpClient } from 'convex/browser';
 import { api } from '../../../../convex/_generated/api';
+import type { Doc } from '../../../../convex/_generated/dataModel';
 
 // Initialize Convex client for server-side API calls
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+// Use generated type from Convex schema
+type DiscordDigestEntry = Doc<"discordDigest">;
 
 /**
  * Fetches processed Discord digest from the database archive.
@@ -84,16 +88,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { channels, limit, digestDate } = body;
 
-    // Call Convex query to fetch Discord digest from database archive
-    const digestEntries = await convex.query(api.discord.getDiscordDigest, {
+    // Call Convex action to fetch Discord digest from database archive
+    const digestEntries = await convex.action(api.discord.getDiscordDigestAction, {
       digestDate, // Optional - defaults to yesterday in the query
       limit: limit || 20,
-    });
+    }) as DiscordDigestEntry[];
 
     // Filter by channels if specified (since database doesn't have channel filtering yet)
     let filteredEntries = digestEntries;
     if (channels && Array.isArray(channels) && channels.length > 0) {
-      filteredEntries = digestEntries.filter(entry => 
+      filteredEntries = digestEntries.filter((entry: DiscordDigestEntry) =>
         channels.includes(entry.channelId) || channels.includes(entry.channelName)
       );
     }
@@ -116,12 +120,12 @@ export async function POST(request: NextRequest) {
     // Return graceful error response
     // Use 200 status to prevent breaking the news feed
     return NextResponse.json(
-      { 
-        digest: [], 
+      {
+        digest: [],
         error: err.message,
         warning: 'Discord digest unavailable - returning empty results'
       },
-      { 
+      {
         status: 200, // Return 200 to prevent breaking news feed
         headers: {
           // Cache error responses briefly to prevent repeated failed requests
@@ -137,7 +141,7 @@ export async function POST(request: NextRequest) {
  */
 export async function GET() {
   return NextResponse.json(
-    { 
+    {
       error: 'This endpoint requires POST method',
       usage: 'POST /api/discord/digest with body: { guildId?, channels?, limit?, digestDate? }'
     },

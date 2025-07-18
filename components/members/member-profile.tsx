@@ -36,7 +36,7 @@ interface MemberProfileProps {
     slug?: string;
     postCount?: number;
     // Subscription fields (no free tier - platform operates with zero free users)
-    tier?: "founding_member" | "early_bird" | "member";
+    tier?: "founding_member" | "early_bird" | "member" | "scholarship";
     subscriptionStatus:
       | "active"
       | "cancelled"
