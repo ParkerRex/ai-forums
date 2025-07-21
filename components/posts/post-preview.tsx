@@ -22,6 +22,8 @@ import {
 import { MessageSquare, Eye, ChevronUp, Play, ExternalLink, BarChart3, Pin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getInitials } from "@/lib/avatar-utils";
 
 interface PostPreviewProps {
   post: PostData;
@@ -85,11 +87,11 @@ export default function PostPreview({
       <Card className={cn("overflow-hidden", className)}>
         <CardContent className="p-4">
           <div className="animate-pulse space-y-3">
-            <div className="h-4 bg-muted opacity-50 rounded w-3/4" />
-            <div className="h-20 bg-muted opacity-50 rounded" />
+            <div className="h-4 bg-muted opacity-50 rounded-none w-3/4" />
+            <div className="h-20 bg-muted opacity-50 rounded-none" />
             <div className="flex space-x-4">
-              <div className="h-4 bg-muted opacity-50 rounded w-16" />
-              <div className="h-4 bg-muted opacity-50 rounded w-16" />
+              <div className="h-4 bg-muted opacity-50 rounded-none w-16" />
+              <div className="h-4 bg-muted opacity-50 rounded-none w-16" />
             </div>
           </div>
         </CardContent>
@@ -176,19 +178,27 @@ export default function PostPreview({
 
             {/* Author and excerpt - Reddit style */}
             {shouldShowMember && post.member && (
-              <div className="text-xs text-foreground/70 mb-1">
-                by{" "}
+              <div className="flex items-center gap-2 text-xs text-foreground/70 mb-1">
                 <MemberHoverCardWrapper member={post.member}>
-                  <Link
-                    href={`/members/${post.member?.slug || post.member?.username}`}
-                    className="font-medium hover:text-foreground transition-colors"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {post.member?.firstName} {post.member?.lastName}
-                  </Link>
+                  <div className="flex items-center gap-1.5">
+                    <Avatar className="h-5 w-5">
+                      <AvatarImage src={post.member.avatarUrl || ""} />
+                      <AvatarFallback className="text-[10px]">
+                        {getInitials(post.member.firstName || "", post.member.lastName || "")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span>by</span>
+                    <Link
+                      href={`/members/${post.member?.slug || post.member?.username}`}
+                      className="font-medium hover:text-foreground transition-colors"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {post.member?.firstName} {post.member?.lastName}
+                    </Link>
+                  </div>
                 </MemberHoverCardWrapper>
-                {" • "}
-                {new Date(post.createdAt).toLocaleDateString()}
+                <span>•</span>
+                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
               </div>
             )}
 
@@ -221,7 +231,7 @@ export default function PostPreview({
           {(hasMedia(post) || isLinkPost(post) || isPollPost(post)) && (
             <div 
               className={cn(
-                "relative overflow-hidden bg-muted rounded-md mt-2",
+                "relative overflow-hidden bg-muted rounded-none mt-2",
                 previewClasses.wrapper,
                 previewClasses.aspectRatio
               )}
@@ -279,7 +289,7 @@ export default function PostPreview({
                   />
                   {!isVideoPlaying && (
                     <div className="absolute inset-0 flex items-center justify-center bg-background/10 transition-colors group-hover:bg-background/20">
-                      <div className="bg-background/90 backdrop-blur-sm rounded-full p-4 shadow-lg transform transition-transform group-hover:scale-110">
+                      <div className="bg-background/90 backdrop-blur-sm rounded-none p-4 shadow-lg transform transition-transform group-hover:scale-110">
                         <Play className="h-8 w-8 text-foreground fill-foreground ml-0.5" />
                       </div>
                     </div>
@@ -315,7 +325,7 @@ export default function PostPreview({
                           alt={previewAsset.title || ""}
                           width={200}
                           height={100}
-                          className="w-full h-24 object-cover rounded mb-2"
+                          className="w-full h-24 object-cover rounded-none mb-2"
                         />
                       )}
                       <div className="flex-1">

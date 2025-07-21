@@ -38,6 +38,7 @@ import type * as events from "../events.js";
 import type * as github from "../github.js";
 import type * as helpers_access from "../helpers/access.js";
 import type * as helpers_subscriptionAccess from "../helpers/subscriptionAccess.js";
+import type * as importMembers from "../importMembers.js";
 import type * as linkPreview from "../linkPreview.js";
 import type * as linkPreviews from "../linkPreviews.js";
 import type * as locationHelpers from "../locationHelpers.js";
@@ -121,6 +122,7 @@ declare const fullApi: ApiFromModules<{
   github: typeof github;
   "helpers/access": typeof helpers_access;
   "helpers/subscriptionAccess": typeof helpers_subscriptionAccess;
+  importMembers: typeof importMembers;
   linkPreview: typeof linkPreview;
   linkPreviews: typeof linkPreviews;
   locationHelpers: typeof locationHelpers;

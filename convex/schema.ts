@@ -199,6 +199,7 @@ const members = defineTable({
   .index("by_skills", ["skills"])                    // Filter by skill tags
   .index("by_slug", ["slug"])                        // URL routing by slug
   .index("by_externalId", ["externalId"])            // Auth lookup by Clerk ID
+  .index("by_email", ["email"])                      // Lookup by email for migrations
   .index("by_stripeCustomerId", ["stripeCustomerId"]) // Stripe webhook lookups
   .searchIndex("search_members", {                    // Full-text member search
     searchField: "firstName",

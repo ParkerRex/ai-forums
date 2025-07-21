@@ -283,6 +283,7 @@ export const getPosts = query({
           email: member.email,
           username: member.email.split('@')[0], // Derive username from email
           slug: member.slug || "",
+          avatarUrl: member.avatarUrl || null,
         } : null,
         category: category ? {
           _id: category._id,
@@ -1415,6 +1416,7 @@ export const searchPosts = query({
             lastName: member.lastName,
             username: member.email.split('@')[0],
             slug: member.slug || "",
+            avatarUrl: member.avatarUrl || null,
           } : null,
           category: category ? {
             _id: category._id,

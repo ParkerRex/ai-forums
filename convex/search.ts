@@ -92,6 +92,7 @@ export const globalSearch = query({
             lastName: member.lastName,
             username: member.email.split('@')[0],
             slug: member.slug || "",
+            avatarUrl: member.avatarUrl || null,
           } : null,
           category: category ? {
             _id: category._id,

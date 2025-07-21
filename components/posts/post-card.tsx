@@ -158,7 +158,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
 
   return (
     <div className={cn(
-      "border rounded-lg transition-all duration-200 group",
+      "border rounded-none transition-all duration-200 group",
       post.isPinned ? "bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/30 hover:bg-orange-100/50 dark:hover:bg-orange-950/30" : "bg-card hover:bg-muted/30"
     )}>
       {/* Main content - Reddit style full width */}
@@ -182,7 +182,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
+              className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 handleUpvote(e);
@@ -211,7 +211,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
+                className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
                 onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
                 onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
               >
@@ -230,7 +230,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
+              className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 handleClick();
@@ -254,7 +254,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
               <Button
                 variant="ghost"
                 size="sm"
-                className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
+                className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
                 onMouseEnter={() => commentIconRef.current?.startAnimation()}
                 onMouseLeave={() => commentIconRef.current?.stopAnimation()}
               >
@@ -273,7 +273,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            className="px-2 py-1 h-auto hover:bg-muted/50 rounded-sm transition-colors"
+            className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               handleShare(e);
