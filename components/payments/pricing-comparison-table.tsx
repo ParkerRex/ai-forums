@@ -93,25 +93,25 @@ const features: Feature[] = [
 
 export function PricingComparisonTable() {
   return (
-    <div className="w-full overflow-x-auto border rounded-lg">
+    <div className="w-full overflow-x-auto rounded-none border">
       <table className="w-full border-collapse">
-        <thead className="sticky top-0 bg-background z-10">
+        <thead className="bg-background sticky top-0 z-10">
           <tr className="border-b">
-            <th className="text-left p-4 font-medium min-w-[200px]">
+            <th className="min-w-[200px] p-4 text-left font-medium">
               Features
             </th>
-            <th className="text-center p-4 font-medium min-w-[140px]">
+            <th className="min-w-[140px] p-4 text-center font-medium">
               <div className="space-y-1">
                 <div className="text-lg">Free</div>
-                <div className="text-sm text-muted-foreground font-normal">
+                <div className="text-muted-foreground text-sm font-normal">
                   $0/month
                 </div>
               </div>
             </th>
-            <th className="text-center p-4 font-medium min-w-[140px]">
+            <th className="min-w-[140px] p-4 text-center font-medium">
               <div className="space-y-1">
                 <div className="text-lg">Member</div>
-                <div className="text-sm text-muted-foreground font-normal">
+                <div className="text-muted-foreground text-sm font-normal">
                   $99/month
                 </div>
               </div>
@@ -125,31 +125,31 @@ export function PricingComparisonTable() {
                 <div className="space-y-1">
                   <div className="font-medium">{feature.name}</div>
                   {feature.description && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-muted-foreground text-sm">
                       {feature.description}
                     </div>
                   )}
                 </div>
               </td>
-              <td className="text-center p-4">
+              <td className="p-4 text-center">
                 {typeof feature.free === "boolean" ? (
                   feature.free ? (
-                    <Check className="w-5 h-5 text-green-600 dark:text-green-500 mx-auto" />
+                    <Check className="mx-auto h-5 w-5 text-green-600 dark:text-green-500" />
                   ) : (
-                    <X className="w-5 h-5 text-muted-foreground mx-auto" />
+                    <X className="text-muted-foreground mx-auto h-5 w-5" />
                   )
                 ) : (
-                  <span className="text-sm text-muted-foreground">
+                  <span className="text-muted-foreground text-sm">
                     {feature.free}
                   </span>
                 )}
               </td>
-              <td className="text-center p-4">
+              <td className="p-4 text-center">
                 {typeof feature.member === "boolean" ? (
                   feature.member ? (
-                    <Check className="w-5 h-5 text-green-600 dark:text-green-500 mx-auto" />
+                    <Check className="mx-auto h-5 w-5 text-green-600 dark:text-green-500" />
                   ) : (
-                    <X className="w-5 h-5 text-muted-foreground mx-auto" />
+                    <X className="text-muted-foreground mx-auto h-5 w-5" />
                   )
                 ) : (
                   <span className="text-sm font-medium">{feature.member}</span>
@@ -173,8 +173,8 @@ export function CompactPricingComparison({
   const keyFeatures = features.slice(0, 6);
 
   return (
-    <div className={cn("bg-card border rounded-lg p-6", className)}>
-      <h3 className="text-lg font-semibold mb-4">Plan Comparison</h3>
+    <div className={cn("bg-card rounded-none border p-6", className)}>
+      <h3 className="mb-4 text-lg font-semibold">Plan Comparison</h3>
       <div className="space-y-3">
         {keyFeatures.map((feature, index) => (
           <div key={index} className="flex items-center justify-between">
@@ -182,28 +182,28 @@ export function CompactPricingComparison({
               <div className="text-sm font-medium">{feature.name}</div>
             </div>
             <div className="flex items-center gap-4">
-              <div className="text-center min-w-[50px]">
-                <div className="text-xs text-muted-foreground mb-1">Free</div>
+              <div className="min-w-[50px] text-center">
+                <div className="text-muted-foreground mb-1 text-xs">Free</div>
                 {typeof feature.free === "boolean" ? (
                   feature.free ? (
-                    <Check className="w-4 h-4 text-green-600 dark:text-green-500 mx-auto" />
+                    <Check className="mx-auto h-4 w-4 text-green-600 dark:text-green-500" />
                   ) : (
-                    <X className="w-4 h-4 text-muted-foreground mx-auto" />
+                    <X className="text-muted-foreground mx-auto h-4 w-4" />
                   )
                 ) : (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-muted-foreground text-xs">
                     {feature.free}
                   </span>
                 )}
               </div>
               {/* Removed Founding Member column */}
-              <div className="text-center min-w-[50px]">
-                <div className="text-xs text-muted-foreground mb-1">Member</div>
+              <div className="min-w-[50px] text-center">
+                <div className="text-muted-foreground mb-1 text-xs">Member</div>
                 {typeof feature.member === "boolean" ? (
                   feature.member ? (
-                    <Check className="w-4 h-4 text-green-600 dark:text-green-500 mx-auto" />
+                    <Check className="mx-auto h-4 w-4 text-green-600 dark:text-green-500" />
                   ) : (
-                    <X className="w-4 h-4 text-muted-foreground mx-auto" />
+                    <X className="text-muted-foreground mx-auto h-4 w-4" />
                   )
                 ) : (
                   <span className="text-xs font-medium">{feature.member}</span>

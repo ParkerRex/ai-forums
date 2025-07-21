@@ -114,17 +114,22 @@ function CommentItemFlat({
   userVote,
 }: CommentItemFlatProps) {
   const [isVoting, setIsVoting] = useState(false);
-  const [optimisticNetVotes, setOptimisticNetVotes] = useState(comment.netVotes);
-  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
+  const [optimisticNetVotes, setOptimisticNetVotes] = useState(
+    comment.netVotes,
+  );
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
+    null,
+  );
   const [isEditing, setIsEditing] = useState(false);
-  
+
   const isHighlighted = targetCommentId === comment._id;
-  
+
   const voteOnComment = useMutation(api.votes.voteOnComment);
   const editComment = useMutation(api.comments.editComment);
   const { handleMutationError, handleMutationSuccess } = useMutationError();
-  
-  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote;
+
+  const currentUserVote =
+    optimisticUserVote !== null ? optimisticUserVote : userVote;
 
   const handleUpvote = async () => {
     if (isVoting) return;
@@ -169,209 +174,215 @@ function CommentItemFlat({
       transition={{ duration: 0.3 }}
       className={cn(
         "group relative",
-        isHighlighted && "ring-2 ring-primary ring-offset-2",
-        isNewlyCreated && "bg-accent/20"
+        isHighlighted && "ring-primary ring-2 ring-offset-2",
+        isNewlyCreated && "bg-accent/20",
       )}
     >
       <div className="flex gap-3 py-4">
         {/* Timeline line */}
         <div className="relative">
           {/* Avatar */}
-          <Avatar className="h-10 w-10 relative z-10">
+          <Avatar className="relative z-10 h-10 w-10">
             <AvatarFallback className="text-sm">
               {comment.member?.firstName?.[0]?.toUpperCase() || "?"}
             </AvatarFallback>
           </Avatar>
         </div>
 
-          {/* Content */}
-          <div className="flex-1 min-w-0 border rounded-lg p-4 bg-background">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-2 pb-2 border-b">
-              <div className="flex items-center gap-2 text-sm">
-                <MemberHoverCardWrapper member={comment.member ?? null}>
+        {/* Content */}
+        <div className="bg-background min-w-0 flex-1 rounded-none border p-4">
+          {/* Header */}
+          <div className="mb-2 flex items-center justify-between border-b pb-2">
+            <div className="flex items-center gap-2 text-sm">
+              <MemberHoverCardWrapper member={comment.member ?? null}>
+                <Link
+                  href={
+                    comment.member
+                      ? memberProfileUrl({
+                          slug: comment.member.slug,
+                          _id: comment.member._id,
+                        })
+                      : "#"
+                  }
+                  className="text-foreground font-semibold hover:underline"
+                >
+                  {comment.member?.username || "Unknown"}
+                </Link>
+              </MemberHoverCardWrapper>
+
+              {comment.replyToMember && (
+                <>
+                  <span className="text-muted-foreground">replied to</span>
                   <Link
-                    href={comment.member ? memberProfileUrl({
-                      slug: comment.member.slug,
-                      _id: comment.member._id,
-                    }) : "#"}
-                    className="font-semibold text-foreground hover:underline"
+                    href={memberProfileUrl({
+                      slug: comment.replyToMember.slug,
+                      _id: comment.replyToMember._id,
+                    })}
+                    className="text-primary font-medium hover:underline"
                   >
-                    {comment.member?.username || "Unknown"}
+                    @{comment.replyToMember.username}
                   </Link>
-                </MemberHoverCardWrapper>
-                
-                {comment.replyToMember && (
-                  <>
-                    <span className="text-muted-foreground">replied to</span>
-                    <Link
-                      href={memberProfileUrl({
-                        slug: comment.replyToMember.slug,
-                        _id: comment.replyToMember._id,
-                      })}
-                      className="font-medium text-primary hover:underline"
-                    >
-                      @{comment.replyToMember.username}
-                    </Link>
-                  </>
-                )}
-                
-                <span className="text-muted-foreground">•</span>
-                <span className="text-muted-foreground">
-                  {formatDistanceToNow(comment.createdAt)} ago
-                </span>
-              </div>
-              
-              {comment.member && (
-                <Authenticated>
-                  <CommentActionsMenu
-                    commentId={comment._id}
-                    authorId={comment.member._id}
-                    postSlug={postSlug}
-                    categoryName={categoryName}
-                    onEditClick={() => setIsEditing(true)}
-                    isAdmin={isAdmin}
-                    commentCreatedAt={comment.createdAt}
-                  />
-                </Authenticated>
+                </>
               )}
+
+              <span className="text-muted-foreground">•</span>
+              <span className="text-muted-foreground">
+                {formatDistanceToNow(comment.createdAt)} ago
+              </span>
             </div>
 
-            {/* Comment content */}
-            {isEditing ? (
-              <div className="mt-2">
-                <GitHubCommentInput
-                  placeholder="Edit your comment..."
-                  initialValue={comment.content}
-                  initialAttachments={comment.attachments}
-                  onSubmit={async (content, attachments) => {
-                    try {
-                      await editComment({
-                        commentId: comment._id,
-                        content: content.trim(),
-                        attachments,
-                      });
-                      handleMutationSuccess("Comment updated successfully");
-                      setIsEditing(false);
-                    } catch (error) {
-                      handleMutationError(error);
-                    }
-                  }}
-                  isSubmitting={false}
-                  className="mb-2"
+            {comment.member && (
+              <Authenticated>
+                <CommentActionsMenu
+                  commentId={comment._id}
+                  authorId={comment.member._id}
+                  postSlug={postSlug}
+                  categoryName={categoryName}
+                  onEditClick={() => setIsEditing(true)}
+                  isAdmin={isAdmin}
+                  commentCreatedAt={comment.createdAt}
                 />
-              </div>
-            ) : (
-              <div className="mt-1">
-                <MarkdownRenderer content={comment.content} className="text-sm" />
-              </div>
+              </Authenticated>
             )}
+          </div>
 
-            {/* Attachments */}
-            {comment.attachments && comment.attachments.length > 0 && (
-              <div className="mt-3 space-y-2">
-                {comment.attachments.map((attachment) => (
-                  <div key={attachment.id} className="rounded p-2 bg-muted/30">
-                    {attachment.type === "image" || attachment.type === "gif" ? (
-                      <div className="relative">
-                        <Image
-                          src={attachment.url}
-                          alt={attachment.fileName}
-                          width={400}
-                          height={256}
-                          className="max-w-full h-auto max-h-64 rounded"
-                        />
-                        {attachment.type === "gif" && (
-                          <div className="absolute top-2 left-2 bg-black/50 text-foreground text-xs px-2 py-1 rounded">
-                            GIF
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <LinkIcon size={16} />
-                        <a
-                          href={attachment.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-600 hover:underline"
-                        >
-                          {attachment.fileName}
-                        </a>
-                        <span className="text-xs text-muted-foreground">
-                          ({Math.round(attachment.fileSize / 1024)}KB)
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            {/* Link previews */}
-            {comment.linkPreviews &&
-              Object.entries(comment.linkPreviews).map(([url, preview]) => (
-                <div key={url} className="mt-3 rounded p-3 bg-muted/50">
-                  <div className="text-sm font-medium">{preview.title}</div>
-                  <div className="text-xs text-muted-foreground">
-                    {preview.description}
-                  </div>
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-blue-600 hover:underline"
-                  >
-                    {url}
-                  </a>
-                </div>
-              ))}
-
-            {/* Actions - GitHub style */}
-            <div className="flex items-center justify-between mt-4 pt-3 border-t">
-              <div className="flex items-center gap-4">
-                <VoteButton
-                  targetId={comment._id}
-                  targetType="comment"
-                  voteCount={optimisticNetVotes}
-                  isVoted={currentUserVote === "upvote"}
-                  isVoting={isVoting}
-                  onVote={handleUpvote}
-                  size="sm"
-                  showHoverCard={false}
-                />
-
-                <Authenticated>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => onReply(comment._id, comment.member?.username || "someone")}
-                    className="h-auto px-3 py-1 text-sm"
-                  >
-                    Reply
-                  </Button>
-                </Authenticated>
-              </div>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-auto px-2 py-1"
-                onClick={async () => {
-                  const commentUrl = `${window.location.origin}${window.location.pathname}?commentId=${comment._id}`;
+          {/* Comment content */}
+          {isEditing ? (
+            <div className="mt-2">
+              <GitHubCommentInput
+                placeholder="Edit your comment..."
+                initialValue={comment.content}
+                initialAttachments={comment.attachments}
+                onSubmit={async (content, attachments) => {
                   try {
-                    await navigator.clipboard.writeText(commentUrl);
-                    toast.success("Comment link copied!");
-                  } catch {
-                    toast.error("Failed to copy link");
+                    await editComment({
+                      commentId: comment._id,
+                      content: content.trim(),
+                      attachments,
+                    });
+                    handleMutationSuccess("Comment updated successfully");
+                    setIsEditing(false);
+                  } catch (error) {
+                    handleMutationError(error);
                   }
                 }}
-                title="Copy link"
-              >
-                <LinkLucide className="h-4 w-4" />
-              </Button>
+                isSubmitting={false}
+                className="mb-2"
+              />
             </div>
+          ) : (
+            <div className="mt-1">
+              <MarkdownRenderer content={comment.content} className="text-sm" />
+            </div>
+          )}
+
+          {/* Attachments */}
+          {comment.attachments && comment.attachments.length > 0 && (
+            <div className="mt-3 space-y-2">
+              {comment.attachments.map((attachment) => (
+                <div key={attachment.id} className="bg-muted/30 rounded p-2">
+                  {attachment.type === "image" || attachment.type === "gif" ? (
+                    <div className="relative">
+                      <Image
+                        src={attachment.url}
+                        alt={attachment.fileName}
+                        width={400}
+                        height={256}
+                        className="h-auto max-h-64 max-w-full rounded"
+                      />
+                      {attachment.type === "gif" && (
+                        <div className="text-foreground absolute left-2 top-2 rounded bg-black/50 px-2 py-1 text-xs">
+                          GIF
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <LinkIcon size={16} />
+                      <a
+                        href={attachment.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline"
+                      >
+                        {attachment.fileName}
+                      </a>
+                      <span className="text-muted-foreground text-xs">
+                        ({Math.round(attachment.fileSize / 1024)}KB)
+                      </span>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Link previews */}
+          {comment.linkPreviews &&
+            Object.entries(comment.linkPreviews).map(([url, preview]) => (
+              <div key={url} className="bg-muted/50 mt-3 rounded p-3">
+                <div className="text-sm font-medium">{preview.title}</div>
+                <div className="text-muted-foreground text-xs">
+                  {preview.description}
+                </div>
+                <a
+                  href={url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 hover:underline"
+                >
+                  {url}
+                </a>
+              </div>
+            ))}
+
+          {/* Actions - GitHub style */}
+          <div className="mt-4 flex items-center justify-between border-t pt-3">
+            <div className="flex items-center gap-4">
+              <VoteButton
+                targetId={comment._id}
+                targetType="comment"
+                voteCount={optimisticNetVotes}
+                isVoted={currentUserVote === "upvote"}
+                isVoting={isVoting}
+                onVote={handleUpvote}
+                size="sm"
+                showHoverCard={false}
+              />
+
+              <Authenticated>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    onReply(comment._id, comment.member?.username || "someone")
+                  }
+                  className="h-auto px-3 py-1 text-sm"
+                >
+                  Reply
+                </Button>
+              </Authenticated>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-auto px-2 py-1"
+              onClick={async () => {
+                const commentUrl = `${window.location.origin}${window.location.pathname}?commentId=${comment._id}`;
+                try {
+                  await navigator.clipboard.writeText(commentUrl);
+                  toast.success("Comment link copied!");
+                } catch {
+                  toast.error("Failed to copy link");
+                }
+              }}
+              title="Copy link"
+            >
+              <LinkLucide className="h-4 w-4" />
+            </Button>
           </div>
+        </div>
       </div>
     </motion.div>
   );
@@ -386,7 +397,9 @@ export default function CommentSectionFlat({
     commentId: Id<"comments">;
     username: string;
   } | null>(null);
-  const [newlyCreatedCommentIds, setNewlyCreatedCommentIds] = useState<Set<string>>(new Set());
+  const [newlyCreatedCommentIds, setNewlyCreatedCommentIds] = useState<
+    Set<string>
+  >(new Set());
 
   const params = useParams();
   const comments = useQuery(api.comments.getCommentsByPostFlat, { postId });
@@ -399,7 +412,7 @@ export default function CommentSectionFlat({
   const categoryName = (params.category as string) || "";
 
   // Batch fetch user votes for all comments
-  const commentIds = comments?.map(c => c._id) || [];
+  const commentIds = comments?.map((c) => c._id) || [];
   const { votes: userVotes } = useUserVotes(commentIds, "comment");
 
   useEffect(() => {
@@ -411,7 +424,7 @@ export default function CommentSectionFlat({
 
       element.scrollIntoView({ behavior: "smooth", block: "center" });
       element.classList.add("ring-2", "ring-primary", "ring-offset-2");
-      
+
       setTimeout(() => {
         element.classList.remove("ring-2", "ring-primary", "ring-offset-2");
       }, 3000);
@@ -425,7 +438,7 @@ export default function CommentSectionFlat({
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
-    mentions?: Id<"members">[]
+    mentions?: Id<"members">[],
   ) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
@@ -444,7 +457,7 @@ export default function CommentSectionFlat({
 
       if (newComment) {
         setNewlyCreatedCommentIds((prev) => new Set(prev).add(newComment));
-        
+
         setTimeout(() => {
           setNewlyCreatedCommentIds((prev) => {
             const next = new Set(prev);
@@ -458,7 +471,7 @@ export default function CommentSectionFlat({
       handleMutationSuccess("Comment posted successfully!");
     } catch (error) {
       handleMutationError(error, () =>
-        handleSubmitComment(content, attachments, linkPreviews, mentions)
+        handleSubmitComment(content, attachments, linkPreviews, mentions),
       );
     } finally {
       setIsSubmitting(false);
@@ -472,11 +485,12 @@ export default function CommentSectionFlat({
   return (
     <div className="mt-8">
       <div className="space-y-4">
-
         <Authenticated>
           <div className="mb-6">
             <GitHubCommentInput
-              placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : undefined}
+              placeholder={
+                replyingTo ? `Reply to @${replyingTo.username}...` : undefined
+              }
               onSubmit={handleSubmitComment}
               isSubmitting={isSubmitting}
               replyingTo={replyingTo}
@@ -486,7 +500,7 @@ export default function CommentSectionFlat({
         </Authenticated>
 
         <Unauthenticated>
-          <div className="mb-6 p-4 bg-muted/50 rounded-lg text-center">
+          <div className="bg-muted/50 mb-6 rounded-none p-4 text-center">
             <p className="text-muted-foreground mb-4">
               Members-only discussion. Join VAI Community to participate.
             </p>
@@ -514,19 +528,19 @@ export default function CommentSectionFlat({
                 <div key={i} className="py-4">
                   <div className="animate-pulse space-y-3">
                     <div className="flex items-center space-x-3">
-                      <div className="w-10 h-10 bg-muted rounded-full"></div>
-                      <div className="h-4 bg-muted rounded w-24"></div>
+                      <div className="bg-muted h-10 w-10 rounded-full"></div>
+                      <div className="bg-muted h-4 w-24 rounded"></div>
                     </div>
                     <div className="space-y-2">
-                      <div className="h-4 bg-muted rounded"></div>
-                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="bg-muted h-4 rounded"></div>
+                      <div className="bg-muted h-4 w-3/4 rounded"></div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : comments?.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="py-8 text-center">
               <p className="text-muted-foreground">
                 No comments yet. Be the first to share your thoughts!
               </p>
@@ -534,13 +548,16 @@ export default function CommentSectionFlat({
           ) : (
             <div className="relative">
               {/* GitHub-style timeline line */}
-              <div className="absolute left-5 top-0 bottom-0 w-px bg-border" />
-              
+              <div className="bg-border absolute bottom-0 left-5 top-0 w-px" />
+
               {comments?.map((comment: FlatComment, index) => (
-                <div key={comment._id} className={cn(
-                  "relative",
-                  index === comments.length - 1 && "pb-0"
-                )}>
+                <div
+                  key={comment._id}
+                  className={cn(
+                    "relative",
+                    index === comments.length - 1 && "pb-0",
+                  )}
+                >
                   <CommentItemFlat
                     comment={comment}
                     onReply={handleReply}

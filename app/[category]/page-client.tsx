@@ -1,19 +1,3 @@
-/**
- * Category Page Client Component
- *
- * Client component that handles the interactive features of category pages.
- * Manages post filtering, sorting, and displays category-specific content.
- *
- * Features:
- * - Real-time post loading with Convex queries
- * - Post sorting (newest, popular, trending)
- * - Category validation and 404 handling
- * - Loading states with skeleton UI
- * - Responsive layout with sidebar
- *
- * @see CategoryPage - Server component that handles SEO and routing
- */
-
 "use client";
 
 import { useQuery } from "convex/react";
@@ -24,13 +8,8 @@ import PostSidebar from "@/components/posts/post-sidebar";
 import { notFound } from "next/navigation";
 import { useState } from "react";
 import { use } from "react";
+import { Badge } from "@/components/ui/badge"
 
-/**
- * Props for the CategoryPageClient component
- *
- * Receives Promise-based params from the server component
- * following Next.js 15 patterns.
- */
 interface CategoryPageClientProps {
   /** Promise containing the dynamic route parameters */
   params: Promise<{
@@ -79,18 +58,18 @@ export default function CategoryPageClient({
       <div className="mx-auto max-w-7xl px-4 py-6">
         <div className="animate-pulse">
           {/* Category header skeleton */}
-          <div className="bg-muted mb-4 h-8 w-48 rounded"></div>
-          <div className="bg-muted mb-2 h-4 w-96 rounded"></div>
+          <div className="bg-muted mb-4 h-8 w-48 rounded-none"></div>
+          <div className="bg-muted mb-2 h-4 w-96 rounded-none"></div>
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-4">
             {/* Post list skeleton */}
             <div className="space-y-4 lg:col-span-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-muted h-32 rounded"></div>
+                <div key={i} className="bg-muted h-32 rounded-none"></div>
               ))}
             </div>
             {/* Sidebar skeleton */}
             <div className="lg:col-span-1">
-              <div className="bg-muted h-64 rounded"></div>
+              <div className="bg-muted h-64 rounded-none"></div>
             </div>
           </div>
         </div>
@@ -106,18 +85,9 @@ export default function CategoryPageClient({
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-6">
-      {/* Category Header - Shows category info and post count */}
       <div className="mb-6">
-        <div className="mb-2 flex items-center gap-2">
-          {/* Optional category icon */}
-          {category.icon && <span className="text-2xl">{category.icon}</span>}
-          <h1 className="text-foreground text-3xl font-bold">
-            {category.displayName}
-          </h1>
-        </div>
-        <p className="text-muted-foreground">{category.description}</p>
         <div className="text-muted-foreground mt-2 flex items-center gap-4 text-sm">
-          <span>{category.postCount} posts</span>
+         <Badge>{category.postCount} posts</Badge>
         </div>
       </div>
 

@@ -32,7 +32,9 @@ import Image from "next/image";
 import { toast } from "sonner";
 
 // Lazy load heavy components
-const RichTextEditor = lazy(() => import("@/components/posts/rich-text-editor"));
+const RichTextEditor = lazy(
+  () => import("@/components/posts/rich-text-editor"),
+);
 const PostPreview = lazy(() => import("@/components/posts/post-preview"));
 
 // Extended form data with media/link fields
@@ -59,21 +61,21 @@ interface PostFormFieldsProps {
 // Loading skeleton for the rich text editor
 function RichTextEditorSkeleton() {
   return (
-    <div className="border rounded-lg">
-      <div className="border-b p-2 bg-muted rounded-t-lg">
+    <div className="rounded-none border">
+      <div className="bg-muted rounded-t-lg border-b p-2">
         <div className="flex flex-wrap gap-1">
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
-          <div className="h-8 w-8 bg-muted opacity-50 rounded animate-pulse" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
         </div>
       </div>
       <div className="min-h-[200px] p-4">
         <div className="animate-pulse space-y-2">
-          <div className="h-4 bg-muted opacity-50 rounded w-3/4" />
-          <div className="h-4 bg-muted opacity-50 rounded w-1/2" />
-          <div className="h-4 bg-muted opacity-50 rounded w-5/6" />
+          <div className="bg-muted h-4 w-3/4 rounded opacity-50" />
+          <div className="bg-muted h-4 w-1/2 rounded opacity-50" />
+          <div className="bg-muted h-4 w-5/6 rounded opacity-50" />
         </div>
       </div>
     </div>
@@ -86,10 +88,10 @@ function PostPreviewSkeleton() {
     <Card className="w-full">
       <CardContent className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-muted opacity-50 rounded w-3/4" />
-          <div className="h-4 bg-muted opacity-50 rounded w-full" />
-          <div className="h-4 bg-muted opacity-50 rounded w-5/6" />
-          <div className="h-4 bg-muted opacity-50 rounded w-4/6" />
+          <div className="bg-muted h-6 w-3/4 rounded opacity-50" />
+          <div className="bg-muted h-4 w-full rounded opacity-50" />
+          <div className="bg-muted h-4 w-5/6 rounded opacity-50" />
+          <div className="bg-muted h-4 w-4/6 rounded opacity-50" />
         </div>
       </CardContent>
     </Card>
@@ -111,14 +113,16 @@ export function PostFormFields({
   const { errors } = validatePostForm(formData, touchedFields);
 
   // Queries and actions
-  const categories = useQuery(api.categories.getCategories) as Array<{
-    _id: Id<"categories">;
-    name: string;
-    displayName: string;
-    description: string;
-    icon?: string;
-    postCount: number;
-  }> | undefined;
+  const categories = useQuery(api.categories.getCategories) as
+    | Array<{
+        _id: Id<"categories">;
+        name: string;
+        displayName: string;
+        description: string;
+        icon?: string;
+        postCount: number;
+      }>
+    | undefined;
   const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
 
   // Character count helpers
@@ -257,11 +261,11 @@ export function PostFormFields({
     return (
       <div className="space-y-6">
         <div className="animate-pulse space-y-4">
-          <div className="h-4 bg-muted opacity-50 rounded w-1/4" />
-          <div className="h-10 bg-muted opacity-50 rounded" />
-          <div className="h-4 bg-muted opacity-50 rounded w-1/4" />
-          <div className="h-10 bg-muted opacity-50 rounded" />
-          <div className="h-32 bg-muted opacity-50 rounded" />
+          <div className="bg-muted h-4 w-1/4 rounded opacity-50" />
+          <div className="bg-muted h-10 rounded opacity-50" />
+          <div className="bg-muted h-4 w-1/4 rounded opacity-50" />
+          <div className="bg-muted h-10 rounded opacity-50" />
+          <div className="bg-muted h-32 rounded opacity-50" />
         </div>
       </div>
     );
@@ -291,7 +295,7 @@ export function PostFormFields({
         </TabsList>
 
         {/* Common fields */}
-        <div className="space-y-6 mt-6">
+        <div className="mt-6 space-y-6">
           {/* Title Field */}
           <div className="space-y-2">
             <Label htmlFor="title">
@@ -307,7 +311,7 @@ export function PostFormFields({
               disabled={isSubmitting}
               data-testid="edit-post-title"
             />
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center justify-between text-sm">
               <div>
                 {errors.title && touchedFields.has("title") && (
                   <span className="text-red-500">{errors.title}</span>
@@ -354,7 +358,7 @@ export function PostFormFields({
               </SelectContent>
             </Select>
             {errors.categoryId && touchedFields.has("categoryId") && (
-              <span className="text-red-500 text-sm">{errors.categoryId}</span>
+              <span className="text-sm text-red-500">{errors.categoryId}</span>
             )}
           </div>
         </div>
@@ -419,7 +423,7 @@ export function PostFormFields({
                 />
               </Suspense>
             )}
-            <div className="flex justify-between items-center text-sm">
+            <div className="flex items-center justify-between text-sm">
               <div>
                 {errors.content && touchedFields.has("content") && (
                   <span className="text-red-500">{errors.content}</span>
@@ -445,7 +449,7 @@ export function PostFormFields({
             {/* Media Upload */}
             <div className="space-y-2">
               <Label>Media File</Label>
-              <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6">
+              <div className="border-muted-foreground/25 rounded-none border-2 border-dashed p-6">
                 {formData.mediaFile || formData.mediaUrl ? (
                   <div className="space-y-4">
                     {/* Media Preview */}
@@ -459,21 +463,21 @@ export function PostFormFields({
                             alt="Media preview"
                             width={400}
                             height={256}
-                            className="max-w-full h-auto max-h-64 rounded-lg object-contain"
+                            className="h-auto max-h-64 max-w-full rounded-none object-contain"
                             unoptimized={true}
                           />
                         ) : (
                           <video
                             src={mediaPreviewUrl || formData.mediaUrl}
                             controls
-                            className="max-w-full h-auto max-h-64 rounded-lg"
+                            className="h-auto max-h-64 max-w-full rounded-none"
                           />
                         )}
                         <Button
                           type="button"
                           variant="destructive"
                           size="sm"
-                          className="absolute top-2 right-2"
+                          className="absolute right-2 top-2"
                           onClick={handleRemoveMedia}
                         >
                           <X className="h-4 w-4" />
@@ -483,13 +487,13 @@ export function PostFormFields({
                   </div>
                 ) : (
                   <div className="text-center">
-                    <Upload className="mx-auto h-12 w-12 text-muted-foreground" />
+                    <Upload className="text-muted-foreground mx-auto h-12 w-12" />
                     <div className="mt-4">
                       <Label htmlFor="media-upload" className="cursor-pointer">
-                        <span className="mt-2 block text-sm font-medium text-foreground">
+                        <span className="text-foreground mt-2 block text-sm font-medium">
                           Upload an image or video
                         </span>
-                        <span className="mt-1 block text-xs text-muted-foreground">
+                        <span className="text-muted-foreground mt-1 block text-xs">
                           PNG, JPG, GIF, MP4, MOV up to 10MB
                         </span>
                       </Label>
@@ -524,7 +528,7 @@ export function PostFormFields({
                   }
                 />
               </Suspense>
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center justify-between text-sm">
                 <div>
                   {errors.content && touchedFields.has("content") && (
                     <span className="text-red-500">{errors.content}</span>
@@ -569,7 +573,7 @@ export function PostFormFields({
                 <CardContent className="p-4">
                   <h4 className="font-semibold">{formData.linkTitle}</h4>
                   {formData.linkDescription && (
-                    <p className="text-sm text-muted-foreground mt-1">
+                    <p className="text-muted-foreground mt-1 text-sm">
                       {formData.linkDescription}
                     </p>
                   )}
@@ -579,7 +583,7 @@ export function PostFormFields({
                       alt="Link preview image"
                       width={200}
                       height={128}
-                      className="mt-2 max-w-full h-auto max-h-32 rounded object-cover"
+                      className="mt-2 h-auto max-h-32 max-w-full rounded object-cover"
                       unoptimized={true}
                     />
                   )}
@@ -604,7 +608,7 @@ export function PostFormFields({
                   }
                 />
               </Suspense>
-              <div className="flex justify-between items-center text-sm">
+              <div className="flex items-center justify-between text-sm">
                 <div>
                   {errors.content && touchedFields.has("content") && (
                     <span className="text-red-500">{errors.content}</span>

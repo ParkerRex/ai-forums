@@ -44,34 +44,34 @@ export default function Header() {
 
   return (
     <HeaderProvider>
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex items-center justify-between h-[60px]">
+      <header className="bg-background sticky top-0 z-50 border-b-[.25px] border-black dark:border-white">
+        <div className="mx-auto max-w-7xl px-4">
+          <div className="flex h-[60px] items-center justify-between">
             <div className="flex items-center space-x-8">
               <HeaderLogo />
-              <nav className="hidden md:flex space-x-6"></nav>
+              <nav className="hidden space-x-6 md:flex"></nav>
             </div>
 
-          <div className="flex-1 max-w-md mx-8">
-            <div
-              className="relative"
-              onMouseEnter={() => searchIconRef.current?.startAnimation()}
-              onMouseLeave={() => searchIconRef.current?.stopAnimation()}
-            >
-              <SearchIcon
-                ref={searchIconRef}
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground"
-                size={16}
-              />
-              <Input
-                placeholder="type / to search"
-                className="pl-10 cursor-pointer"
-                onClick={triggerGlobalSearch}
-                onFocus={triggerGlobalSearch}
-                readOnly
-              />
+            <div className="mx-8 max-w-md flex-1">
+              <div
+                className="relative"
+                onMouseEnter={() => searchIconRef.current?.startAnimation()}
+                onMouseLeave={() => searchIconRef.current?.stopAnimation()}
+              >
+                <SearchIcon
+                  ref={searchIconRef}
+                  className="text-muted-foreground absolute left-3 top-1/2 -translate-y-1/2 transform"
+                  size={16}
+                />
+                <Input
+                  placeholder="/ to search"
+                  className="cursor-pointer border-black pl-10 dark:border-white"
+                  onClick={triggerGlobalSearch}
+                  onFocus={triggerGlobalSearch}
+                  readOnly
+                />
+              </div>
             </div>
-          </div>
 
             <div className="flex items-center space-x-4">
               <HeaderIconLink
@@ -118,11 +118,12 @@ export default function Header() {
               </Authenticated>
               <Unauthenticated>
                 <Button
-                  variant="outline"
+                  variant="cta"
                   size="default"
-                  onClick={() => window.location.href = '/pricing'}
+                  className="h-[24px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                  onClick={() => (window.location.href = "/pricing")}
                 >
-                  Become a Member
+                  Join VAI
                 </Button>
               </Unauthenticated>
               <Authenticated>

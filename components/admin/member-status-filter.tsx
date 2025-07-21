@@ -57,7 +57,7 @@ export function MemberStatusFilter({
 
   return (
     <div
-      className={`rounded-lg border border-gray-200 bg-white p-4 ${className}`}
+      className={`rounded-none border border-gray-200 bg-white p-4 ${className}`}
     >
       <div className="flex flex-col gap-4 lg:flex-row">
         {/* Search */}

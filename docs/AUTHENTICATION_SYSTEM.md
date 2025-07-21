@@ -407,7 +407,7 @@ Example of conditional rendering based on authentication state:
 </Authenticated>
 
 <Unauthenticated>
-  <div className="mb-6 p-4 bg-muted/50 rounded-lg text-center">
+  <div className="mb-6 p-4 bg-muted/50 rounded-none text-center">
     <p className="text-muted-foreground mb-4">
       Join the conversation! Sign in to post comments.
     </p>

@@ -43,7 +43,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { PaymentDetailsModal } from "./payment-details-modal";
-import { tierConfig, memberStatusConfig, paymentStatusConfig } from "@/lib/admin-config";
+import {
+  tierConfig,
+  memberStatusConfig,
+  paymentStatusConfig,
+} from "@/lib/admin-config";
 import { getMemberDisplayName, getMemberInitials } from "@/lib/admin-utils";
 import { formatCentsAsCurrency } from "@/lib/format";
 
@@ -65,9 +69,9 @@ export function MemberDetailsModal({
   if (!memberDetails) {
     return (
       <Dialog open onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col overflow-hidden">
           <div className="flex h-96 items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
           </div>
         </DialogContent>
       </Dialog>
@@ -81,7 +85,7 @@ export function MemberDetailsModal({
   return (
     <>
       <Dialog open onOpenChange={onClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col overflow-hidden">
           <DialogHeader className="flex-shrink-0">
             <DialogTitle className="text-xl font-semibold">
               Member Details
@@ -93,14 +97,14 @@ export function MemberDetailsModal({
             <div className="mb-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center text-xl font-medium text-gray-700">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 text-xl font-medium text-gray-700">
                     {member.avatarUrl ? (
                       <Image
                         src={member.avatarUrl}
                         alt={fullName}
                         width={64}
                         height={64}
-                        className="w-full h-full rounded-full object-cover"
+                        className="h-full w-full rounded-full object-cover"
                       />
                     ) : (
                       initials
@@ -111,10 +115,10 @@ export function MemberDetailsModal({
                       {fullName}
                     </h2>
                     <p className="text-gray-600">{member.email}</p>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="mt-2 flex items-center gap-2">
                       {member.role === "admin" && (
                         <Badge variant="secondary" className="text-xs">
-                          <Shield className="w-3 h-3 mr-1" />
+                          <Shield className="mr-1 h-3 w-3" />
                           Admin
                         </Badge>
                       )}
@@ -141,7 +145,8 @@ export function MemberDetailsModal({
                           memberStatusConfig[status]?.color || "",
                         )}
                       >
-                        {memberStatusConfig[status]?.label || status.charAt(0).toUpperCase() + status.slice(1)}
+                        {memberStatusConfig[status]?.label ||
+                          status.charAt(0).toUpperCase() + status.slice(1)}
                       </Badge>
                     </div>
                   </div>
@@ -150,20 +155,20 @@ export function MemberDetailsModal({
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
                       Actions
-                      <MoreVertical className="w-4 h-4 ml-2" />
+                      <MoreVertical className="ml-2 h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem>
-                      <Mail className="w-4 h-4 mr-2" />
+                      <Mail className="mr-2 h-4 w-4" />
                       Send Email
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <CreditCard className="w-4 h-4 mr-2" />
+                      <CreditCard className="mr-2 h-4 w-4" />
                       Manage Subscription
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <Shield className="w-4 h-4 mr-2" />
+                      <Shield className="mr-2 h-4 w-4" />
                       Change Role
                     </DropdownMenuItem>
                   </DropdownMenuContent>
@@ -183,14 +188,14 @@ export function MemberDetailsModal({
 
               <TabsContent value="overview" className="space-y-4">
                 {/* Profile Info */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-medium text-gray-900 mb-3">
+                <div className="rounded-none bg-gray-50 p-4">
+                  <h3 className="mb-3 font-medium text-gray-900">
                     Profile Information
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <p className="text-sm text-gray-500">Member ID</p>
-                      <p className="text-sm font-mono">{member._id}</p>
+                      <p className="font-mono text-sm">{member._id}</p>
                     </div>
                     <div>
                       <p className="text-sm text-gray-500">Joined</p>
@@ -219,15 +224,15 @@ export function MemberDetailsModal({
                   </div>
                   {member.bio && (
                     <div className="mt-4">
-                      <p className="text-sm text-gray-500 mb-1">Bio</p>
+                      <p className="mb-1 text-sm text-gray-500">Bio</p>
                       <p className="text-sm">{member.bio}</p>
                     </div>
                   )}
                 </div>
 
                 {/* Activity Stats */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h3 className="font-medium text-gray-900 mb-3">
+                <div className="rounded-none bg-gray-50 p-4">
+                  <h3 className="mb-3 font-medium text-gray-900">
                     Activity Statistics
                   </h3>
                   <div className="grid grid-cols-3 gap-4">
@@ -256,8 +261,8 @@ export function MemberDetailsModal({
               <TabsContent value="subscription" className="space-y-4">
                 {subscription ? (
                   <>
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h3 className="font-medium text-gray-900 mb-3">
+                    <div className="rounded-none bg-gray-50 p-4">
+                      <h3 className="mb-3 font-medium text-gray-900">
                         Current Subscription
                       </h3>
                       <div className="grid grid-cols-2 gap-4">
@@ -286,7 +291,9 @@ export function MemberDetailsModal({
                               ]?.color || "",
                             )}
                           >
-                            {memberStatusConfig[subscription.status as keyof typeof memberStatusConfig]?.label || subscription.status}
+                            {memberStatusConfig[
+                              subscription.status as keyof typeof memberStatusConfig
+                            ]?.label || subscription.status}
                           </Badge>
                         </div>
                         <div>
@@ -301,14 +308,14 @@ export function MemberDetailsModal({
                       </div>
                     </div>
 
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <h3 className="font-medium text-gray-900 mb-3">
+                    <div className="rounded-none bg-gray-50 p-4">
+                      <h3 className="mb-3 font-medium text-gray-900">
                         Stripe Information
                       </h3>
                       <div className="space-y-2">
                         <div>
                           <p className="text-sm text-gray-500">Customer ID</p>
-                          <p className="text-sm font-mono">
+                          <p className="font-mono text-sm">
                             {subscription.stripeCustomerId}
                           </p>
                         </div>
@@ -316,7 +323,7 @@ export function MemberDetailsModal({
                           <p className="text-sm text-gray-500">
                             Subscription ID
                           </p>
-                          <p className="text-sm font-mono">
+                          <p className="font-mono text-sm">
                             {subscription.stripeSubscriptionId}
                           </p>
                         </div>
@@ -324,8 +331,8 @@ export function MemberDetailsModal({
                     </div>
                   </>
                 ) : (
-                  <div className="bg-gray-50 rounded-lg p-8 text-center">
-                    <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <div className="rounded-none bg-gray-50 p-8 text-center">
+                    <AlertCircle className="mx-auto mb-3 h-12 w-12 text-gray-400" />
                     <p className="text-gray-600">No active subscription</p>
                   </div>
                 )}
@@ -333,7 +340,7 @@ export function MemberDetailsModal({
 
               <TabsContent value="payments" className="space-y-4">
                 {payments.length > 0 ? (
-                  <div className="bg-white rounded-lg border">
+                  <div className="rounded-none border bg-white">
                     <Table>
                       <TableHeader>
                         <TableRow>
@@ -369,7 +376,7 @@ export function MemberDetailsModal({
                                   variant="outline"
                                   className={cn("text-xs", statusInfo.color)}
                                 >
-                                  <StatusIcon className="w-3 h-3 mr-1" />
+                                  <StatusIcon className="mr-1 h-3 w-3" />
                                   {statusInfo.label}
                                 </Badge>
                               </TableCell>
@@ -388,7 +395,7 @@ export function MemberDetailsModal({
                                     setSelectedPaymentId(payment._id)
                                   }
                                 >
-                                  <ExternalLink className="w-4 h-4" />
+                                  <ExternalLink className="h-4 w-4" />
                                 </Button>
                               </TableCell>
                             </TableRow>
@@ -398,8 +405,8 @@ export function MemberDetailsModal({
                     </Table>
                   </div>
                 ) : (
-                  <div className="bg-gray-50 rounded-lg p-8 text-center">
-                    <DollarSign className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                  <div className="rounded-none bg-gray-50 p-8 text-center">
+                    <DollarSign className="mx-auto mb-3 h-12 w-12 text-gray-400" />
                     <p className="text-gray-600">No payment history</p>
                   </div>
                 )}
@@ -409,22 +416,22 @@ export function MemberDetailsModal({
                 {/* Recent Posts */}
                 {activity.posts.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-3">
+                    <h3 className="mb-3 font-medium text-gray-900">
                       Recent Posts
                     </h3>
                     <div className="space-y-2">
                       {activity.posts.map((post) => (
                         <div
                           key={post._id}
-                          className="bg-gray-50 rounded-lg p-3"
+                          className="rounded-none bg-gray-50 p-3"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
                               <p className="font-medium text-gray-900">
                                 {post.title}
                               </p>
-                              <p className="text-sm text-gray-500 mt-1">
-                                <FileText className="w-3 h-3 inline mr-1" />
+                              <p className="mt-1 text-sm text-gray-500">
+                                <FileText className="mr-1 inline h-3 w-3" />
                                 Post •{" "}
                                 {formatDistanceToNow(new Date(post.createdAt), {
                                   addSuffix: true,
@@ -437,7 +444,7 @@ export function MemberDetailsModal({
                                 target="_blank"
                                 rel="noopener noreferrer"
                               >
-                                <ExternalLink className="w-4 h-4" />
+                                <ExternalLink className="h-4 w-4" />
                               </a>
                             </Button>
                           </div>
@@ -450,20 +457,20 @@ export function MemberDetailsModal({
                 {/* Recent Comments */}
                 {activity.comments.length > 0 && (
                   <div>
-                    <h3 className="font-medium text-gray-900 mb-3">
+                    <h3 className="mb-3 font-medium text-gray-900">
                       Recent Comments
                     </h3>
                     <div className="space-y-2">
                       {activity.comments.map((comment) => (
                         <div
                           key={comment._id}
-                          className="bg-gray-50 rounded-lg p-3"
+                          className="rounded-none bg-gray-50 p-3"
                         >
-                          <p className="text-sm text-gray-700 line-clamp-2">
+                          <p className="line-clamp-2 text-sm text-gray-700">
                             {comment.content}
                           </p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            <MessageSquare className="w-3 h-3 inline mr-1" />
+                          <p className="mt-1 text-xs text-gray-500">
+                            <MessageSquare className="mr-1 inline h-3 w-3" />
                             {formatDistanceToNow(new Date(comment.createdAt), {
                               addSuffix: true,
                             })}
@@ -476,8 +483,8 @@ export function MemberDetailsModal({
 
                 {activity.posts.length === 0 &&
                   activity.comments.length === 0 && (
-                    <div className="bg-gray-50 rounded-lg p-8 text-center">
-                      <MessageSquare className="w-12 h-12 text-gray-400 mx-auto mb-3" />
+                    <div className="rounded-none bg-gray-50 p-8 text-center">
+                      <MessageSquare className="mx-auto mb-3 h-12 w-12 text-gray-400" />
                       <p className="text-gray-600">No recent activity</p>
                     </div>
                   )}

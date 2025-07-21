@@ -289,7 +289,7 @@ export default function BillingPage() {
                 {/* Warning banner for subscriptions set to cancel at period end */}
                 {/* Uses yellow color scheme to indicate important information */}
                 {subscriptionInfo.cancelAtPeriodEnd && (
-                  <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
+                  <div className="rounded-none border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
                     <div className="flex items-start gap-2">
                       {/* Alert icon to draw attention to the cancellation notice */}
                       <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />

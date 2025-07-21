@@ -10,7 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import { MessageSquare, RefreshCw, AlertCircle, CheckCircle } from "lucide-react";
+import {
+  MessageSquare,
+  RefreshCw,
+  AlertCircle,
+  CheckCircle,
+} from "lucide-react";
 
 interface DiscordSettingsProps {
   userId: Id<"members">;
@@ -18,7 +23,7 @@ interface DiscordSettingsProps {
 
 /**
  * Discord Settings Component
- * 
+ *
  * Provides UI controls for managing Discord digest preferences including:
  * - Enable/disable toggle with immediate updates
  * - Current status display
@@ -29,15 +34,22 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Query Discord preferences for the current user
-  const discordPreferences = useQuery(api.newsFeedSources.getDiscordPreferences, {
-    userId,
-  });
+  const discordPreferences = useQuery(
+    api.newsFeedSources.getDiscordPreferences,
+    {
+      userId,
+    },
+  );
 
   // Mutation to update Discord preferences
-  const updateDiscordPreferences = useMutation(api.newsFeedSources.updateDiscordPreferences);
+  const updateDiscordPreferences = useMutation(
+    api.newsFeedSources.updateDiscordPreferences,
+  );
 
   // Mutation for quick toggle functionality
-  const toggleDiscordDigest = useMutation(api.newsFeedSources.toggleDiscordDigest);
+  const toggleDiscordDigest = useMutation(
+    api.newsFeedSources.toggleDiscordDigest,
+  );
 
   /**
    * Handle Discord toggle with immediate preference updates
@@ -45,7 +57,7 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
    */
   const handleToggleDiscord = async (enabled: boolean) => {
     setIsUpdating(true);
-    
+
     try {
       await updateDiscordPreferences({
         userId,
@@ -55,9 +67,9 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
       });
 
       toast.success(
-        enabled 
+        enabled
           ? "Discord digest enabled! You'll see Discord messages in your news feed."
-          : "Discord digest disabled. Discord messages will no longer appear in your news feed."
+          : "Discord digest disabled. Discord messages will no longer appear in your news feed.",
       );
     } catch (error) {
       console.error("Failed to update Discord preferences:", error);
@@ -73,14 +85,12 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
    */
   const handleQuickToggle = async () => {
     setIsUpdating(true);
-    
+
     try {
       const newState = await toggleDiscordDigest({ userId });
-      
+
       toast.success(
-        newState 
-          ? "Discord digest enabled!" 
-          : "Discord digest disabled."
+        newState ? "Discord digest enabled!" : "Discord digest disabled.",
       );
     } catch (error) {
       console.error("Failed to toggle Discord digest:", error);
@@ -95,9 +105,9 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
     return (
       <div className="space-y-4">
         <div className="animate-pulse">
-          <div className="h-6 bg-muted rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-muted rounded w-2/3 mb-4"></div>
-          <div className="h-10 bg-muted rounded w-full"></div>
+          <div className="bg-muted mb-2 h-6 w-1/3 rounded"></div>
+          <div className="bg-muted mb-4 h-4 w-2/3 rounded"></div>
+          <div className="bg-muted h-10 w-full rounded"></div>
         </div>
       </div>
     );
@@ -117,17 +127,20 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
               Enable Discord Digest
             </Label>
             {isEnabled && (
-              <Badge variant="outline" className="border-green-500 text-green-600">
-                <CheckCircle className="h-3 w-3 mr-1" />
+              <Badge
+                variant="outline"
+                className="border-green-500 text-green-600"
+              >
+                <CheckCircle className="mr-1 h-3 w-3" />
                 Active
               </Badge>
             )}
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Include popular Discord messages from yesterday in your news feed
           </p>
         </div>
-        
+
         <Switch
           id="discord-toggle"
           checked={isEnabled}
@@ -141,7 +154,7 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
       {/* Status and Configuration Section */}
       <div className="space-y-4">
         <div>
-          <h4 className="text-sm font-medium mb-2">Configuration</h4>
+          <h4 className="mb-2 text-sm font-medium">Configuration</h4>
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-muted-foreground">Server:</span>
@@ -163,11 +176,11 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
         </div>
 
         {/* Information Section */}
-        <div className="bg-muted/50 rounded-lg p-4">
+        <div className="bg-muted/50 rounded-none p-4">
           <div className="flex items-start gap-2">
-            <AlertCircle className="h-4 w-4 text-blue-500 mt-0.5 flex-shrink-0" />
+            <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
             <div className="text-sm">
-              <p className="font-medium text-foreground mb-1">How it works</p>
+              <p className="text-foreground mb-1 font-medium">How it works</p>
               <ul className="text-muted-foreground space-y-1">
                 <li>• Messages from the previous day are collected</li>
                 <li>• Ranked by total reaction count (👍, ❤️, etc.)</li>
@@ -188,9 +201,9 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
               disabled={isUpdating}
             >
               {isUpdating ? (
-                <RefreshCw className="h-3 w-3 mr-1 animate-spin" />
+                <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
               ) : (
-                <RefreshCw className="h-3 w-3 mr-1" />
+                <RefreshCw className="mr-1 h-3 w-3" />
               )}
               Quick Toggle
             </Button>
@@ -205,14 +218,14 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
           <Separator />
           <div className="space-y-4">
             <div>
-              <h4 className="text-sm font-medium mb-2">Channel Selection</h4>
-              <p className="text-sm text-muted-foreground mb-3">
+              <h4 className="mb-2 text-sm font-medium">Channel Selection</h4>
+              <p className="text-muted-foreground mb-3 text-sm">
                 Choose specific channels to include in your digest (coming soon)
               </p>
-              
+
               {/* Placeholder for channel selection UI */}
-              <div className="bg-muted/30 rounded-lg p-4 text-center">
-                <p className="text-sm text-muted-foreground">
+              <div className="bg-muted/30 rounded-none p-4 text-center">
+                <p className="text-muted-foreground text-sm">
                   Channel filtering will be available in a future update
                 </p>
               </div>

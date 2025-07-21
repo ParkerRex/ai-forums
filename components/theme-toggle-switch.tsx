@@ -18,11 +18,11 @@ export function ThemeToggleSwitch({ className }: { className?: string }) {
 
   if (!mounted) {
     return (
-      <div className={cn("bg-muted/50 p-0.5 h-9 rounded-md", className)}>
+      <div className={cn("bg-muted/50 h-9 rounded-md p-0.5", className)}>
         <div className="flex gap-0.5">
-          <div className="h-8 w-7 rounded-sm" />
-          <div className="h-8 w-7 rounded-sm" />
-          <div className="h-8 w-7 rounded-sm" />
+          <div className="h-8 w-7 rounded-none" />
+          <div className="h-8 w-7 rounded-none" />
+          <div className="h-8 w-7 rounded-none" />
         </div>
       </div>
     );
@@ -35,29 +35,26 @@ export function ThemeToggleSwitch({ className }: { className?: string }) {
       onValueChange={(value) => {
         if (value) setTheme(value);
       }}
-      className={cn(
-        "bg-muted/50 p-0.5 h-9",
-        className
-      )}
+      className={cn("bg-muted/50 h-9 p-0.5", className)}
     >
       <ToggleGroupItem
         value="light"
         aria-label="Light theme"
-        className="h-full w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm p-0"
+        className="data-[state=on]:bg-background h-full w-7 p-0 data-[state=on]:shadow-sm"
       >
         <SunIcon size={12} />
       </ToggleGroupItem>
       <ToggleGroupItem
         value="system"
         aria-label="System theme"
-        className="h-full w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm p-0"
+        className="data-[state=on]:bg-background h-full w-7 p-0 data-[state=on]:shadow-sm"
       >
         <LaptopMinimalCheckIcon size={12} />
       </ToggleGroupItem>
       <ToggleGroupItem
         value="dark"
         aria-label="Dark theme"
-        className="h-full w-7 data-[state=on]:bg-background data-[state=on]:shadow-sm p-0"
+        className="data-[state=on]:bg-background h-full w-7 p-0 data-[state=on]:shadow-sm"
       >
         <MoonIcon size={12} />
       </ToggleGroupItem>

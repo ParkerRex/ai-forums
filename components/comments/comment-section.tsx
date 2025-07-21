@@ -171,7 +171,7 @@ function CommentItem({
   const { handleMutationError, handleMutationSuccess } = useMutationError();
 
   const currentUserVote =
-    optimisticUserVote !== null ? optimisticUserVote : (userVote || null);
+    optimisticUserVote !== null ? optimisticUserVote : userVote || null;
 
   // Threading is now handled by CommentThreadContainer
 
@@ -253,9 +253,11 @@ function CommentItem({
       >
         <div className="flex items-start space-x-3">
           <MemberHoverCardWrapper member={comment.member}>
-            <Avatar className="w-7 h-7 cursor-pointer">
+            <Avatar className="h-7 w-7 cursor-pointer">
               <AvatarFallback className="bg-muted text-muted-foreground text-xs">
-                {comment.member?.username?.[0]?.toUpperCase() || comment.member?.firstName?.[0]?.toUpperCase() || "U"}
+                {comment.member?.username?.[0]?.toUpperCase() ||
+                  comment.member?.firstName?.[0]?.toUpperCase() ||
+                  "U"}
               </AvatarFallback>
             </Avatar>
           </MemberHoverCardWrapper>
@@ -269,34 +271,33 @@ function CommentItem({
                         slug: comment.member.slug,
                         _id: comment.member._id,
                       })}
-                      className="font-medium text-foreground hover:underline"
+                      className="text-foreground font-medium hover:underline"
                       data-testid="member-link"
                     >
-                      {comment.member.username || `${comment.member.firstName} ${comment.member.lastName}`}
+                      {comment.member.username ||
+                        `${comment.member.firstName} ${comment.member.lastName}`}
                     </Link>
                   </MemberHoverCardWrapper>
                 ) : (
-                  <span className="font-medium text-foreground">
-                    [deleted]
-                  </span>
+                  <span className="text-foreground font-medium">[deleted]</span>
                 )}
                 <span className="text-muted-foreground">•</span>
                 <span className="text-muted-foreground">
                   {formatDistanceToNow(new Date(comment.createdAt))
-                    .replace('about ', '')
-                    .replace('less than a', '1')
-                    .replace(' ago', '')}
+                    .replace("about ", "")
+                    .replace("less than a", "1")
+                    .replace(" ago", "")}
                   {comment.editedAt && " (edited)"}
                 </span>
               </div>
               <div className="flex items-center space-x-1">
                 {comment.depth > 0 && dragHandleProps && (
                   <button
-                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-muted rounded cursor-grab active:cursor-grabbing transition-opacity"
+                    className="hover:bg-muted cursor-grab rounded p-1 opacity-0 transition-opacity active:cursor-grabbing group-hover:opacity-100"
                     {...dragHandleProps}
                     aria-label="Drag to reorder"
                   >
-                    <GripVertical className="h-3 w-3 text-muted-foreground" />
+                    <GripVertical className="text-muted-foreground h-3 w-3" />
                   </button>
                 )}
               </div>
@@ -332,7 +333,7 @@ function CommentItem({
                 </Button>
               </div>
             ) : (
-              <p className="text-sm text-foreground whitespace-pre-wrap">
+              <p className="text-foreground whitespace-pre-wrap text-sm">
                 {comment.content}
               </p>
             )}
@@ -340,7 +341,7 @@ function CommentItem({
             {comment.attachments && comment.attachments.length > 0 && (
               <div className="mt-3 space-y-2">
                 {comment.attachments!.map((attachment) => (
-                  <div key={attachment.id} className="rounded p-2 bg-muted/30">
+                  <div key={attachment.id} className="bg-muted/30 rounded p-2">
                     {attachment.type === "image" ||
                     attachment.type === "gif" ? (
                       <div className="relative">
@@ -349,10 +350,10 @@ function CommentItem({
                           alt={attachment.fileName}
                           width={400}
                           height={256}
-                          className="max-w-full h-auto max-h-64 rounded"
+                          className="h-auto max-h-64 max-w-full rounded"
                         />
                         {attachment.type === "gif" && (
-                          <div className="absolute top-2 left-2 bg-black/50 text-foreground text-xs px-2 py-1 rounded">
+                          <div className="text-foreground absolute left-2 top-2 rounded bg-black/50 px-2 py-1 text-xs">
                             GIF
                           </div>
                         )}
@@ -368,7 +369,7 @@ function CommentItem({
                         >
                           {attachment.fileName}
                         </a>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-muted-foreground text-xs">
                           ({Math.round(attachment.fileSize / 1024)}KB)
                         </span>
                       </div>
@@ -380,9 +381,9 @@ function CommentItem({
 
             {comment.linkPreviews &&
               Object.entries(comment.linkPreviews!).map(([url, preview]) => (
-                <div key={url} className="mt-3 rounded p-3 bg-muted/50">
+                <div key={url} className="bg-muted/50 mt-3 rounded p-3">
                   <div className="text-sm font-medium">{preview.title}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-muted-foreground text-xs">
                     {preview.description}
                   </div>
                   <a
@@ -397,7 +398,7 @@ function CommentItem({
               ))}
 
             {/* Comment Actions Bar - Reddit Style */}
-            <div className="flex items-center space-x-3 -ml-1 mt-1">
+            <div className="-ml-1 mt-1 flex items-center space-x-3">
               {/* Vote Button - First */}
               <VoteButton
                 targetId={comment._id}
@@ -416,25 +417,24 @@ function CommentItem({
                   variant="ghost"
                   size="sm"
                   onClick={() => onReply(comment._id)}
-                  className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 group h-auto cursor-pointer px-2 py-1 text-xs"
                   onMouseEnter={() => replyIconRef.current?.startAnimation()}
                   onMouseLeave={() => replyIconRef.current?.stopAnimation()}
                 >
                   <MessageSquareIcon
                     ref={replyIconRef}
                     size={14}
-                    className="mr-1.5 group-hover:text-foreground transition-colors"
+                    className="group-hover:text-foreground mr-1.5 transition-colors"
                   />
                   Reply
                 </Button>
               </Authenticated>
 
-
               {/* Share Button */}
               <Button
                 variant="ghost"
                 size="sm"
-                className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
+                className="text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 group h-auto cursor-pointer px-2 py-1 text-xs"
                 onClick={async () => {
                   const commentUrl = `${window.location.origin}${window.location.pathname}?commentId=${comment._id}`;
                   try {
@@ -445,7 +445,10 @@ function CommentItem({
                   }
                 }}
               >
-                <UploadIcon size={14} className="mr-1.5 group-hover:text-foreground transition-colors" />
+                <UploadIcon
+                  size={14}
+                  className="group-hover:text-foreground mr-1.5 transition-colors"
+                />
                 Share
               </Button>
 
@@ -455,12 +458,12 @@ function CommentItem({
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsExpanded(!isExpanded)}
-                  className="group h-auto px-2 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 cursor-pointer"
+                  className="text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 group h-auto cursor-pointer px-2 py-1 text-xs"
                 >
                   {isExpanded ? (
-                    <ChevronDown className="w-3.5 h-3.5 mr-1 group-hover:text-foreground transition-colors" />
+                    <ChevronDown className="group-hover:text-foreground mr-1 h-3.5 w-3.5 transition-colors" />
                   ) : (
-                    <ChevronRight className="w-3.5 h-3.5 mr-1 group-hover:text-foreground transition-colors" />
+                    <ChevronRight className="group-hover:text-foreground mr-1 h-3.5 w-3.5 transition-colors" />
                   )}
                   {comment.replies.length}{" "}
                   {comment.replies.length === 1 ? "reply" : "replies"}
@@ -487,7 +490,7 @@ function CommentItem({
 
         {/* Reply form */}
         {replyingTo === comment._id && (
-          <div className="mt-4 ml-11 space-y-3">
+          <div className="ml-11 mt-4 space-y-3">
             <EnhancedCommentInput
               placeholder={`Reply to ${comment.member?.firstName || "this comment"}...`}
               onSubmit={(content, attachments, linkPreviews, mentions) =>
@@ -856,7 +859,7 @@ export default function CommentSection({
   return (
     <div className="mt-8">
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-foreground">
+        <h3 className="text-foreground text-lg font-semibold">
           Comments ({totalComments})
         </h3>
 
@@ -871,18 +874,20 @@ export default function CommentSection({
         </Authenticated>
 
         <Unauthenticated>
-          <div className="mb-6 p-4 bg-muted/50 rounded-lg text-center">
+          <div className="bg-muted/50 mb-6 rounded-none p-4 text-center">
             <p className="text-muted-foreground mb-4">
               Members-only discussion. Join VAI Community to participate.
             </p>
             <div className="space-y-2">
               <SignInButton mode="modal">
-                <Button variant="outline" className="w-full sm:w-auto">Sign In (Members Only)</Button>
+                <Button variant="outline" className="w-full sm:w-auto">
+                  Sign In (Members Only)
+                </Button>
               </SignInButton>
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 className="w-full sm:w-auto"
-                onClick={() => window.location.href = '/pricing'}
+                onClick={() => (window.location.href = "/pricing")}
               >
                 Become a Member
               </Button>
@@ -897,19 +902,19 @@ export default function CommentSection({
                 <div key={i} className="py-4">
                   <div className="animate-pulse space-y-3">
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-muted rounded-full"></div>
-                      <div className="h-4 bg-muted rounded w-24"></div>
+                      <div className="bg-muted h-8 w-8 rounded-full"></div>
+                      <div className="bg-muted h-4 w-24 rounded"></div>
                     </div>
                     <div className="space-y-2">
-                      <div className="h-4 bg-muted rounded"></div>
-                      <div className="h-4 bg-muted rounded w-3/4"></div>
+                      <div className="bg-muted h-4 rounded"></div>
+                      <div className="bg-muted h-4 w-3/4 rounded"></div>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : comments?.length === 0 ? (
-            <div className="text-center py-8">
+            <div className="py-8 text-center">
               <p className="text-muted-foreground">
                 No comments yet. Be the first to share your thoughts!
               </p>

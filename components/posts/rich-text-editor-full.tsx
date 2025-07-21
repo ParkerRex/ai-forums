@@ -77,8 +77,8 @@ export function FullRichTextEditor({
         HTMLAttributes: {
           class: "hljs",
         },
-        languageClassPrefix: 'language-',
-        defaultLanguage: 'javascript',
+        languageClassPrefix: "language-",
+        defaultLanguage: "javascript",
       }),
       LinkBadge.configure({
         openOnClick: true,
@@ -134,19 +134,19 @@ export function FullRichTextEditor({
 
   if (!editor) {
     return (
-      <div className={`border rounded-lg ${className}`}>
-        <div className="border-b border p-2 bg-muted rounded-t-lg">
+      <div className={`rounded-none border ${className}`}>
+        <div className="bg-muted rounded-t-lg border border-b p-2">
           <div className="flex items-center justify-center">
-            <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
-            <span className="text-sm text-muted-foreground">
+            <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
+            <span className="text-muted-foreground text-sm">
               Loading editor...
             </span>
           </div>
         </div>
         <div className="min-h-[200px] p-4">
           <div className="animate-pulse space-y-2">
-            <div className="h-4 bg-muted opacity-50 rounded w-3/4" />
-            <div className="h-4 bg-muted opacity-50 rounded w-1/2" />
+            <div className="bg-muted h-4 w-3/4 rounded opacity-50" />
+            <div className="bg-muted h-4 w-1/2 rounded opacity-50" />
           </div>
         </div>
       </div>
@@ -155,10 +155,10 @@ export function FullRichTextEditor({
 
   return (
     <div
-      className={`border rounded-lg focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}
+      className={`rounded-none border focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}
     >
       {/* Toolbar */}
-      <div className="border-b border p-2 bg-muted rounded-t-lg">
+      <div className="bg-muted rounded-t-lg border border-b p-2">
         <div className="flex flex-wrap gap-1 overflow-x-auto">
           {/* Undo/Redo */}
           <Button
@@ -182,7 +182,7 @@ export function FullRichTextEditor({
             <Redo className="h-4 w-4" />
           </Button>
 
-          <div className="w-px h-6 bg-muted opacity-60 mx-1" />
+          <div className="bg-muted mx-1 h-6 w-px opacity-60" />
 
           {/* Text formatting */}
           <Button
@@ -213,7 +213,7 @@ export function FullRichTextEditor({
             <Code className="h-4 w-4" />
           </Button>
 
-          <div className="w-px h-6 bg-muted opacity-60 mx-1" />
+          <div className="bg-muted mx-1 h-6 w-px opacity-60" />
 
           {/* Lists */}
           <Button
@@ -235,7 +235,7 @@ export function FullRichTextEditor({
             <ListOrdered className="h-4 w-4" />
           </Button>
 
-          <div className="w-px h-6 bg-muted opacity-60 mx-1" />
+          <div className="bg-muted mx-1 h-6 w-px opacity-60" />
 
           {/* Block elements */}
           <Button
@@ -267,7 +267,7 @@ export function FullRichTextEditor({
           className="min-h-[200px] focus-within:outline-none"
         />
         {!content && (
-          <div className="absolute top-4 left-4 text-muted-foreground opacity-70 pointer-events-none">
+          <div className="text-muted-foreground pointer-events-none absolute left-4 top-4 opacity-70">
             {placeholder}
           </div>
         )}

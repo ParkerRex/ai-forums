@@ -66,7 +66,14 @@ const paymentStatusConfig = {
 export default function AdminPaymentsPage() {
   const [selectedPaymentId, setSelectedPaymentId] =
     useState<Id<"payments"> | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "succeeded" | "failed" | "refunded" | "partially_refunded">("all");
+  const [statusFilter, setStatusFilter] = useState<
+    | "all"
+    | "pending"
+    | "succeeded"
+    | "failed"
+    | "refunded"
+    | "partially_refunded"
+  >("all");
   const [dateRange, setDateRange] = useState("30");
 
   // Calculate date range
@@ -129,7 +136,7 @@ export default function AdminPaymentsPage() {
     return (
       <div className="flex h-full items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-b-2 border-gray-900"></div>
           <p className="mt-4 text-gray-600">Loading payments...</p>
         </div>
       </div>
@@ -137,79 +144,79 @@ export default function AdminPaymentsPage() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="mx-auto max-w-7xl p-6">
       {/* Header */}
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Payments</h1>
-            <p className="text-gray-600 mt-1">
+            <p className="mt-1 text-gray-600">
               View payment history and process refunds
             </p>
           </div>
           <Button onClick={exportPayments} variant="outline">
-            <Download className="w-4 h-4 mr-2" />
+            <Download className="mr-2 h-4 w-4" />
             Export
           </Button>
         </div>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+      <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
+        <div className="rounded-none border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Gross Revenue</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="mt-1 text-2xl font-bold text-gray-900">
                 {stats.revenue.formattedGross}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="mt-1 text-xs text-gray-500">
                 Before fees & refunds
               </p>
             </div>
-            <div className="h-12 w-12 bg-green-100 rounded-lg flex items-center justify-center">
-              <DollarSign className="w-6 h-6 text-green-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-none bg-green-100">
+              <DollarSign className="h-6 w-6 text-green-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="rounded-none border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Net Revenue</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="mt-1 text-2xl font-bold text-gray-900">
                 {stats.revenue.formattedNet}
               </p>
-              <p className="text-xs text-gray-500 mt-1">After fees & refunds</p>
+              <p className="mt-1 text-xs text-gray-500">After fees & refunds</p>
             </div>
-            <div className="h-12 w-12 bg-blue-100 rounded-lg flex items-center justify-center">
-              <TrendingUp className="w-6 h-6 text-blue-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-none bg-blue-100">
+              <TrendingUp className="h-6 w-6 text-blue-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="rounded-none border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Refunds</p>
-              <p className="text-2xl font-bold text-red-600 mt-1">
+              <p className="mt-1 text-2xl font-bold text-red-600">
                 {stats.revenue.formattedRefunds}
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="mt-1 text-xs text-gray-500">
                 {stats.refundedPayments} payments
               </p>
             </div>
-            <div className="h-12 w-12 bg-red-100 rounded-lg flex items-center justify-center">
-              <RefreshCw className="w-6 h-6 text-red-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-none bg-red-100">
+              <RefreshCw className="h-6 w-6 text-red-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className="rounded-none border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Success Rate</p>
-              <p className="text-2xl font-bold text-gray-900 mt-1">
+              <p className="mt-1 text-2xl font-bold text-gray-900">
                 {stats.totalPayments > 0
                   ? (
                       (stats.successfulPayments / stats.totalPayments) *
@@ -218,24 +225,24 @@ export default function AdminPaymentsPage() {
                   : 0}
                 %
               </p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="mt-1 text-xs text-gray-500">
                 {stats.successfulPayments} of {stats.totalPayments}
               </p>
             </div>
-            <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-              <CheckCircle className="w-6 h-6 text-gray-600" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-none bg-gray-100">
+              <CheckCircle className="h-6 w-6 text-gray-600" />
             </div>
           </div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-        <div className="flex flex-col lg:flex-row gap-4">
+      <div className="mb-6 rounded-none border border-gray-200 bg-white p-4">
+        <div className="flex flex-col gap-4 lg:flex-row">
           {/* Date Range */}
           <Select value={dateRange} onValueChange={setDateRange}>
             <SelectTrigger className="w-[180px]">
-              <Calendar className="w-4 h-4 mr-2" />
+              <Calendar className="mr-2 h-4 w-4" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -248,9 +255,22 @@ export default function AdminPaymentsPage() {
           </Select>
 
           {/* Status Filter */}
-          <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as "all" | "pending" | "succeeded" | "failed" | "refunded" | "partially_refunded")}>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) =>
+              setStatusFilter(
+                value as
+                  | "all"
+                  | "pending"
+                  | "succeeded"
+                  | "failed"
+                  | "refunded"
+                  | "partially_refunded",
+              )
+            }
+          >
             <SelectTrigger className="w-[180px]">
-              <Filter className="w-4 h-4 mr-2" />
+              <Filter className="mr-2 h-4 w-4" />
               <SelectValue placeholder="Filter by status" />
             </SelectTrigger>
             <SelectContent>
@@ -266,7 +286,7 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Payments Table */}
-      <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+      <div className="overflow-hidden rounded-none border border-gray-200 bg-white">
         <Table>
           <TableHeader>
             <TableRow className="bg-gray-50">
@@ -325,18 +345,18 @@ export default function AdminPaymentsPage() {
                       variant="outline"
                       className={cn("text-xs", statusInfo.color)}
                     >
-                      <StatusIcon className="w-3 h-3 mr-1" />
+                      <StatusIcon className="mr-1 h-3 w-3" />
                       {statusInfo.label}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-sm">
                     <div className="flex items-center gap-1">
-                      <CreditCard className="w-3 h-3 text-gray-400" />
+                      <CreditCard className="h-3 w-3 text-gray-400" />
                       {payment.paymentMethod.brand} ••••{" "}
                       {payment.paymentMethod.last4}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-gray-600 max-w-xs truncate">
+                  <TableCell className="max-w-xs truncate text-sm text-gray-600">
                     {payment.description}
                   </TableCell>
                   <TableCell className="text-right">
@@ -345,7 +365,7 @@ export default function AdminPaymentsPage() {
                       size="sm"
                       onClick={() => setSelectedPaymentId(payment._id)}
                     >
-                      <ExternalLink className="w-4 h-4" />
+                      <ExternalLink className="h-4 w-4" />
                     </Button>
                   </TableCell>
                 </TableRow>

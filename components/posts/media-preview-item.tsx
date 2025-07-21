@@ -70,22 +70,22 @@ export function MediaPreviewItem({
       ref={setNodeRef}
       style={style}
       className={cn(
-        "relative group rounded-lg overflow-hidden border bg-card",
+        "bg-card group relative overflow-hidden rounded-none border",
         "transition-all duration-200",
         isSortableDragging || isDragging ? "opacity-50" : "",
         isDragOverlay ? "shadow-2xl" : "shadow-sm hover:shadow-md",
-        media.error ? "border-red-500" : ""
+        media.error ? "border-red-500" : "",
       )}
     >
-      <div className="aspect-square relative">
+      <div className="relative aspect-square">
         {renderPreview()}
 
         {/* Upload Progress Overlay */}
         {media.isUploading && (
-          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
             <div className="w-full max-w-[80%] space-y-1">
               <Progress value={media.uploadProgress || 0} className="h-1" />
-              <p className="text-[10px] text-primary-foreground text-center">
+              <p className="text-primary-foreground text-center text-[10px]">
                 {media.uploadProgress || 0}%
               </p>
             </div>
@@ -94,9 +94,9 @@ export function MediaPreviewItem({
 
         {/* Error Overlay */}
         {media.error && (
-          <div className="absolute inset-0 bg-red-500/10 flex items-center justify-center">
-            <div className="text-center p-2">
-              <AlertCircle className="h-4 w-4 text-red-500 mx-auto mb-1" />
+          <div className="absolute inset-0 flex items-center justify-center bg-red-500/10">
+            <div className="p-2 text-center">
+              <AlertCircle className="mx-auto mb-1 h-4 w-4 text-red-500" />
               <p className="text-[10px] text-red-600">{media.error}</p>
             </div>
           </div>
@@ -104,12 +104,12 @@ export function MediaPreviewItem({
 
         {/* Controls Overlay */}
         {!isDragOverlay && !media.isUploading && !media.error && (
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors">
-            <div className="absolute top-1 left-1 right-1 flex justify-between items-start opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="absolute inset-0 bg-black/0 transition-colors group-hover:bg-black/40">
+            <div className="absolute left-1 right-1 top-1 flex items-start justify-between opacity-0 transition-opacity group-hover:opacity-100">
               {!disabled && (
                 <button
                   type="button"
-                  className="p-1 bg-background/90 rounded cursor-grab active:cursor-grabbing"
+                  className="bg-background/90 cursor-grab rounded p-1 active:cursor-grabbing"
                   {...attributes}
                   {...listeners}
                 >
@@ -133,7 +133,7 @@ export function MediaPreviewItem({
 
       {/* Type Badge */}
       <div className="absolute bottom-1 left-1">
-        <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+        <Badge variant="secondary" className="h-4 px-1 py-0 text-[10px]">
           {media.type.toUpperCase()}
         </Badge>
       </div>

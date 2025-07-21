@@ -109,15 +109,15 @@ export function Paywall({
         <CardContent className="space-y-4">
           {/* Preview section: Shows a teaser of the gated content */}
           {previewContent && (
-            <div className="rounded-lg bg-muted/50 p-4">
+            <div className="bg-muted/50 rounded-none p-4">
               {/* line-clamp-3 limits preview to 3 lines for consistent height */}
-              <p className="text-sm text-muted-foreground line-clamp-3">
+              <p className="text-muted-foreground line-clamp-3 text-sm">
                 {previewContent}
               </p>
               {/* Gradient overlay creates a "fade out" effect to indicate more content exists */}
-              <div className="mt-2 bg-gradient-to-b from-transparent to-muted/50 h-8 -mb-4 -mx-4 relative">
+              <div className="to-muted/50 relative -mx-4 -mb-4 mt-2 h-8 bg-gradient-to-b from-transparent">
                 {/* Additional subtle gradient for smooth visual transition */}
-                <div className="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-t from-background to-transparent" />
+                <div className="from-background absolute inset-x-0 bottom-0 h-1 bg-gradient-to-t to-transparent" />
               </div>
             </div>
           )}
@@ -125,7 +125,7 @@ export function Paywall({
           {/* CTA section: Message and upgrade button */}
           <div className="space-y-3">
             {/* Custom message explaining the content restriction */}
-            <p className="text-sm text-muted-foreground">{message}</p>
+            <p className="text-muted-foreground text-sm">{message}</p>
 
             <div className="space-y-2">
               {/* Primary CTA button - text changes based on auth status */}
@@ -136,7 +136,7 @@ export function Paywall({
 
               {/* Helper text for unauthenticated users who might already have accounts */}
               {!isSignedIn && (
-                <p className="text-xs text-center text-muted-foreground">
+                <p className="text-muted-foreground text-center text-xs">
                   Already a member? Sign in to access this content.
                 </p>
               )}

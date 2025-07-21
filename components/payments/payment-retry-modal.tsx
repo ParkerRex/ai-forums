@@ -43,12 +43,14 @@ export function PaymentRetryModal({
   const [isRetrying, setIsRetrying] = useState(false);
   const [showUpdateMethod, setShowUpdateMethod] = useState(false);
   const [retrySuccess, setRetrySuccess] = useState(false);
-  
-  const retryPayment = useAction(api.stripe.retryFailedPayment.retryFailedPayment);
+
+  const retryPayment = useAction(
+    api.stripe.retryFailedPayment.retryFailedPayment,
+  );
 
   if (!failedPayment) return null;
 
-  const paymentError = failedPayment.lastError 
+  const paymentError = failedPayment.lastError
     ? getPaymentError(failedPayment.lastError)
     : null;
 
@@ -60,7 +62,7 @@ export function PaymentRetryModal({
         const result = await retryPayment({
           invoiceId: failedPayment.invoiceId,
         });
-        
+
         if (result.success) {
           setRetrySuccess(true);
           toast.success("Payment successful! Your access has been restored.");
@@ -71,7 +73,7 @@ export function PaymentRetryModal({
           return;
         }
       }
-      
+
       // If retry fails or not available, suggest updating payment method
       setShowUpdateMethod(true);
     } catch (error) {
@@ -115,7 +117,7 @@ export function PaymentRetryModal({
             </DialogTitle>
           </DialogHeader>
           <div className="py-6 text-center">
-            <p className="text-lg mb-2">Your payment went through!</p>
+            <p className="mb-2 text-lg">Your payment went through!</p>
             <p className="text-muted-foreground">
               Your Pro access has been restored.
             </p>
@@ -134,11 +136,11 @@ export function PaymentRetryModal({
             Payment needs attention
           </DialogTitle>
           <DialogDescription>
-            Your {formatAmount(failedPayment.amount, failedPayment.currency)} payment 
-            couldn&apos;t be processed.
+            Your {formatAmount(failedPayment.amount, failedPayment.currency)}{" "}
+            payment couldn&apos;t be processed.
           </DialogDescription>
         </DialogHeader>
-        
+
         <div className="space-y-4 py-4">
           {paymentError && (
             <Alert>
@@ -147,24 +149,24 @@ export function PaymentRetryModal({
               </AlertDescription>
             </Alert>
           )}
-          
+
           {!showUpdateMethod ? (
             <>
-              <p className="text-sm text-muted-foreground">
-                We can try processing your payment again with your current card, 
+              <p className="text-muted-foreground text-sm">
+                We can try processing your payment again with your current card,
                 or you can update your payment method.
               </p>
-              
+
               <div className="space-y-2">
-                <div className="rounded-lg border p-4">
+                <div className="rounded-none border p-4">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">Retry with current card</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-muted-foreground text-sm">
                         Quick and easy if it was a temporary issue
                       </p>
                     </div>
-                    <CreditCard className="h-5 w-5 text-muted-foreground" />
+                    <CreditCard className="text-muted-foreground h-5 w-5" />
                   </div>
                 </div>
               </div>
@@ -174,20 +176,20 @@ export function PaymentRetryModal({
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  The retry wasn&apos;t successful. Please update your payment method 
-                  to continue your subscription.
+                  The retry wasn&apos;t successful. Please update your payment
+                  method to continue your subscription.
                 </AlertDescription>
               </Alert>
-              
-              <p className="text-sm text-muted-foreground">
-                You&apos;ll be redirected to securely update your card information. 
-                Your subscription will resume once updated.
+
+              <p className="text-muted-foreground text-sm">
+                You&apos;ll be redirected to securely update your card
+                information. Your subscription will resume once updated.
               </p>
             </>
           )}
         </div>
-        
-        <DialogFooter className="flex-col sm:flex-col gap-2">
+
+        <DialogFooter className="flex-col gap-2 sm:flex-col">
           {!showUpdateMethod ? (
             <>
               <Button
@@ -207,7 +209,7 @@ export function PaymentRetryModal({
                   </>
                 )}
               </Button>
-              
+
               <Button
                 variant="outline"
                 onClick={() => setShowUpdateMethod(true)}
@@ -237,7 +239,7 @@ export function PaymentRetryModal({
                   </>
                 )}
               </Button>
-              
+
               <Button
                 variant="ghost"
                 onClick={() => onOpenChange(false)}
@@ -248,8 +250,8 @@ export function PaymentRetryModal({
               </Button>
             </>
           )}
-          
-          <p className="text-xs text-center text-muted-foreground mt-2">
+
+          <p className="text-muted-foreground mt-2 text-center text-xs">
             Your access will be restored immediately after successful payment
           </p>
         </DialogFooter>

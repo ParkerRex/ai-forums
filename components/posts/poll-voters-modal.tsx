@@ -34,19 +34,24 @@ export function PollVotersModal({
   pollOptions,
 }: PollVotersModalProps) {
   const [activeTab, setActiveTab] = useState(pollOptions[0]?.id || "");
-  
+
   // Get poll votes
-  const pollVotes = useQuery(api.polls.getPollVotes, { pollId }) as {
-    votesByOption: Record<string, Array<{
-      memberId: Id<"members">;
-      firstName: string;
-      lastName: string;
-      email: string;
-      slug: string;
-      avatarUrl?: string;
-      votedAt: number;
-    }>>;
-  } | undefined;
+  const pollVotes = useQuery(api.polls.getPollVotes, { pollId }) as
+    | {
+        votesByOption: Record<
+          string,
+          Array<{
+            memberId: Id<"members">;
+            firstName: string;
+            lastName: string;
+            email: string;
+            slug: string;
+            avatarUrl?: string;
+            votedAt: number;
+          }>
+        >;
+      }
+    | undefined;
 
   const getInitials = (firstName: string, lastName: string) => {
     return `${firstName[0]}${lastName[0]}`.toUpperCase();
@@ -54,16 +59,29 @@ export function PollVotersModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] max-h-[80vh]">
+      <DialogContent className="max-h-[80vh] sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Poll Voters</DialogTitle>
         </DialogHeader>
 
         {pollVotes ? (
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full" style={{ gridTemplateColumns: `repeat(${pollOptions.length}, 1fr)` }}>
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
+            <TabsList
+              className="grid w-full"
+              style={{
+                gridTemplateColumns: `repeat(${pollOptions.length}, 1fr)`,
+              }}
+            >
               {pollOptions.map((option) => (
-                <TabsTrigger key={option.id} value={option.id} className="text-xs">
+                <TabsTrigger
+                  key={option.id}
+                  value={option.id}
+                  className="text-xs"
+                >
                   {option.text} ({option.voteCount})
                 </TabsTrigger>
               ))}
@@ -71,35 +89,41 @@ export function PollVotersModal({
 
             {pollOptions.map((option) => (
               <TabsContent key={option.id} value={option.id} className="mt-4">
-                <div className="space-y-3 max-h-[400px] overflow-y-auto">
+                <div className="max-h-[400px] space-y-3 overflow-y-auto">
                   {pollVotes.votesByOption[option.id]?.length > 0 ? (
                     pollVotes.votesByOption[option.id].map((voter) => (
                       <Link
                         key={voter.memberId}
-                        href={memberProfileUrl({ slug: voter.slug, _id: voter.memberId })}
-                        className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted transition-colors"
+                        href={memberProfileUrl({
+                          slug: voter.slug,
+                          _id: voter.memberId,
+                        })}
+                        className="hover:bg-muted flex items-center gap-3 rounded-none p-2 transition-colors"
                       >
                         <Avatar className="h-10 w-10">
-                          <AvatarImage src={voter.avatarUrl} alt={`${voter.firstName} ${voter.lastName}`} />
+                          <AvatarImage
+                            src={voter.avatarUrl}
+                            alt={`${voter.firstName} ${voter.lastName}`}
+                          />
                           <AvatarFallback>
                             {getInitials(voter.firstName, voter.lastName)}
                           </AvatarFallback>
                         </Avatar>
                         <div className="flex-1">
-                          <p className="font-medium text-sm">
+                          <p className="text-sm font-medium">
                             {voter.firstName} {voter.lastName}
                           </p>
-                          <p className="text-xs text-muted-foreground">
-                            @{voter.email.split('@')[0]}
+                          <p className="text-muted-foreground text-xs">
+                            @{voter.email.split("@")[0]}
                           </p>
                         </div>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-muted-foreground text-xs">
                           {new Date(voter.votedAt).toLocaleDateString()}
                         </span>
                       </Link>
                     ))
                   ) : (
-                    <p className="text-center text-muted-foreground py-8">
+                    <p className="text-muted-foreground py-8 text-center">
                       No votes for this option yet
                     </p>
                   )}

@@ -53,20 +53,20 @@ export function NewsFeedWidget() {
 
   if (loading && news.length === 0) {
     return (
-      <div className="bg-card border rounded-lg p-4">
-        <div className="flex items-center justify-between mb-3">
+      <div className="bg-card rounded-none border p-4">
+        <div className="mb-3 flex items-center justify-between">
           <h3 className="text-sm font-medium">Top AI Stories</h3>
         </div>
-        <div className="text-xs space-y-1">
+        <div className="space-y-1 text-xs">
           {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse">
-              <div className="flex items-start justify-between gap-2 mb-1">
-                <div className="h-3 bg-muted rounded flex-1"></div>
-                <div className="h-3 bg-muted rounded w-12"></div>
+              <div className="mb-1 flex items-start justify-between gap-2">
+                <div className="bg-muted h-3 flex-1 rounded"></div>
+                <div className="bg-muted h-3 w-12 rounded"></div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="h-2 bg-muted rounded w-10"></div>
-                <div className="h-2 bg-muted rounded w-24"></div>
+                <div className="bg-muted h-2 w-10 rounded"></div>
+                <div className="bg-muted h-2 w-24 rounded"></div>
               </div>
             </div>
           ))}
@@ -76,13 +76,13 @@ export function NewsFeedWidget() {
   }
 
   return (
-    <div className="bg-card border rounded-lg p-4">
-      <div className="flex items-center justify-between mb-3">
+    <div className="bg-card rounded-none border p-4">
+      <div className="mb-3 flex items-center justify-between">
         <h3 className="text-sm font-medium">Top</h3>
         <Button
           variant="ghost"
           size="icon"
-          className="h-5 w-5 hover:bg-accent/50"
+          className="hover:bg-accent/50 h-5 w-5"
           onClick={handleRefresh}
           disabled={refreshing}
         >
@@ -92,7 +92,7 @@ export function NewsFeedWidget() {
         </Button>
       </div>
       <div
-        className={`text-xs space-y-1 transition-all ${refreshing ? "blur-sm opacity-50" : ""}`}
+        className={`space-y-1 text-xs transition-all ${refreshing ? "opacity-50 blur-sm" : ""}`}
       >
         {news.slice(0, 5).map((item: NewsItem, index: number) => {
           return (
@@ -105,7 +105,7 @@ export function NewsFeedWidget() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="flex-1 leading-tight">{item.title}</span>
-                  <span className="text-muted-foreground whitespace-nowrap flex-shrink-0">
+                  <span className="text-muted-foreground flex-shrink-0 whitespace-nowrap">
                     {formatTimeAgo(item.publishedDate)}
                   </span>
                 </div>

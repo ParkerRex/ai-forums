@@ -36,7 +36,11 @@ interface AttachmentGridProps {
   className?: string;
 }
 
-function AttachmentItem({ attachment }: { attachment: AttachmentGridProps["attachments"][0] }) {
+function AttachmentItem({
+  attachment,
+}: {
+  attachment: AttachmentGridProps["attachments"][0];
+}) {
   const renderPreview = () => {
     // Convert attachment to MediaItem format for preview components
     const mediaItem: MediaItem = {
@@ -70,24 +74,26 @@ function AttachmentItem({ attachment }: { attachment: AttachmentGridProps["attac
   return (
     <div
       className={cn(
-        "relative group rounded-lg overflow-hidden border bg-card",
-        "transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+        "bg-card group relative overflow-hidden rounded-none border",
+        "cursor-pointer shadow-sm transition-all duration-200 hover:shadow-md",
       )}
     >
-      <div className="aspect-square relative">
+      <div className="relative aspect-square">
         {renderPreview()}
-        
+
         {/* Hover overlay with view action */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center">
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-            <span className="text-primary-foreground text-sm font-medium">View</span>
+        <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
+          <div className="opacity-0 transition-opacity group-hover:opacity-100">
+            <span className="text-primary-foreground text-sm font-medium">
+              View
+            </span>
           </div>
         </div>
       </div>
 
       {/* Type Badge */}
       <div className="absolute bottom-1 left-1">
-        <Badge variant="secondary" className="text-[10px] px-1 py-0 h-4">
+        <Badge variant="secondary" className="h-4 px-1 py-0 text-[10px]">
           {attachment.type.toUpperCase()}
         </Badge>
       </div>
@@ -95,10 +101,13 @@ function AttachmentItem({ attachment }: { attachment: AttachmentGridProps["attac
   );
 }
 
-export function AttachmentGrid({ attachments, className }: AttachmentGridProps) {
+export function AttachmentGrid({
+  attachments,
+  className,
+}: AttachmentGridProps) {
   const sortedAttachments = useMemo(
     () => [...attachments].sort((a, b) => a.order - b.order),
-    [attachments]
+    [attachments],
   );
 
   if (attachments.length === 0) {
@@ -107,10 +116,10 @@ export function AttachmentGrid({ attachments, className }: AttachmentGridProps) 
 
   return (
     <div className={cn("space-y-2", className)}>
-      <h3 className="text-sm font-medium text-muted-foreground">
+      <h3 className="text-muted-foreground text-sm font-medium">
         Additional Media ({attachments.length})
       </h3>
-      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+      <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
         {sortedAttachments.map((attachment) => (
           <AttachmentItem key={attachment.id} attachment={attachment} />
         ))}

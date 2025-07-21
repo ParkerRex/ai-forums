@@ -7,7 +7,6 @@ import { Id } from "@/convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 import { useState, useRef } from "react";
 import PostPreview from "@/components/posts/post-preview";
 import { PostData } from "@/lib/post-preview-utils";
@@ -191,7 +190,7 @@ export default function PostCard({
           showStats={false}
           showCategory={currentCategoryId !== post.categoryId}
           showMember={true}
-          className="border-0 p-0 shadow-none hover:scale-100 hover:shadow-none"
+          className="border-0 p-0 shadow-none hover:shadow-none"
         />
 
         {/* Actions bar with voting - Reddit style */}
@@ -201,7 +200,7 @@ export default function PostCard({
             <Button
               variant="ghost"
               size="sm"
-              className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
+              className="hover:bg-muted/50 h-auto rounded-none transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 // For paywalled posts, navigate to post page to show paywall
@@ -217,8 +216,8 @@ export default function PostCard({
             >
               <ArrowBigUpIcon
                 ref={upvoteIconRef}
-                size={12}
-                className={`mr-1 transition-colors ${
+                size={16}
+                className={`transition-colors ${
                   currentUserVote === "upvote"
                     ? "fill-orange-500 text-orange-500"
                     : "text-muted-foreground hover:text-orange-500"
@@ -228,10 +227,6 @@ export default function PostCard({
             </Button>
           </Authenticated>
           <Unauthenticated>
-            <MembershipCTAModal
-              title="Upvote Great Content"
-              description="Join VAI to upvote posts and help surface the best content in the community"
-            >
               <Button
                 variant="ghost"
                 size="sm"
@@ -241,12 +236,11 @@ export default function PostCard({
               >
                 <ArrowBigUpIcon
                   ref={upvoteIconRef}
-                  size={12}
-                  className="text-muted-foreground mr-1 hover:text-orange-500"
+                  size={18}
+                  className="text-muted-foreground hover:text-orange-500"
                 />
                 <span className="font-medium">{optimisticNetVotes}</span>
               </Button>
-            </MembershipCTAModal>
           </Unauthenticated>
 
           {/* Comments */}
@@ -267,15 +261,11 @@ export default function PostCard({
                 size={12}
                 className="mr-1"
               />
-              <span className="font-medium">{post.commentCount}</span>
+              <span className="font-mono tracking-tighter">{post.commentCount}</span>
             </Button>
           </Authenticated>
           <Unauthenticated>
-            <MembershipCTAModal
-              title="Join the Conversation"
-              description="Become a member to read comments and share your thoughts with the VAI community"
-            >
-              <Button
+                        <Button
                 variant="ghost"
                 size="sm"
                 className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
@@ -284,12 +274,11 @@ export default function PostCard({
               >
                 <MessageSquareIcon
                   ref={commentIconRef}
-                  size={12}
+                  size={10}
                   className="mr-1"
                 />
-                <span className="font-medium">{post.commentCount}</span>
+                <span className="font-mono tracking-tighter">{post.commentCount}</span>
               </Button>
-            </MembershipCTAModal>
           </Unauthenticated>
 
           {/* Bookmark and Share */}
@@ -297,7 +286,7 @@ export default function PostCard({
           <Button
             variant="ghost"
             size="sm"
-            className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
+            className="hover:bg-muted/50 h-auto rounded-none transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               handleShare(e);
@@ -305,8 +294,7 @@ export default function PostCard({
             onMouseEnter={() => shareIconRef.current?.startAnimation()}
             onMouseLeave={() => shareIconRef.current?.stopAnimation()}
           >
-            <UploadIcon ref={shareIconRef} size={12} className="mr-1" />
-            <span className="font-medium">share</span>
+            <UploadIcon ref={shareIconRef} size={12} className="" />
           </Button>
         </div>
       </div>

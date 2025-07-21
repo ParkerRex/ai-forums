@@ -363,7 +363,7 @@ export function MembershipCTAModal({
                     </div>
 
                     {billingInterval === "yearly" && (
-                      <div className="rounded-lg border border-green-200 bg-green-50 p-2 dark:border-green-800 dark:bg-green-900/20">
+                      <div className="rounded-none border border-green-200 bg-green-50 p-2 dark:border-green-800 dark:bg-green-900/20">
                         <p className="text-xs font-medium text-green-700 dark:text-green-400">
                           💰 Save {formatCurrency(yearlySavings)} per year
                         </p>
@@ -389,9 +389,9 @@ export function MembershipCTAModal({
                 {features.map((feature, index) => (
                   <div
                     key={index}
-                    className=" border-border/50 hover:border-primary/20 flex items-start gap-3 rounded-lg border bg-gradient-to-br p-3 transition-all duration-300"
+                    className="border-border/50 hover:border-primary/20 flex items-start gap-3 rounded-none border bg-gradient-to-br p-3 transition-all duration-300"
                   >
-                    <div className="text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br">
+                    <div className="text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-none bg-gradient-to-br">
                       {feature.icon}
                     </div>
                     <div className="space-y-0.5">

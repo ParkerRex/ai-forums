@@ -25,19 +25,19 @@ interface RichTextEditorProps {
 // Loading skeleton for the full editor
 function RichEditorSkeleton() {
   return (
-    <div className="border rounded-lg">
-      <div className="border-b border p-2 bg-muted rounded-t-lg">
+    <div className="rounded-none border">
+      <div className="bg-muted rounded-t-lg border border-b p-2">
         <div className="flex items-center justify-center">
-          <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
-          <span className="text-sm text-muted-foreground">
+          <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
+          <span className="text-muted-foreground text-sm">
             Loading rich editor...
           </span>
         </div>
       </div>
       <div className="min-h-[200px] p-4">
         <div className="animate-pulse space-y-2">
-          <div className="h-4 bg-muted opacity-50 rounded w-3/4" />
-          <div className="h-4 bg-muted opacity-50 rounded w-1/2" />
+          <div className="bg-muted h-4 w-3/4 rounded opacity-50" />
+          <div className="bg-muted h-4 w-1/2 rounded opacity-50" />
         </div>
       </div>
     </div>
@@ -92,12 +92,12 @@ export function RichTextEditor({
   // Simple mode (fast loading)
   return (
     <div
-      className={`border rounded-lg focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}
+      className={`rounded-none border focus-within:border-green-700 focus-within:ring-1 focus-within:ring-green-700 ${className}`}
     >
       {/* Simple toolbar */}
-      <div className="border-b border p-2 bg-muted rounded-t-lg">
+      <div className="bg-muted rounded-t-lg border border-b p-2">
         <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
+          <div className="text-muted-foreground text-sm">
             Markdown supported
           </div>
           <Button
@@ -105,9 +105,9 @@ export function RichTextEditor({
             variant="ghost"
             size="sm"
             onClick={handleUpgrade}
-            className="text-green-700 hover:text-green-800 hover:bg-green-50"
+            className="text-green-700 hover:bg-green-50 hover:text-green-800"
           >
-            <Wand2 className="w-4 h-4 mr-2" />
+            <Wand2 className="mr-2 h-4 w-4" />
             Rich Editor
           </Button>
         </div>
@@ -120,7 +120,7 @@ export function RichTextEditor({
           value={content}
           onChange={handleTextareaChange}
           placeholder={placeholder}
-          className="min-h-[200px] border-0 focus-visible:ring-0 resize-none rounded-t-none"
+          className="min-h-[200px] resize-none rounded-t-none border-0 focus-visible:ring-0"
         />
       </div>
     </div>

@@ -142,9 +142,9 @@ function ReportedCommentsContent() {
   // The isAdmin query returns false for non-admin users and undefined while loading
   if (isAdmin === false) {
     return (
-      <div className="container max-w-4xl mx-auto p-6">
-        <div className="text-center py-12">
-          <h1 className="text-2xl font-bold text-foreground mb-4">
+      <div className="container mx-auto max-w-4xl p-6">
+        <div className="py-12 text-center">
+          <h1 className="text-foreground mb-4 text-2xl font-bold">
             Access Denied
           </h1>
           <p className="text-muted-foreground">
@@ -312,10 +312,10 @@ function ReportedCommentsContent() {
   };
 
   return (
-    <div className="container max-w-7xl mx-auto p-6">
+    <div className="container mx-auto max-w-7xl p-6">
       {/* Page header with title and description */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-foreground mb-2">
+        <h1 className="text-foreground mb-2 text-3xl font-bold">
           Reported Comments
         </h1>
         <p className="text-muted-foreground">
@@ -354,15 +354,15 @@ function ReportedCommentsContent() {
         <div className="space-y-4">
           {/* Create 5 skeleton cards to indicate loading */}
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="border rounded-lg p-4">
+            <div key={i} className="rounded-none border p-4">
               <div className="animate-pulse space-y-3">
                 {/* Skeleton elements mimic the structure of actual report cards */}
                 <div className="flex items-center space-x-3">
-                  <div className="h-4 bg-muted rounded w-24"></div>
-                  <div className="h-4 bg-muted rounded w-32"></div>
+                  <div className="bg-muted h-4 w-24 rounded"></div>
+                  <div className="bg-muted h-4 w-32 rounded"></div>
                 </div>
-                <div className="h-4 bg-muted rounded w-full"></div>
-                <div className="h-4 bg-muted rounded w-3/4"></div>
+                <div className="bg-muted h-4 w-full rounded"></div>
+                <div className="bg-muted h-4 w-3/4 rounded"></div>
               </div>
             </div>
           ))}
@@ -370,7 +370,7 @@ function ReportedCommentsContent() {
       ) : reports.length === 0 ? (
         /* Empty state when no reports match the current filter */
         /* Shows different messages based on whether a filter is applied */
-        <div className="text-center py-12">
+        <div className="py-12 text-center">
           <p className="text-muted-foreground">
             {statusFilter
               ? `No ${statusFilter} reports found.`
@@ -380,7 +380,7 @@ function ReportedCommentsContent() {
       ) : (
         /* Main reports table */
         /* Uses a responsive table layout to display all report information */
-        <div className="border rounded-lg">
+        <div className="rounded-none border">
           <Table>
             <TableHeader>
               <TableRow>
@@ -411,7 +411,7 @@ function ReportedCommentsContent() {
                     {report.comment ? (
                       <div className="space-y-1">
                         {/* Truncated comment content for table display */}
-                        <p className="text-sm truncate">
+                        <p className="truncate text-sm">
                           {report.comment.content}
                         </p>
                         {/* Link to view comment in original context */}
@@ -419,9 +419,9 @@ function ReportedCommentsContent() {
                         {report.post && (
                           <Link
                             href={`/${report.post.categoryName ?? "general"}/${report.post.slug}#comment-${report.comment?._id}`}
-                            className="text-xs text-blue-600 hover:underline flex items-center gap-1"
+                            className="flex items-center gap-1 text-xs text-blue-600 hover:underline"
                           >
-                            View in context <ExternalLink className="w-3 h-3" />
+                            View in context <ExternalLink className="h-3 w-3" />
                           </Link>
                         )}
                       </div>
@@ -467,7 +467,7 @@ function ReportedCommentsContent() {
                     {getReasonBadge(report.reason)}
                     {/* Additional text explanation if provided by reporter */}
                     {report.reasonText && (
-                      <p className="text-xs text-muted-foreground mt-1">
+                      <p className="text-muted-foreground mt-1 text-xs">
                         {report.reasonText}
                       </p>
                     )}
@@ -488,7 +488,7 @@ function ReportedCommentsContent() {
                           variant="destructive"
                           onClick={() => handleResolve(report._id, true)}
                         >
-                          <Trash2 className="w-4 h-4 mr-1" />
+                          <Trash2 className="mr-1 h-4 w-4" />
                           Delete
                         </Button>
 
@@ -498,7 +498,7 @@ function ReportedCommentsContent() {
                           variant="outline"
                           onClick={() => handleDismiss(report._id)}
                         >
-                          <X className="w-4 h-4 mr-1" />
+                          <X className="mr-1 h-4 w-4" />
                           Dismiss
                         </Button>
                       </div>

@@ -70,7 +70,7 @@ export function PaymentDetailsModal({
       <Dialog open onOpenChange={onClose}>
         <DialogContent>
           <div className="flex h-32 items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-gray-900"></div>
           </div>
         </DialogContent>
       </Dialog>
@@ -104,7 +104,11 @@ export function PaymentDetailsModal({
       await refundPayment({
         paymentId,
         amount: amountInCents,
-        reason: refundReason as "requested_by_customer" | "duplicate" | "fraudulent" | "other",
+        reason: refundReason as
+          | "requested_by_customer"
+          | "duplicate"
+          | "fraudulent"
+          | "other",
         notes: refundNotes,
       });
 
@@ -117,7 +121,9 @@ export function PaymentDetailsModal({
     } catch (error) {
       toast.error("Refund Failed", {
         description:
-          error instanceof Error ? error.message : "An error occurred while processing the refund",
+          error instanceof Error
+            ? error.message
+            : "An error occurred while processing the refund",
       });
     } finally {
       setIsProcessing(false);
@@ -142,18 +148,18 @@ export function PaymentDetailsModal({
 
         <div className="space-y-6">
           {/* Payment Status */}
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between rounded-none bg-gray-50 p-4">
             <div className="flex items-center gap-3">
               <StatusIcon
                 className={cn(
-                  "w-8 h-8",
+                  "h-8 w-8",
                   statusInfo.color.includes("green")
                     ? "text-green-600"
                     : "text-gray-600",
                 )}
               />
               <div>
-                <p className="font-semibold text-lg">
+                <p className="text-lg font-semibold">
                   ${(payment.amount / 100).toFixed(2)}
                 </p>
                 <Badge className={statusInfo.color}>{statusInfo.label}</Badge>
@@ -179,7 +185,7 @@ export function PaymentDetailsModal({
               <div>
                 <p className="text-gray-500">Payment Method</p>
                 <div className="flex items-center gap-2">
-                  <CreditCard className="w-4 h-4 text-gray-400" />
+                  <CreditCard className="h-4 w-4 text-gray-400" />
                   <span className="font-medium">
                     {payment.paymentMethod.brand} ••••{" "}
                     {payment.paymentMethod.last4}
@@ -195,7 +201,7 @@ export function PaymentDetailsModal({
               <div>
                 <p className="text-gray-500">Invoice ID</p>
                 <div className="flex items-center gap-2">
-                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                  <code className="rounded bg-gray-100 px-2 py-1 text-xs">
                     {payment.stripeInvoiceId || "N/A"}
                   </code>
                   {payment.stripeInvoiceId && (
@@ -203,7 +209,7 @@ export function PaymentDetailsModal({
                       onClick={() => handleCopyId(payment.stripeInvoiceId!)}
                       className="text-gray-400 hover:text-gray-600"
                     >
-                      <Copy className="w-3 h-3" />
+                      <Copy className="h-3 w-3" />
                     </button>
                   )}
                 </div>
@@ -215,7 +221,7 @@ export function PaymentDetailsModal({
           <div className="space-y-3">
             <h3 className="font-medium text-gray-900">Financial Breakdown</h3>
 
-            <div className="bg-gray-50 rounded-lg p-4 space-y-2">
+            <div className="space-y-2 rounded-none bg-gray-50 p-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Gross Amount</span>
                 <span className="font-medium">
@@ -245,7 +251,7 @@ export function PaymentDetailsModal({
 
               <div className="flex justify-between">
                 <span className="font-medium">Net Amount</span>
-                <span className="font-semibold text-lg">
+                <span className="text-lg font-semibold">
                   {formatCentsAsCurrency(payment.netAmount || payment.amount)}
                 </span>
               </div>
@@ -259,14 +265,14 @@ export function PaymentDetailsModal({
               <div className="flex items-center justify-between">
                 <span className="text-gray-500">Payment Intent ID</span>
                 <div className="flex items-center gap-2">
-                  <code className="text-xs bg-gray-100 px-2 py-1 rounded">
+                  <code className="rounded bg-gray-100 px-2 py-1 text-xs">
                     {payment.stripePaymentIntentId}
                   </code>
                   <button
                     onClick={() => handleCopyId(payment.stripePaymentIntentId)}
                     className="text-gray-400 hover:text-gray-600"
                   >
-                    <Copy className="w-3 h-3" />
+                    <Copy className="h-3 w-3" />
                   </button>
                 </div>
               </div>
@@ -319,8 +325,9 @@ export function PaymentDetailsModal({
                       className="pl-8"
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    Leave empty to refund full amount ({formatCentsAsCurrency(maxRefundAmount)})
+                  <p className="mt-1 text-xs text-gray-500">
+                    Leave empty to refund full amount (
+                    {formatCentsAsCurrency(maxRefundAmount)})
                   </p>
                 </div>
 
@@ -362,7 +369,7 @@ export function PaymentDetailsModal({
                   disabled={isProcessing}
                 >
                   {isProcessing && (
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   )}
                   Process Refund
                 </Button>
@@ -381,7 +388,7 @@ export function PaymentDetailsModal({
         <DialogFooter>
           {canRefund && (
             <Button variant="outline" onClick={() => setShowRefundForm(true)}>
-              <RefreshCw className="w-4 h-4 mr-2" />
+              <RefreshCw className="mr-2 h-4 w-4" />
               Refund Payment
             </Button>
           )}

@@ -26,7 +26,7 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
   const loadTrendingGifs = async () => {
     setLoading(true);
     try {
-      const { data } = await gf.trending({ limit: 20, rating: 'pg-13' });
+      const { data } = await gf.trending({ limit: 20, rating: "pg-13" });
       setGifs(data);
     } catch (error) {
       console.error("Failed to load trending GIFs:", error);
@@ -43,7 +43,10 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
 
     setLoading(true);
     try {
-      const { data } = await gf.search(searchTerm, { limit: 20, rating: 'pg-13' });
+      const { data } = await gf.search(searchTerm, {
+        limit: 20,
+        rating: "pg-13",
+      });
       setGifs(data);
     } catch (error) {
       console.error("Failed to search GIFs:", error);
@@ -53,20 +56,20 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
   };
 
   return (
-    <div className="w-80 h-96 border rounded-lg p-4 bg-background">
-      <div className="flex gap-2 mb-4">
+    <div className="bg-background h-96 w-80 rounded-none border p-4">
+      <div className="mb-4 flex gap-2">
         <Input
           placeholder="Search GIFs..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          onKeyPress={(e) => e.key === 'Enter' && searchGifs()}
+          onKeyPress={(e) => e.key === "Enter" && searchGifs()}
         />
         <Button onClick={searchGifs} size="sm">
-          <Search className="w-4 h-4" />
+          <Search className="h-4 w-4" />
         </Button>
       </div>
-      
-      <div className="grid grid-cols-2 gap-2 h-80 overflow-y-auto">
+
+      <div className="grid h-80 grid-cols-2 gap-2 overflow-y-auto">
         {loading ? (
           <div className="col-span-2 flex items-center justify-center">
             Loading...

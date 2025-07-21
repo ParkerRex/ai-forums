@@ -274,21 +274,21 @@ export default function AdminMembersPage() {
           {Array.from({ length: 4 }).map((_, i) => (
             <div
               key={i}
-              className="bg-card border-border rounded-lg border p-4"
+              className="bg-card border-border rounded-none border p-4"
             >
               <div className="flex items-center justify-between">
                 <div>
                   <div className="bg-muted mb-2 h-4 w-24 animate-pulse rounded" />
                   <div className="bg-muted h-8 w-16 animate-pulse rounded" />
                 </div>
-                <div className="bg-muted h-12 w-12 animate-pulse rounded-lg" />
+                <div className="bg-muted h-12 w-12 animate-pulse rounded-none" />
               </div>
             </div>
           ))}
         </div>
 
         {/* Search and filters skeleton */}
-        <div className="bg-card mb-6 rounded-lg shadow-sm">
+        <div className="bg-card mb-6 rounded-none shadow-sm">
           <div className="border-b p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
               <div className="bg-muted h-10 flex-1 animate-pulse rounded" />
@@ -358,7 +358,7 @@ export default function AdminMembersPage() {
 
       {/* Stats Cards */}
       <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
-        <div className="bg-card border-border rounded-lg border p-4">
+        <div className="bg-card border-border rounded-none border p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-muted-foreground text-sm font-medium">
@@ -368,13 +368,13 @@ export default function AdminMembersPage() {
                 {stats.totalMembers}
               </p>
             </div>
-            <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-lg">
+            <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-none">
               <User className="text-muted-foreground h-6 w-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card border-border rounded-lg border p-4">
+        <div className="bg-card border-border rounded-none border p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-muted-foreground text-sm font-medium">
@@ -391,13 +391,13 @@ export default function AdminMembersPage() {
                 % of total
               </p>
             </div>
-            <div className="bg-chart-2/10 flex h-12 w-12 items-center justify-center rounded-lg">
+            <div className="bg-chart-2/10 flex h-12 w-12 items-center justify-center rounded-none">
               <CreditCard className="text-chart-2 h-6 w-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card border-border rounded-lg border p-4">
+        <div className="bg-card border-border rounded-none border p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-muted-foreground text-sm font-medium">
@@ -410,13 +410,13 @@ export default function AdminMembersPage() {
                 Recurring monthly
               </p>
             </div>
-            <div className="bg-chart-1/10 flex h-12 w-12 items-center justify-center rounded-lg">
+            <div className="bg-chart-1/10 flex h-12 w-12 items-center justify-center rounded-none">
               <DollarSign className="text-chart-1 h-6 w-6" />
             </div>
           </div>
         </div>
 
-        <div className="bg-card border-border rounded-lg border p-4">
+        <div className="bg-card border-border rounded-none border p-4">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-muted-foreground text-sm font-medium">
@@ -433,7 +433,7 @@ export default function AdminMembersPage() {
                 {stats.statusStats.churned} churned
               </p>
             </div>
-            <div className="bg-destructive/10 flex h-12 w-12 items-center justify-center rounded-lg">
+            <div className="bg-destructive/10 flex h-12 w-12 items-center justify-center rounded-none">
               <UserX className="text-destructive h-6 w-6" />
             </div>
           </div>
@@ -441,7 +441,7 @@ export default function AdminMembersPage() {
       </div>
 
       {/* Filters and Search */}
-      <div className="bg-card border-border mb-6 rounded-lg border p-4">
+      <div className="bg-card border-border mb-6 rounded-none border p-4">
         <div className="flex flex-col gap-4 lg:flex-row">
           {/* Search */}
           <div className="flex-1">
@@ -536,7 +536,7 @@ export default function AdminMembersPage() {
 
       {/* Bulk Actions */}
       {selectedMembers.size > 0 && (
-        <div className="bg-primary/5 border-primary/20 mb-4 flex items-center justify-between rounded-lg border p-3">
+        <div className="bg-primary/5 border-primary/20 mb-4 flex items-center justify-between rounded-none border p-3">
           <span className="text-primary text-sm">
             {selectedMembers.size} member{selectedMembers.size > 1 ? "s" : ""}{" "}
             selected
@@ -555,7 +555,7 @@ export default function AdminMembersPage() {
       )}
 
       {/* Members Table */}
-      <div className="bg-card border-border overflow-hidden rounded-lg border">
+      <div className="bg-card border-border overflow-hidden rounded-none border">
         <Table>
           <TableHeader>
             <TableRow className="bg-muted/50">

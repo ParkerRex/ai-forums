@@ -224,7 +224,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
           <div className="bg-muted mb-4 h-6 w-32 animate-pulse rounded" />
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="rounded-lg border p-4">
+              <div key={i} className="rounded-none border p-4">
                 <div className="flex items-start space-x-3">
                   <div className="bg-muted h-8 w-8 animate-pulse rounded-full" />
                   <div className="flex-1">

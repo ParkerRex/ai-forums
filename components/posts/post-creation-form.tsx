@@ -17,7 +17,10 @@ import { PreviewGenerationDialog } from "@/components/posts/preview-generation-d
 // } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { DraftsModal } from "@/components/posts/drafts-modal";
-import { PollCreationInline, PollData } from "@/components/posts/poll-creation-inline";
+import {
+  PollCreationInline,
+  PollData,
+} from "@/components/posts/poll-creation-inline";
 import { MediaUploadSection } from "@/components/posts/media-upload-section";
 import { CategoryToggleGroup } from "@/components/posts/category-toggle-group";
 import { PostPreviewToggle } from "@/components/posts/post-preview-toggle";
@@ -44,7 +47,9 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 // Lazy load heavy components
-const RichTextEditor = lazy(() => import("@/components/posts/rich-text-editor"));
+const RichTextEditor = lazy(
+  () => import("@/components/posts/rich-text-editor"),
+);
 const PostPreview = lazy(() => import("@/components/posts/post-preview"));
 
 interface PostCreationFormProps {
@@ -75,9 +80,9 @@ interface ExtendedPostFormData extends PostFormData {
 function RichTextEditorSkeleton() {
   return (
     <div className="animate-pulse space-y-3">
-      <div className="h-4 bg-muted rounded w-3/4" />
-      <div className="h-4 bg-muted rounded w-1/2" />
-      <div className="h-4 bg-muted rounded w-5/6" />
+      <div className="bg-muted h-4 w-3/4 rounded" />
+      <div className="bg-muted h-4 w-1/2 rounded" />
+      <div className="bg-muted h-4 w-5/6 rounded" />
     </div>
   );
 }
@@ -85,13 +90,13 @@ function RichTextEditorSkeleton() {
 // Loading skeleton for the post preview
 function PostPreviewSkeleton() {
   return (
-    <div className="border rounded-lg p-6">
+    <div className="rounded-none border p-6">
       <div className="animate-pulse space-y-4">
-        <div className="h-8 bg-muted rounded w-3/4" />
+        <div className="bg-muted h-8 w-3/4 rounded" />
         <div className="space-y-3">
-          <div className="h-4 bg-muted rounded w-full" />
-          <div className="h-4 bg-muted rounded w-5/6" />
-          <div className="h-4 bg-muted rounded w-4/6" />
+          <div className="bg-muted h-4 w-full rounded" />
+          <div className="bg-muted h-4 w-5/6 rounded" />
+          <div className="bg-muted h-4 w-4/6 rounded" />
         </div>
       </div>
     </div>
@@ -118,7 +123,6 @@ export function PostCreationForm({
   const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
 
-
   // Preview generation state
   const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
@@ -126,7 +130,6 @@ export function PostCreationForm({
 
   // Content tab state (for edit/preview toggle)
   const [contentTab, setContentTab] = useState<"edit" | "preview">("edit");
-
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -160,14 +163,16 @@ export function PostCreationForm({
   const isFormComplete = formIsValid && isPostTypeValid();
 
   // Queries and mutations
-  const categories = useQuery(api.categories.getCategories) as Array<{
-    _id: Id<"categories">;
-    name: string;
-    displayName: string;
-    description: string;
-    icon?: string;
-    postCount: number;
-  }> | undefined;
+  const categories = useQuery(api.categories.getCategories) as
+    | Array<{
+        _id: Id<"categories">;
+        name: string;
+        displayName: string;
+        description: string;
+        icon?: string;
+        postCount: number;
+      }>
+    | undefined;
   const createPost = useMutation(api.posts.createPost);
   const createPollPost = useMutation(api.polls.createPollPost);
   const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
@@ -293,11 +298,15 @@ export function PostCreationForm({
       let mediaUrl = formData.mediaUrl;
       let thumbnailUrl = formData.thumbnailUrl;
       // Determine the correct post type. Default to the current formData.type.
-      let resolvedType: "text" | "image" | "video" | "link" | "poll" = 
+      let resolvedType: "text" | "image" | "video" | "link" | "poll" =
         formData.type === "media" ? "image" : formData.type;
 
       // Handle new media items system
-      if (formData.type === "media" && formData.mediaItems && formData.mediaItems.length > 0) {
+      if (
+        formData.type === "media" &&
+        formData.mediaItems &&
+        formData.mediaItems.length > 0
+      ) {
         // For now, use the first media item as the primary media
         // In the future, you could support multiple media in a single post
         const primaryMedia = formData.mediaItems[0];
@@ -327,10 +336,7 @@ export function PostCreationForm({
         }
       }
       // Fallback to old media upload system
-      else if (
-        formData.mediaFile &&
-        formData.type === "media"
-      ) {
+      else if (formData.mediaFile && formData.type === "media") {
         try {
           const uploadResult = await uploadMedia(convex, formData.mediaFile, {
             onProgress: (progress) => {
@@ -340,7 +346,9 @@ export function PostCreationForm({
           mediaUrl = uploadResult.url;
           thumbnailUrl = uploadResult.thumbnailUrl;
           // Determine if uploaded file is image or video
-          const fileType = formData.mediaFile.type.startsWith('video/') ? 'video' : 'image';
+          const fileType = formData.mediaFile.type.startsWith("video/")
+            ? "video"
+            : "image";
           resolvedType = fileType;
         } catch (uploadError) {
           console.error("Failed to upload media:", uploadError);
@@ -456,24 +464,26 @@ export function PostCreationForm({
 
     if (!isFormComplete || isSubmitting) {
       // Show validation errors only on submit attempt
-      
+
       // Show a toast with the validation error
       const validationErrors = [];
       if (errors.title) validationErrors.push(errors.title);
       if (errors.categoryId) validationErrors.push(errors.categoryId);
       if (errors.content) validationErrors.push(errors.content);
       if (!isPostTypeValid()) {
-        if (formData.type === "media") validationErrors.push("Please add at least one media item");
-        if (formData.type === "link") validationErrors.push("Please enter a valid URL");
-        if (formData.type === "poll") validationErrors.push("Please add at least 2 poll options");
+        if (formData.type === "media")
+          validationErrors.push("Please add at least one media item");
+        if (formData.type === "link")
+          validationErrors.push("Please enter a valid URL");
+        if (formData.type === "poll")
+          validationErrors.push("Please add at least 2 poll options");
       }
-      
+
       if (validationErrors.length > 0) {
         toast.error(validationErrors[0]);
       }
       return;
     }
-
 
     // Show preview dialog and generate preview
     setShowPreviewDialog(true);
@@ -491,10 +501,10 @@ export function PostCreationForm({
   // Loading state for categories
   if (categories === undefined) {
     return (
-      <div className="w-full max-w-4xl mx-auto">
+      <div className="mx-auto w-full max-w-4xl">
         <div className="animate-pulse space-y-4">
-          <div className="h-8 bg-muted rounded w-1/4" />
-          <div className="h-96 bg-muted rounded" />
+          <div className="bg-muted h-8 w-1/4 rounded" />
+          <div className="bg-muted h-96 rounded" />
         </div>
       </div>
     );
@@ -509,10 +519,10 @@ export function PostCreationForm({
   ];
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="mx-auto w-full max-w-4xl">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between pb-6 border-b">
+        <div className="flex items-center justify-between border-b pb-6">
           <div className="flex items-center gap-4">
             <Button
               type="button"
@@ -533,7 +543,7 @@ export function PostCreationForm({
                 disabled={isSubmitting}
                 size="sm"
               >
-                <FileText className="w-4 h-4 mr-2" />
+                <FileText className="mr-2 h-4 w-4" />
                 Drafts
               </Button>
             </DraftsModal>
@@ -544,14 +554,14 @@ export function PostCreationForm({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {uploadProgress !== null
                     ? `Uploading... ${uploadProgress}%`
                     : "Publishing..."}
                 </>
               ) : (
                 <>
-                  <Send className="w-4 h-4 mr-2" />
+                  <Send className="mr-2 h-4 w-4" />
                   Publish
                 </>
               )}
@@ -568,17 +578,17 @@ export function PostCreationForm({
         )}
 
         {/* Post Type Selection */}
-        <div className="flex items-center gap-2 p-1 bg-muted rounded-lg w-fit">
+        <div className="bg-muted flex w-fit items-center gap-2 rounded-none p-1">
           {typeButtons.map(({ value, icon: Icon, label }) => (
             <button
               key={value}
               type="button"
               onClick={() => handleTypeChange(value)}
               className={cn(
-                "flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium transition-colors",
+                "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                 formData.type === value
                   ? "bg-background text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <Icon className="h-4 w-4" />
@@ -597,16 +607,13 @@ export function PostCreationForm({
               value={formData.title}
               onChange={handleTitleChange}
               placeholder="Post title"
-              className="text-2xl font-medium h-auto py-3"
+              className="h-auto py-3 text-2xl font-medium"
               disabled={isSubmitting}
               autoFocus
             />
             <div className="flex items-center justify-end">
               <div
-                className={cn(
-                  "text-xs tabular-nums",
-                  "text-muted-foreground"
-                )}
+                className={cn("text-xs tabular-nums", "text-muted-foreground")}
               >
                 {titleInfo.length}
               </div>
@@ -615,9 +622,7 @@ export function PostCreationForm({
 
           {/* Category Selection */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">
-              Category
-            </Label>
+            <Label className="text-sm font-medium">Category</Label>
             <CategoryToggleGroup
               categories={
                 categories?.map((cat) => ({
@@ -648,13 +653,13 @@ export function PostCreationForm({
                 <div
                   className={cn(
                     "text-xs tabular-nums",
-                    "text-muted-foreground"
+                    "text-muted-foreground",
                   )}
                 >
                   {contentInfo.length}
                 </div>
               </div>
-              
+
               {contentTab === "edit" ? (
                 <div className="space-y-2">
                   <Suspense fallback={<RichTextEditorSkeleton />}>
@@ -753,7 +758,7 @@ export function PostCreationForm({
                     className="min-h-[150px]"
                   />
                 </Suspense>
-                <div className="text-xs text-muted-foreground text-right">
+                <div className="text-muted-foreground text-right text-xs">
                   {contentInfo.length}/10,000
                 </div>
               </div>
@@ -763,9 +768,7 @@ export function PostCreationForm({
           {formData.type === "link" && (
             <div className="space-y-6">
               <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  URL
-                </Label>
+                <Label className="text-sm font-medium">URL</Label>
                 <Input
                   id="link-url"
                   type="url"
@@ -775,7 +778,7 @@ export function PostCreationForm({
                   disabled={isSubmitting}
                 />
                 {formData.linkUrl && formData.linkTitle && (
-                  <div className="mt-4 p-4 border rounded-lg">
+                  <div className="mt-4 rounded-none border p-4">
                     <div className="flex gap-4">
                       {formData.linkImage && (
                         <Image
@@ -783,20 +786,20 @@ export function PostCreationForm({
                           alt="Link preview"
                           width={96}
                           height={96}
-                          className="w-24 h-24 object-cover rounded"
+                          className="h-24 w-24 rounded object-cover"
                           unoptimized={true}
                         />
                       )}
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium truncate">
+                      <div className="min-w-0 flex-1">
+                        <h4 className="truncate font-medium">
                           {formData.linkTitle}
                         </h4>
                         {formData.linkDescription && (
-                          <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                          <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
                             {formData.linkDescription}
                           </p>
                         )}
-                        <p className="text-xs text-muted-foreground mt-2">
+                        <p className="text-muted-foreground mt-2 text-xs">
                           {new URL(formData.linkUrl).hostname}
                         </p>
                       </div>
@@ -806,9 +809,7 @@ export function PostCreationForm({
               </div>
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Description
-                </Label>
+                <Label className="text-sm font-medium">Description</Label>
                 <Suspense fallback={<RichTextEditorSkeleton />}>
                   <RichTextEditor
                     content={formData.content}
@@ -821,7 +822,7 @@ export function PostCreationForm({
                   <div
                     className={cn(
                       "text-xs tabular-nums",
-                      "text-muted-foreground"
+                      "text-muted-foreground",
                     )}
                   >
                     {contentInfo.length}/10,000
@@ -851,7 +852,7 @@ export function PostCreationForm({
                     className="min-h-[150px]"
                   />
                 </Suspense>
-                <div className="text-xs text-muted-foreground text-right">
+                <div className="text-muted-foreground text-right text-xs">
                   {contentInfo.length}/10,000
                 </div>
               </div>
@@ -859,7 +860,6 @@ export function PostCreationForm({
           )}
         </div>
       </form>
-
 
       {/* Preview Generation Dialog */}
       <PreviewGenerationDialog

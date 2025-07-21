@@ -1,7 +1,7 @@
 // DEFERRED: Subscription reactivation modal implementation
 // This component is part of Phase 6 (Subscription Lifecycle Management) which has been deferred.
 // When ready to implement, uncomment the code below and fix the createCheckoutSession parameters.
-// 
+//
 // Known issues to fix:
 // 1. createCheckoutSession requires: priceId, tier, billingInterval, optional couponCode
 // 2. Currently passing incorrect metadata parameter
@@ -125,7 +125,7 @@ export function SubscriptionExpiredModal({
             </p>
             
             {showSpecialOffer && (
-              <div className="rounded-lg border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
+              <div className="rounded-none border border-green-200 bg-green-50 p-4 dark:border-green-800 dark:bg-green-950">
                 <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
                   <TrendingUp className="h-5 w-5" />
                   <span className="font-semibold">Special welcome back offer!</span>

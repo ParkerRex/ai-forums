@@ -35,7 +35,7 @@ export function LastPushTag() {
 
   if (isError) {
     return (
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-xs font-mono uppercase text-muted-foreground">
         <GithubIcon size={14} />
         <span>Unavailable</span>
       </div>
@@ -46,7 +46,7 @@ export function LastPushTag() {
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground select-none cursor-default">
+          <div className="flex items-center gap-1.5 text-xs text-muted-foreground select-none cursor-default font-mono uppercase tracking-tighter">
             <GithubIcon size={14} />
             <span>{formattedTime}</span>
           </div>

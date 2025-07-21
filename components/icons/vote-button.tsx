@@ -47,17 +47,16 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
     stopAnimation: () => void;
   }>(null);
 
-
-
   const VoteButtonContent = () => (
     <div className={cn("inline-flex items-center", className)}>
       <Button
         variant="ghost"
         size="sm"
         className={cn(
-          "group h-auto px-1.5 py-0.5 rounded-sm hover:bg-muted/50 dark:hover:bg-muted/20",
-          isVoted && "text-orange-600 hover:bg-orange-100 dark:text-orange-500 dark:hover:bg-orange-900/20",
-          isVoting && "opacity-50 cursor-not-allowed hover:bg-transparent"
+          "hover:bg-muted/50 dark:hover:bg-muted/20 group h-auto rounded-none px-1.5 py-0.5",
+          isVoted &&
+            "text-orange-600 hover:bg-orange-100 dark:text-orange-500 dark:hover:bg-orange-900/20",
+          isVoting && "cursor-not-allowed opacity-50 hover:bg-transparent",
         )}
         onClick={onVote}
         disabled={isVoting}
@@ -69,14 +68,20 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
           size={size === "sm" ? 12 : 16}
           className={cn(
             "transition-colors",
-            isVoted ? "text-orange-600 fill-orange-600 dark:text-orange-500 dark:fill-orange-500" : "text-muted-foreground hover:text-foreground"
+            isVoted
+              ? "fill-orange-600 text-orange-600 dark:fill-orange-500 dark:text-orange-500"
+              : "text-muted-foreground hover:text-foreground",
           )}
         />
       </Button>
-      <span className={cn(
-        "text-xs font-medium select-none ml-0.5",
-        isVoted ? "text-orange-600 dark:text-orange-500" : "text-muted-foreground"
-      )}>
+      <span
+        className={cn(
+          "ml-0.5 select-none text-xs font-medium",
+          isVoted
+            ? "text-orange-600 dark:text-orange-500"
+            : "text-muted-foreground",
+        )}
+      >
         {voteCount}
       </span>
     </div>
@@ -109,7 +114,7 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
             <Button
               variant="ghost"
               size="sm"
-              className="group h-auto px-1.5 py-0.5 rounded-sm hover:bg-muted/50 dark:hover:bg-muted/20"
+              className="hover:bg-muted/50 dark:hover:bg-muted/20 group h-auto rounded-none px-1.5 py-0.5"
               onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
               onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
             >
@@ -119,7 +124,7 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
                 className="text-muted-foreground hover:text-foreground transition-colors"
               />
             </Button>
-            <span className="text-xs font-medium select-none ml-0.5 text-muted-foreground">
+            <span className="text-muted-foreground ml-0.5 select-none text-xs font-medium">
               {voteCount}
             </span>
           </div>

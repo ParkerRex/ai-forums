@@ -2,7 +2,7 @@
  * @fileoverview Bookmark button component for saving and unsaving posts and resources.
  * This component provides a unified interface for users to bookmark content across the application.
  * It handles authentication states, loading states, and provides visual feedback for bookmark actions.
- * 
+ *
  * Key Features:
  * - Toggle bookmark functionality (save/unsave)
  * - Authentication-aware rendering
@@ -11,7 +11,7 @@
  * - Membership CTA for unauthenticated users
  * - Toast notifications for user feedback
  * - Loading states during API calls
- * 
+ *
  * @author VAI Team
  * @since 1.0.0
  */
@@ -22,7 +22,6 @@ import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 import { toast } from "sonner";
 
 interface PostBookmarkButtonProps {
@@ -86,7 +85,7 @@ export function PostBookmarkButton({
         <Button
           variant={variant}
           size={buttonSize}
-          className={`px-2 py-1 h-auto hover:bg-muted/50 rounded-sm ${className}`}
+          className={`hover:bg-muted/50 h-auto rounded-none px-2 py-1 ${className}`}
           onClick={handleToggle}
           disabled={isBookmarking}
         >
@@ -94,7 +93,7 @@ export function PostBookmarkButton({
             size={12}
             className={`transition-colors ${
               isBookmarked
-                ? "text-blue-500 fill-blue-500"
+                ? "fill-blue-500 text-blue-500"
                 : "text-muted-foreground"
             }`}
           />
@@ -104,22 +103,16 @@ export function PostBookmarkButton({
         </Button>
       </Authenticated>
       <Unauthenticated>
-        <MembershipCTAModal
-          title="Save Great Content"
-          description="Join VAI to bookmark posts and resources for easy access later"
-        >
           <Button
             variant={variant}
             size={buttonSize}
-            className={`px-2 py-1 h-auto hover:bg-muted/50 rounded-sm ${className}`}
+            className={`hover:bg-muted/50 h-auto rounded-none px-2 py-1 ${className}`}
           >
-            <Bookmark
-              size={12}
-              className="text-muted-foreground"
-            />
-            {shouldShowLabel && <span className="ml-1 text-xs font-medium">save</span>}
+            <Bookmark size={12} className="text-muted-foreground" />
+            {shouldShowLabel && (
+              <span className="ml-1 text-xs font-medium">save</span>
+            )}
           </Button>
-        </MembershipCTAModal>
       </Unauthenticated>
     </>
   );

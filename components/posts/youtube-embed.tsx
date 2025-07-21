@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import React from "react";
 
@@ -7,16 +7,19 @@ interface YouTubeEmbedProps {
   title?: string;
 }
 
-export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ videoId, title }) => {
+export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
+  videoId,
+  title,
+}) => {
   return (
-    <div className="relative aspect-video mb-6 rounded-lg overflow-hidden">
+    <div className="relative mb-6 aspect-video overflow-hidden rounded-none">
       <iframe
         src={`https://www.youtube.com/embed/${videoId}`}
         title={title || "YouTube video"}
         frameBorder="0"
         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
         allowFullScreen
-        className="absolute inset-0 w-full h-full"
+        className="absolute inset-0 h-full w-full"
       />
     </div>
   );

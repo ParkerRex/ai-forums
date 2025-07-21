@@ -154,7 +154,7 @@ export const updateProfile = mutation({
 
 ```jsx
 // Good
-<div className="flex items-center gap-4 p-4 rounded-lg border">
+<div className="flex items-center gap-4 p-4 rounded-none border">
   <Avatar className="h-10 w-10" />
   <div className="flex-1">
     <h3 className="font-semibold">{member.name}</h3>

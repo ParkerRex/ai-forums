@@ -263,7 +263,7 @@ export function NotificationDropdown() {
 
         {/* Empty state when no notifications exist */}
         {!notifications || notifications.length === 0 ? (
-          <div className="px-4 py-8 text-center text-muted-foreground text-sm">
+          <div className="text-muted-foreground px-4 py-8 text-center text-sm">
             No notifications yet
           </div>
         ) : (
@@ -280,10 +280,10 @@ export function NotificationDropdown() {
                 {/* Link wrapper for navigation - styled as full-width interactive area */}
                 <Link
                   href={getNotificationLink(notification)}
-                  className="flex items-start gap-3 p-3 w-full hover:bg-accent rounded-sm"
+                  className="hover:bg-accent flex w-full items-start gap-3 rounded-none p-3"
                 >
                   {/* Actor avatar with fallback to initials */}
-                  <Avatar className="w-8 h-8 flex-shrink-0">
+                  <Avatar className="h-8 w-8 flex-shrink-0">
                     <AvatarFallback className="bg-muted text-muted-foreground text-xs">
                       {/* Display first letter of first and last name, fallback to "U" */}
                       {notification.actor?.firstName?.[0] || "U"}
@@ -292,11 +292,11 @@ export function NotificationDropdown() {
                   </Avatar>
 
                   {/* Notification content area with message and timestamp */}
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     {/* Message and unread indicator row */}
                     <div className="flex items-start justify-between gap-2">
                       {/* Notification message text with proper line height */}
-                      <p className="text-sm text-foreground leading-tight">
+                      <p className="text-foreground text-sm leading-tight">
                         {notification.message}
                       </p>
 
@@ -304,13 +304,13 @@ export function NotificationDropdown() {
                       {!notification.read && (
                         <Badge
                           variant="secondary"
-                          className="h-2 w-2 rounded-full p-0 bg-blue-500"
+                          className="h-2 w-2 rounded-full bg-blue-500 p-0"
                         />
                       )}
                     </div>
 
                     {/* Relative timestamp for user-friendly time display */}
-                    <p className="text-xs text-muted-foreground mt-1">
+                    <p className="text-muted-foreground mt-1 text-xs">
                       {notification.timeAgo}
                     </p>
                   </div>

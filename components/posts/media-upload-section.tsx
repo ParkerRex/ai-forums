@@ -53,9 +53,13 @@ export function MediaUploadSection({
 
         const mediaItem: MediaItem = {
           id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-          type: file.type.startsWith("image/") ? "image" : 
-                file.type.startsWith("video/") ? "video" : 
-                file.type === "application/pdf" ? "pdf" : "image",
+          type: file.type.startsWith("image/")
+            ? "image"
+            : file.type.startsWith("video/")
+              ? "video"
+              : file.type === "application/pdf"
+                ? "pdf"
+                : "image",
           url: URL.createObjectURL(file),
           order: media.length + newMediaItems.length,
           isUploading: true,
@@ -68,10 +72,10 @@ export function MediaUploadSection({
         if (onUpload) {
           onUpload(file, mediaItem).catch((error) => {
             console.error("Upload failed:", error);
-            const updatedMedia = [...media, ...newMediaItems].map(item =>
+            const updatedMedia = [...media, ...newMediaItems].map((item) =>
               item.id === mediaItem.id
                 ? { ...item, isUploading: false, error: "Upload failed" }
-                : item
+                : item,
             );
             onMediaChange(updatedMedia);
           });
@@ -80,7 +84,7 @@ export function MediaUploadSection({
 
       onMediaChange([...media, ...newMediaItems]);
     },
-    [media, maxItems, onMediaChange, onUpload]
+    [media, maxItems, onMediaChange, onUpload],
   );
 
   const handleYouTubeAdd = useCallback(() => {
@@ -98,7 +102,9 @@ export function MediaUploadSection({
     }
 
     // Check if this YouTube video is already added
-    if (media.some(item => item.type === "youtube" && item.videoId === videoId)) {
+    if (
+      media.some((item) => item.type === "youtube" && item.videoId === videoId)
+    ) {
       toast.error("This YouTube video is already added");
       return;
     }
@@ -133,12 +139,12 @@ export function MediaUploadSection({
       setIsDragging(false);
       handleFileSelect(e.dataTransfer.files);
     },
-    [handleFileSelect]
+    [handleFileSelect],
   );
 
   const handleRemoveMedia = useCallback(
     (mediaId: string) => {
-      const updatedMedia = media.filter(item => item.id !== mediaId);
+      const updatedMedia = media.filter((item) => item.id !== mediaId);
       // Reorder remaining items
       const reorderedMedia = updatedMedia.map((item, index) => ({
         ...item,
@@ -146,20 +152,22 @@ export function MediaUploadSection({
       }));
       onMediaChange(reorderedMedia);
     },
-    [media, onMediaChange]
+    [media, onMediaChange],
   );
 
   const handleReorderMedia = useCallback(
     (reorderedMedia: MediaItem[]) => {
       onMediaChange(reorderedMedia);
     },
-    [onMediaChange]
+    [onMediaChange],
   );
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Label>Media ({media.length}/{maxItems})</Label>
+        <Label>
+          Media ({media.length}/{maxItems})
+        </Label>
         {media.length > 0 && (
           <Button
             type="button"
@@ -168,7 +176,7 @@ export function MediaUploadSection({
             onClick={() => onMediaChange([])}
             disabled={disabled}
           >
-            <X className="h-4 w-4 mr-1" />
+            <X className="mr-1 h-4 w-4" />
             Clear All
           </Button>
         )}
@@ -183,7 +191,7 @@ export function MediaUploadSection({
         />
       ) : (
         <div
-          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+          className={`rounded-none border-2 border-dashed p-8 text-center transition-colors ${
             isDragging
               ? "border-green-700 bg-green-50 dark:bg-green-950"
               : "border-border"
@@ -192,22 +200,22 @@ export function MediaUploadSection({
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-          <MediaUploadIcon className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-sm text-muted-foreground mb-4">
+          <MediaUploadIcon className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
+          <p className="text-muted-foreground mb-4 text-sm">
             Drag and drop files here, or click to browse
           </p>
-          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+          <div className="flex flex-col justify-center gap-2 sm:flex-row">
             <Button
               type="button"
               variant="outline"
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled}
             >
-              <MediaUploadIcon className="h-4 w-4 mr-2" />
+              <MediaUploadIcon className="mr-2 h-4 w-4" />
               Choose Files
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground mt-4">
+          <p className="text-muted-foreground mt-4 text-xs">
             Supports: Images (JPG, PNG, GIF, WebP), Videos (MP4, WebM), PDFs
             <br />
             Max file size: Images 10MB, Videos 100MB, PDFs 20MB
@@ -216,7 +224,7 @@ export function MediaUploadSection({
       )}
 
       {media.length < maxItems && media.length > 0 && (
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Button
             type="button"
             variant="outline"
@@ -225,7 +233,7 @@ export function MediaUploadSection({
             disabled={disabled}
             className="flex-1"
           >
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="mr-2 h-4 w-4" />
             Add More Files
           </Button>
         </div>
@@ -256,7 +264,7 @@ export function MediaUploadSection({
               onClick={handleYouTubeAdd}
               disabled={disabled || !youtubeUrl.trim()}
             >
-              <Link className="h-4 w-4 mr-2" />
+              <Link className="mr-2 h-4 w-4" />
               Add
             </Button>
           </div>

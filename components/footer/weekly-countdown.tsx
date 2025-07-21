@@ -45,7 +45,7 @@ export function WeeklyCountdown() {
   }
 
   return (
-    <span className="text-xs text-muted-foreground flex items-center gap-1">
+    <span className="text-xs text-muted-foreground flex items-center gap-1 font-mono tracking-tighter ">
       <span>⏱</span>
       <span>{formatCountdown(minutes)}</span>
     </span>

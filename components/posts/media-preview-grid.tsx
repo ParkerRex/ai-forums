@@ -45,12 +45,12 @@ export function MediaPreviewGrid({
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const sortedMedia = useMemo(
     () => [...media].sort((a, b) => a.order - b.order),
-    [media]
+    [media],
   );
 
   const handleDragStart = (event: DragStartEvent) => {
@@ -79,7 +79,7 @@ export function MediaPreviewGrid({
 
   const activeItem = useMemo(
     () => sortedMedia.find((item) => item.id === activeId),
-    [activeId, sortedMedia]
+    [activeId, sortedMedia],
   );
 
   if (media.length === 0) {
@@ -99,12 +99,12 @@ export function MediaPreviewGrid({
       >
         <div className="relative">
           {media.length > 12 && (
-            <div className="text-xs text-muted-foreground mb-2">
+            <div className="text-muted-foreground mb-2 text-xs">
               Scroll to see all {media.length} items
             </div>
           )}
-          <div className="max-h-[300px] overflow-y-auto rounded-lg border bg-muted/10 p-3 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent">
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 gap-2">
+          <div className="bg-muted/10 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent max-h-[300px] overflow-y-auto rounded-none border p-3">
+            <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
               {sortedMedia.map((item) => (
                 <MediaPreviewItem
                   key={item.id}
@@ -121,7 +121,7 @@ export function MediaPreviewGrid({
 
       <DragOverlay>
         {activeId && activeItem ? (
-          <div className="cursor-grabbing w-24 h-24">
+          <div className="h-24 w-24 cursor-grabbing">
             <MediaPreviewItem
               media={activeItem}
               onRemove={() => {}}

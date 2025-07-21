@@ -183,7 +183,6 @@ export default function PostDetail({
       ? getYouTubeVideoId(post.linkUrl)
       : null;
 
-
   // Convex queries and mutations
   const currentMember = useQuery(api.members.getCurrentMember);
   const voteOnPost = useMutation(api.votes.voteOnPost);
@@ -319,19 +318,22 @@ export default function PostDetail({
   };
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-950 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="flex items-center mb-4">
+    <div className="bg-gray-50 py-8 dark:bg-gray-950">
+      <div className="mx-auto max-w-4xl px-4">
+        <div className="mb-4 flex items-center">
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 rounded-full mr-2"
+            className="mr-2 h-9 w-9 rounded-full"
             onClick={() => window.history.back()}
           >
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <div className="text-sm text-muted-foreground">
-            <Link href={`/${post.category?.name || "general"}`} className="font-medium text-foreground hover:underline">
+          <div className="text-muted-foreground text-sm">
+            <Link
+              href={`/${post.category?.name || "general"}`}
+              className="text-foreground font-medium hover:underline"
+            >
               r/{post.category?.displayName || post.category?.name || "general"}
             </Link>
           </div>
@@ -339,7 +341,7 @@ export default function PostDetail({
 
         <Card className="w-full overflow-hidden shadow-sm">
           <div className="flex">
-            <div className="hidden sm:flex flex-col items-center p-2 bg-muted/50 dark:bg-muted/20">
+            <div className="bg-muted/50 dark:bg-muted/20 hidden flex-col items-center p-2 sm:flex">
               <VoteButton
                 targetId={post._id}
                 targetType="post"
@@ -351,10 +353,10 @@ export default function PostDetail({
               />
             </div>
 
-            <div className="p-4 sm:p-6 flex-grow min-w-0">
-              <div className="flex justify-between items-start gap-4">
+            <div className="min-w-0 flex-grow p-4 sm:p-6">
+              <div className="flex items-start justify-between gap-4">
                 <div className="flex-grow">
-                  <div className="text-xs text-muted-foreground flex items-center flex-wrap gap-x-2">
+                  <div className="text-muted-foreground flex flex-wrap items-center gap-x-2 text-xs">
                     <MemberHoverCardWrapper member={post.member ?? null}>
                       <Link
                         href={
@@ -365,7 +367,7 @@ export default function PostDetail({
                               })
                             : "#"
                         }
-                        className="font-semibold text-foreground hover:underline"
+                        className="text-foreground font-semibold hover:underline"
                         data-testid="member-link"
                       >
                         u/{post.member?.username || "unknown"}
@@ -375,8 +377,10 @@ export default function PostDetail({
                     <span>{getTimeAgo(post.createdAt)} ago</span>
                     {post.editedAt && <span className="italic">(edited)</span>}
                   </div>
-                  <div className="flex items-center gap-2 mt-2">
-                    <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">{post.title}</h1>
+                  <div className="mt-2 flex items-center gap-2">
+                    <h1 className="text-foreground text-xl font-bold leading-tight sm:text-2xl">
+                      {post.title}
+                    </h1>
                     {isMemberPost && !isEditing && (
                       <Button
                         variant="outline"
@@ -384,7 +388,7 @@ export default function PostDetail({
                         onClick={onEdit}
                         className="ml-2"
                       >
-                        <Edit className="w-3 h-3 mr-1" />
+                        <Edit className="mr-1 h-3 w-3" />
                         Edit
                       </Button>
                     )}
@@ -393,67 +397,72 @@ export default function PostDetail({
                 {!isEditing && (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 flex-shrink-0" data-testid="post-more-menu">
-                        <MoreHorizontal className="w-4 h-4" />
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 flex-shrink-0"
+                        data-testid="post-more-menu"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={onViewHistory}>
-                      <History className="w-4 h-4 mr-2" />
-                      View History
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                      <Flag className="w-4 h-4 mr-2" />
-                      Report
-                    </DropdownMenuItem>
-                    {isAdmin && (
-                      <>
-                        <DropdownMenuSeparator />
-                        {post.isPinned ? (
-                          <DropdownMenuItem onClick={handleUnhighlight}>
-                            <PinOff className="w-4 h-4 mr-2" />
-                            Remove Highlight
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem onClick={onViewHistory}>
+                        <History className="mr-2 h-4 w-4" />
+                        View History
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        <Flag className="mr-2 h-4 w-4" />
+                        Report
+                      </DropdownMenuItem>
+                      {isAdmin && (
+                        <>
+                          <DropdownMenuSeparator />
+                          {post.isPinned ? (
+                            <DropdownMenuItem onClick={handleUnhighlight}>
+                              <PinOff className="mr-2 h-4 w-4" />
+                              Remove Highlight
+                            </DropdownMenuItem>
+                          ) : (
+                            <>
+                              <DropdownMenuItem
+                                onClick={() => handleHighlight("category")}
+                              >
+                                <Pin className="mr-2 h-4 w-4" />
+                                Highlight in Category
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleHighlight("global")}
+                              >
+                                <Pin className="mr-2 h-4 w-4" />
+                                Highlight Globally
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() => handleHighlight("both")}
+                              >
+                                <Pin className="mr-2 h-4 w-4" />
+                                Highlight in Both
+                              </DropdownMenuItem>
+                            </>
+                          )}
+                        </>
+                      )}
+                      {isMemberPost && (
+                        <>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem onClick={onEdit}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit Post
                           </DropdownMenuItem>
-                        ) : (
-                          <>
-                            <DropdownMenuItem
-                              onClick={() => handleHighlight("category")}
-                            >
-                              <Pin className="w-4 h-4 mr-2" />
-                              Highlight in Category
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleHighlight("global")}
-                            >
-                              <Pin className="w-4 h-4 mr-2" />
-                              Highlight Globally
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleHighlight("both")}
-                            >
-                              <Pin className="w-4 h-4 mr-2" />
-                              Highlight in Both
-                            </DropdownMenuItem>
-                          </>
-                        )}
-                      </>
-                    )}
-                    {isMemberPost && (
-                      <>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={onEdit}>
-                          <Edit className="w-4 h-4 mr-2" />
-                          Edit Post
-                        </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={onDelete}
-                          className="text-destructive focus:text-destructive"
-                        >
-                          <Trash2 className="w-4 h-4 mr-2" />
-                          Delete Post
-                        </DropdownMenuItem>
-                      </>
-                    )}
+                          <DropdownMenuItem
+                            onClick={onDelete}
+                            className="text-destructive focus:text-destructive"
+                          >
+                            <Trash2 className="mr-2 h-4 w-4" />
+                            Delete Post
+                          </DropdownMenuItem>
+                        </>
+                      )}
                     </DropdownMenuContent>
                   </DropdownMenu>
                 )}
@@ -467,134 +476,136 @@ export default function PostDetail({
 
               {isEditing && onCancelEdit ? (
                 <div className="mt-4">
-                  <PostEditInline
-                    post={post}
-                    onCancel={onCancelEdit}
-                  />
+                  <PostEditInline post={post} onCancel={onCancelEdit} />
                 </div>
               ) : (
                 <div className="mt-4 space-y-4">
-
                   {postType === "image" && post.mediaUrl && (
-                  <div className="rounded-lg overflow-hidden border dark:border-gray-700">
-                    <Image
-                      src={post.mediaUrl}
-                      alt={post.title}
-                      width={800}
-                      height={600}
-                      className="w-full h-auto object-contain max-h-[70vh] bg-gray-100 dark:bg-gray-800"
-                      placeholder="blur"
-                      blurDataURL={getMediaPlaceholder()}
-                    />
-                  </div>
-                )}
-
-                {postType === "video" && post.mediaUrl && (
-                  <>
-                    {mediaYouTubeId ? (
-                      <YouTubeEmbed videoId={mediaYouTubeId} title={post.title} />
-                    ) : isYouTubeUrl(post.mediaUrl) ? (
-                      <a
-                        href={post.mediaUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block text-primary underline"
-                      >
-                        View on YouTube
-                      </a>
-                    ) : (
-                      <div className="rounded-lg overflow-hidden relative bg-black">
-                        <video
-                          ref={videoRef}
-                          src={post.mediaUrl}
-                          className="w-full h-auto max-h-[70vh]"
-                          controls
-                          poster={post.thumbnailUrl}
-                          onPlay={() => setIsVideoPlaying(true)}
-                          onPause={() => setIsVideoPlaying(false)}
-                        />
-                        {!isVideoPlaying && (
-                          <div
-                            className="absolute inset-0 flex items-center justify-center cursor-pointer bg-black/30"
-                            onClick={handleVideoPlay}
-                          >
-                            <div className="bg-white/80 backdrop-blur-sm rounded-full p-3 hover:bg-white transition-colors">
-                              <Play className="h-10 w-10 text-black fill-black" />
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-
-                {postType === "link" && post.linkUrl && (
-                  <>
-                    {linkYouTubeId ? (
-                      <YouTubeEmbed
-                        videoId={linkYouTubeId}
-                        title={post.linkTitle || post.title}
+                    <div className="overflow-hidden rounded-none border dark:border-gray-700">
+                      <Image
+                        src={post.mediaUrl}
+                        alt={post.title}
+                        width={800}
+                        height={600}
+                        className="h-auto max-h-[70vh] w-full bg-gray-100 object-contain dark:bg-gray-800"
+                        placeholder="blur"
+                        blurDataURL={getMediaPlaceholder()}
                       />
-                    ) : (
-                      <a
-                        href={post.linkUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block border rounded-lg overflow-hidden hover:border-primary/50 transition-colors"
-                      >
-                        <Card className="shadow-none border-0 rounded-none">
-                          {post.linkImage && (
-                            <div className="relative h-40 sm:h-48 bg-muted">
-                              <Image
-                                src={post.linkImage}
-                                alt={post.linkTitle || "Link preview"}
-                                fill
-                                className="object-cover"
-                              />
+                    </div>
+                  )}
+
+                  {postType === "video" && post.mediaUrl && (
+                    <>
+                      {mediaYouTubeId ? (
+                        <YouTubeEmbed
+                          videoId={mediaYouTubeId}
+                          title={post.title}
+                        />
+                      ) : isYouTubeUrl(post.mediaUrl) ? (
+                        <a
+                          href={post.mediaUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary block underline"
+                        >
+                          View on YouTube
+                        </a>
+                      ) : (
+                        <div className="relative overflow-hidden rounded-none bg-black">
+                          <video
+                            ref={videoRef}
+                            src={post.mediaUrl}
+                            className="h-auto max-h-[70vh] w-full"
+                            controls
+                            poster={post.thumbnailUrl}
+                            onPlay={() => setIsVideoPlaying(true)}
+                            onPause={() => setIsVideoPlaying(false)}
+                          />
+                          {!isVideoPlaying && (
+                            <div
+                              className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/30"
+                              onClick={handleVideoPlay}
+                            >
+                              <div className="rounded-full bg-white/80 p-3 backdrop-blur-sm transition-colors hover:bg-white">
+                                <Play className="h-10 w-10 fill-black text-black" />
+                              </div>
                             </div>
                           )}
-                          <CardContent className="p-4">
-                            <h3 className="font-semibold text-base mb-1">
-                              {post.linkTitle || post.linkUrl}
-                            </h3>
-                            {post.linkDescription && (
-                              <p className="text-sm text-muted-foreground line-clamp-2">
-                                {post.linkDescription}
-                              </p>
+                        </div>
+                      )}
+                    </>
+                  )}
+
+                  {postType === "link" && post.linkUrl && (
+                    <>
+                      {linkYouTubeId ? (
+                        <YouTubeEmbed
+                          videoId={linkYouTubeId}
+                          title={post.linkTitle || post.title}
+                        />
+                      ) : (
+                        <a
+                          href={post.linkUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:border-primary/50 block overflow-hidden rounded-none border transition-colors"
+                        >
+                          <Card className="rounded-none border-0 shadow-none">
+                            {post.linkImage && (
+                              <div className="bg-muted relative h-40 sm:h-48">
+                                <Image
+                                  src={post.linkImage}
+                                  alt={post.linkTitle || "Link preview"}
+                                  fill
+                                  className="object-cover"
+                                />
+                              </div>
                             )}
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
-                              <ExternalLink className="h-3 w-3" />
-                              <span>{new URL(post.linkUrl).hostname}</span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </a>
-                    )}
-                  </>
-                )}
+                            <CardContent className="p-4">
+                              <h3 className="mb-1 text-base font-semibold">
+                                {post.linkTitle || post.linkUrl}
+                              </h3>
+                              {post.linkDescription && (
+                                <p className="text-muted-foreground line-clamp-2 text-sm">
+                                  {post.linkDescription}
+                                </p>
+                              )}
+                              <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
+                                <ExternalLink className="h-3 w-3" />
+                                <span>{new URL(post.linkUrl).hostname}</span>
+                              </div>
+                            </CardContent>
+                          </Card>
+                        </a>
+                      )}
+                    </>
+                  )}
 
-                {postType === "poll" && post.pollOptions && (
-                  <PollDisplay
-                    pollId={post._id}
-                    pollOptions={post.pollOptions}
-                    pollEndsAt={post.pollEndsAt}
-                    totalVotes={post.totalPollVotes}
-                    currentUserId={currentMember?._id}
-                  />
-                )}
+                  {postType === "poll" && post.pollOptions && (
+                    <PollDisplay
+                      pollId={post._id}
+                      pollOptions={post.pollOptions}
+                      pollEndsAt={post.pollEndsAt}
+                      totalVotes={post.totalPollVotes}
+                      currentUserId={currentMember?._id}
+                    />
+                  )}
 
-                {post.content && (
-                  <div className="prose prose-gray dark:prose-invert max-w-none text-foreground" data-testid="post-content">
-                    {post.isPaywalled ? (
-                      <Paywall
-                        previewContent={post.content}
-                        tier={post.fullContentRequiresTier}
-                      />
-                    ) : (
-                      <RenderTipTapContent content={post.content} />
-                    )}
-                  </div>
-                )}
+                  {post.content && (
+                    <div
+                      className="prose prose-gray dark:prose-invert text-foreground max-w-none"
+                      data-testid="post-content"
+                    >
+                      {post.isPaywalled ? (
+                        <Paywall
+                          previewContent={post.content}
+                          tier={post.fullContentRequiresTier}
+                        />
+                      ) : (
+                        <RenderTipTapContent content={post.content} />
+                      )}
+                    </div>
+                  )}
 
                   {post.attachments && post.attachments.length > 0 && (
                     <AttachmentGrid attachments={post.attachments} />
@@ -603,36 +614,43 @@ export default function PostDetail({
               )}
 
               {!isEditing && (
-                <div className="mt-6 flex items-center gap-1 sm:gap-2 text-sm text-muted-foreground">
-                <div className="sm:hidden">
-                  <VoteButton
+                <div className="text-muted-foreground mt-6 flex items-center gap-1 text-sm sm:gap-2">
+                  <div className="sm:hidden">
+                    <VoteButton
+                      targetId={post._id}
+                      targetType="post"
+                      voteCount={optimisticNetVotes}
+                      isVoted={currentUserVote === "upvote"}
+                      isVoting={isVoting}
+                      onVote={handleUpvote}
+                      size="sm"
+                    />
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:bg-accent hover:text-foreground flex items-center gap-1.5 rounded-md px-3 py-2"
+                  >
+                    <MessageSquare size={18} />
+                    <span className="font-medium">
+                      {post.commentCount} Comments
+                    </span>
+                  </Button>
+                  <PostBookmarkButton
                     targetId={post._id}
                     targetType="post"
-                    voteCount={optimisticNetVotes}
-                    isVoted={currentUserVote === "upvote"}
-                    isVoting={isVoting}
-                    onVote={handleUpvote}
                     size="sm"
+                    className="h-auto px-2 py-1"
                   />
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-1.5 rounded-md px-3 py-2 text-muted-foreground hover:bg-accent hover:text-foreground"
-                >
-                  <MessageSquare size={18} />
-                  <span className="font-medium">{post.commentCount} Comments</span>
-                </Button>
-                <PostBookmarkButton targetId={post._id} targetType="post" size="sm" className="h-auto px-2 py-1" />
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="flex items-center gap-1.5 rounded-md px-3 py-2 text-muted-foreground hover:bg-accent hover:text-foreground"
-                  onClick={handleShare}
-                >
-                  <Upload size={18} />
-                  <span className="font-medium hidden sm:inline">Share</span>
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground hover:bg-accent hover:text-foreground flex items-center gap-1.5 rounded-md px-3 py-2"
+                    onClick={handleShare}
+                  >
+                    <Upload size={18} />
+                    <span className="hidden font-medium sm:inline">Share</span>
+                  </Button>
                 </div>
               )}
             </div>

@@ -251,7 +251,7 @@ export default function ReactivatePage() {
               {/* Monthly billing option button */}
               <button
                 onClick={() => setBillingPeriod("monthly")}
-                className={`flex-1 rounded-lg px-4 py-3 font-medium transition-colors ${
+                className={`flex-1 rounded-none px-4 py-3 font-medium transition-colors ${
                   billingPeriod === "monthly"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -267,7 +267,7 @@ export default function ReactivatePage() {
               {/* Yearly billing option button with savings badge */}
               <button
                 onClick={() => setBillingPeriod("yearly")}
-                className={`relative flex-1 rounded-lg px-4 py-3 font-medium transition-colors ${
+                className={`relative flex-1 rounded-none px-4 py-3 font-medium transition-colors ${
                   billingPeriod === "yearly"
                     ? "bg-primary text-primary-foreground"
                     : "bg-muted text-muted-foreground hover:bg-muted/80"
@@ -293,7 +293,7 @@ export default function ReactivatePage() {
 
             {/* Savings Information Section */}
             {/* Highlighted box showing potential savings to encourage yearly billing */}
-            <div className="bg-muted/50 mb-6 rounded-lg p-4">
+            <div className="bg-muted/50 mb-6 rounded-none p-4">
               <p className="text-center text-sm">
                 {billingPeriod === "yearly" ? (
                   // Message for users who selected yearly billing

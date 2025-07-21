@@ -39,10 +39,7 @@ type AttachmentType = {
 
 interface GitHubCommentInputProps {
   placeholder?: string;
-  onSubmit: (
-    content: string,
-    attachments?: AttachmentType[]
-  ) => void;
+  onSubmit: (content: string, attachments?: AttachmentType[]) => void;
   isSubmitting: boolean;
   className?: string;
   replyingTo?: { username: string } | null;
@@ -63,36 +60,41 @@ export function GitHubCommentInput({
 }: GitHubCommentInputProps) {
   const [content, setContent] = useState(initialValue);
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
-  const [attachments, setAttachments] = useState<AttachmentType[]>(initialAttachments);
+  const [attachments, setAttachments] =
+    useState<AttachmentType[]>(initialAttachments);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const convex = useConvex();
-  
+
   const currentMember = useQuery(api.members.getCurrentMember);
 
-  const insertMarkdown = useCallback((before: string, after: string = "") => {
-    if (!textareaRef.current) return;
-    
-    const textarea = textareaRef.current;
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selectedText = content.substring(start, end);
-    const replacement = `${before}${selectedText}${after}`;
-    
-    const newContent = 
-      content.substring(0, start) + 
-      replacement + 
-      content.substring(end);
-    
-    setContent(newContent);
-    
-    // Set cursor position
-    setTimeout(() => {
-      textarea.focus();
-      const newPosition = start + before.length;
-      textarea.setSelectionRange(newPosition, newPosition + selectedText.length);
-    }, 0);
-  }, [content]);
+  const insertMarkdown = useCallback(
+    (before: string, after: string = "") => {
+      if (!textareaRef.current) return;
+
+      const textarea = textareaRef.current;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const selectedText = content.substring(start, end);
+      const replacement = `${before}${selectedText}${after}`;
+
+      const newContent =
+        content.substring(0, start) + replacement + content.substring(end);
+
+      setContent(newContent);
+
+      // Set cursor position
+      setTimeout(() => {
+        textarea.focus();
+        const newPosition = start + before.length;
+        textarea.setSelectionRange(
+          newPosition,
+          newPosition + selectedText.length,
+        );
+      }, 0);
+    },
+    [content],
+  );
 
   // Auto-resize textarea
   useEffect(() => {
@@ -106,29 +108,29 @@ export function GitHubCommentInput({
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!textareaRef.current || activeTab !== "write") return;
-      
-      const isMac = navigator.platform.toUpperCase().indexOf('MAC') >= 0;
+
+      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
       const modKey = isMac ? e.metaKey : e.ctrlKey;
-      
+
       if (modKey) {
-        switch(e.key.toLowerCase()) {
-          case 'b':
+        switch (e.key.toLowerCase()) {
+          case "b":
             e.preventDefault();
-            insertMarkdown('**', '**');
+            insertMarkdown("**", "**");
             break;
-          case 'i':
+          case "i":
             e.preventDefault();
-            insertMarkdown('*', '*');
+            insertMarkdown("*", "*");
             break;
-          case 'k':
+          case "k":
             e.preventDefault();
-            insertMarkdown('[', '](url)');
+            insertMarkdown("[", "](url)");
             break;
-          case 'e':
+          case "e":
             e.preventDefault();
-            insertMarkdown('`', '`');
+            insertMarkdown("`", "`");
             break;
-          case 'j':
+          case "j":
             e.preventDefault();
             // Insert code block
             const textarea = textareaRef.current;
@@ -136,13 +138,19 @@ export function GitHubCommentInput({
               const start = textarea.selectionStart;
               const end = textarea.selectionEnd;
               const selectedText = content.substring(start, end);
-              const codeBlock = `\`\`\`\n${selectedText || 'code'}\n\`\`\``;
-              const newContent = content.substring(0, start) + codeBlock + content.substring(end);
+              const codeBlock = `\`\`\`\n${selectedText || "code"}\n\`\`\``;
+              const newContent =
+                content.substring(0, start) +
+                codeBlock +
+                content.substring(end);
               setContent(newContent);
               setTimeout(() => {
                 // Position cursor inside code block
                 const newPos = start + 4;
-                textarea.setSelectionRange(newPos, newPos + (selectedText.length || 4));
+                textarea.setSelectionRange(
+                  newPos,
+                  newPos + (selectedText.length || 4),
+                );
                 textarea.focus();
               }, 0);
             }
@@ -151,8 +159,8 @@ export function GitHubCommentInput({
       }
     };
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [activeTab, insertMarkdown, content]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -179,8 +187,8 @@ export function GitHubCommentInput({
           mimeType: file.type,
         };
 
-        setAttachments(prev => [...prev, attachment]);
-        
+        setAttachments((prev) => [...prev, attachment]);
+
         // Insert markdown for the attachment
         if (attachment.type === "image") {
           insertMarkdown(`\n![${file.name}](${uploadResult.url})\n`);
@@ -191,7 +199,7 @@ export function GitHubCommentInput({
         toast.error(`Failed to upload ${file.name}`);
       }
     }
-    
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -207,7 +215,6 @@ export function GitHubCommentInput({
     }
   };
 
-
   return (
     <div className={cn("flex gap-3", className)}>
       {/* Avatar */}
@@ -218,15 +225,15 @@ export function GitHubCommentInput({
       </Avatar>
 
       {/* Comment Box */}
-      <div className="flex-1 border rounded-lg overflow-hidden bg-background">
+      <div className="bg-background flex-1 overflow-hidden rounded-none border">
         {/* Tabs */}
         <div className="flex border-b">
           <button
             className={cn(
               "px-4 py-2 text-sm font-medium transition-colors",
               activeTab === "write"
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? "border-primary text-foreground border-b-2"
+                : "text-muted-foreground hover:text-foreground",
             )}
             onClick={() => setActiveTab("write")}
           >
@@ -236,14 +243,14 @@ export function GitHubCommentInput({
             className={cn(
               "px-4 py-2 text-sm font-medium transition-colors",
               activeTab === "preview"
-                ? "border-b-2 border-primary text-foreground"
-                : "text-muted-foreground hover:text-foreground"
+                ? "border-primary text-foreground border-b-2"
+                : "text-muted-foreground hover:text-foreground",
             )}
             onClick={() => setActiveTab("preview")}
           >
             Preview
           </button>
-          
+
           {/* Toolbar */}
           {activeTab === "write" && (
             <div className="ml-auto flex items-center gap-1 px-2">
@@ -277,7 +284,7 @@ export function GitHubCommentInput({
               >
                 <Link className="h-4 w-4" />
               </Button>
-              <div className="w-px h-5 bg-border mx-1" />
+              <div className="bg-border mx-1 h-5 w-px" />
               <Button
                 type="button"
                 variant="ghost"
@@ -298,7 +305,7 @@ export function GitHubCommentInput({
               >
                 <ListOrdered className="h-4 w-4" />
               </Button>
-              <div className="w-px h-5 bg-border mx-1" />
+              <div className="bg-border mx-1 h-5 w-px" />
               <Button
                 type="button"
                 variant="ghost"
@@ -320,12 +327,18 @@ export function GitHubCommentInput({
                     const start = textarea.selectionStart;
                     const end = textarea.selectionEnd;
                     const selectedText = content.substring(start, end);
-                    const codeBlock = `\`\`\`\n${selectedText || 'code'}\n\`\`\``;
-                    const newContent = content.substring(0, start) + codeBlock + content.substring(end);
+                    const codeBlock = `\`\`\`\n${selectedText || "code"}\n\`\`\``;
+                    const newContent =
+                      content.substring(0, start) +
+                      codeBlock +
+                      content.substring(end);
                     setContent(newContent);
                     setTimeout(() => {
                       const newPos = start + 4;
-                      textarea.setSelectionRange(newPos, newPos + (selectedText.length || 4));
+                      textarea.setSelectionRange(
+                        newPos,
+                        newPos + (selectedText.length || 4),
+                      );
                       textarea.focus();
                     }, 0);
                   }
@@ -344,7 +357,7 @@ export function GitHubCommentInput({
               >
                 <Quote className="h-4 w-4" />
               </Button>
-              <div className="w-px h-5 bg-border mx-1" />
+              <div className="bg-border mx-1 h-5 w-px" />
               <Button
                 type="button"
                 variant="ghost"
@@ -367,59 +380,73 @@ export function GitHubCommentInput({
               placeholder={placeholder}
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="min-h-[200px] resize-none border-0 p-0 focus:ring-0 placeholder:text-muted-foreground font-mono text-sm"
+              className="placeholder:text-muted-foreground min-h-[200px] resize-none border-0 p-0 font-mono text-sm focus:ring-0"
               style={{ outline: "none", boxShadow: "none" }}
               onKeyDown={(e) => {
                 // Tab key behavior
-                if (e.key === 'Tab') {
+                if (e.key === "Tab") {
                   e.preventDefault();
                   const textarea = e.currentTarget;
                   const start = textarea.selectionStart;
                   const end = textarea.selectionEnd;
-                  
+
                   // Check if we're inside a code block
                   const beforeCursor = content.substring(0, start);
-                  
+
                   // Count ``` before cursor
-                  const codeBlocksBefore = (beforeCursor.match(/```/g) || []).length;
+                  const codeBlocksBefore = (beforeCursor.match(/```/g) || [])
+                    .length;
                   const isInCodeBlock = codeBlocksBefore % 2 === 1;
-                  
+
                   if (isInCodeBlock) {
                     // Inside code block - use 4 spaces for proper indentation
-                    const spaces = '    ';
+                    const spaces = "    ";
                     if (e.shiftKey) {
                       // Shift+Tab - outdent
-                      const lineStart = content.lastIndexOf('\n', start - 1) + 1;
+                      const lineStart =
+                        content.lastIndexOf("\n", start - 1) + 1;
                       const lineContent = content.substring(lineStart, start);
                       if (lineContent.startsWith(spaces)) {
-                        const newContent = content.substring(0, lineStart) + 
-                                         content.substring(lineStart + spaces.length);
+                        const newContent =
+                          content.substring(0, lineStart) +
+                          content.substring(lineStart + spaces.length);
                         setContent(newContent);
                         setTimeout(() => {
                           if (textareaRef.current) {
                             const newPos = start - spaces.length;
-                            textareaRef.current.selectionStart = textareaRef.current.selectionEnd = newPos;
+                            textareaRef.current.selectionStart =
+                              textareaRef.current.selectionEnd = newPos;
                           }
                         }, 0);
                       }
                     } else {
                       // Tab - indent with 4 spaces
-                      const newContent = content.substring(0, start) + spaces + content.substring(end);
+                      const newContent =
+                        content.substring(0, start) +
+                        spaces +
+                        content.substring(end);
                       setContent(newContent);
                       setTimeout(() => {
                         if (textareaRef.current) {
-                          textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + spaces.length;
+                          textareaRef.current.selectionStart =
+                            textareaRef.current.selectionEnd =
+                              start + spaces.length;
                         }
                       }, 0);
                     }
                   } else {
                     // Outside code block - use 2 spaces
-                    const spaces = '  ';
-                    const newContent = content.substring(0, start) + spaces + content.substring(end);
+                    const spaces = "  ";
+                    const newContent =
+                      content.substring(0, start) +
+                      spaces +
+                      content.substring(end);
                     setContent(newContent);
                     setTimeout(() => {
                       if (textareaRef.current) {
-                        textareaRef.current.selectionStart = textareaRef.current.selectionEnd = start + spaces.length;
+                        textareaRef.current.selectionStart =
+                          textareaRef.current.selectionEnd =
+                            start + spaces.length;
                       }
                     }, 0);
                   }
@@ -438,12 +465,12 @@ export function GitHubCommentInput({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between px-4 py-2 bg-muted/50 text-xs text-muted-foreground">
+        <div className="bg-muted/50 text-muted-foreground flex items-center justify-between px-4 py-2 text-xs">
           <span>
-            <Paperclip className="inline h-3 w-3 mr-1" />
+            <Paperclip className="mr-1 inline h-3 w-3" />
             Paste, drop, or click to add files
           </span>
-          
+
           <div className="flex items-center gap-2">
             {replyingTo && onCancelReply && (
               <Button
@@ -457,7 +484,9 @@ export function GitHubCommentInput({
             )}
             <Button
               onClick={handleSubmit}
-              disabled={isSubmitting || (!content.trim() && attachments.length === 0)}
+              disabled={
+                isSubmitting || (!content.trim() && attachments.length === 0)
+              }
               size="sm"
             >
               {isSubmitting ? "Posting..." : "Comment"}
