@@ -128,7 +128,7 @@ export default function CategoryPageClient({
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main post list - takes 3/4 of the width on large screens */}
         <div className="lg:col-span-3">
-          <PostList categoryId={category._id} sortBy={sortBy} />
+          <PostList categoryId={category._id} sortBy={sortBy} currentCategoryId={category._id} />
         </div>
         {/* Sidebar - takes 1/4 of the width on large screens */}
         <div className="lg:col-span-1">

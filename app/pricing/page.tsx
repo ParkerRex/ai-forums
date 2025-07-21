@@ -2,14 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   Check,
   Zap,
   Shield,
   Users,
   Code,
-  Sparkles,
   ArrowRight,
 } from "lucide-react";
 import { useState } from "react";
@@ -59,13 +57,8 @@ export default function PricingPage() {
       <div className="container mx-auto max-w-6xl px-4 py-16">
         {/* Hero Section */}
         <div className="mb-16 text-center">
-          <Badge variant="outline" className="mb-4">
-            <Sparkles className="mr-1 h-3 w-3" />
-            Members Only Community
-          </Badge>
-
           <h1 className="text-foreground mb-6 text-5xl font-bold md:text-6xl">
-            $99/month. That&apos;s it.
+            Where AI Engineers Hangout.
           </h1>
 
           <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-xl">
@@ -150,7 +143,7 @@ export default function PricingPage() {
                 "Weekly implementation deep-dives",
                 "Private Discord with verified engineers",
                 "Early access to new AI tools and techniques",
-                "No ads, no tracking, no bullshit",
+                "No ads, no tracking, no bs",
                 "Cancel anytime, data export on request",
               ].map((feature, i) => (
                 <div key={i} className="flex items-start gap-3">
@@ -180,8 +173,7 @@ export default function PricingPage() {
                 Who&apos;s actually in here?
               </h3>
               <p className="text-muted-foreground">
-                Engineers from OpenAI, Anthropic, Google DeepMind, Meta, and
-                similar. Verified through work email or commits.
+                Engineers from Google, Microsoft, and high growth startups.
               </p>
             </div>
 

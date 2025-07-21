@@ -19,8 +19,19 @@ import { v } from "convex/values";
 import Stripe from "stripe";
 import { getStripePrice } from "./pricing";
 
-// Initialize Stripe client
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+// Lazily instantiate the Stripe client so Convex's module analyzer
+// doesn't require the secret key at import-time.
+let stripe: Stripe | null = null;
+function getStripeClient(): Stripe {
+  if (!stripe) {
+    const key = process.env.STRIPE_SECRET_KEY;
+    if (!key) {
+      throw new Error("STRIPE_SECRET_KEY not set");
+    }
+    stripe = new Stripe(key);
+  }
+  return stripe;
+}
 
 /**
  * Creates a direct checkout session for unauthenticated users
@@ -62,6 +73,9 @@ export const createDirectCheckout = action({
         metadata.sourcePostId = sourcePostId;
       }
 
+      // Get Stripe client
+      const stripe = getStripeClient();
+      
       // Create Stripe checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -130,6 +144,9 @@ export const createDirectCheckoutYearly = action({
         metadata.sourcePostId = sourcePostId;
       }
 
+      // Get Stripe client
+      const stripe = getStripeClient();
+      
       // Create Stripe checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],

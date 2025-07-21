@@ -8,9 +8,10 @@ interface PostListProps {
   categoryId?: Id<"categories">;
   sortBy?: "newest" | "popular" | "trending";
   freeOnly?: boolean;
+  currentCategoryId?: Id<"categories">;
 }
 
-export default function PostList({ categoryId, sortBy = "newest", freeOnly = false }: PostListProps) {
+export default function PostList({ categoryId, sortBy = "newest", freeOnly = false, currentCategoryId }: PostListProps) {
   const posts = useQuery(api.posts.getPosts, {
     categoryId,
     limit: 20,
@@ -138,7 +139,7 @@ export default function PostList({ categoryId, sortBy = "newest", freeOnly = fal
   return (
     <div className="space-y-2">
       {posts.map((post) => (
-        <PostCard key={post._id} post={post} size="small" />
+        <PostCard key={post._id} post={post} size="small" currentCategoryId={currentCategoryId} />
       ))}
     </div>
   );

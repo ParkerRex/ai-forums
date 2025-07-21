@@ -10,10 +10,11 @@ import {
 } from "@/components/ui/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Clock, FileText, Calendar } from "lucide-react";
+import { Clock, FileText, Calendar, User } from "lucide-react";
 import { Id } from "@/convex/_generated/dataModel";
 import { formatDistanceToNow, format } from "date-fns";
 import { getFlagEmoji } from "@/lib/country-utils";
+import Link from "next/link";
 
 interface MemberHoverCardProps {
   memberId: Id<"members">;
@@ -25,8 +26,8 @@ interface MemberHoverCardProps {
 export function MemberHoverCard({
   memberId,
   children,
-  side = "bottom",
-  align = "start",
+  side = "top",
+  align = "center",
 }: MemberHoverCardProps) {
   const member = useQuery(api.members.getMemberById, { id: memberId });
 
@@ -78,19 +79,19 @@ export function MemberHoverCard({
             <span>Active {lastActiveText}</span>
           </div>
 
-          {/* Chat Button - Stubbed for Discord Integration */}
+          {/* View Profile Button */}
           <Button
             className="w-full"
             size="sm"
             onClick={(e) => {
-              e.preventDefault();
               e.stopPropagation();
-              // TODO: Wire up Discord DM functionality
-              console.log("Chat button clicked for member:", memberId);
             }}
+            asChild
           >
-            <MessageCircle className="mr-2 h-4 w-4" />
-            Chat on Discord
+            <Link href={`/members/${member.slug}`}>
+              <User className="mr-2 h-4 w-4" />
+              View Profile
+            </Link>
           </Button>
         </div>
       </HoverCardContent>
@@ -115,8 +116,8 @@ interface MemberHoverCardWrapperProps {
 export function MemberHoverCardWrapper({
   member,
   children,
-  side = "bottom",
-  align = "start",
+  side = "top",
+  align = "center",
 }: MemberHoverCardWrapperProps) {
   if (!member) {
     return <>{children}</>;

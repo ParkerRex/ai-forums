@@ -65,9 +65,10 @@ interface Post extends Omit<PostData, "member" | "author" | "category"> {
 interface PostCardProps {
   post: Post;
   size?: "small" | "medium" | "large";
+  currentCategoryId?: Id<"categories">;
 }
 
-export default function PostCard({ post, size = "large" }: PostCardProps) {
+export default function PostCard({ post, size = "large", currentCategoryId }: PostCardProps) {
   const router = useRouter();
   const [isVoting, setIsVoting] = useState(false);
 
@@ -170,7 +171,7 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
           post={post as PostData}
           size={size}
           showStats={false}
-          showCategory={true}
+          showCategory={currentCategoryId !== post.categoryId}
           showMember={true}
           className="border-0 shadow-none hover:shadow-none hover:scale-100 p-0"
         />
@@ -185,9 +186,14 @@ export default function PostCard({ post, size = "large" }: PostCardProps) {
               className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
-                handleUpvote(e);
+                // For paywalled posts, navigate to post page to show paywall
+                if (!post.isFree) {
+                  handleClick();
+                } else {
+                  handleUpvote(e);
+                }
               }}
-              disabled={isVoting}
+              disabled={isVoting && post.isFree}
               onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
               onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
             >

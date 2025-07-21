@@ -14,7 +14,6 @@ import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
-import { ThemeToggleSwitch } from "@/components/theme-toggle-switch";
 import { SettingsDialog } from "@/components/settings-dialog";
 
 /**
@@ -132,14 +131,6 @@ export function MemberDropdown() {
           <Settings className="mr-2 h-4 w-4" />
           <span>Settings</span>
         </DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-
-        {/* Theme toggle section */}
-        <div className="px-2 py-2">
-          <p className="text-xs font-medium text-muted-foreground mb-2">Theme</p>
-          <ThemeToggleSwitch className="w-full" />
-        </div>
 
         <DropdownMenuSeparator />
 

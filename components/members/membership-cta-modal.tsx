@@ -220,10 +220,10 @@ export function MembershipCTAModal({
         {/* Trigger (optional) */}
         {children && <DialogTrigger asChild>{children}</DialogTrigger>}
 
-        <DialogContent className="from-background via-background to-muted/20 max-h-[95vh] overflow-y-auto bg-gradient-to-br sm:max-w-4xl">
+        <DialogContent className="max-h-[95vh] overflow-y-auto sm:max-w-4xl">
           {/* Premium Header with Gradient Background */}
-          <div className="from-primary/10 via-primary/5 to-accent/10 border-primary/20 relative -mx-6 -mt-6 mb-6 border-b bg-gradient-to-r px-6 pb-6 pt-6">
-            <div className="from-primary/5 absolute inset-0 bg-gradient-to-r to-transparent opacity-50" />
+          <div className="border-primary/20 relative -mx-6 -mt-6 mb-6 border-b bg-gradient-to-r px-6 pb-6 pt-6">
+            <div className="absolute inset-0 bg-gradient-to-r to-transparent opacity-50" />
             <div className="relative">
               <DialogHeader className="space-y-3 text-center">
                 <DialogTitle className="from-foreground to-foreground/80 bg-gradient-to-r bg-clip-text text-2xl font-bold text-transparent">
@@ -324,7 +324,7 @@ export function MembershipCTAModal({
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
                     <Badge
                       variant="default"
-                      className="from-primary to-primary/80 text-primary-foreground bg-gradient-to-r px-3 py-1 text-xs shadow-lg"
+                      className="text-primary-foreground px-3 py-1 text-xs shadow-lg"
                     >
                       <Star className="mr-1 h-3 w-3" />
                       {selectedTierData.badge}
@@ -389,9 +389,9 @@ export function MembershipCTAModal({
                 {features.map((feature, index) => (
                   <div
                     key={index}
-                    className="from-muted/20 to-muted/10 border-border/50 hover:border-primary/20 flex items-start gap-3 rounded-lg border bg-gradient-to-br p-3 transition-all duration-300"
+                    className=" border-border/50 hover:border-primary/20 flex items-start gap-3 rounded-lg border bg-gradient-to-br p-3 transition-all duration-300"
                   >
-                    <div className="from-primary/10 to-primary/5 text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br">
+                    <div className="text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br">
                       {feature.icon}
                     </div>
                     <div className="space-y-0.5">
@@ -410,7 +410,7 @@ export function MembershipCTAModal({
             {/* CTA Section - Premium Design */}
             <div className="border-border/50 space-y-4 border-t pt-4">
               <Button
-                className="from-primary to-primary/90 hover:from-primary/90 hover:to-primary h-14 w-full bg-gradient-to-r text-lg font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
+                className="h-14 w-full text-lg font-semibold shadow-lg transition-all duration-300 hover:shadow-xl"
                 onClick={handleCheckout}
                 disabled={isLoading}
               >

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { formatDistanceToNow } from "date-fns";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   getPostPreviewAsset,
@@ -128,14 +129,14 @@ export default function PostPreview({
               <div className="flex-1 min-w-0">
                 {showCategory && post.category && (
                   <div className="flex items-center gap-1 mb-1">
-                    <span className="text-xs text-foreground/70">
-                      /{post.category.displayName}
+                    <span className="text-xs text-muted-foreground">
+                      {post.category.displayName.toLowerCase()}
                     </span>
                     {post.type !== "text" && (
-                      <span className="text-xs text-foreground/70">•</span>
+                      <span className="text-xs text-muted-foreground">•</span>
                     )}
                     {post.type !== "text" && (
-                      <span className="text-xs text-foreground/70">
+                      <span className="text-xs text-muted-foreground">
                         {getPostTypeLabel(post)}
                       </span>
                     )}
@@ -149,10 +150,10 @@ export default function PostPreview({
                     </span>
                   </div>
                 )}
-                <Link href={postUrl} className="text-foreground dark:text-foreground group-hover:text-black dark:group-hover:text-white transition-colors duration-200 ease-out">
+                <Link href={postUrl} className="text-foreground hover:text-primary transition-colors">
                   <h3 className={cn(
                     "font-medium line-clamp-2",
-                    size === "small" ? "text-sm" : "text-base"
+                    size === "small" ? "text-base" : "text-lg"
                   )}>
                     {post.title}
                   </h3>
@@ -178,7 +179,7 @@ export default function PostPreview({
 
             {/* Author and excerpt - Reddit style */}
             {shouldShowMember && post.member && (
-              <div className="flex items-center gap-2 text-xs text-foreground/70 mb-1">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
                 <MemberHoverCardWrapper member={post.member}>
                   <div className="flex items-center gap-1.5">
                     <Avatar className="h-5 w-5">
@@ -198,23 +199,20 @@ export default function PostPreview({
                   </div>
                 </MemberHoverCardWrapper>
                 <span>•</span>
-                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                <span>{formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}</span>
               </div>
             )}
 
             {/* Content excerpt - Reddit style */}
             {excerpt && (
-              <p className={cn(
-                "text-foreground line-clamp-3 leading-relaxed",
-                size === "small" ? "text-xs" : "text-sm"
-              )}>
+              <p className="text-sm text-muted-foreground line-clamp-3 leading-relaxed">
                 {excerpt}
               </p>
             )}
 
             {/* Stats footer */}
             {showStats && size !== "small" && (
-              <div className="flex items-center gap-4 mt-3 text-xs text-foreground/60">
+              <div className="flex items-center gap-4 mt-3 text-xs text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <MessageSquare className="h-3 w-3" />
                   <span>{stats.comments} comments</span>

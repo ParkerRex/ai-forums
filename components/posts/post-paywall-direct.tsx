@@ -65,7 +65,7 @@ export function PostPaywallDirect({
       <Card className="relative mt-8 p-8 text-center border-2 shadow-lg">
         {/* Lock icon */}
         <div className="flex justify-center mb-4">
-          <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
+          <div className="w-16 h-16 bg-primary/10 rounded-none flex items-center justify-center">
             <Lock className="w-8 h-8 text-primary" />
           </div>
         </div>
@@ -89,7 +89,6 @@ export function PostPaywallDirect({
         
         {/* Primary CTA button */}
         <Button 
-          size="default" 
           className="mb-6 px-6 font-medium"
           onClick={handleUpgradeClick}
           disabled={isLoading}
