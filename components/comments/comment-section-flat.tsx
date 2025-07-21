@@ -24,6 +24,7 @@ import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
 import { cn } from "@/lib/utils";
+import { useUserVotes } from "@/hooks/use-user-votes";
 
 type AttachmentType = {
   id: string;
@@ -99,6 +100,7 @@ interface CommentItemFlatProps {
   categoryName: string;
   isAdmin: boolean;
   targetCommentId?: string;
+  userVote?: "upvote" | null;
 }
 
 function CommentItemFlat({
@@ -109,6 +111,7 @@ function CommentItemFlat({
   categoryName,
   isAdmin,
   targetCommentId,
+  userVote,
 }: CommentItemFlatProps) {
   const [isVoting, setIsVoting] = useState(false);
   const [optimisticNetVotes, setOptimisticNetVotes] = useState(comment.netVotes);
@@ -116,11 +119,6 @@ function CommentItemFlat({
   const [isEditing, setIsEditing] = useState(false);
   
   const isHighlighted = targetCommentId === comment._id;
-  
-  const userVote = useQuery(api.votes.getUserVote, {
-    targetId: comment._id,
-    targetType: "comment",
-  });
   
   const voteOnComment = useMutation(api.votes.voteOnComment);
   const editComment = useMutation(api.comments.editComment);
@@ -400,6 +398,10 @@ export default function CommentSectionFlat({
   const postSlug = (params.slug as string) || "";
   const categoryName = (params.category as string) || "";
 
+  // Batch fetch user votes for all comments
+  const commentIds = comments?.map(c => c._id) || [];
+  const { votes: userVotes } = useUserVotes(commentIds, "comment");
+
   useEffect(() => {
     if (!targetCommentId || !comments) return;
 
@@ -547,6 +549,7 @@ export default function CommentSectionFlat({
                     categoryName={categoryName}
                     isAdmin={isAdmin}
                     targetCommentId={targetCommentId}
+                    userVote={userVotes[comment._id] || null}
                   />
                 </div>
               ))}

@@ -41,6 +41,7 @@ import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { UploadIcon } from "@/components/ui/upload";
 import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
+import { useUserVotes } from "@/hooks/use-user-votes";
 
 type AttachmentType = {
   id: string;
@@ -127,6 +128,8 @@ interface CommentItemProps {
   };
   isDragging?: boolean;
   isLastChild?: boolean;
+  userVote?: "upvote" | null;
+  userVotes?: Record<string, "upvote">;
 }
 
 function CommentItem({
@@ -142,6 +145,8 @@ function CommentItem({
   isAdmin,
   dragHandleProps,
   isLastChild = false,
+  userVote,
+  userVotes = {},
 }: CommentItemProps) {
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVoting, setIsVoting] = useState(false);
@@ -163,14 +168,10 @@ function CommentItem({
 
   const voteOnComment = useMutation(api.votes.voteOnComment);
   const editComment = useMutation(api.comments.editComment);
-  const userVote = useQuery(api.votes.getUserVote, {
-    targetId: comment._id,
-    targetType: "comment",
-  });
   const { handleMutationError, handleMutationSuccess } = useMutationError();
 
   const currentUserVote =
-    optimisticUserVote !== null ? optimisticUserVote : userVote;
+    optimisticUserVote !== null ? optimisticUserVote : (userVote || null);
 
   // Threading is now handled by CommentThreadContainer
 
@@ -521,6 +522,7 @@ function CommentItem({
           postSlug={postSlug}
           categoryName={categoryName}
           isAdmin={isAdmin}
+          userVotes={userVotes}
         />
       )}
     </CommentThreadContainer>
@@ -543,6 +545,7 @@ interface ReplyDragContextProps {
   postSlug: string;
   categoryName: string;
   isAdmin: boolean;
+  userVotes: Record<string, "upvote">;
 }
 
 function ReplyDragContext({
@@ -556,6 +559,7 @@ function ReplyDragContext({
   postSlug,
   categoryName,
   isAdmin,
+  userVotes,
 }: ReplyDragContextProps) {
   const reorderReplies = useMutation(api.comments.reorderCommentReplies);
   const currentMember = useQuery(api.members.getCurrentMember);
@@ -607,6 +611,7 @@ function ReplyDragContext({
             categoryName={categoryName}
             isAdmin={isAdmin}
             isLastChild={isLastChildComment(index, replies.length)}
+            userVote={userVotes[reply._id] || null}
           />
         ))}
       </div>
@@ -642,6 +647,7 @@ function ReplyDragContext({
                 categoryName={categoryName}
                 isAdmin={isAdmin}
                 isLastChild={isLastChildComment(index, replies.length)}
+                userVote={userVotes[reply._id] || null}
               />
             </SortableCommentItem>
           ))}
@@ -675,6 +681,24 @@ export default function CommentSection({
   // Get post slug and category name from the post query or params
   const postSlug = (params.slug as string) || "";
   const categoryName = (params.category as string) || "";
+
+  // Collect all comment IDs for batch vote fetching
+  const collectCommentIds = (comments: CommentWithReplies[]): string[] => {
+    const ids: string[] = [];
+    const traverse = (commentList: CommentWithReplies[]) => {
+      for (const comment of commentList) {
+        ids.push(comment._id);
+        if (comment.replies && comment.replies.length > 0) {
+          traverse(comment.replies);
+        }
+      }
+    };
+    traverse(comments);
+    return ids;
+  };
+
+  const allCommentIds = comments ? collectCommentIds(comments) : [];
+  const { votes: userVotes } = useUserVotes(allCommentIds, "comment");
 
   useEffect(() => {
     if (!targetCommentId || !comments) return;
@@ -906,6 +930,8 @@ export default function CommentSection({
                   categoryName={categoryName}
                   isAdmin={isAdmin}
                   isLastChild={isLastChildComment(index, comments?.length || 0)}
+                  userVote={userVotes[comment._id] || null}
+                  userVotes={userVotes}
                 />
               ))}
             </div>

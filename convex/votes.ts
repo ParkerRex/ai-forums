@@ -33,6 +33,9 @@ import { getAuthenticatedMember } from "./auth";
  * or null if not voted. Used to show vote state in UI components and
  * enable vote removal functionality.
  *
+ * @deprecated Use getUserVotesBatch for better performance when checking multiple votes.
+ * This function makes individual queries which can lead to N+1 query problems.
+ * 
  * @param targetId - ID of the content being checked
  * @param targetType - Type of content (post, comment, or resource)
  * @returns Vote type ("upvote") or null if not voted
@@ -52,6 +55,13 @@ export const getUserVote = query({
     targetType: v.union(v.literal("post"), v.literal("comment"), v.literal("resource")),
   },
   handler: async (ctx, { targetId, targetType }) => {
+    // Log deprecation warning in development
+    if (process.env.NODE_ENV !== "production") {
+      console.warn(
+        "⚠️ getUserVote is deprecated. Use getUserVotesBatch for better performance when checking multiple votes."
+      );
+    }
+
     // Optional auth - return null if not authenticated
     let member;
     try {
@@ -70,6 +80,66 @@ export const getUserVote = query({
       .first();
 
     return vote?.voteType || null;
+  },
+});
+
+/**
+ * Batch retrieves the current user's votes on multiple pieces of content.
+ * 
+ * Optimized for performance by fetching all votes in a single query rather than
+ * N individual queries. Returns a map of targetId to vote type for efficient lookups.
+ * 
+ * @param targetIds - Array of content IDs to check
+ * @param targetType - Type of all content (must be homogeneous - all posts or all comments)
+ * @returns Map of targetId to vote type ("upvote") or empty object if not authenticated
+ * 
+ * @example
+ * ```typescript
+ * const userVotes = await getUserVotesBatch({
+ *   targetIds: ["post123", "post456", "post789"],
+ *   targetType: "post"
+ * });
+ * // Returns: { "post123": "upvote", "post789": "upvote" }
+ * // Note: post456 is not in the result, meaning no vote
+ * ```
+ */
+export const getUserVotesBatch = query({
+  args: {
+    targetIds: v.array(v.string()),
+    targetType: v.union(v.literal("post"), v.literal("comment"), v.literal("resource")),
+  },
+  handler: async (ctx, { targetIds, targetType }) => {
+    // Return empty object for empty input
+    if (targetIds.length === 0) {
+      return {};
+    }
+
+    // Optional auth - return empty object if not authenticated
+    let member;
+    try {
+      member = await getAuthenticatedMember(ctx);
+    } catch {
+      return {};
+    }
+
+    // Fetch all votes for this user
+    const userVotes = await ctx.db
+      .query("votes")
+      .withIndex("by_userId", (q) => q.eq("userId", member._id))
+      .collect();
+
+    // Filter for the requested targets and build the result map
+    const voteMap: Record<string, "upvote"> = {};
+    
+    for (const vote of userVotes) {
+      if (vote.targetType === targetType && targetIds.includes(vote.targetId)) {
+        if (vote.voteType === "upvote") {
+          voteMap[vote.targetId] = "upvote";
+        }
+      }
+    }
+
+    return voteMap;
   },
 });
 

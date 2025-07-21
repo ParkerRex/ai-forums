@@ -66,9 +66,15 @@ interface PostCardProps {
   post: Post;
   size?: "small" | "medium" | "large";
   currentCategoryId?: Id<"categories">;
+  userVote?: "upvote" | null;
 }
 
-export default function PostCard({ post, size = "large", currentCategoryId }: PostCardProps) {
+export default function PostCard({
+  post,
+  size = "large",
+  currentCategoryId,
+  userVote,
+}: PostCardProps) {
   const router = useRouter();
   const [isVoting, setIsVoting] = useState(false);
 
@@ -92,14 +98,25 @@ export default function PostCard({ post, size = "large", currentCategoryId }: Po
   }>(null);
 
   const voteOnPost = useMutation(api.votes.voteOnPost);
-  const userVote = useQuery(api.votes.getUserVote, {
-    targetId: post._id,
-    targetType: "post",
-  });
+
+  // Only query for user vote if not provided as prop (for standalone usage)
+  const userVoteQuery = useQuery(
+    api.votes.getUserVote,
+    userVote === undefined
+      ? {
+          targetId: post._id,
+          targetType: "post" as const,
+        }
+      : "skip",
+  );
+
   const { handleMutationError } = useMutationError();
 
+  // Use prop if provided, otherwise fall back to query
+  const actualUserVote = userVote !== undefined ? userVote : userVoteQuery;
+
   const currentUserVote =
-    optimisticUserVote !== null ? optimisticUserVote : userVote;
+    optimisticUserVote !== null ? optimisticUserVote : actualUserVote;
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -132,7 +149,7 @@ export default function PostCard({ post, size = "large", currentCategoryId }: Po
       setOptimisticUserVote(result.newVoteType);
     } catch (error) {
       setOptimisticNetVotes(post.netVotes);
-      setOptimisticUserVote(userVote || null);
+      setOptimisticUserVote(actualUserVote || null);
       handleMutationError(error, () => handleUpvote(e), {
         context: "voting on post",
       });
@@ -158,32 +175,33 @@ export default function PostCard({ post, size = "large", currentCategoryId }: Po
   };
 
   return (
-    <div className={cn(
-      "border rounded-none transition-all duration-200 group",
-      post.isPinned ? "bg-orange-50 dark:bg-orange-950/20 border-orange-200 dark:border-orange-900/30 hover:bg-orange-100/50 dark:hover:bg-orange-950/30" : "bg-card hover:bg-muted/30"
-    )}>
+    <div
+      className={cn(
+        "group rounded-none border transition-all duration-200",
+        post.isPinned
+          ? "border-orange-200 bg-orange-50 hover:bg-orange-100/50 dark:border-orange-900/30 dark:bg-orange-950/20 dark:hover:bg-orange-950/30"
+          : "bg-card hover:bg-muted/30",
+      )}
+    >
       {/* Main content - Reddit style full width */}
-      <div
-        className="cursor-pointer py-2 px-3"
-        onClick={handleClick}
-      >
+      <div className="cursor-pointer px-3 py-2" onClick={handleClick}>
         <PostPreview
           post={post as PostData}
           size={size}
           showStats={false}
           showCategory={currentCategoryId !== post.categoryId}
           showMember={true}
-          className="border-0 shadow-none hover:shadow-none hover:scale-100 p-0"
+          className="border-0 p-0 shadow-none hover:scale-100 hover:shadow-none"
         />
-        
+
         {/* Actions bar with voting - Reddit style */}
-        <div className="flex items-center space-x-3 mt-2 text-xs text-muted-foreground">
+        <div className="text-muted-foreground mt-2 flex items-center space-x-3 text-xs">
           {/* Vote button moved here */}
           <Authenticated>
             <Button
               variant="ghost"
               size="sm"
-              className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
+              className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 // For paywalled posts, navigate to post page to show paywall
@@ -202,7 +220,7 @@ export default function PostCard({ post, size = "large", currentCategoryId }: Po
                 size={12}
                 className={`mr-1 transition-colors ${
                   currentUserVote === "upvote"
-                    ? "text-orange-500 fill-orange-500"
+                    ? "fill-orange-500 text-orange-500"
                     : "text-muted-foreground hover:text-orange-500"
                 }`}
               />
@@ -217,26 +235,26 @@ export default function PostCard({ post, size = "large", currentCategoryId }: Po
               <Button
                 variant="ghost"
                 size="sm"
-                className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
+                className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
                 onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
                 onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
               >
                 <ArrowBigUpIcon
                   ref={upvoteIconRef}
                   size={12}
-                  className="mr-1 text-muted-foreground hover:text-orange-500"
+                  className="text-muted-foreground mr-1 hover:text-orange-500"
                 />
                 <span className="font-medium">{optimisticNetVotes}</span>
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
-          
+
           {/* Comments */}
           <Authenticated>
             <Button
               variant="ghost"
               size="sm"
-              className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
+              className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
               onClick={(e) => {
                 e.stopPropagation();
                 handleClick();
@@ -260,7 +278,7 @@ export default function PostCard({ post, size = "large", currentCategoryId }: Po
               <Button
                 variant="ghost"
                 size="sm"
-                className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
+                className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
                 onMouseEnter={() => commentIconRef.current?.startAnimation()}
                 onMouseLeave={() => commentIconRef.current?.stopAnimation()}
               >
@@ -273,13 +291,13 @@ export default function PostCard({ post, size = "large", currentCategoryId }: Po
               </Button>
             </MembershipCTAModal>
           </Unauthenticated>
-          
+
           {/* Bookmark and Share */}
           <PostBookmarkButton targetId={post._id} targetType="post" size="sm" />
           <Button
             variant="ghost"
             size="sm"
-            className="px-2 py-1 h-auto hover:bg-muted/50 rounded-none transition-colors"
+            className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
             onClick={(e) => {
               e.stopPropagation();
               handleShare(e);
