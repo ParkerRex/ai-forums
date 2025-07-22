@@ -4,6 +4,7 @@ import { MDXRemote } from 'next-mdx-remote/rsc';
 import Link from 'next/link';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github.css';
+import { HTMLAttributes, AnchorHTMLAttributes } from 'react';
 
 interface BlogPostPageProps {
   params: Promise<{
@@ -11,26 +12,35 @@ interface BlogPostPageProps {
   }>;
 }
 
+type HeadingProps = HTMLAttributes<HTMLHeadingElement>;
+type ParagraphProps = HTMLAttributes<HTMLParagraphElement>;
+type ListProps = HTMLAttributes<HTMLUListElement | HTMLOListElement>;
+type ListItemProps = HTMLAttributes<HTMLLIElement>;
+type CodeProps = HTMLAttributes<HTMLElement> & { children?: React.ReactNode };
+type PreProps = HTMLAttributes<HTMLPreElement>;
+type BlockquoteProps = HTMLAttributes<HTMLQuoteElement>;
+type AnchorProps = AnchorHTMLAttributes<HTMLAnchorElement>;
+
 // Custom components for MDX
 const components = {
-  h1: (props: any) => <h1 className="text-3xl font-bold mt-8 mb-4" {...props} />,
-  h2: (props: any) => <h2 className="text-2xl font-bold mt-6 mb-3" {...props} />,
-  h3: (props: any) => <h3 className="text-xl font-bold mt-4 mb-2" {...props} />,
-  p: (props: any) => <p className="mb-4 leading-7" {...props} />,
-  ul: (props: any) => <ul className="list-disc list-inside mb-4 space-y-1" {...props} />,
-  ol: (props: any) => <ol className="list-decimal list-inside mb-4 space-y-1" {...props} />,
-  li: (props: any) => <li className="ml-4" {...props} />,
-  code: (props: any) => {
+  h1: (props: HeadingProps) => <h1 className="text-3xl font-bold mt-8 mb-4" {...props} />,
+  h2: (props: HeadingProps) => <h2 className="text-2xl font-bold mt-6 mb-3" {...props} />,
+  h3: (props: HeadingProps) => <h3 className="text-xl font-bold mt-4 mb-2" {...props} />,
+  p: (props: ParagraphProps) => <p className="mb-4 leading-7" {...props} />,
+  ul: (props: ListProps) => <ul className="list-disc list-inside mb-4 space-y-1" {...props} />,
+  ol: (props: ListProps) => <ol className="list-decimal list-inside mb-4 space-y-1" {...props} />,
+  li: (props: ListItemProps) => <li className="ml-4" {...props} />,
+  code: (props: CodeProps) => {
     const { children, ...rest } = props;
     return <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...rest}>{children}</code>;
   },
-  pre: (props: any) => (
+  pre: (props: PreProps) => (
     <pre className="bg-muted p-4 rounded-none overflow-x-auto mb-4 text-sm" {...props} />
   ),
-  blockquote: (props: any) => (
+  blockquote: (props: BlockquoteProps) => (
     <blockquote className="border-l-4 border-border pl-4 italic mb-4" {...props} />
   ),
-  a: (props: any) => (
+  a: (props: AnchorProps) => (
     <a className="text-primary hover:underline" {...props} />
   ),
 };
