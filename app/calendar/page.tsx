@@ -25,6 +25,7 @@ import { useState } from "react";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { EventModal } from "@/components/calendar/event-modal";
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Plus } from "lucide-react";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
@@ -91,6 +92,23 @@ export default function CalendarPage() {
           </MembershipCTAModal>
         </Unauthenticated>
       </div>
+
+      {/* WIP Alert */}
+      <Alert className="mb-6 border-[#00794c]/20 bg-[#00794c]/5">
+        <AlertTitle>Work in Progress</AlertTitle>
+        <AlertDescription>
+          This calendar feature is currently under development. Track progress on{" "}
+          <a 
+            href="https://github.com/your-repo/issues/69" 
+            className="underline text-[#00794c] hover:text-[#00794c]/80"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            GitHub Issue #69
+          </a>
+          .
+        </AlertDescription>
+      </Alert>
 
       {/* Main calendar grid component */}
       {/* Handles month navigation, date selection, and event display */}
