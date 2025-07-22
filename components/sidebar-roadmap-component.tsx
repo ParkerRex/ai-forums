@@ -4,6 +4,8 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useGitHubIssues } from "@/lib/github";
 import { Loader2, ChevronDown } from "lucide-react";
+import { BugReportModal } from "@/components/bug-report-modal";
+import { FeatureRequestModal } from "@/components/feature-request-modal";
 
 const CACHE_KEY = "vai_roadmap_cache";
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
@@ -12,6 +14,8 @@ export function SidebarRoadmapComponent() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [cachedIssues, setCachedIssues] = useState<typeof issues>([]);
   const [hasLoadedCache, setHasLoadedCache] = useState(false);
+  const [isBugModalOpen, setIsBugModalOpen] = useState(false);
+  const [isFeatureModalOpen, setIsFeatureModalOpen] = useState(false);
 
   const { issues, isLoading, error } = useGitHubIssues(1);
 
@@ -107,14 +111,30 @@ export function SidebarRoadmapComponent() {
         </div>
       )}
       
-      <a
-        href="https://github.com/joinvai/vai-vex/issues"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-block text-xs text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
-      >
-        Submit feedback
-      </a>
+      <div className="flex gap-2 text-xs">
+        <button
+          onClick={() => setIsBugModalOpen(true)}
+          className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+        >
+          Report Bug
+        </button>
+        <span className="text-gray-400 dark:text-gray-500">|</span>
+        <button
+          onClick={() => setIsFeatureModalOpen(true)}
+          className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 hover:underline"
+        >
+          Request Feature
+        </button>
+      </div>
+      
+      <BugReportModal 
+        isOpen={isBugModalOpen} 
+        onClose={() => setIsBugModalOpen(false)} 
+      />
+      <FeatureRequestModal 
+        isOpen={isFeatureModalOpen} 
+        onClose={() => setIsFeatureModalOpen(false)} 
+      />
     </div>
   );
 }

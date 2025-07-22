@@ -37,7 +37,8 @@
       "mcp__convex__envList",
       "mcp__convex__status",
       "mcp__convex__runOneoffQuery",
-      "mcp__convex__tables"
+      "mcp__convex__tables",
+      "WebFetch(domain:neil.computer)"
     ],
     "deny": []
   }

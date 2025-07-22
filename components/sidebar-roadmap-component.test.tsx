@@ -12,6 +12,17 @@ vi.mock("@/lib/github", () => ({
   useGitHubIssues: mockUseGitHubIssues,
 }));
 
+// Mock the modal components
+vi.mock("@/components/bug-report-modal", () => ({
+  BugReportModal: ({ isOpen }: { isOpen: boolean }) => 
+    isOpen ? <div data-testid="bug-report-modal">Bug Report Modal</div> : null,
+}));
+
+vi.mock("@/components/feature-request-modal", () => ({
+  FeatureRequestModal: ({ isOpen }: { isOpen: boolean }) => 
+    isOpen ? <div data-testid="feature-request-modal">Feature Request Modal</div> : null,
+}));
+
 import { SidebarRoadmapComponent } from "./sidebar-roadmap-component";
 
 describe("SidebarRoadmapComponent", () => {
@@ -89,7 +100,7 @@ describe("SidebarRoadmapComponent", () => {
     expect(screen.getByText("Test Issue 2")).toBeInTheDocument();
   });
 
-  it("shows Submit feedback link", () => {
+  it("shows Report Bug and Request Feature buttons", () => {
     mockUseGitHubIssues.mockReturnValue({
       issues: [],
       isLoading: false,
@@ -98,10 +109,41 @@ describe("SidebarRoadmapComponent", () => {
 
     render(<SidebarRoadmapComponent />);
 
-    const feedbackLink = screen.getByText("Submit feedback");
-    expect(feedbackLink).toBeInTheDocument();
-    expect(feedbackLink).toHaveAttribute("href", "https://github.com/joinvai/vai-vex/issues");
-    expect(feedbackLink).toHaveAttribute("target", "_blank");
+    const bugButton = screen.getByText("Report Bug");
+    const featureButton = screen.getByText("Request Feature");
+    
+    expect(bugButton).toBeInTheDocument();
+    expect(featureButton).toBeInTheDocument();
+  });
+
+  it("opens bug report modal when Report Bug is clicked", () => {
+    mockUseGitHubIssues.mockReturnValue({
+      issues: [],
+      isLoading: false,
+      error: null,
+    });
+
+    render(<SidebarRoadmapComponent />);
+
+    const bugButton = screen.getByText("Report Bug");
+    fireEvent.click(bugButton);
+
+    expect(screen.getByTestId("bug-report-modal")).toBeInTheDocument();
+  });
+
+  it("opens feature request modal when Request Feature is clicked", () => {
+    mockUseGitHubIssues.mockReturnValue({
+      issues: [],
+      isLoading: false,
+      error: null,
+    });
+
+    render(<SidebarRoadmapComponent />);
+
+    const featureButton = screen.getByText("Request Feature");
+    fireEvent.click(featureButton);
+
+    expect(screen.getByTestId("feature-request-modal")).toBeInTheDocument();
   });
 
   it("shows first 3 issues when collapsed", () => {
@@ -146,9 +188,10 @@ describe("SidebarRoadmapComponent", () => {
 
     render(<SidebarRoadmapComponent />);
 
-    // Find and click the chevron button
-    const chevronButton = screen.getByRole("button", { name: "" });
-    fireEvent.click(chevronButton);
+    // Find and click the chevron button (first button without text)
+    const buttons = screen.getAllByRole("button");
+    const chevronButton = buttons.find(btn => btn.textContent === "");
+    fireEvent.click(chevronButton!);
 
     // All issues should now be visible
     expect(screen.getByText("Issue 1")).toBeInTheDocument();

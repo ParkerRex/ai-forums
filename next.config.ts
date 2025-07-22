@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
+import createMDX from '@next/mdx';
 
 const nextConfig: NextConfig = {
+  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
   webpack: (config, { isServer }) => {
     // Handle canvas module for react-pdf
     if (isServer) {
@@ -65,4 +67,13 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+// Configure MDX
+const withMDX = createMDX({
+  // Optionally provide remark and rehype plugins
+  options: {
+    remarkPlugins: [],
+    rehypePlugins: [],
+  },
+});
+
+export default withMDX(nextConfig);

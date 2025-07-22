@@ -1,27 +1,47 @@
-"use client";
-import PostHeader from '@/components/posts/post-header';
-import PostList from '@/components/posts/post-list';
-import PostSidebar from '@/components/posts/post-sidebar';
-import React, { useState } from 'react';
+import Link from 'next/link';
+import { getAllPosts } from '@/lib/blog';
 
 export default function BlogPage() {
-  const [sortBy, setSortBy] = useState<"newest" | "popular" | "trending">("newest");
-
+  const posts = getAllPosts();
+  
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">VAI Blog</h1>
-        {/* Use semantic color utility linked to CSS variables instead of hardcoded gray */}
-        <p className="text-muted-foreground">Free articles and insights from the AI engineering community</p>
+    <div className="max-w-4xl mx-auto px-4 py-12">
+      <div className="mb-8">
+        <h1 className="text-2xl font-mono font-bold mb-4">Blog</h1>
       </div>
-      <PostHeader sortBy={sortBy} onSortChange={setSortBy} />
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
-        <div className="lg:col-span-3">
-          <PostList sortBy={sortBy} freeOnly={true} />
-        </div>
-        <div className="lg:col-span-1">
-          <PostSidebar />
-        </div>
+      
+      {/* Minimalist table design inspired by neil.computer */}
+      <div className="font-mono text-sm">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-border">
+              <th className="text-left py-2 pr-8 font-normal text-muted-foreground">Date</th>
+              <th className="text-left py-2 font-normal text-muted-foreground">Title</th>
+            </tr>
+          </thead>
+          <tbody>
+            {posts.map((post) => (
+              <tr key={post.slug} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
+                <td className="py-3 pr-8 text-muted-foreground whitespace-nowrap">
+                  {new Date(post.date).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit'
+                  }).replace(/\//g, '-')}
+                </td>
+                <td className="py-3">
+                  <Link 
+                    href={`/blog/${post.slug}`}
+                    className="text-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
+                  >
+                    {post.title}
+                    <span className="text-muted-foreground">→</span>
+                  </Link>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );
