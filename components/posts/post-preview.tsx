@@ -190,11 +190,11 @@ export default function PostPreview({
             {/* Title */}
             <Link
               href={postUrl}
-              className="text-foreground hover:text-primary block transition-colors"
+              className="text-foreground hover:text-primary block transition-colors text-4xl"
             >
               <h3
                 className={cn(
-                  "line-clamp-2 font-medium leading-tight",
+                  "line-clamp-2 leading-tight text-[32px]",
                   size === "small" ? "text-sm" : "text-base",
                 )}
               >
@@ -204,7 +204,7 @@ export default function PostPreview({
 
             {/* Content excerpt */}
             {excerpt && (
-              <p className="text-muted-foreground mt-1 line-clamp-2 text-sm leading-snug">
+              <p className="text-muted-foreground mt-1 line-clamp-2 text-[14px] leading-snug">
                 {excerpt}
               </p>
             )}

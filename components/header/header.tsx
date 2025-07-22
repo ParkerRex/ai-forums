@@ -44,7 +44,7 @@ export default function Header() {
 
   return (
     <HeaderProvider>
-      <header className="bg-background sticky top-0 z-50 border-b-[.25px] border-black dark:border-white">
+      <header className="bg-background sticky top-0 z-50 border-b-[0.5px] border-black/20 dark:border-white/20">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex h-[60px] items-center justify-between">
             <div className="flex items-center space-x-8">

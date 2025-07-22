@@ -180,4 +180,20 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Text selection styles for light mode */
+  ::selection {
+    @apply bg-black text-white;
+  }
+  ::-moz-selection {
+    @apply bg-black text-white;
+  }
+  
+  /* Text selection styles for dark mode */
+  .dark ::selection {
+    @apply bg-white text-black;
+  }
+  .dark ::-moz-selection {
+    @apply bg-white text-black;
+  }
 }
