@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Mona_Sans, DM_Mono } from "next/font/google";
 import "./globals.css";
 import ConvexClientProvider from "@/components/convex-client-provider";
 import { ClerkProvider } from "@clerk/nextjs";
@@ -11,23 +10,14 @@ import { GlobalSearch } from "@/components/header/global-search";
 import { Footer } from "@/components/header/footer";
 import { ActivateSubscriptionBanner } from "@/components/payments/activate-subscription-banner";
 
-// Google fonts
-const monaSans = Mona_Sans({
-  variable: "--font-mona-sans",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"], // Including multiple weights
-  display: "swap",
-});
+import localFont from "next/font/local";
 
-const dmMono = DM_Mono({
-  variable: "--font-mono-sans",
-  subsets: ["latin"],
-  weight: "500", // DM Mono has 300, 400, 500 weights
-  display: "swap",
+const myFont = localFont({
+  src: "../public/fonts/MonaspaceArgon-Regular.otf",
 });
 
 export const metadata: Metadata = {
-  title: "The Place AI Engineers Build Together",
+  title: "The Place AI Engineers Hang Out and Learn",
   description:
     "The Best Place to Learn Alongside Engineers from companies like Google and Microsoft",
   icons: {
@@ -42,7 +32,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${dmMono.variable} ${monaSans.variable} antialiased`}>
+      <body className={`${myFont.className} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
