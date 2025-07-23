@@ -99,7 +99,7 @@ export default function CalendarPage() {
         <AlertDescription>
           This calendar feature is currently under development. Track progress on{" "}
           <a 
-            href="https://github.com/your-repo/issues/69" 
+            href="https://github.com/joinvai/vai/issues/69" 
             className="underline text-[#00794c] hover:text-[#00794c]/80"
             target="_blank"
             rel="noopener noreferrer"

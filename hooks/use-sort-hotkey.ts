@@ -4,13 +4,17 @@ import { useEffect, useState, useCallback } from "react";
 
 function isInputFree(e: KeyboardEvent): boolean {
   const target = e.target as HTMLElement;
+  if (!target || !target.tagName) {
+    return true;
+  }
+
   const tagName = target.tagName.toLowerCase();
-  
+
   // Don't trigger if user is typing in an input field
   if (tagName === 'input' || tagName === 'textarea' || target.contentEditable === 'true') {
     return false;
   }
-  
+
   return true;
 }
 
@@ -37,7 +41,7 @@ export function useSortHotkey({ onSortChange, isOpen: controlledIsOpen, setIsOpe
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Handle 'S' key to open sort menu
-      if (e.key.toLowerCase() === 's' && isInputFree(e) && !e.metaKey && !e.ctrlKey) {
+      if (e.key && e.key.toLowerCase() === 's' && isInputFree(e) && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
         setIsOpen(!isOpen);
         return;
