@@ -434,11 +434,31 @@ export const getPostsPaginated = query({
 
     // Combine pinned posts with paginated results for the first page
     let allPosts = paginatedResults.page;
+    let adjustedCursor = paginatedResults.continueCursor;
+    
     if (isFirstPage && pinnedPosts.length > 0) {
       // Adjust the number of regular posts to accommodate pinned posts
       const numItems = paginationOpts.numItems || 20;
       const regularPostsNeeded = Math.max(0, numItems - pinnedPosts.length);
-      allPosts = [...pinnedPosts, ...paginatedResults.page.slice(0, regularPostsNeeded)];
+      
+      // If we need fewer regular posts than what we fetched, we need to adjust the cursor
+      if (regularPostsNeeded < paginatedResults.page.length) {
+        // We need to create a new pagination to get the correct cursor position
+        const adjustedPaginationOpts = {
+          ...paginationOpts,
+          numItems: regularPostsNeeded
+        };
+        
+        const adjustedResults = await regularPostsQuery
+          .order(sortBy === "newest" ? "desc" : "desc")
+          .paginate(adjustedPaginationOpts);
+        
+        allPosts = [...pinnedPosts, ...adjustedResults.page];
+        adjustedCursor = adjustedResults.continueCursor;
+      } else {
+        // We can use all the regular posts we fetched
+        allPosts = [...pinnedPosts, ...paginatedResults.page];
+      }
     }
 
     // Collect unique member and category IDs
@@ -486,7 +506,8 @@ export const getPostsPaginated = query({
 
     return {
       ...paginatedResults,
-      page: enrichedPosts
+      page: enrichedPosts,
+      continueCursor: adjustedCursor
     };
   },
 });

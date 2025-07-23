@@ -33,9 +33,9 @@ export default function PostList({
   
   const { results: posts, status, loadMore } = paginatedQuery;
 
-  // Flatten the paginated results
+  // Get all posts from paginated results
   const allPosts = useMemo(() => {
-    return posts?.flat() ?? [];
+    return posts ?? [];
   }, [posts]) as
     | Array<{
         _id: Id<"posts">;

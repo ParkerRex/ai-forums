@@ -103,7 +103,7 @@ describe("PostList", () => {
 
     // Mock post query response
     usePaginatedQuery.mockReturnValue({
-      results: [mockPosts],
+      results: mockPosts,
       status: "CanLoadMore",
       loadMore: vi.fn(),
     });
@@ -195,7 +195,7 @@ describe("PostList", () => {
 
     // Mock paginated response with more to load
     usePaginatedQuery.mockReturnValue({
-      results: [mockPosts],
+      results: mockPosts,
       status: "CanLoadMore",
       loadMore: mockLoadMore,
     });
@@ -216,7 +216,7 @@ describe("PostList", () => {
 
     // Mock exhausted state
     usePaginatedQuery.mockReturnValue({
-      results: [mockPosts],
+      results: mockPosts,
       status: "Exhausted",
       loadMore: vi.fn(),
     });

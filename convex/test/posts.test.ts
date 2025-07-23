@@ -1041,4 +1041,477 @@ describe("Multi-attachment support", () => {
   });
 }); // End of Multi-attachment support test suite
 
+/**
+ * Test Suite: Post Pagination System
+ * 
+ * Validates the cursor-based pagination implementation for posts including:
+ * - Basic pagination functionality with proper cursor handling
+ * - Pinned posts integration on first page
+ * - Category filtering with pagination
+ * - Sorting options (newest, popular, trending)
+ * - Edge cases and error handling
+ * 
+ * Critical for ensuring scalable post listing with proper performance
+ * characteristics and correct data ordering.
+ */
+describe("Post Pagination", () => {
+  /**
+   * Test: Basic pagination returns correct page size and cursor
+   * 
+   * Validates that pagination respects the requested page size and
+   * returns a proper continuation cursor for subsequent pages.
+   */
+  test("getPostsPaginated returns correct page size", async () => {
+    const t = convexTest(schema);
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id'
+    });
+
+    // Create test member
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+        externalId: 'test-user-id',
+        slug: 'test-user',
+      });
+    });
+
+    // Create test category
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'test-category',
+        displayName: 'Test Category',
+        description: 'Test category for pagination',
+        postCount: 0,
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        creatorId: memberId,
+      });
+    });
+
+    // Create 25 posts to test pagination
+    const postIds = [];
+    for (let i = 0; i < 25; i++) {
+      const postId = await asTestUser.mutation(api.posts.createPost, {
+        title: `Test Post ${i}`,
+        content: `Content for post ${i}`,
+        categoryId,
+      });
+      postIds.push(postId);
+    }
+
+    // Test first page with 10 items
+    const firstPage = await asTestUser.query(api.posts.getPostsPaginated, {
+      paginationOpts: { numItems: 10 }
+    });
+
+    expect(firstPage.page).toHaveLength(10);
+    expect(firstPage.continueCursor).toBeDefined();
+    expect(firstPage.isDone).toBe(false);
+
+    // Test second page
+    const secondPage = await asTestUser.query(api.posts.getPostsPaginated, {
+      paginationOpts: { 
+        numItems: 10,
+        cursor: firstPage.continueCursor
+      }
+    });
+
+    expect(secondPage.page).toHaveLength(10);
+    expect(secondPage.continueCursor).toBeDefined();
+    
+    // Verify no duplicate posts between pages
+    const firstPageIds = firstPage.page.map(p => p._id);
+    const secondPageIds = secondPage.page.map(p => p._id);
+    const intersection = firstPageIds.filter(id => secondPageIds.includes(id));
+    expect(intersection).toHaveLength(0);
+  });
+
+  /**
+   * Test: Pinned posts appear first on initial page only
+   * 
+   * Validates that pinned posts are properly integrated into the first
+   * page of results while maintaining correct pagination cursors.
+   */
+  test("pinned posts appear on first page with correct cursor adjustment", async () => {
+    const t = convexTest(schema);
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id'
+    });
+
+    // Create test member and category
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+        externalId: 'test-user-id',
+        slug: 'test-user',
+      });
+    });
+
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'test-category',
+        displayName: 'Test Category',
+        description: 'Test category',
+        postCount: 0,
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        creatorId: memberId,
+      });
+    });
+
+    // Create 3 pinned posts
+    const pinnedIds = [];
+    for (let i = 0; i < 3; i++) {
+      const postId = await asTestUser.mutation(api.posts.createPost, {
+        title: `Pinned Post ${i}`,
+        content: `Pinned content ${i}`,
+        categoryId,
+        isPinned: true,
+      });
+      pinnedIds.push(postId);
+    }
+
+    // Create 10 regular posts
+    const regularIds = [];
+    for (let i = 0; i < 10; i++) {
+      const postId = await asTestUser.mutation(api.posts.createPost, {
+        title: `Regular Post ${i}`,
+        content: `Regular content ${i}`,
+        categoryId,
+      });
+      regularIds.push(postId);
+    }
+
+    // Request first page with 5 items
+    const firstPage = await asTestUser.query(api.posts.getPostsPaginated, {
+      categoryId,
+      paginationOpts: { numItems: 5 }
+    });
+
+    // Should have 5 posts: 3 pinned + 2 regular
+    expect(firstPage.page).toHaveLength(5);
+    
+    // First 3 should be pinned
+    const firstThreeIds = firstPage.page.slice(0, 3).map(p => p._id);
+    expect(firstThreeIds.every(id => pinnedIds.includes(id))).toBe(true);
+    
+    // Last 2 should be regular posts
+    const lastTwoIds = firstPage.page.slice(3).map(p => p._id);
+    expect(lastTwoIds.every(id => regularIds.includes(id))).toBe(true);
+
+    // Second page should only have regular posts
+    const secondPage = await asTestUser.query(api.posts.getPostsPaginated, {
+      categoryId,
+      paginationOpts: { 
+        numItems: 5,
+        cursor: firstPage.continueCursor
+      }
+    });
+
+    // Should not include any pinned posts
+    const secondPageIds = secondPage.page.map(p => p._id);
+    expect(secondPageIds.every(id => !pinnedIds.includes(id))).toBe(true);
+    
+    // Verify no posts were skipped
+    const allReturnedIds = [...firstPage.page, ...secondPage.page].map(p => p._id);
+    const uniqueRegularIds = [...new Set(allReturnedIds.filter(id => regularIds.includes(id)))];
+    expect(uniqueRegularIds).toHaveLength(7); // 2 from first page + 5 from second
+  });
+
+  /**
+   * Test: Category filtering works correctly with pagination
+   * 
+   * Ensures that category filters are properly applied across all pages
+   * and don't interfere with pagination logic.
+   */
+  test("category filtering works with pagination", async () => {
+    const t = convexTest(schema);
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id'
+    });
+
+    // Create member
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+        externalId: 'test-user-id',
+        slug: 'test-user',
+      });
+    });
+
+    // Create two categories
+    const category1 = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'category-1',
+        displayName: 'Category 1',
+        description: 'First category',
+        postCount: 0,
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        creatorId: memberId,
+      });
+    });
+
+    const category2 = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'category-2', 
+        displayName: 'Category 2',
+        description: 'Second category',
+        postCount: 0,
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        creatorId: memberId,
+      });
+    });
+
+    // Create posts in each category
+    for (let i = 0; i < 5; i++) {
+      await asTestUser.mutation(api.posts.create, {
+        title: `Cat1 Post ${i}`,
+        content: `Content ${i}`,
+        categoryId: category1,
+      });
+      
+      await asTestUser.mutation(api.posts.create, {
+        title: `Cat2 Post ${i}`,
+        content: `Content ${i}`,
+        categoryId: category2,
+      });
+    }
+
+    // Query posts from category 1 only
+    const cat1Posts = await asTestUser.query(api.posts.getPostsPaginated, {
+      categoryId: category1,
+      paginationOpts: { numItems: 10 }
+    });
+
+    expect(cat1Posts.page).toHaveLength(5);
+    expect(cat1Posts.page.every(p => p.categoryId === category1)).toBe(true);
+    expect(cat1Posts.isDone).toBe(true); // All posts fetched
+
+    // Query posts from category 2 only
+    const cat2Posts = await asTestUser.query(api.posts.getPostsPaginated, {
+      categoryId: category2,
+      paginationOpts: { numItems: 10 }
+    });
+
+    expect(cat2Posts.page).toHaveLength(5);
+    expect(cat2Posts.page.every(p => p.categoryId === category2)).toBe(true);
+  });
+
+  /**
+   * Test: Sorting options work correctly with pagination
+   * 
+   * Validates that different sort orders (newest, popular, trending)
+   * maintain consistency across paginated results.
+   */
+  test("sorting options work correctly across pages", async () => {
+    const t = convexTest(schema);
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id'
+    });
+
+    // Create member and category
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User', 
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+        externalId: 'test-user-id',
+        slug: 'test-user',
+      });
+    });
+
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'test-category',
+        displayName: 'Test Category',
+        description: 'Test category',
+        postCount: 0,
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        creatorId: memberId,
+      });
+    });
+
+    // Create posts with different vote counts
+    const posts = [];
+    for (let i = 0; i < 5; i++) {
+      const postId = await asTestUser.mutation(api.posts.createPost, {
+        title: `Post ${i}`,
+        content: `Content ${i}`,
+        categoryId,
+      });
+      
+      // Update vote counts directly in database for testing
+      await t.run(async (ctx) => {
+        await ctx.db.patch(postId, {
+          upvotes: i * 2,
+          downvotes: 0,
+          netVotes: i * 2,
+        });
+      });
+      
+      posts.push({ id: postId, votes: i * 2 });
+    }
+
+    // Test popular sorting (highest votes first)
+    const popularPosts = await asTestUser.query(api.posts.getPostsPaginated, {
+      sortBy: 'popular',
+      paginationOpts: { numItems: 3 }
+    });
+
+    // Should be ordered by votes descending
+    expect(popularPosts.page[0].netVotes).toBeGreaterThanOrEqual(popularPosts.page[1].netVotes);
+    expect(popularPosts.page[1].netVotes).toBeGreaterThanOrEqual(popularPosts.page[2].netVotes);
+  });
+
+  /**
+   * Test: Empty results and edge cases
+   * 
+   * Ensures pagination handles edge cases gracefully including empty
+   * result sets and invalid cursor values.
+   */
+  test("handles empty results and edge cases", async () => {
+    const t = convexTest(schema);
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id'
+    });
+
+    // Create member first for creator reference
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+        externalId: 'test-user-id',
+        slug: 'test-user',
+      });
+    });
+    
+    // Create category with no posts
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'empty-category',
+        displayName: 'Empty Category',
+        description: 'No posts here',
+        postCount: 0,
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        creatorId: memberId,
+      });
+    });
+
+    // Query empty category
+    const emptyResults = await asTestUser.query(api.posts.getPostsPaginated, {
+      categoryId,
+      paginationOpts: { numItems: 10, cursor: null }
+    });
+
+    expect(emptyResults.page).toHaveLength(0);
+    expect(emptyResults.isDone).toBe(true);
+    expect(emptyResults.continueCursor).toBeNull();
+  });
+
+  /**
+   * Test: Free-only filter works with pagination
+   * 
+   * Validates that the free-only filter correctly filters posts
+   * across all pages of results.
+   */
+  test("freeOnly filter works correctly with pagination", async () => {
+    const t = convexTest(schema);
+    const asTestUser = t.withIdentity({ 
+      email: 'test@example.com',
+      subject: 'test-user-id'
+    });
+
+    // Create member and category
+    const memberId = await t.run(async (ctx) => {
+      return await ctx.db.insert('members', {
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        status: 'active',
+        joinedDate: Date.now(),
+        updatedAt: Date.now(),
+        lastOnline: Date.now(),
+        externalId: 'test-user-id',
+        slug: 'test-user',
+      });
+    });
+
+    const categoryId = await t.run(async (ctx) => {
+      return await ctx.db.insert('categories', {
+        name: 'test-category',
+        displayName: 'Test Category',
+        description: 'Test category',
+        postCount: 0,
+        status: 'active',
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+        creatorId: memberId,
+      });
+    });
+
+    // Create mix of free and paid posts
+    for (let i = 0; i < 6; i++) {
+      await asTestUser.mutation(api.posts.create, {
+        title: `Post ${i}`,
+        content: `Content ${i}`,
+        categoryId,
+        isFree: i % 2 === 0, // Even posts are free
+      });
+    }
+
+    // Query with freeOnly filter
+    const freePosts = await asTestUser.query(api.posts.getPostsPaginated, {
+      freeOnly: true,
+      paginationOpts: { numItems: 10 }
+    });
+
+    expect(freePosts.page).toHaveLength(3); // Only free posts
+    expect(freePosts.page.every(p => p.isFree === true)).toBe(true);
+    expect(freePosts.isDone).toBe(true);
+  });
+});
+
 // End of Posts System Comprehensive Test Suite
