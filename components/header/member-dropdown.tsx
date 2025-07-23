@@ -78,7 +78,7 @@ export function MemberDropdown() {
       {/* Avatar-only trigger */}
       <DropdownMenuTrigger asChild>
         <button
-          className="relative rounded-full outline-none ring-2 ring-transparent hover:ring-muted-foreground/20 transition-all duration-200 focus-visible:ring-ring"
+          className="relative rounded-none outline-none ring-2 ring-transparent hover:ring-muted-foreground/20 transition-all duration-200 focus-visible:ring-ring"
           aria-label="Open user menu"
         >
           <Avatar className="h-8 w-8">

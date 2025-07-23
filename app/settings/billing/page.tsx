@@ -12,7 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CreditCard, ExternalLink, Receipt, AlertCircle } from "lucide-react";
+import { CreditCard, ExternalLink, Receipt, AlertCircle, Calendar, DollarSign, Zap, Shield } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
@@ -115,7 +115,20 @@ export default function BillingPage() {
   // Show loading state while subscription information is being fetched
   // This prevents rendering incomplete UI and provides user feedback
   if (!subscriptionInfo) {
-    return <div>Loading...</div>;
+    return (
+      <div className="container max-w-4xl py-8">
+        <div className="animate-pulse space-y-8">
+          <div>
+            <div className="h-8 w-64 bg-muted rounded"></div>
+            <div className="h-4 w-96 bg-muted rounded mt-2"></div>
+          </div>
+          <div className="space-y-4">
+            <div className="h-48 bg-muted rounded-lg"></div>
+            <div className="h-32 bg-muted rounded-lg"></div>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   /**
@@ -156,12 +169,12 @@ export default function BillingPage() {
   };
 
   return (
-    <div className="container max-w-4xl py-8">
+    <div className="container max-w-4xl py-8 space-y-8">
       {/* Page Header Section */}
       {/* Provides clear context about what this page contains and its purpose */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Billing & Subscription</h1>
-        <p className="text-muted-foreground mt-2">
+      <div className="space-y-1">
+        <h1 className="text-3xl font-bold tracking-tight">Billing & Subscription</h1>
+        <p className="text-muted-foreground">
           Manage your subscription and payment settings
         </p>
       </div>
@@ -169,11 +182,14 @@ export default function BillingPage() {
       {/* Current Plan Card */}
       {/* Main card displaying the user's current subscription tier and status */}
       {/* This is the primary information users need to see about their account */}
-      <Card className="mb-6">
+      <Card>
         <CardHeader>
           {/* Header with plan title and tier badge for quick identification */}
           <div className="flex items-center justify-between">
-            <CardTitle>Current Plan</CardTitle>
+            <div className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              <CardTitle>Current Plan</CardTitle>
+            </div>
             {/* Tier badge with dynamic colors based on subscription level */}
             <Badge
               className={getTierBadgeColor(subscriptionInfo.tier || "free")}
@@ -186,9 +202,9 @@ export default function BillingPage() {
           <div className="space-y-4">
             {/* Subscription Status Section */}
             {/* Shows current status with color-coded badges for quick recognition */}
-            <div>
-              <p className="text-muted-foreground text-sm">Status</p>
-              <div className="mt-1 flex items-center gap-2">
+            <div className="bg-muted/50 rounded-lg p-4">
+              <p className="text-muted-foreground text-sm font-medium mb-2">Subscription Status</p>
+              <div className="flex items-center gap-2">
                 {/* Active status badge - green to indicate positive state */}
                 {subscriptionInfo.isActive && (
                   <Badge
@@ -236,29 +252,31 @@ export default function BillingPage() {
               <>
                 <Separator />
                 {/* Two-column grid for billing interval and last payment info */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-muted-foreground text-sm">
-                      Billing Interval
-                    </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <Calendar className="h-4 w-4" />
+                      <span>Billing Interval</span>
+                    </div>
                     {/* Shows whether user is billed monthly or yearly */}
-                    <p className="font-medium">
+                    <p className="font-semibold text-lg">
                       {subscriptionInfo.billingIntervalDisplay || "N/A"}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-muted-foreground text-sm">
-                      Last Payment
-                    </p>
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                      <DollarSign className="h-4 w-4" />
+                      <span>Last Payment</span>
+                    </div>
                     {/* Shows last payment amount and date for transparency */}
-                    <p className="font-medium">
+                    <p className="font-semibold text-lg">
                       {subscriptionInfo.lastPaymentAmount || "N/A"}
-                      {subscriptionInfo.lastPaymentDate && (
-                        <span className="text-muted-foreground ml-1 text-sm">
-                          on {subscriptionInfo.lastPaymentDate}
-                        </span>
-                      )}
                     </p>
+                    {subscriptionInfo.lastPaymentDate && (
+                      <p className="text-muted-foreground text-sm">
+                        {subscriptionInfo.lastPaymentDate}
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -268,39 +286,45 @@ export default function BillingPage() {
                 {subscriptionInfo.renewalInfo &&
                   subscriptionInfo.isActive &&
                   !subscriptionInfo.cancelAtPeriodEnd && (
-                    <>
-                      <Separator />
-                      <div>
-                        <p className="text-muted-foreground text-sm">
-                          Next Billing Date
-                        </p>
-                        {/* Shows next billing date with descriptive renewal text */}
-                        <p className="font-medium">
-                          {subscriptionInfo.renewalInfo.nextBillingDate}
-                          <span className="text-muted-foreground ml-2 text-sm">
-                            ({subscriptionInfo.renewalInfo.renewalText})
-                          </span>
-                        </p>
+                    <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-4">
+                      <div className="flex items-start gap-3">
+                        <div className="p-2 bg-primary/10 rounded-full mt-0.5">
+                          <Calendar className="h-4 w-4 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">
+                            Next Billing Date
+                          </p>
+                          {/* Shows next billing date with descriptive renewal text */}
+                          <p className="font-semibold">
+                            {subscriptionInfo.renewalInfo.nextBillingDate}
+                          </p>
+                          <p className="text-muted-foreground text-sm">
+                            {subscriptionInfo.renewalInfo.renewalText}
+                          </p>
+                        </div>
                       </div>
-                    </>
+                    </div>
                   )}
 
                 {/* Cancellation Notice Section */}
                 {/* Warning banner for subscriptions set to cancel at period end */}
                 {/* Uses yellow color scheme to indicate important information */}
                 {subscriptionInfo.cancelAtPeriodEnd && (
-                  <div className="rounded-none border border-yellow-200 bg-yellow-50 p-3 dark:border-yellow-800 dark:bg-yellow-900/20">
-                    <div className="flex items-start gap-2">
+                  <div className="rounded-lg border-2 border-yellow-200 bg-yellow-50 p-4 dark:border-yellow-800 dark:bg-yellow-900/20">
+                    <div className="flex items-start gap-3">
                       {/* Alert icon to draw attention to the cancellation notice */}
-                      <AlertCircle className="mt-0.5 h-4 w-4 text-yellow-600" />
-                      <div className="text-sm">
-                        <p className="font-medium text-yellow-800 dark:text-yellow-200">
+                      <div className="p-2 bg-yellow-100 dark:bg-yellow-900/50 rounded-full">
+                        <AlertCircle className="h-4 w-4 text-yellow-600 dark:text-yellow-500" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="font-semibold text-yellow-800 dark:text-yellow-200">
                           Subscription set to cancel
                         </p>
                         {/* Clear information about when the subscription will end */}
-                        <p className="mt-1 text-yellow-700 dark:text-yellow-300">
+                        <p className="text-sm text-yellow-700 dark:text-yellow-300">
                           Your subscription will end on{" "}
-                          {subscriptionInfo.renewalInfo?.nextBillingDate}
+                          <span className="font-medium">{subscriptionInfo.renewalInfo?.nextBillingDate}</span>
                         </p>
                       </div>
                     </div>
@@ -322,32 +346,40 @@ export default function BillingPage() {
       {subscriptionInfo.tier && (
         <Card>
           <CardHeader>
-            <CardTitle>Subscription Management</CardTitle>
-            <CardDescription>
-              Update your payment method, download invoices, or cancel your
-              subscription
-            </CardDescription>
+            <div className="flex items-center gap-2">
+              <Shield className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle>Subscription Management</CardTitle>
+                <CardDescription>
+                  Update your payment method, download invoices, or cancel your
+                  subscription
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            {/* Main action button to access Stripe customer portal */}
-            {/* Responsive width - full on mobile, auto on larger screens */}
-            <Button
-              onClick={handleManageSubscription}
-              disabled={isLoadingPortal}
-              className="w-full sm:w-auto"
-            >
-              {/* Credit card icon to indicate billing/payment functionality */}
-              <CreditCard className="mr-2 h-4 w-4" />
-              {/* Dynamic text based on loading state */}
-              {isLoadingPortal ? "Loading..." : "Manage Subscription"}
-              {/* External link icon to indicate navigation to external site */}
-              <ExternalLink className="ml-2 h-3 w-3" />
-            </Button>
-            {/* Informational text about the redirect to build user trust */}
-            <p className="text-muted-foreground mt-3 text-sm">
-              You&apos;ll be redirected to our secure billing portal powered by
-              Stripe
-            </p>
+            <div className="bg-muted/50 rounded-lg p-6 space-y-4">
+              {/* Main action button to access Stripe customer portal */}
+              {/* Responsive width - full on mobile, auto on larger screens */}
+              <Button
+                onClick={handleManageSubscription}
+                disabled={isLoadingPortal}
+                className="w-full sm:w-auto"
+              >
+                {/* Credit card icon to indicate billing/payment functionality */}
+                <CreditCard className="mr-2 h-4 w-4" />
+                {/* Dynamic text based on loading state */}
+                {isLoadingPortal ? "Loading..." : "Manage Subscription"}
+                {/* External link icon to indicate navigation to external site */}
+                <ExternalLink className="ml-2 h-4 w-4" />
+              </Button>
+              {/* Informational text about the redirect to build user trust */}
+              <p className="text-muted-foreground text-sm flex items-center gap-2">
+                <Shield className="h-4 w-4" />
+                You&apos;ll be redirected to our secure billing portal powered by
+                Stripe
+              </p>
+            </div>
           </CardContent>
         </Card>
       )}
@@ -357,9 +389,12 @@ export default function BillingPage() {
       {/* Provides transparency about billing and payment status */}
       {subscriptionInfo.recentPayments &&
         subscriptionInfo.recentPayments.length > 0 && (
-          <Card className="mt-6">
+          <Card>
             <CardHeader>
-              <CardTitle>Recent Payments</CardTitle>
+              <div className="flex items-center gap-2">
+                <Receipt className="h-5 w-5 text-primary" />
+                <CardTitle>Recent Payments</CardTitle>
+              </div>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -374,15 +409,17 @@ export default function BillingPage() {
                   }) => (
                     <div
                       key={payment.id}
-                      className="flex items-center justify-between py-2"
+                      className="flex items-center justify-between py-3 px-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
                     >
-                      {/* Left side: Payment details with receipt icon */}
+                      {/* Left side: Payment details with icon */}
                       <div className="flex items-center gap-3">
-                        {/* Receipt icon for visual consistency */}
-                        <Receipt className="text-muted-foreground h-4 w-4" />
-                        <div>
+                        {/* Dollar icon for visual consistency */}
+                        <div className="p-2 bg-background rounded-full">
+                          <DollarSign className="h-4 w-4 text-muted-foreground" />
+                        </div>
+                        <div className="space-y-1">
                           {/* Payment amount in bold for emphasis */}
-                          <p className="font-medium">{payment.amount}</p>
+                          <p className="font-semibold">{payment.amount}</p>
                           {/* Payment date in muted color for hierarchy */}
                           <p className="text-muted-foreground text-sm">
                             {payment.date}
@@ -402,7 +439,7 @@ export default function BillingPage() {
                             : ""
                         }
                       >
-                        {payment.status}
+                        {payment.status === "succeeded" ? "Paid" : payment.status}
                       </Badge>
                     </div>
                   ),

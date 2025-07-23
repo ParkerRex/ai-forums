@@ -27,7 +27,7 @@ export const createPortalSession = mutation({
 
     const session = await stripe.billingPortal.sessions.create({
       customer: member.stripeCustomerId,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/membership`,
+      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing`,
     });
 
     return {

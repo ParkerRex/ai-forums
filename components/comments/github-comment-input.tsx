@@ -112,7 +112,7 @@ export function GitHubCommentInput({
       const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
       const modKey = isMac ? e.metaKey : e.ctrlKey;
 
-      if (modKey) {
+      if (modKey && e.key) {
         switch (e.key.toLowerCase()) {
           case "b":
             e.preventDefault();

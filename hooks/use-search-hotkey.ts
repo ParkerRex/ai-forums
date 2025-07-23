@@ -4,13 +4,17 @@ import { useEffect, useState } from "react";
 
 function isInputFree(e: KeyboardEvent): boolean {
   const target = e.target as HTMLElement;
+  if (!target || !target.tagName) {
+    return true;
+  }
+
   const tagName = target.tagName.toLowerCase();
-  
+
   // Don't trigger if user is typing in an input field
   if (tagName === 'input' || tagName === 'textarea' || target.contentEditable === 'true') {
     return false;
   }
-  
+
   return true;
 }
 
@@ -27,7 +31,7 @@ export function useSearchHotkey() {
       }
       
       // Handle Cmd/Ctrl + K for search
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsOpen(prev => !prev);
         return;
