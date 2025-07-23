@@ -21,6 +21,7 @@
 
 import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { paginationOptsValidator } from "convex/server";
 import { Id, Doc } from "./_generated/dataModel";
 import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
@@ -295,6 +296,198 @@ export const getPosts = query({
     });
 
     return enrichedPosts;
+  },
+});
+
+/**
+ * Retrieves posts with pagination support.
+ * 
+ * This query provides cursor-based pagination for efficiently loading large sets of posts.
+ * It maintains the same filtering, sorting, and pinning logic as getPosts but returns
+ * results in a paginated format compatible with Convex's usePaginatedQuery hook.
+ * 
+ * Features:
+ * - Cursor-based pagination for efficient loading
+ * - Category filtering with pinned posts support
+ * - Sorting by newest, popular, or trending
+ * - Free-only content filtering
+ * - Maintains pinned posts at the top of each page
+ * 
+ * @param paginationOpts - Pagination options (cursor, numItems)
+ * @param categoryId - Optional category filter
+ * @param sortBy - Sort order: "newest", "popular", or "trending"
+ * @param freeOnly - If true, only returns free posts
+ * @returns Paginated results with posts and continuation cursor
+ * 
+ * @example
+ * ```typescript
+ * const { results, status, loadMore } = usePaginatedQuery(
+ *   api.posts.getPostsPaginated,
+ *   { categoryId: "cat123", sortBy: "popular" },
+ *   { initialNumItems: 20 }
+ * );
+ * ```
+ */
+export const getPostsPaginated = query({
+  args: {
+    paginationOpts: paginationOptsValidator,
+    categoryId: v.optional(v.id("categories")),
+    sortBy: v.optional(v.union(v.literal("newest"), v.literal("popular"), v.literal("trending"))),
+    freeOnly: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { paginationOpts, categoryId, sortBy = "newest", freeOnly = false }) => {
+    // For the first page, we need to include pinned posts
+    const isFirstPage = !paginationOpts.cursor;
+    let pinnedPosts: Doc<"posts">[] = [];
+    
+    if (isFirstPage) {
+      // Get pinned posts logic (same as getPosts)
+      if (categoryId) {
+        // Get category-specific pinned posts
+        pinnedPosts = await ctx.db
+          .query("posts")
+          .withIndex("by_pinned_and_category")
+          .filter(q =>
+            q.and(
+              q.eq(q.field("isPinned"), true),
+              q.eq(q.field("categoryId"), categoryId),
+              q.eq(q.field("status"), "active"),
+              q.or(
+                q.eq(q.field("pinScope"), "category"),
+                q.eq(q.field("pinScope"), "both")
+              )
+            )
+          )
+          .order("desc")
+          .collect();
+      } else {
+        // Get globally pinned posts for "all posts" view
+        pinnedPosts = await ctx.db
+          .query("posts")
+          .withIndex("by_pinned_global")
+          .filter(q =>
+            q.and(
+              q.eq(q.field("isPinned"), true),
+              q.eq(q.field("status"), "active"),
+              q.or(
+                q.eq(q.field("pinScope"), "global"),
+                q.eq(q.field("pinScope"), "both")
+              )
+            )
+          )
+          .order("desc")
+          .collect();
+      }
+
+      // Sort pinned posts by pinnedAt timestamp (newest first)
+      pinnedPosts.sort((a, b) => (b.pinnedAt || 0) - (a.pinnedAt || 0));
+
+      // Apply free-only filter to pinned posts if requested
+      if (freeOnly) {
+        pinnedPosts = pinnedPosts.filter(post => post.isFree === true);
+      }
+    }
+
+    // Build the query for regular posts
+    let query;
+    
+    // Filter by category if specified and apply sorting
+    if (categoryId) {
+      if (sortBy === "popular" || sortBy === "trending") {
+        query = ctx.db.query("posts").withIndex("by_category_and_netVotes", (q) =>
+          q.eq("categoryId", categoryId)
+        );
+      } else {
+        query = ctx.db.query("posts").withIndex("by_category_and_createdAt", (q) =>
+          q.eq("categoryId", categoryId)
+        );
+      }
+    } else {
+      if (sortBy === "popular" || sortBy === "trending") {
+        query = ctx.db.query("posts").withIndex("by_netVotes");
+      } else {
+        query = ctx.db.query("posts").withIndex("by_createdAt");
+      }
+    }
+
+    // Filter active, non-pinned posts
+    let regularPostsQuery = query
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("status"), "active"),
+          q.or(
+            q.eq(q.field("isPinned"), false),
+            q.eq(q.field("isPinned"), undefined)
+          )
+        )
+      );
+
+    // Apply free-only filter if requested
+    if (freeOnly) {
+      regularPostsQuery = regularPostsQuery.filter((q) => q.eq(q.field("isFree"), true));
+    }
+
+    // Get paginated results
+    const paginatedResults = await regularPostsQuery
+      .order(sortBy === "newest" ? "desc" : "desc")
+      .paginate(paginationOpts);
+
+    // Combine pinned posts with paginated results for the first page
+    let allPosts = paginatedResults.page;
+    if (isFirstPage && pinnedPosts.length > 0) {
+      // Adjust the number of regular posts to accommodate pinned posts
+      const numItems = paginationOpts.numItems || 20;
+      const regularPostsNeeded = Math.max(0, numItems - pinnedPosts.length);
+      allPosts = [...pinnedPosts, ...paginatedResults.page.slice(0, regularPostsNeeded)];
+    }
+
+    // Collect unique member and category IDs
+    const memberIds = Array.from(new Set(allPosts.map(post => post.memberId)));
+    const categoryIds = Array.from(new Set(allPosts.map(post => post.categoryId)));
+
+    // Fetch all members and categories in parallel
+    const [members, categories] = await Promise.all([
+      Promise.all(memberIds.map(id => ctx.db.get(id) as Promise<Doc<"members"> | null>)),
+      Promise.all(categoryIds.map(id => ctx.db.get(id) as Promise<Doc<"categories"> | null>))
+    ]);
+
+    // Create lookup maps for fast access
+    const memberMap = new Map(
+      members.map((member, index) => [memberIds[index], member])
+    );
+    const categoryMap = new Map(
+      categories.map((category, index) => [categoryIds[index], category])
+    );
+
+    // Enrich posts with member and category data
+    const enrichedPosts = allPosts.map((post) => {
+      const member = memberMap.get(post.memberId);
+      const category = categoryMap.get(post.categoryId);
+
+      return {
+        ...post,
+        member: member ? {
+          _id: member._id,
+          firstName: member.firstName,
+          lastName: member.lastName,
+          email: member.email,
+          username: member.email.split('@')[0], // Derive username from email
+          slug: member.slug || "",
+          avatarUrl: member.avatarUrl || null,
+        } : null,
+        category: category ? {
+          _id: category._id,
+          name: category.name,
+          displayName: category.displayName,
+          icon: category.icon,
+        } : null,
+      };
+    });
+
+    return {
+      ...paginatedResults,
+      page: enrichedPosts
+    };
   },
 });
 

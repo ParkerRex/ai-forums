@@ -1,10 +1,12 @@
 "use client";
-import { useQuery } from "convex/react";
+import { usePaginatedQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Id } from "@/convex/_generated/dataModel";
 import PostCard from "@/components/posts/post-card";
 import { useUserVotes } from "@/hooks/use-user-votes";
 import { useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface PostListProps {
   categoryId?: Id<"categories">;
@@ -19,12 +21,22 @@ export default function PostList({
   freeOnly = false,
   currentCategoryId,
 }: PostListProps) {
-  const posts = useQuery(api.posts.getPosts, {
-    categoryId,
-    limit: 20,
-    sortBy,
-    freeOnly,
-  }) as
+  const paginatedQuery = usePaginatedQuery(
+    api.posts.getPostsPaginated,
+    {
+      categoryId,
+      sortBy,
+      freeOnly,
+    },
+    { initialNumItems: 20 }
+  );
+  
+  const { results: posts, status, loadMore } = paginatedQuery;
+
+  // Flatten the paginated results
+  const allPosts = useMemo(() => {
+    return posts?.map(batch => batch).flat() ?? [];
+  }, [posts]) as
     | Array<{
         _id: Id<"posts">;
         title: string;
@@ -101,13 +113,13 @@ export default function PostList({
     | null;
 
   // Extract post IDs for batch vote fetching
-  const postIds = useMemo(() => posts?.map((post) => post._id) ?? [], [posts]);
+  const postIds = useMemo(() => allPosts?.map((post) => post._id) ?? [], [allPosts]);
 
   // Batch fetch all votes at once
   const { votes } = useUserVotes(postIds, "post");
 
   // Loading state
-  if (posts === undefined) {
+  if (status === "LoadingFirstPage") {
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -130,21 +142,8 @@ export default function PostList({
     );
   }
 
-  // Error state
-  if (posts === null) {
-    return (
-      <div className="space-y-2">
-        <div className="bg-card border-border/50 rounded-none border p-6 text-center">
-          <p className="text-muted-foreground">
-            Unable to load posts. Please try again later.
-          </p>
-        </div>
-      </div>
-    );
-  }
-
-  // Empty state
-  if (posts.length === 0) {
+  // Empty state - only show if we have loaded and there are no posts
+  if (!allPosts || allPosts.length === 0) {
     return (
       <div className="space-y-2">
         <div className="bg-card border-border/50 rounded-none border p-6 text-center">
@@ -158,7 +157,7 @@ export default function PostList({
 
   return (
     <div className="space-y-2">
-      {posts.map((post) => (
+      {allPosts?.map((post) => (
         <PostCard
           key={post._id}
           post={post}
@@ -167,6 +166,44 @@ export default function PostList({
           userVote={votes[post._id] || null}
         />
       ))}
+      
+      {/* Load More Button */}
+      {status === "CanLoadMore" && (
+        <div className="flex justify-center pt-4">
+          <Button
+            onClick={() => loadMore(20)}
+            variant="outline"
+            size="sm"
+            className="min-w-[120px]"
+          >
+            Load More
+          </Button>
+        </div>
+      )}
+      
+      {/* Loading More Indicator */}
+      {status === "LoadingMore" && (
+        <div className="flex justify-center pt-4">
+          <Button
+            disabled
+            variant="outline"
+            size="sm"
+            className="min-w-[120px]"
+          >
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Loading...
+          </Button>
+        </div>
+      )}
+      
+      {/* End of Posts Indicator */}
+      {status === "Exhausted" && allPosts && allPosts.length > 0 && (
+        <div className="text-center py-4">
+          <p className="text-sm text-muted-foreground">
+            You've reached the end
+          </p>
+        </div>
+      )}
     </div>
   );
 }

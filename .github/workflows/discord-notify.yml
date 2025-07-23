@@ -1,0 +1,101 @@
+name: Notify Discord on Merge to Master
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history to access commit details
+
+      - name: Get PR details
+        id: pr-details
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Get the latest commit SHA
+          COMMIT_SHA=${{ github.sha }}
+
+          # Fetch PR associated with the commit (if any)
+          PR_INFO=$(gh pr list --state merged --limit 1 --commit $COMMIT_SHA --json number,title,author,mergedAt,mergeCommitSha,changedFiles,additions,deletions,headRefName,baseRefName)
+
+          if [ -n "$PR_INFO" ]; then
+            PR_NUMBER=$(echo "$PR_INFO" | jq -r '.[0].number')
+            PR_TITLE=$(echo "$PR_INFO" | jq -r '.[0].title')
+            PR_AUTHOR=$(echo "$PR_INFO" | jq -r '.[0].author.login')
+            MERGED_AT=$(echo "$PR_INFO" | jq -r '.[0].mergedAt')
+            CHANGED_FILES=$(echo "$PR_INFO" | jq -r '.[0].changedFiles')
+            ADDITIONS=$(echo "$PR_INFO" | jq -r '.[0].additions')
+            DELETIONS=$(echo "$PR_INFO" | jq -r '.[0].deletions')
+            HEAD_BRANCH=$(echo "$PR_INFO" | jq -r '.[0].headRefName')
+            BASE_BRANCH=$(echo "$PR_INFO" | jq -r '.[0].baseRefName')
+          else
+            PR_NUMBER="N/A"
+            PR_TITLE="Direct commit to master"
+            PR_AUTHOR="${{ github.actor }}"
+            MERGED_AT=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+            CHANGED_FILES=$(git diff --name-only HEAD^ HEAD | wc -l)
+            ADDITIONS=$(git diff --shortstat HEAD^ HEAD | grep -o '[0-9]\+ insertions' | awk '{print $1}')
+            DELETIONS=$(git diff --shortstat HEAD^ HEAD | grep -o '[0-9]\+ deletions' | awk '{print $1}')
+            HEAD_BRANCH="N/A"
+            BASE_BRANCH="master"
+          fi
+
+          # Get commit details
+          COMMIT_MESSAGE=$(git log -1 --pretty=%s)
+          COMMIT_AUTHOR=$(git log -1 --pretty=%an)
+          COMMIT_AUTHOR_EMAIL=$(git log -1 --pretty=%ae)
+
+          # Store outputs for the next step
+          echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+          echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
+          echo "pr_author=$PR_AUTHOR" >> $GITHUB_OUTPUT
+          echo "merged_at=$MERGED_AT" >> $GITHUB_OUTPUT
+          echo "changed_files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+          echo "additions=$ADDITIONS" >> $GITHUB_OUTPUT
+          echo "deletions=$DELETIONS" >> $GITHUB_OUTPUT
+          echo "head_branch=$HEAD_BRANCH" >> $GITHUB_OUTPUT
+          echo "base_branch=$BASE_BRANCH" >> $GITHUB_OUTPUT
+          echo "commit_message=$COMMIT_MESSAGE" >> $GITHUB_OUTPUT
+          echo "commit_author=$COMMIT_AUTHOR" >> $GITHUB_OUTPUT
+          echo "commit_author_email=$COMMIT_AUTHOR_EMAIL" >> $GITHUB_OUTPUT
+
+      - name: Send Discord Notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{
+                 "embeds": [{
+                   "title": "New Merge to Master",
+                   "description": "A new commit has been merged to the master branch!",
+                   "color": 5814783,
+                   "fields": [
+                     {"name": "Repository", "value": "${{ github.repository }}", "inline": true},
+                     {"name": "Commit SHA", "value": "[${{ github.sha }}](https://github.com/${{ github.repository }}/commit/${{ github.sha }})", "inline": true},
+                     {"name": "Commit Message", "value": "${{ steps.pr-details.outputs.commit_message }}"},
+                     {"name": "Commit Author", "value": "${{ steps.pr-details.outputs.commit_author }} (${{ steps.pr-details.outputs.commit_author_email }})", "inline": true},
+                     {"name": "PR Number", "value": "${{ steps.pr-details.outputs.pr_number }}", "inline": true},
+                     {"name": "PR Title", "value": "${{ steps.pr-details.outputs.pr_title }}"},
+                     {"name": "PR Author", "value": "${{ steps.pr-details.outputs.pr_author }}", "inline": true},
+                     {"name": "Merged At", "value": "${{ steps.pr-details.outputs.merged_at }}", "inline": true},
+                     {"name": "Source Branch", "value": "${{ steps.pr-details.outputs.head_branch }}", "inline": true},
+                     {"name": "Target Branch", "value": "${{ steps.pr-details.outputs.base_branch }}", "inline": true},
+                     {"name": "Changed Files", "value": "${{ steps.pr-details.outputs.changed_files }}", "inline": true},
+                     {"name": "Additions", "value": "+${{ steps.pr-details.outputs.additions }}", "inline": true},
+                     {"name": "Deletions", "value": "-${{ steps.pr-details.outputs.deletions }}", "inline": true}
+                   ],
+                   "footer": {
+                     "text": "GitHub Actions | ${{ github.repository }}"
+                   },
+                   "timestamp": "${{ steps.pr-details.outputs.merged_at }}"
+                 }]
+               }' \
+               $DISCORD_WEBHOOK
