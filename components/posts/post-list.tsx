@@ -35,7 +35,7 @@ export default function PostList({
 
   // Flatten the paginated results
   const allPosts = useMemo(() => {
-    return posts?.map(batch => batch).flat() ?? [];
+    return posts?.flat() ?? [];
   }, [posts]) as
     | Array<{
         _id: Id<"posts">;
@@ -155,6 +155,15 @@ export default function PostList({
     );
   }
 
+  const handleLoadMore = async () => {
+    try {
+      await loadMore(20);
+    } catch (error) {
+      console.error('Failed to load more posts:', error);
+      // The error will be handled by the query status
+    }
+  };
+
   return (
     <div className="space-y-2">
       {allPosts?.map((post) => (
@@ -171,7 +180,7 @@ export default function PostList({
       {status === "CanLoadMore" && (
         <div className="flex justify-center pt-4">
           <Button
-            onClick={() => loadMore(20)}
+            onClick={handleLoadMore}
             variant="outline"
             size="sm"
             className="min-w-[120px]"
@@ -200,7 +209,7 @@ export default function PostList({
       {status === "Exhausted" && allPosts && allPosts.length > 0 && (
         <div className="text-center py-4">
           <p className="text-sm text-muted-foreground">
-            You've reached the end
+            You&apos;ve reached the end
           </p>
         </div>
       )}
