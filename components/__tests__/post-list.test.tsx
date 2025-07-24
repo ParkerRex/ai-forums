@@ -173,7 +173,7 @@ describe("PostList", () => {
     expect(useUserVotes).toHaveBeenCalledWith([], "post");
   });
 
-  test("handles null results as empty state", async () => {
+  test("handles null results as error state", async () => {
     const { usePaginatedQuery } = vi.mocked(await import("convex/react"));
 
     // Mock null results
@@ -185,8 +185,28 @@ describe("PostList", () => {
 
     render(<PostList />);
 
-    // Should show empty state message
-    expect(screen.getByText(/No posts found/)).toBeTruthy();
+    // Should show error message
+    expect(
+      screen.getByText(/Something went wrong while loading posts/i),
+    ).toBeTruthy();
+  });
+
+  test("handles error status gracefully", async () => {
+    const { usePaginatedQuery } = vi.mocked(await import("convex/react"));
+
+    // Mock error state – Convex returns null results to indicate failure
+    usePaginatedQuery.mockReturnValue({
+      results: null,
+      status: "Exhausted",
+      loadMore: vi.fn(),
+    });
+
+    render(<PostList />);
+
+    // Should display error message
+    expect(
+      screen.getByText(/Something went wrong while loading posts/i),
+    ).toBeTruthy();
   });
 
   test("handles load more functionality", async () => {

@@ -28,9 +28,9 @@ export default function PostList({
       sortBy,
       freeOnly,
     },
-    { initialNumItems: 20 }
+    { initialNumItems: 20 },
   );
-  
+
   const { results: posts, status, loadMore } = paginatedQuery;
 
   // Get all posts from paginated results
@@ -113,7 +113,10 @@ export default function PostList({
     | null;
 
   // Extract post IDs for batch vote fetching
-  const postIds = useMemo(() => allPosts?.map((post) => post._id) ?? [], [allPosts]);
+  const postIds = useMemo(
+    () => allPosts?.map((post) => post._id) ?? [],
+    [allPosts],
+  );
 
   // Batch fetch all votes at once
   const { votes } = useUserVotes(postIds, "post");
@@ -142,8 +145,21 @@ export default function PostList({
     );
   }
 
-  // Empty state - only show if we have loaded and there are no posts
-  if (!allPosts || allPosts.length === 0) {
+  // Show an error message if the query failed (Convex returns `null` on error)
+  if (posts === null) {
+    return (
+      <div className="space-y-2">
+        <div className="bg-destructive/10 border-destructive/20 rounded border p-6 text-center">
+          <p className="text-destructive-foreground">
+            Something went wrong while loading posts. Please try again later.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Empty state – show only after the first page has finished loading and returned an empty array
+  if (Array.isArray(posts) && posts.length === 0) {
     return (
       <div className="space-y-2">
         <div className="bg-card border-border/50 rounded-none border p-6 text-center">
@@ -159,7 +175,7 @@ export default function PostList({
     try {
       await loadMore(20);
     } catch (error) {
-      console.error('Failed to load more posts:', error);
+      console.error("Failed to load more posts:", error);
       // The error will be handled by the query status
     }
   };
@@ -175,7 +191,7 @@ export default function PostList({
           userVote={votes[post._id] || null}
         />
       ))}
-      
+
       {/* Load More Button */}
       {status === "CanLoadMore" && (
         <div className="flex justify-center pt-4">
@@ -189,7 +205,7 @@ export default function PostList({
           </Button>
         </div>
       )}
-      
+
       {/* Loading More Indicator */}
       {status === "LoadingMore" && (
         <div className="flex justify-center pt-4">
@@ -204,11 +220,11 @@ export default function PostList({
           </Button>
         </div>
       )}
-      
+
       {/* End of Posts Indicator */}
       {status === "Exhausted" && allPosts && allPosts.length > 0 && (
-        <div className="text-center py-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="py-4 text-center">
+          <p className="text-muted-foreground text-sm">
             You&apos;ve reached the end
           </p>
         </div>
