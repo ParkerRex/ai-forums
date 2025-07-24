@@ -6,7 +6,7 @@ import { Id } from "../../convex/_generated/dataModel";
 
 // Mock dependencies
 vi.mock("convex/react", () => ({
-  useQuery: vi.fn(),
+  usePaginatedQuery: vi.fn(),
 }));
 
 vi.mock("../../hooks/use-user-votes", () => ({
@@ -96,13 +96,17 @@ describe("PostList", () => {
   });
 
   test("fetches votes in batch and passes to PostCards", async () => {
-    const { useQuery } = vi.mocked(await import("convex/react"));
+    const { usePaginatedQuery } = vi.mocked(await import("convex/react"));
     const { useUserVotes } = vi.mocked(
       await import("../../hooks/use-user-votes"),
     );
 
     // Mock post query response
-    useQuery.mockReturnValue(mockPosts);
+    usePaginatedQuery.mockReturnValue({
+      results: mockPosts,
+      status: "CanLoadMore",
+      loadMore: vi.fn(),
+    });
 
     // Mock votes response
     useUserVotes.mockReturnValue({
@@ -128,10 +132,14 @@ describe("PostList", () => {
   });
 
   test("handles loading state", async () => {
-    const { useQuery } = vi.mocked(await import("convex/react"));
+    const { usePaginatedQuery } = vi.mocked(await import("convex/react"));
 
     // Mock loading state
-    useQuery.mockReturnValue(undefined);
+    usePaginatedQuery.mockReturnValue({
+      results: undefined,
+      status: "LoadingFirstPage",
+      loadMore: vi.fn(),
+    });
 
     render(<PostList />);
 
@@ -143,13 +151,17 @@ describe("PostList", () => {
   });
 
   test("handles empty posts", async () => {
-    const { useQuery } = vi.mocked(await import("convex/react"));
+    const { usePaginatedQuery } = vi.mocked(await import("convex/react"));
     const { useUserVotes } = vi.mocked(
       await import("../../hooks/use-user-votes"),
     );
 
     // Mock empty posts
-    useQuery.mockReturnValue([]);
+    usePaginatedQuery.mockReturnValue({
+      results: [],
+      status: "Exhausted",
+      loadMore: vi.fn(),
+    });
     useUserVotes.mockReturnValue({ votes: {}, isLoading: false });
 
     render(<PostList />);
@@ -161,15 +173,77 @@ describe("PostList", () => {
     expect(useUserVotes).toHaveBeenCalledWith([], "post");
   });
 
-  test("handles error state", async () => {
-    const { useQuery } = vi.mocked(await import("convex/react"));
+  test("handles null results as error state", async () => {
+    const { usePaginatedQuery } = vi.mocked(await import("convex/react"));
 
-    // Mock error state
-    useQuery.mockReturnValue(null);
+    // Mock null results
+    usePaginatedQuery.mockReturnValue({
+      results: null,
+      status: "Exhausted",
+      loadMore: vi.fn(),
+    });
 
     render(<PostList />);
 
     // Should show error message
-    expect(screen.getByText(/Unable to load posts/)).toBeTruthy();
+    expect(
+      screen.getByText(/Something went wrong while loading posts/i),
+    ).toBeTruthy();
+  });
+
+  test("handles error status gracefully", async () => {
+    const { usePaginatedQuery } = vi.mocked(await import("convex/react"));
+
+    // Mock error state – Convex returns null results to indicate failure
+    usePaginatedQuery.mockReturnValue({
+      results: null,
+      status: "Exhausted",
+      loadMore: vi.fn(),
+    });
+
+    render(<PostList />);
+
+    // Should display error message
+    expect(
+      screen.getByText(/Something went wrong while loading posts/i),
+    ).toBeTruthy();
+  });
+
+  test("handles load more functionality", async () => {
+    const { usePaginatedQuery } = vi.mocked(await import("convex/react"));
+    const mockLoadMore = vi.fn();
+
+    // Mock paginated response with more to load
+    usePaginatedQuery.mockReturnValue({
+      results: mockPosts,
+      status: "CanLoadMore",
+      loadMore: mockLoadMore,
+    });
+
+    render(<PostList />);
+
+    // Should show Load More button
+    const loadMoreButton = screen.getByText("Load More");
+    expect(loadMoreButton).toBeTruthy();
+
+    // Click should call loadMore
+    loadMoreButton.click();
+    expect(mockLoadMore).toHaveBeenCalledWith(20);
+  });
+
+  test("shows end of posts when exhausted", async () => {
+    const { usePaginatedQuery } = vi.mocked(await import("convex/react"));
+
+    // Mock exhausted state
+    usePaginatedQuery.mockReturnValue({
+      results: mockPosts,
+      status: "Exhausted",
+      loadMore: vi.fn(),
+    });
+
+    render(<PostList />);
+
+    // Should show end of posts message
+    expect(screen.getByText(/You've reached the end/)).toBeTruthy();
   });
 });

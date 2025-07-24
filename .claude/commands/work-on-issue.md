@@ -4,7 +4,7 @@
 
 1. Fetch issue details: `gh issue view $ARGUMENTS`
 2. Analyze the codebase related to this issue
-3. Create task plan in `/tasks/XXX-issue-$ARGUMENTS.md`
+3. Create task plan in `/docs/issues/XXX-issue-$ARGUMENTS.md`
 4. Create feature branch: `git checkout -b issue-$ARGUMENTS-<brief-description>`
 5. Implement the solution step by step
 6. Run tests after implementation
