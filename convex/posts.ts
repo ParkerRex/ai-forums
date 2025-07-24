@@ -311,7 +311,13 @@ export const getPosts = query({
  * - Category filtering with pinned posts support
  * - Sorting by newest, popular, or trending
  * - Free-only content filtering
- * - Maintains pinned posts at the top of each page
+ * - Pinned posts appear only on the first page
+ * 
+ * IMPORTANT IMPLEMENTATION NOTES:
+ * - The first page may contain more items than requested when pinned posts exist
+ * - This is intentional to maintain cursor integrity and prevent posts from being skipped
+ * - Pinned posts are limited to 20 to prevent performance issues
+ * - The cursor from the first page correctly continues to unpinned posts
  * 
  * @param paginationOpts - Pagination options (cursor, numItems)
  * @param categoryId - Optional category filter
@@ -381,6 +387,13 @@ export const getPostsPaginated = query({
 
       // Sort pinned posts by pinnedAt timestamp (newest first)
       pinnedPosts.sort((a, b) => (b.pinnedAt || 0) - (a.pinnedAt || 0));
+      
+      // Limit pinned posts to prevent performance issues
+      // If there are more than 20 pinned posts, only show the 20 most recent
+      if (pinnedPosts.length > 20) {
+        console.warn(`Limiting pinned posts from ${pinnedPosts.length} to 20 for performance`);
+        pinnedPosts = pinnedPosts.slice(0, 20);
+      }
 
       // Apply free-only filter to pinned posts if requested
       if (freeOnly) {
@@ -429,35 +442,23 @@ export const getPostsPaginated = query({
 
     // Get paginated results
     const paginatedResults = await regularPostsQuery
-      .order(sortBy === "newest" ? "desc" : "desc")
+      .order("desc") // All our indexes are designed for descending order
       .paginate(paginationOpts);
 
     // Combine pinned posts with paginated results for the first page
     let allPosts = paginatedResults.page;
-    let adjustedCursor = paginatedResults.continueCursor;
+    let continueCursor = paginatedResults.continueCursor;
     
     if (isFirstPage && pinnedPosts.length > 0) {
-      // Adjust the number of regular posts to accommodate pinned posts
-      const numItems = paginationOpts.numItems || 20;
-      const regularPostsNeeded = Math.max(0, numItems - pinnedPosts.length);
+      // For the first page, prepend pinned posts to the regular posts
+      // We don't adjust the cursor or pagination - we simply add pinned posts on top
+      // This means the first page might have more items than requested, but maintains cursor integrity
+      allPosts = [...pinnedPosts, ...paginatedResults.page];
       
-      // If we need fewer regular posts than what we fetched, we need to adjust the cursor
-      if (regularPostsNeeded < paginatedResults.page.length) {
-        // We need to create a new pagination to get the correct cursor position
-        const adjustedPaginationOpts = {
-          ...paginationOpts,
-          numItems: regularPostsNeeded
-        };
-        
-        const adjustedResults = await regularPostsQuery
-          .order(sortBy === "newest" ? "desc" : "desc")
-          .paginate(adjustedPaginationOpts);
-        
-        allPosts = [...pinnedPosts, ...adjustedResults.page];
-        adjustedCursor = adjustedResults.continueCursor;
-      } else {
-        // We can use all the regular posts we fetched
-        allPosts = [...pinnedPosts, ...paginatedResults.page];
+      // Safety limit: If we have too many items (e.g., more than 100), warn in console
+      // This prevents memory issues if someone pins hundreds of posts
+      if (allPosts.length > 100) {
+        console.warn(`Warning: First page has ${allPosts.length} posts (${pinnedPosts.length} pinned). Consider limiting pinned posts.`);
       }
     }
 
@@ -507,7 +508,7 @@ export const getPostsPaginated = query({
     return {
       ...paginatedResults,
       page: enrichedPosts,
-      continueCursor: adjustedCursor
+      continueCursor: continueCursor
     };
   },
 });
