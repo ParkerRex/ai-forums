@@ -23,7 +23,7 @@ jobs:
           COMMIT_SHA=${{ github.sha }}
 
           # Fetch PR associated with the commit (if any)
-          PR_INFO=$(gh pr list --state merged --limit 1 --commit $COMMIT_SHA --json number,title,author,mergedAt,mergeCommitSha,changedFiles,additions,deletions,headRefName,baseRefName)
+          PR_INFO=$(gh pr view $COMMIT_SHA --json number,title,author,mergedAt,mergeCommit,changedFiles,additions,deletions,headRefName,baseRefName 2>/dev/null || echo "")
 
           if [ -n "$PR_INFO" ]; then
             PR_NUMBER=$(echo "$PR_INFO" | jq -r '.[0].number')
