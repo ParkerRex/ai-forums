@@ -14,27 +14,31 @@ jobs:
         with:
           fetch-depth: 0 # Fetch all history to access commit details
 
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq
+          which gh || sudo apt-get install -y gh
+
       - name: Get PR details
         id: pr-details
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Get the latest commit SHA
-          COMMIT_SHA=${{ github.sha }}
-
-          # Fetch PR associated with the commit (if any)
-          PR_INFO=$(gh pr list --state merged --limit 1 --commit $COMMIT_SHA --json number,title,author,mergedAt,mergeCommitSha,changedFiles,additions,deletions,headRefName,baseRefName)
-
-          if [ -n "$PR_INFO" ]; then
-            PR_NUMBER=$(echo "$PR_INFO" | jq -r '.[0].number')
-            PR_TITLE=$(echo "$PR_INFO" | jq -r '.[0].title')
-            PR_AUTHOR=$(echo "$PR_INFO" | jq -r '.[0].author.login')
-            MERGED_AT=$(echo "$PR_INFO" | jq -r '.[0].mergedAt')
-            CHANGED_FILES=$(echo "$PR_INFO" | jq -r '.[0].changedFiles')
-            ADDITIONS=$(echo "$PR_INFO" | jq -r '.[0].additions')
-            DELETIONS=$(echo "$PR_INFO" | jq -r '.[0].deletions')
-            HEAD_BRANCH=$(echo "$PR_INFO" | jq -r '.[0].headRefName')
-            BASE_BRANCH=$(echo "$PR_INFO" | jq -r '.[0].baseRefName')
+          set -e
+          COMMIT_SHA="${{ github.sha }}"
+          # Try to find a PR associated with this commit
+          PR_JSON=$(gh pr list --state merged --search $COMMIT_SHA --json number,title,author,mergedAt,mergeCommit,changedFiles,additions,deletions,headRefName,baseRefName | jq '.[] | select(.mergeCommit == "'$COMMIT_SHA'")')
+          if [ -n "$PR_JSON" ]; then
+            PR_NUMBER=$(echo "$PR_JSON" | jq -r '.number')
+            PR_TITLE=$(echo "$PR_JSON" | jq -r '.title')
+            PR_AUTHOR=$(echo "$PR_JSON" | jq -r '.author.login')
+            MERGED_AT=$(echo "$PR_JSON" | jq -r '.mergedAt')
+            CHANGED_FILES=$(echo "$PR_JSON" | jq -r '.changedFiles')
+            ADDITIONS=$(echo "$PR_JSON" | jq -r '.additions')
+            DELETIONS=$(echo "$PR_JSON" | jq -r '.deletions')
+            HEAD_BRANCH=$(echo "$PR_JSON" | jq -r '.headRefName')
+            BASE_BRANCH=$(echo "$PR_JSON" | jq -r '.baseRefName')
           else
             PR_NUMBER="N/A"
             PR_TITLE="Direct commit to master"
@@ -46,13 +50,9 @@ jobs:
             HEAD_BRANCH="N/A"
             BASE_BRANCH="master"
           fi
-
-          # Get commit details
           COMMIT_MESSAGE=$(git log -1 --pretty=%s)
           COMMIT_AUTHOR=$(git log -1 --pretty=%an)
           COMMIT_AUTHOR_EMAIL=$(git log -1 --pretty=%ae)
-
-          # Store outputs for the next step
           echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
           echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
           echo "pr_author=$PR_AUTHOR" >> $GITHUB_OUTPUT
