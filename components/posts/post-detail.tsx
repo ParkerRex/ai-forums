@@ -374,7 +374,7 @@ export default function PostDetail({
                       </Link>
                     </MemberHoverCardWrapper>
                     <span className="text-gray-400 dark:text-gray-600">•</span>
-                    <span>{getTimeAgo(post.createdAt)} ago</span>
+                    <span>{getTimeAgo(post.createdAt)}</span>
                     {post.editedAt && <span className="italic">(edited)</span>}
                   </div>
                   <div className="mt-2 flex items-center gap-2">
