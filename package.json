@@ -27,6 +27,7 @@
     "@clerk/clerk-react": "^5.25.0",
     "@clerk/nextjs": "^6.12.6",
     "@clerk/types": "4.64.0",
+    "@convex-dev/eslint-plugin": "^0.0.1-alpha.4",
     "@dnd-kit/core": "^6.3.1",
     "@dnd-kit/sortable": "^7.0.2",
     "@dnd-kit/utilities": "^3.2.2",

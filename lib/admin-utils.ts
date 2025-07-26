@@ -110,10 +110,10 @@ export function formatTierPrice(
   if (!pricing) return "";
   
   if (billingInterval === "yearly" && pricing.yearly > 0) {
-    return `${pricing.yearly}/yr`;
+    return `$${pricing.yearly}/yr`;
   }
   
-  return `${pricing.monthly}/mo`;
+  return `$${pricing.monthly}/mo`;
 }
 
 /**

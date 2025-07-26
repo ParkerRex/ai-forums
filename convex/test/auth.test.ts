@@ -124,7 +124,7 @@ test("getAuthenticatedMember returns existing member and updates lastOnline", as
   expect(member.lastOnline).toBeGreaterThanOrEqual(beforeTime); // Updated to current time
   expect(member.updatedAt).toBeGreaterThanOrEqual(beforeTime); // Updated to current time
   expect(member.tier).toBe('member'); // Added required payment tier
-  expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
+  expect(member.subscriptionStatus).toBe('active'); // Added required subscription status
   expect(member.stripeCustomerId).toBe('cus_test'); // Existing member keeps original ID
 });
 
@@ -189,7 +189,7 @@ test("getAuthenticatedMember patches legacy member with externalId", async () =>
   expect(member.lastOnline).toBeGreaterThanOrEqual(beforeTime); // Updated
   expect(member.updatedAt).toBeGreaterThanOrEqual(beforeTime); // Updated
   expect(member.tier).toBe('member'); // Added required payment tier
-  expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
+  expect(member.subscriptionStatus).toBe('active'); // Added required subscription status
   expect(member.stripeCustomerId).toBe('cus_test'); // Existing member keeps original ID
 });
 
@@ -250,7 +250,7 @@ test("getAuthenticatedMember handles missing name gracefully", async () => {
   expect(member.email).toBe('minimal@example.com'); // From identity
   expect(member.externalId).toBe('clerk-user-minimal'); // From subject
   expect(member.slug).toBe('minimal'); // Derived from email prefix
-  expect(member.tier).toBe('member'); // Added required payment tier
+  expect(member.tier).toBeUndefined(); // New members have no tier
   expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
   expect(member.stripeCustomerId).toMatch(/^cus_temp_.*_\d+$/); // Dynamic temp Stripe customer ID
 });
@@ -287,7 +287,7 @@ test("ensureMember internal mutation returns member ID", async () => {
   expect(typeof member._id).toBe('string'); // Convex ID format
   expect(member.email).toBe('test@example.com'); // Correct email
   expect(member.externalId).toBe('clerk-user-test'); // Correct Clerk ID
-  expect(member.tier).toBe('member'); // Added required payment tier
+  expect(member.tier).toBeUndefined(); // New members have no tier
   expect(member.subscriptionStatus).toBe('none'); // Added required subscription status
   expect(member.stripeCustomerId).toMatch(/^cus_temp_.*_\d+$/); // Dynamic temp Stripe customer ID
 });

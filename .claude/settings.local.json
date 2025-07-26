@@ -38,7 +38,8 @@
       "mcp__convex__status",
       "mcp__convex__runOneoffQuery",
       "mcp__convex__tables",
-      "WebFetch(domain:neil.computer)"
+      "WebFetch(domain:neil.computer)",
+      "Bash(unzip:*)"
     ],
     "deny": []
   }

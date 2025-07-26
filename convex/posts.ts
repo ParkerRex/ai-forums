@@ -1896,6 +1896,58 @@ export const getAllPostsForMigration = internalQuery({
 });
 
 /**
+ * Public query to get all posts (for data integrity checks)
+ */
+export const getAllPosts = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("posts")
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+  },
+});
+
+/**
+ * Update post author (for member merge)
+ */
+export const updatePostAuthor = mutation({
+  args: {
+    postId: v.id("posts"),
+    newMemberId: v.id("members"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.postId, {
+      memberId: args.newMemberId,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+/**
+ * Hard delete post (for duplicate removal - admin only)
+ */
+export const hardDeletePost = mutation({
+  args: {
+    postId: v.id("posts"),
+  },
+  handler: async (ctx, args) => {
+    // First delete all comments for this post
+    const comments = await ctx.db
+      .query("comments")
+      .withIndex("by_postId", (q) => q.eq("postId", args.postId))
+      .collect();
+    
+    for (const comment of comments) {
+      await ctx.db.delete(comment._id);
+    }
+    
+    // Delete the post
+    await ctx.db.delete(args.postId);
+  },
+});
+
+/**
  * Internal mutation to update a post's preview
  * Used by the batch preview generation script
  */

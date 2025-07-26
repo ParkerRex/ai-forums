@@ -132,7 +132,7 @@ describe("FeatureRequestModal", () => {
     const titleInput = screen.getByPlaceholderText(
       "Brief description of your feature idea",
     );
-    const descriptionEditor = screen.getByTestId("rich-text-editor");
+    const descriptionEditor = screen.getByPlaceholderText("Describe your feature request in detail...");
 
     fireEvent.change(titleInput, { target: { value: "Add dark mode" } });
     fireEvent.change(descriptionEditor, {
@@ -221,7 +221,7 @@ describe("FeatureRequestModal", () => {
     const titleInput = screen.getByPlaceholderText(
       "Brief description of your feature idea",
     );
-    const descriptionEditor = screen.getByTestId("rich-text-editor");
+    const descriptionEditor = screen.getByPlaceholderText("Describe your feature request in detail...");
 
     fireEvent.change(titleInput, { target: { value: "Test feature" } });
     fireEvent.change(descriptionEditor, {
@@ -258,7 +258,7 @@ describe("FeatureRequestModal", () => {
     const titleInput = screen.getByPlaceholderText(
       "Brief description of your feature idea",
     );
-    const descriptionEditor = screen.getByTestId("rich-text-editor");
+    const descriptionEditor = screen.getByPlaceholderText("Describe your feature request in detail...");
 
     await act(async () => {
       fireEvent.change(titleInput, { target: { value: "Test feature" } });

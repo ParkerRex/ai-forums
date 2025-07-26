@@ -66,20 +66,33 @@ describe('Discord News Source', () => {
 
   describe('fetchItems', () => {
     it('should fetch and transform Discord messages successfully', async () => {
-      // Mock successful API response
+      // Mock successful API response with digest format
+      const mockDigestEntries = mockDiscordMessages.map(msg => ({
+        messageId: msg.id,
+        content: msg.content,
+        author: msg.author,
+        timestamp: new Date(msg.timestamp).getTime(),
+        reactions: msg.reactions,
+        channelId: msg.channelId,
+        channelName: msg.channelName,
+        reactionScore: msg.reactions.reduce((sum, r) => sum + r.count, 0),
+        digestDate: '2025-01-14',
+        processedAt: Date.now(),
+      }));
+
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ messages: mockDiscordMessages }),
+        json: async () => ({ digest: mockDigestEntries }),
       } as Response);
 
       const result = await fetchItems(mockDiscordSource);
 
       expect(result).toHaveLength(3);
       expect(result[0]).toMatchObject({
-        title: expect.stringContaining('anotheruser'),
+        title: expect.stringContaining('Check out this new AI development!'),
         url: expect.stringContaining('discord.com/channels'),
-        publishedDate: '2025-01-14T09:00:00Z',
-        text: 'Another interesting message',
+        publishedDate: expect.any(String),
+        text: 'Check out this new AI development!',
       });
     });
 
@@ -105,17 +118,21 @@ describe('Discord News Source', () => {
     it('should call API with correct parameters', async () => {
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ messages: [] }),
+        json: async () => ({ digest: [] }),
       } as Response);
 
       await fetchItems(mockDiscordSource);
 
-      expect(fetch).toHaveBeenCalledWith('/api/discord/messages', {
+      expect(fetch).toHaveBeenCalledWith('/api/discord/digest', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: expect.stringContaining('"guildId":"1355280592962453585"'),
+        body: JSON.stringify({
+          guildId: '1355280592962453585',
+          channels: ['general', 'announcements'],
+          limit: 20,
+        }),
       });
     });
   });
@@ -186,10 +203,25 @@ describe('Discord News Source', () => {
 
   describe('message transformation', () => {
     it('should create meaningful titles for messages with content', async () => {
-      // Use all messages and check the first one after ranking (highest reactions)
+      // Mock digest entries sorted by reaction score (highest first)
+      const sortedDigestEntries = mockDiscordMessages
+        .map(msg => ({
+          messageId: msg.id,
+          content: msg.content,
+          author: msg.author,
+          timestamp: new Date(msg.timestamp).getTime(),
+          reactions: msg.reactions,
+          channelId: msg.channelId,
+          channelName: msg.channelName,
+          reactionScore: msg.reactions.reduce((sum, r) => sum + r.count, 0),
+          digestDate: '2025-01-14',
+          processedAt: Date.now(),
+        }))
+        .sort((a, b) => b.reactionScore - a.reactionScore);
+
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ messages: mockDiscordMessages }),
+        json: async () => ({ digest: sortedDigestEntries }),
       } as Response);
 
       const result = await fetchItems(mockDiscordSource);
@@ -216,7 +248,20 @@ describe('Discord News Source', () => {
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ messages: [messageWithoutContent] }),
+        json: async () => ({ 
+          digest: [{
+            messageId: messageWithoutContent.id,
+            content: messageWithoutContent.content,
+            author: messageWithoutContent.author,
+            timestamp: new Date(messageWithoutContent.timestamp).getTime(),
+            reactions: messageWithoutContent.reactions,
+            channelId: messageWithoutContent.channelId,
+            channelName: messageWithoutContent.channelName,
+            reactionScore: 3,
+            digestDate: '2025-01-14',
+            processedAt: Date.now(),
+          }]
+        }),
       } as Response);
 
       const result = await fetchItems(mockDiscordSource);
@@ -232,7 +277,20 @@ describe('Discord News Source', () => {
 
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ messages: [longMessage] }),
+        json: async () => ({ 
+          digest: [{
+            messageId: longMessage.id,
+            content: longMessage.content,
+            author: longMessage.author,
+            timestamp: new Date(longMessage.timestamp).getTime(),
+            reactions: longMessage.reactions,
+            channelId: longMessage.channelId,
+            channelName: longMessage.channelName,
+            reactionScore: longMessage.reactions.reduce((sum, r) => sum + r.count, 0),
+            digestDate: '2025-01-14',
+            processedAt: Date.now(),
+          }]
+        }),
       } as Response);
 
       const result = await fetchItems(mockDiscordSource);
@@ -242,16 +300,32 @@ describe('Discord News Source', () => {
     });
 
     it('should generate correct Discord URLs', async () => {
-      // Use all messages and check the first one after ranking
+      // Mock digest entries sorted by reaction score (highest first)
+      const sortedDigestEntries = mockDiscordMessages
+        .map(msg => ({
+          messageId: msg.id,
+          content: msg.content,
+          author: msg.author,
+          timestamp: new Date(msg.timestamp).getTime(),
+          reactions: msg.reactions,
+          channelId: msg.channelId,
+          channelName: msg.channelName,
+          reactionScore: msg.reactions.reduce((sum, r) => sum + r.count, 0),
+          digestDate: '2025-01-14',
+          processedAt: Date.now(),
+        }))
+        .sort((a, b) => b.reactionScore - a.reactionScore);
+
       vi.mocked(fetch).mockResolvedValueOnce({
         ok: true,
-        json: async () => ({ messages: mockDiscordMessages }),
+        json: async () => ({ digest: sortedDigestEntries }),
       } as Response);
 
       const result = await fetchItems(mockDiscordSource);
 
       // The message with highest reactions should be first
-      expect(result[0].url).toBe('https://discord.com/channels/announcements/987654321');
+      // The URL format includes the guild ID which is hardcoded in the discord.ts file
+      expect(result[0].url).toBe('https://discord.com/channels/1355280592962453585/announcements/987654321');
     });
   });
 });

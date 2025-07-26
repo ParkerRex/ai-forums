@@ -18,14 +18,14 @@ const path = require("path");
 const CONFIG = {
   groupName: "troublefreeai",
   groupId: "d712a2ce0a0d41c891c4949ab68373b2", // from your data
-  buildId: "1750970355436",
+  buildId: "1753388450230",
 
   // Your auth token and cookies
   authToken:
     "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NzkzOTA0MjQsImlhdCI6MTc0Nzg1NDQyNCwidXNlcl9pZCI6IjllMWRjY2VkZGIwYTRmOWRiNzYyNWUyZjAwNjgwYTRiIn0.uEDBvOi1gCUmytU9jrCL4t5IpN0sTuIVxNmK2IhJ7O0",
   clientId: "6940c2e8ef534532a4f0bfd1af9c52de",
   wafToken:
-    "96a0d6da-36cf-408c-98d6-015948c2bfe7:FAoAsqQi4Q4eAAAA:xnDPXPR6l+7fVGsJsiHnJXP7rOLt5Y1vwlu6dzNkeQrmZkp9lkYuFMnZtQeesXpKj1/Q5q6TT8A9Z7OWMGcrNe4zb3xKtI/hokcoiJdQK3+SOpr5ztoc1qAouw7yCJfzR7gv352Uam9aNDfb1RsFgT0SSZTM3sv55jHpHMwzkxHcdIcSrIFiQ7m+S/uGVnIpoXqGD9OntoisTqtURFiUR1C+bn8Mp+72++QIRnMgDWyhDMc6ziQ91OYBdULsAWAN",
+    "100727f2-d70d-4d87-ad17-1af681df4e72:FAoAvluRLmR8AAAA:V902/EZ+NIDGz4R0ngVKeBbuy7hJyoxJfgKQ2OAE1pPaYs1NrFeBhKezlYMtCDgormVLaMy4zUX1oi6AA1VbPO+MFgp/7nO19MumdNQv8m+UypYLW3hTkClS3jPp4gtXm4on/f2NILSawBwMf8Z5wbx/Fu+tOXjNdWyO/zm//Du9iQ0ICiykzeVFX/u4lsrO8/3DA5mtjJ8IRw044xedT/miXNAnVo/fRQnkUG8Dio5Th9SHd5t19mS8ZWZFwJYI",
 
   // Output
   outputDir: path.join(__dirname, "..", "migration-data"),

@@ -17,7 +17,7 @@ function createMockMember(overrides: Partial<Doc<"members">>): Doc<"members"> {
     status: "active",
     joinedDate: Date.now(),
     joinedAt: Date.now(),
-    tier: "free",
+    tier: undefined,
     subscriptionStatus: "none",
     stripeCustomerId: "cus_test",
     ...overrides,

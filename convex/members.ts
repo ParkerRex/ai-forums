@@ -1153,6 +1153,140 @@ export const getMemberByEmail = query({
   },
 });
 
+/**
+ * Search members by name (for migration script)
+ */
+export const searchByName = query({
+  args: {
+    name: v.optional(v.string()),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    let members: Doc<"members">[] = [];
+    
+    if (args.name) {
+      // Search by full name
+      const [firstName, ...lastNameParts] = args.name.split(" ");
+      const lastName = lastNameParts.join(" ");
+      
+      members = await ctx.db
+        .query("members")
+        .filter((q) => 
+          q.and(
+            q.eq(q.field("firstName"), firstName),
+            q.eq(q.field("lastName"), lastName)
+          )
+        )
+        .collect();
+    } else if (args.firstName && args.lastName) {
+      // Search by first and last name
+      members = await ctx.db
+        .query("members")
+        .filter((q) => 
+          q.and(
+            q.eq(q.field("firstName"), args.firstName),
+            q.eq(q.field("lastName"), args.lastName)
+          )
+        )
+        .collect();
+    }
+    
+    return members;
+  },
+});
+
+/**
+ * Get all members with @imported.com emails
+ */
+export const getMembersWithImportedEmails = query({
+  args: {},
+  handler: async (ctx) => {
+    const allMembers = await ctx.db.query("members").collect();
+    return allMembers.filter(member => 
+      member.email && member.email.endsWith("@imported.com")
+    );
+  },
+});
+
+/**
+ * Update member information (for migration script)
+ */
+export const updateMember = mutation({
+  args: {
+    memberId: v.id("members"),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    email: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const { memberId, ...updates } = args;
+    
+    // Filter out undefined values
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => value !== undefined)
+    );
+    
+    if (Object.keys(filteredUpdates).length > 0) {
+      await ctx.db.patch(memberId, {
+        ...filteredUpdates,
+        updatedAt: Date.now(),
+      });
+    }
+  },
+});
+
+/**
+ * Delete a member (for member merge)
+ */
+export const deleteMember = mutation({
+  args: {
+    memberId: v.id("members"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.memberId);
+  },
+});
+
+/**
+ * Update member for merge (admin task, no auth required)
+ */
+export const updateMemberForMerge = mutation({
+  args: {
+    memberId: v.id("members"),
+    firstName: v.string(),
+    lastName: v.string(),
+    bio: v.optional(v.string()),
+    location: v.optional(v.string()),
+    linkGithub: v.optional(v.string()),
+    linkX: v.optional(v.string()),
+    linkYouTube: v.optional(v.string()),
+    websiteUrl: v.optional(v.string()),
+    avatarUrl: v.optional(v.string()),
+    joinedDate: v.optional(v.number()),
+    lastOnline: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const { memberId, ...updates } = args;
+    
+    // Filter out undefined values
+    const filteredUpdates = Object.fromEntries(
+      Object.entries(updates).filter(([, value]) => value !== undefined)
+    );
+    
+    // Generate new slug for the updated name
+    const fullName = `${args.firstName} ${args.lastName}`;
+    const baseSlug = generateMemberSlug(fullName);
+    const uniqueSlug = await ensureUniqueMemberSlug(ctx, baseSlug, memberId);
+    
+    await ctx.db.patch(memberId, {
+      ...filteredUpdates,
+      slug: uniqueSlug,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
 // Helper function to calculate time ago
 function getTimeAgo(timestamp: number): string {
   const now = Date.now();

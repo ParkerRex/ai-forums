@@ -60,6 +60,12 @@ export function needsSubscriptionUpgrade(member: Doc<"members"> | null | undefin
   // No free tier - all members should have paid tiers or scholarships
   // if (member.tier === "free") return true;
   
+  // Check if member has a valid tier
+  const fullAccessTiers = ["founding_member", "early_bird", "member"];
+  if (!member.tier || !fullAccessTiers.includes(member.tier)) {
+    return true; // No valid tier means upgrade needed
+  }
+  
   // Check if subscription is active - non-active means upgrade needed
   if (member.subscriptionStatus !== "active") {
     // Special handling for cancelled subscriptions with grace period
@@ -82,8 +88,8 @@ export function needsSubscriptionUpgrade(member: Doc<"members"> | null | undefin
  * @returns Status message for UI display
  */
 export function getSubscriptionStatusMessage(member: Doc<"members">): string {
-  // Handle missing subscription status
-  if (!member.subscriptionStatus) {
+  // Handle missing subscription status or "none" status
+  if (!member.subscriptionStatus || member.subscriptionStatus === "none") {
     return "No subscription - Upgrade to access full content";
   }
   

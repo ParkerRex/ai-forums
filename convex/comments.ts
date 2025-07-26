@@ -793,3 +793,32 @@ export const reorderCommentReplies = mutation({
     return { success: true };
   },
 });
+
+/**
+ * Get all comments (for data integrity checks)
+ */
+export const getAllComments = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db
+      .query("comments")
+      .filter((q) => q.eq(q.field("status"), "active"))
+      .collect();
+  },
+});
+
+/**
+ * Update comment author (for member merge)
+ */
+export const updateCommentAuthor = mutation({
+  args: {
+    commentId: v.id("comments"),
+    newMemberId: v.id("members"),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.commentId, {
+      memberId: args.newMemberId,
+      updatedAt: Date.now(),
+    });
+  },
+});

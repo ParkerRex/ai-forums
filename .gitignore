@@ -48,3 +48,5 @@ package-lock.json
 
 # Member data files (contains real user data)
 /migration-data/
+/scripts/migration
+/scripts/migration-data

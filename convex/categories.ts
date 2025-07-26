@@ -29,6 +29,16 @@ import { Id } from "./_generated/dataModel";
 import { getAuthenticatedMember } from "./auth";
 
 /**
+ * Get all categories (for data integrity checks)
+ */
+export const getAll = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("categories").collect();
+  },
+});
+
+/**
  * Retrieves all active categories with post counts.
  * 
  * Returns a filtered list of active categories excluding legacy import categories.
