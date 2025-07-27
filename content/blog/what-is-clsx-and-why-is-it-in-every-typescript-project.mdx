@@ -28,7 +28,7 @@ Let's start with a real problem. Imagine you're building a button component that
 
 Here's what most beginners write:
 
-```javascript
+```javascript title="❌ Without clsx - Verbose and Error-Prone" showLineNumbers {5,7,9,11,15,17,21}
 function Button({ variant, size, disabled, children }) {
   let className = "btn";
   
@@ -60,7 +60,7 @@ This works, but it's verbose and error-prone. You might forget spaces, duplicate
 
 Here's the same component with clsx:
 
-```javascript
+```javascript title="✅ With clsx - Clean and Declarative" {8-17}
 import clsx from 'clsx';
 
 function Button({ variant, size, disabled, children }) {
@@ -98,7 +98,7 @@ npm install clsx
 
 Here's a practical accordion that opens and closes:
 
-```javascript
+```javascript title="Accordion Component with State-Based Styling" showLineNumbers {12-19,22-25,30-37}
 import { useState } from 'react';
 import clsx from 'clsx';
 
@@ -146,7 +146,7 @@ function Accordion({ title, children }) {
 
 Perfect for showing error, success, or warning states:
 
-```javascript
+```javascript title="Form Input with Validation States" /error/ /success/ /warning/
 function Input({ error, success, warning, ...props }) {
   return (
     <input

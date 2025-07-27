@@ -10,7 +10,7 @@ Ever inherited a TypeScript codebase with zero documentation? Or realized your o
 
 TSDoc is the TypeScript equivalent of JSDoc—a standardized way to document your code using specially formatted comments. These comments appear directly in your IDE, making your code self-documenting.
 
-```typescript
+```typescript {2-6} /@param/ /@returns/
 /**
  * Calculates the total price including tax
  * @param price - The base price in cents
@@ -98,7 +98,7 @@ The prompt ensures proper formatting:
 ## Real Example: Before and After
 
 ### Before:
-```typescript
+```typescript title="❌ Undocumented Code" showLineNumbers
 function processUserData(users: User[], threshold: number) {
   return users
     .filter(u => u.score > threshold && u.active)
@@ -112,7 +112,7 @@ function processUserData(users: User[], threshold: number) {
 ```
 
 ### After:
-```typescript
+```typescript title="✅ Well-Documented Code" showLineNumbers {1-10,16,19} /@param/ /@returns/ /@example/
 /**
  * Processes and ranks active users based on their scores
  * @param users - Array of user objects to process

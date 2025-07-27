@@ -2,14 +2,13 @@
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Markdown } from "tiptap-markdown";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import { common, createLowlight } from "lowlight";
+import CodeBlock from "@tiptap/extension-code-block";
 import {
   LinkBadge,
   Mention,
   createMentionSuggestion,
-} from "@/components/posts/rich-text/extensions";
+} from "./rich-text/extensions";
+import { Markdown } from "tiptap-markdown";
 import { useAction, useConvex } from "convex/react";
 import { api } from "@/convex/_generated/api";
 import { Button } from "@/components/ui/button";
@@ -31,9 +30,6 @@ interface FullRichTextEditorProps {
   placeholder?: string;
   className?: string;
 }
-
-// Create lowlight instance with common languages
-const lowlight = createLowlight(common);
 
 export function FullRichTextEditor({
   content = "",
@@ -72,13 +68,11 @@ export function FullRichTextEditor({
         },
         codeBlock: false, // Disable the default code block to use our custom one
       }),
-      CodeBlockLowlight.configure({
-        lowlight,
+      CodeBlock.configure({
         HTMLAttributes: {
-          class: "hljs",
+          class: "code-block",
         },
         languageClassPrefix: "language-",
-        defaultLanguage: "javascript",
       }),
       LinkBadge.configure({
         openOnClick: true,

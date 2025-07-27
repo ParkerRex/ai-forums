@@ -24,7 +24,7 @@ Let's explore each layer with code examples and implementation details.
 ## Environment Setup
 
 Before diving into the code, here's the essential environment configuration. Midday uses a multi-region database setup with separate URLs for different geographic locations:
-```bash
+```bash title=".env.local" showLineNumbers
 # Core Supabase settings
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
@@ -68,7 +68,7 @@ ALLOWED_API_ORIGINS="http://localhost:3001,https://your-app.com"
 Midday uses Supabase Auth for OAuth providers, with separate client configurations for browser and server contexts.
 
 ### Browser Client Setup
-```typescript
+```typescript title="lib/supabase/browser.ts"
 import { createBrowserClient } from "@supabase/ssr";
 import type { Database } from "../types";
 
@@ -83,7 +83,7 @@ export const createClient = () => {
 ### Server Client Setup
 
 The server client handles both regular and admin operations with proper cookie management:
-```typescript
+```typescript title="lib/supabase/server.ts" showLineNumbers {15-17,19-24}
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "../types";
@@ -272,7 +272,7 @@ export async function GET(req: NextRequest) {
 For programmatic access, Midday implements a robust API key system with proper encryption and validation.
 
 ### API Key Generation
-```typescript
+```typescript title="lib/auth/api-keys.ts" {7} /mid_/
 import { randomBytes } from "node:crypto";
 
 export function generateApiKey(): string {

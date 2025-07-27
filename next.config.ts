@@ -1,5 +1,6 @@
 import type { NextConfig } from "next";
 import createMDX from '@next/mdx';
+import rehypePrettyCode from 'rehype-pretty-code';
 
 const nextConfig: NextConfig = {
   pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
@@ -63,6 +64,11 @@ const nextConfig: NextConfig = {
         hostname: "media4.giphy.com",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "api.microlink.io",
+        pathname: "/**",
+      },
     ],
   },
 };
@@ -72,7 +78,18 @@ const withMDX = createMDX({
   // Optionally provide remark and rehype plugins
   options: {
     remarkPlugins: [],
-    rehypePlugins: [],
+    rehypePlugins: [[rehypePrettyCode, {
+      theme: {
+        dark: "github-dark-dimmed",
+        light: "github-light",
+      },
+      keepBackground: false,
+      defaultLang: {
+        block: "plaintext",
+        inline: "plaintext",
+      },
+      grid: true,
+    }]],
   },
 });
 
