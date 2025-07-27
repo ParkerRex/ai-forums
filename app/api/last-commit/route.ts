@@ -44,7 +44,7 @@ const GITHUB_API_URL = 'https://api.github.com'
 const OWNER = 'joinvai'
 
 /** GitHub repository name from which to fetch commit information */
-const REPO = 'vai-vex'
+const REPO = 'VAI'
 
 /**
  * Fetches information about the most recent commit from the VAI repository.

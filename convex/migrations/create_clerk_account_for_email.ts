@@ -17,7 +17,6 @@ const createClerkAccountForEmail = internalMutation({
     message?: string;
     externalId?: string;
     error?: string;
-    result?: any;
   }> => {
     console.log(`Creating Clerk account for member with email: ${args.email}`);
     

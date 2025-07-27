@@ -190,11 +190,11 @@ export default function PostPreview({
             {/* Title */}
             <Link
               href={postUrl}
-              className="text-foreground hover:text-primary block transition-colors text-4xl"
+              className="text-foreground block text-4xl transition-colors"
             >
               <h3
                 className={cn(
-                  "line-clamp-2 leading-tight text-[32px]",
+                  "line-clamp-2 text-[32px] leading-tight",
                   size === "small" ? "text-sm" : "text-base",
                 )}
               >
@@ -414,7 +414,7 @@ export default function PostPreview({
   return (
     <div
       className={cn(
-        "border-border/40 hover:bg-muted/30 group border-b py-2 transition-colors",
+        "border-border/40 group border-b py-2 transition-colors",
         className,
       )}
       onMouseEnter={() => setIsHovering(true)}

@@ -1,6 +1,6 @@
-# VAI-VEX
+# VAI
 
-This repository contains the source code for the VAI-VEX application, a full-stack web application built with Next.js, Convex, and a variety of other modern technologies.
+This repository contains the source code for the VAI application, a full-stack web application built with Next.js, Convex, and a variety of other modern technologies.
 
 ## Overview
 
@@ -27,7 +27,7 @@ To get started with the project, you will need to have Node.js and npm installed
 1.  **Clone the repository:**
 
     ```bash
-    git clone https://github.com/your-username/vai-vex.git
+    git clone https://github.com/your-username/VAI.git
     ```
 
 2.  **Install dependencies:**

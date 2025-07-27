@@ -18,7 +18,7 @@
 
 ## Overview
 
-The VAI-VEX platform implements a comprehensive payment system using Stripe for subscription management, content paywalls, and member tier tracking. The system operates with **zero free users** and supports 3 paid membership tiers with grandfathered pricing for early supporters.
+The VAI platform implements a comprehensive payment system using Stripe for subscription management, content paywalls, and member tier tracking. The system operates with **zero free users** and supports 3 paid membership tiers with grandfathered pricing for early supporters.
 
 **Important**: Scholarships are now handled via Stripe coupon codes (100% discount) applied to the Early Bird tier, rather than as a separate tier.
 

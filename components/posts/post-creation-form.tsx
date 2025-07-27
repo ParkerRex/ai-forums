@@ -103,6 +103,41 @@ function PostPreviewSkeleton() {
   );
 }
 
+// Publish button component
+function PublishButton({
+  isFormComplete,
+  isSubmitting,
+  uploadProgress,
+}: {
+  isFormComplete: boolean;
+  isSubmitting: boolean;
+  uploadProgress: number | null;
+}) {
+  return (
+    <div className="flex justify-end pt-3">
+      <Button
+        type="submit"
+        disabled={!isFormComplete || isSubmitting}
+        size="sm"
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            {uploadProgress !== null
+              ? `Uploading... ${uploadProgress}%`
+              : "Publishing..."}
+          </>
+        ) : (
+          <>
+            <Send className="mr-2 h-4 w-4" />
+            Publish
+          </>
+        )}
+      </Button>
+    </div>
+  );
+}
+
 export function PostCreationForm({
   onSuccess,
   onCancel,
@@ -141,7 +176,7 @@ export function PostCreationForm({
   const { isValid: formIsValid } = validatePostForm(formData);
 
   // Additional validation for media/link posts
-  const isPostTypeValid = () => {
+  const isPostTypeValid = useCallback(() => {
     if (formData.type === "media") {
       return (
         (formData.mediaItems && formData.mediaItems.length > 0) ||
@@ -158,7 +193,14 @@ export function PostCreationForm({
       );
     }
     return true;
-  };
+  }, [
+    formData.type,
+    formData.mediaItems,
+    formData.mediaFile,
+    formData.mediaUrl,
+    formData.linkUrl,
+    formData.pollData,
+  ]);
 
   const isFormComplete = formIsValid && isPostTypeValid();
 
@@ -175,6 +217,7 @@ export function PostCreationForm({
     | undefined;
   const createPost = useMutation(api.posts.createPost);
   const createPollPost = useMutation(api.polls.createPollPost);
+  const deletePost = useMutation(api.posts.deletePost);
   const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
   const generatePostPreview = useAction(
     api.previewGeneration.generatePostPreview,
@@ -415,7 +458,24 @@ export function PostCreationForm({
         postSlug = result.slug;
       }
 
-      toast.success("Post created successfully!");
+      // Show success toast with undo button
+      toast.success("New post created", {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            try {
+              await deletePost({ postId });
+              toast.success("Post deleted");
+              // Navigate back to the previous page or home
+              router.back();
+            } catch (error) {
+              console.error("Failed to delete post:", error);
+              toast.error("Failed to undo post");
+            }
+          },
+        },
+        duration: 5000,
+      });
 
       if (onSuccess) {
         onSuccess(postId);
@@ -444,6 +504,7 @@ export function PostCreationForm({
     categories,
     createPost,
     createPollPost,
+    deletePost,
     convex,
     onSuccess,
     router,
@@ -459,36 +520,70 @@ export function PostCreationForm({
     [handleActualSubmit],
   );
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
 
-    if (!isFormComplete || isSubmitting) {
-      // Show validation errors only on submit attempt
+      if (!isFormComplete || isSubmitting) {
+        // Show validation errors only on submit attempt
 
-      // Show a toast with the validation error
-      const validationErrors = [];
-      if (errors.title) validationErrors.push(errors.title);
-      if (errors.categoryId) validationErrors.push(errors.categoryId);
-      if (errors.content) validationErrors.push(errors.content);
-      if (!isPostTypeValid()) {
-        if (formData.type === "media")
-          validationErrors.push("Please add at least one media item");
-        if (formData.type === "link")
-          validationErrors.push("Please enter a valid URL");
-        if (formData.type === "poll")
-          validationErrors.push("Please add at least 2 poll options");
+        // Show a toast with the validation error
+        const validationErrors = [];
+        if (errors.title) validationErrors.push(errors.title);
+        if (errors.categoryId) validationErrors.push(errors.categoryId);
+        if (errors.content) validationErrors.push(errors.content);
+        if (!isPostTypeValid()) {
+          if (formData.type === "media")
+            validationErrors.push("Please add at least one media item");
+          if (formData.type === "link")
+            validationErrors.push("Please enter a valid URL");
+          if (formData.type === "poll")
+            validationErrors.push("Please add at least 2 poll options");
+        }
+
+        if (validationErrors.length > 0) {
+          toast.error(validationErrors[0]);
+        }
+        return;
       }
 
-      if (validationErrors.length > 0) {
-        toast.error(validationErrors[0]);
-      }
-      return;
-    }
+      // Show preview dialog and generate preview
+      setShowPreviewDialog(true);
+      handleGeneratePreview();
+    },
+    [
+      isFormComplete,
+      isSubmitting,
+      errors,
+      isPostTypeValid,
+      formData.type,
+      setShowPreviewDialog,
+      handleGeneratePreview,
+    ],
+  );
 
-    // Show preview dialog and generate preview
-    setShowPreviewDialog(true);
-    handleGeneratePreview();
-  };
+  // Handle keyboard shortcuts for form submission
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Check for Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
+      const isMac = navigator.userAgent.includes("Mac");
+      const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+      if (modKey && e.key === "Enter") {
+        e.preventDefault();
+        if (isFormComplete && !isSubmitting) {
+          handleSubmit({
+            preventDefault: () => {},
+            currentTarget: document.createElement("form"),
+            target: document.createElement("form"),
+          } as unknown as React.FormEvent);
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isFormComplete, isSubmitting, handleSubmit]);
 
   const handleCancel = () => {
     if (onCancel) {
@@ -547,25 +642,6 @@ export function PostCreationForm({
                 Drafts
               </Button>
             </DraftsModal>
-            <Button
-              type="submit"
-              disabled={!isFormComplete || isSubmitting}
-              size="sm"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {uploadProgress !== null
-                    ? `Uploading... ${uploadProgress}%`
-                    : "Publishing..."}
-                </>
-              ) : (
-                <>
-                  <Send className="mr-2 h-4 w-4" />
-                  Publish
-                </>
-              )}
-            </Button>
           </div>
         </div>
 
@@ -622,7 +698,7 @@ export function PostCreationForm({
 
           {/* Category Selection */}
           <div className="space-y-2">
-            <Label className="text-sm font-medium">Category</Label>
+            <Label className="pr-4 text-sm font-medium">Category</Label>
             <CategoryToggleGroup
               categories={
                 categories?.map((cat) => ({
@@ -670,6 +746,11 @@ export function PostCreationForm({
                       className="min-h-[300px]"
                     />
                   </Suspense>
+                  <PublishButton
+                    isFormComplete={isFormComplete}
+                    isSubmitting={isSubmitting}
+                    uploadProgress={uploadProgress}
+                  />
                 </div>
               ) : (
                 <Suspense fallback={<PostPreviewSkeleton />}>
@@ -761,6 +842,11 @@ export function PostCreationForm({
                 <div className="text-muted-foreground text-right text-xs">
                   {contentInfo.length}/10,000
                 </div>
+                <PublishButton
+                  isFormComplete={isFormComplete}
+                  isSubmitting={isSubmitting}
+                  uploadProgress={uploadProgress}
+                />
               </div>
             </div>
           )}
@@ -828,6 +914,11 @@ export function PostCreationForm({
                     {contentInfo.length}/10,000
                   </div>
                 </div>
+                <PublishButton
+                  isFormComplete={isFormComplete}
+                  isSubmitting={isSubmitting}
+                  uploadProgress={uploadProgress}
+                />
               </div>
             </div>
           )}
@@ -855,6 +946,11 @@ export function PostCreationForm({
                 <div className="text-muted-foreground text-right text-xs">
                   {contentInfo.length}/10,000
                 </div>
+                <PublishButton
+                  isFormComplete={isFormComplete}
+                  isSubmitting={isSubmitting}
+                  uploadProgress={uploadProgress}
+                />
               </div>
             </div>
           )}

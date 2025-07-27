@@ -7,7 +7,7 @@ const GITHUB_API_URL = 'https://api.github.com';
 const OWNER = 'joinvai';
 
 /** GitHub repository name from which to fetch issues */
-const REPO = 'vai-vex';
+const REPO = 'VAI';
 
 /**
  * Fetches open GitHub issues from the VAI repository.

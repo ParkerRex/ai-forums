@@ -1,6 +1,6 @@
-# Contributing to VAI-VEX
+# Contributing to VAI
 
-Thank you for your interest in contributing to the VAI-VEX platform! This guide will help you get started with contributing to our community platform.
+Thank you for your interest in contributing to the VAI platform! This guide will help you get started with contributing to our community platform.
 
 ## Table of Contents
 
@@ -284,7 +284,7 @@ stripe listen --forward-to localhost:3000/api/stripe/webhook
 - [Documentation](./docs/)
 - [API Reference](./docs/API.md)
 - [Discord Dev Channel](#dev-support)
-- [GitHub Discussions](https://github.com/vai-vex/vai-vex/discussions)
+- [GitHub Discussions](https://github.com/VAI/VAI/discussions)
 
 ### Common Issues
 
@@ -323,4 +323,4 @@ Contributors are recognized in:
 - Contributors section in README
 - Community announcements
 
-Thank you for contributing to VAI-VEX! 🚀
+Thank you for contributing to VAI! 🚀

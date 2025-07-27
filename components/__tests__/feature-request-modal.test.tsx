@@ -75,7 +75,7 @@ describe("FeatureRequestModal", () => {
     vi.clearAllMocks();
     mockAction.mockResolvedValue({
       issueNumber: 123,
-      issueUrl: "https://github.com/joinvai/vai-vex/issues/123",
+      issueUrl: "https://github.com/joinvai/VAI/issues/123",
       success: true,
     });
   });
@@ -132,7 +132,9 @@ describe("FeatureRequestModal", () => {
     const titleInput = screen.getByPlaceholderText(
       "Brief description of your feature idea",
     );
-    const descriptionEditor = screen.getByPlaceholderText("Describe your feature request in detail...");
+    const descriptionEditor = screen.getByPlaceholderText(
+      "Describe your feature request in detail...",
+    );
 
     fireEvent.change(titleInput, { target: { value: "Add dark mode" } });
     fireEvent.change(descriptionEditor, {
@@ -221,7 +223,9 @@ describe("FeatureRequestModal", () => {
     const titleInput = screen.getByPlaceholderText(
       "Brief description of your feature idea",
     );
-    const descriptionEditor = screen.getByPlaceholderText("Describe your feature request in detail...");
+    const descriptionEditor = screen.getByPlaceholderText(
+      "Describe your feature request in detail...",
+    );
 
     fireEvent.change(titleInput, { target: { value: "Test feature" } });
     fireEvent.change(descriptionEditor, {
@@ -245,7 +249,7 @@ describe("FeatureRequestModal", () => {
             () =>
               resolve({
                 issueNumber: 123,
-                issueUrl: "https://github.com/joinvai/vai-vex/issues/123",
+                issueUrl: "https://github.com/joinvai/VAI/issues/123",
                 success: true,
               }),
             100,
@@ -258,7 +262,9 @@ describe("FeatureRequestModal", () => {
     const titleInput = screen.getByPlaceholderText(
       "Brief description of your feature idea",
     );
-    const descriptionEditor = screen.getByPlaceholderText("Describe your feature request in detail...");
+    const descriptionEditor = screen.getByPlaceholderText(
+      "Describe your feature request in detail...",
+    );
 
     await act(async () => {
       fireEvent.change(titleInput, { target: { value: "Test feature" } });

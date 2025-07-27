@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MarkdownRenderer } from "@/components/posts/markdown-renderer";
 import {
   Bold,
@@ -104,12 +104,71 @@ export function GitHubCommentInput({
     }
   }, [content]);
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    for (const file of Array.from(files)) {
+      try {
+        const validation = validateMediaFile(file);
+        if (!validation.valid) {
+          toast.error(validation.error);
+          continue;
+        }
+
+        await getFilePreviewUrl(file);
+        const uploadResult = await uploadMedia(convex, file);
+
+        const attachment: AttachmentType = {
+          id: crypto.randomUUID(),
+          type: file.type.startsWith("image/") ? "image" : "document",
+          url: uploadResult.url,
+          fileName: file.name,
+          fileSize: file.size,
+          mimeType: file.type,
+        };
+
+        setAttachments((prev) => [...prev, attachment]);
+
+        // Insert markdown for the attachment
+        if (attachment.type === "image") {
+          insertMarkdown(`\n![${file.name}](${uploadResult.url})\n`);
+        } else {
+          insertMarkdown(`\n[${file.name}](${uploadResult.url})\n`);
+        }
+      } catch {
+        toast.error(`Failed to upload ${file.name}`);
+      }
+    }
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleSubmit = useCallback(() => {
+    if (!content.trim() && attachments.length === 0) return;
+    onSubmit(content.trim(), attachments.length > 0 ? attachments : undefined);
+    // Only reset if not in edit mode (no initial value)
+    if (!initialValue) {
+      setContent("");
+      setAttachments([]);
+    }
+  }, [
+    content,
+    attachments,
+    onSubmit,
+    initialValue,
+    setContent,
+    setAttachments,
+  ]);
+
   // Keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!textareaRef.current || activeTab !== "write") return;
 
-      const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+      const isMac = navigator.userAgent.includes("Mac");
       const modKey = isMac ? e.metaKey : e.ctrlKey;
 
       if (modKey && e.key) {
@@ -155,70 +214,29 @@ export function GitHubCommentInput({
               }, 0);
             }
             break;
+          case "enter":
+            e.preventDefault();
+            handleSubmit();
+            break;
         }
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [activeTab, insertMarkdown, content]);
-
-  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (!files || files.length === 0) return;
-
-    for (const file of Array.from(files)) {
-      try {
-        const validation = validateMediaFile(file);
-        if (!validation.valid) {
-          toast.error(validation.error);
-          continue;
-        }
-
-        await getFilePreviewUrl(file);
-        const uploadResult = await uploadMedia(convex, file);
-
-        const attachment: AttachmentType = {
-          id: crypto.randomUUID(),
-          type: file.type.startsWith("image/") ? "image" : "document",
-          url: uploadResult.url,
-          fileName: file.name,
-          fileSize: file.size,
-          mimeType: file.type,
-        };
-
-        setAttachments((prev) => [...prev, attachment]);
-
-        // Insert markdown for the attachment
-        if (attachment.type === "image") {
-          insertMarkdown(`\n![${file.name}](${uploadResult.url})\n`);
-        } else {
-          insertMarkdown(`\n[${file.name}](${uploadResult.url})\n`);
-        }
-      } catch {
-        toast.error(`Failed to upload ${file.name}`);
-      }
-    }
-
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
-
-  const handleSubmit = () => {
-    if (!content.trim() && attachments.length === 0) return;
-    onSubmit(content.trim(), attachments.length > 0 ? attachments : undefined);
-    // Only reset if not in edit mode (no initial value)
-    if (!initialValue) {
-      setContent("");
-      setAttachments([]);
-    }
-  };
+  }, [activeTab, insertMarkdown, content, handleSubmit]);
 
   return (
     <div className={cn("flex gap-3", className)}>
       {/* Avatar */}
       <Avatar className="h-10 w-10">
+        {/* Display member avatar if available */}
+        {currentMember?.avatarUrl && (
+          <AvatarImage
+            src={currentMember.avatarUrl}
+            alt={currentMember.firstName || ""}
+          />
+        )}
         <AvatarFallback className="text-sm">
           {currentMember?.firstName?.[0]?.toUpperCase() || "?"}
         </AvatarFallback>
@@ -464,6 +482,19 @@ export function GitHubCommentInput({
           )}
         </div>
 
+        {/* Submit button below content */}
+        <div className="flex justify-end px-4 pb-3">
+          <Button
+            onClick={handleSubmit}
+            disabled={
+              isSubmitting || (!content.trim() && attachments.length === 0)
+            }
+            size="sm"
+          >
+            {isSubmitting ? "Posting..." : "Comment"}
+          </Button>
+        </div>
+
         {/* Footer */}
         <div className="bg-muted/50 text-muted-foreground flex items-center justify-between px-4 py-2 text-xs">
           <span>
@@ -471,27 +502,16 @@ export function GitHubCommentInput({
             Paste, drop, or click to add files
           </span>
 
-          <div className="flex items-center gap-2">
-            {replyingTo && onCancelReply && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={onCancelReply}
-              >
-                Cancel
-              </Button>
-            )}
+          {replyingTo && onCancelReply && (
             <Button
-              onClick={handleSubmit}
-              disabled={
-                isSubmitting || (!content.trim() && attachments.length === 0)
-              }
+              type="button"
+              variant="ghost"
               size="sm"
+              onClick={onCancelReply}
             >
-              {isSubmitting ? "Posting..." : "Comment"}
+              Cancel
             </Button>
-          </div>
+          )}
         </div>
       </div>
 

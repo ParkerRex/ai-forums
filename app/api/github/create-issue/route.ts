@@ -7,7 +7,7 @@ const GITHUB_API_URL = 'https://api.github.com';
 const OWNER = 'joinvai';
 
 /** GitHub repository name where issues will be created */
-const REPO = 'vai-vex';
+const REPO = 'VAI';
 
 /**
  * Bug report data structure from user submissions
@@ -73,7 +73,7 @@ ${data.actualBehavior}
 
 ## Environment
 - Browser: ${data.browserInfo}
-- Platform: VAI-VEX
+- Platform: VAI
 ${data.memberInfo ? `- Reported by: ${data.memberInfo.name} (${data.memberInfo.email})` : '- Reported by: Anonymous user'}
 
 ## Severity

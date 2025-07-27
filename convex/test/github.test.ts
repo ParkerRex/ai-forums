@@ -51,7 +51,7 @@ function createMockResponse(config: {
     headers: new Headers(),
     redirected: false,
     type: 'default',
-    url: 'https://api.github.com/repos/joinvai/vai-vex/issues',
+    url: 'https://api.github.com/repos/joinvai/VAI/issues',
     body: null,
     bodyUsed: false,
     arrayBuffer: async () => new ArrayBuffer(0),
@@ -106,7 +106,7 @@ test("createFeatureRequest creates issue with authenticated user", async () => {
     statusText: 'OK',
     json: async () => ({
       number: 123, // GitHub issue number
-      html_url: 'https://github.com/joinvai/vai-vex/issues/123' // Public issue URL
+      html_url: 'https://github.com/joinvai/VAI/issues/123' // Public issue URL
     })
   }));
 
@@ -131,14 +131,14 @@ test("createFeatureRequest creates issue with authenticated user", async () => {
   // Verify the action returned expected success response
   expect(result).toEqual({
     issueNumber: 123,
-    issueUrl: 'https://github.com/joinvai/vai-vex/issues/123',
+    issueUrl: 'https://github.com/joinvai/VAI/issues/123',
     success: true
   });
 
   // Verify the GitHub API was called correctly
   expect(mockFetch).toHaveBeenCalledTimes(1); // Single API call made
   expect(mockFetch).toHaveBeenCalledWith(
-    'https://api.github.com/repos/joinvai/vai-vex/issues', // Correct API endpoint
+    'https://api.github.com/repos/joinvai/VAI/issues', // Correct API endpoint
     expect.objectContaining({
       method: 'POST', // HTTP POST for issue creation
       headers: expect.objectContaining({
@@ -192,7 +192,7 @@ test("createFeatureRequest creates issue with anonymous user", async () => {
     statusText: 'OK',
     json: async () => ({
       number: 124, // Different issue number for isolation
-      html_url: 'https://github.com/joinvai/vai-vex/issues/124'
+      html_url: 'https://github.com/joinvai/VAI/issues/124'
     })
   }));
 
@@ -206,7 +206,7 @@ test("createFeatureRequest creates issue with anonymous user", async () => {
   // Verify successful anonymous submission
   expect(result).toEqual({
     issueNumber: 124,
-    issueUrl: 'https://github.com/joinvai/vai-vex/issues/124',
+    issueUrl: 'https://github.com/joinvai/VAI/issues/124',
     success: true
   });
 
@@ -242,7 +242,7 @@ test("createFeatureRequest handles non-image attachments", async () => {
     statusText: 'OK',
     json: async () => ({
       number: 125,
-      html_url: 'https://github.com/joinvai/vai-vex/issues/125'
+      html_url: 'https://github.com/joinvai/VAI/issues/125'
     })
   }));
 

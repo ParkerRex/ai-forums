@@ -676,7 +676,7 @@ export default function CommentSection({
   const comments = useQuery(api.comments.getCommentsByPost, { postId });
   const createComment = useMutation(api.comments.createComment);
   const currentMember = useQuery(api.members.getCurrentMember);
-  const { handleMutationError, handleMutationSuccess } = useMutationError();
+  const { handleMutationError } = useMutationError();
 
   // Check if current user is admin
   const isAdmin = currentMember?.role === "admin";
@@ -750,6 +750,8 @@ export default function CommentSection({
     return () => clearTimeout(timeoutId);
   }, [targetCommentId, comments]);
 
+  const deleteComment = useMutation(api.comments.deleteComment);
+
   const handleSubmitComment = async (
     content: string,
     attachments?: AttachmentType[],
@@ -780,9 +782,24 @@ export default function CommentSection({
             return next;
           });
         }, 1000);
-      }
 
-      handleMutationSuccess("Comment posted successfully!");
+        // Show success toast with undo button
+        toast.success("New comment created", {
+          action: {
+            label: "Undo",
+            onClick: async () => {
+              try {
+                await deleteComment({ commentId: newComment });
+                toast.success("Comment deleted");
+              } catch (error) {
+                console.error("Failed to delete comment:", error);
+                toast.error("Failed to undo comment");
+              }
+            },
+          },
+          duration: 5000,
+        });
+      }
     } catch (error) {
       handleMutationError(error, () =>
         handleSubmitComment(content, attachments, linkPreviews, mentions),
@@ -827,7 +844,23 @@ export default function CommentSection({
       }
 
       setReplyingTo(null);
-      handleMutationSuccess("Reply posted successfully!");
+
+      // Show success toast with undo button
+      toast.success("New comment created", {
+        action: {
+          label: "Undo",
+          onClick: async () => {
+            try {
+              await deleteComment({ commentId: newReply });
+              toast.success("Comment deleted");
+            } catch (error) {
+              console.error("Failed to delete comment:", error);
+              toast.error("Failed to undo comment");
+            }
+          },
+        },
+        duration: 5000,
+      });
     } catch (error) {
       handleMutationError(error, () =>
         handleSubmitReply(

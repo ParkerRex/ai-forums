@@ -409,6 +409,21 @@ export function EnhancedCommentInput({
     };
   }, [mentionSearchTerm, showMentionAutocomplete, convex]);
 
+  // Handle keyboard shortcuts
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      // Check for Cmd+Enter (Mac) or Ctrl+Enter (Windows/Linux)
+      const isMac = navigator.userAgent.includes("Mac");
+      const modKey = isMac ? e.metaKey : e.ctrlKey;
+
+      if (modKey && e.key === "Enter") {
+        e.preventDefault();
+        handleSubmit();
+      }
+    },
+    [handleSubmit],
+  );
+
   return (
     <div ref={wrapperRef} className={`space-y-3 ${className} relative`}>
       <div className="relative">
@@ -419,6 +434,7 @@ export function EnhancedCommentInput({
             const target = e.target as HTMLTextAreaElement;
             handleContentChange(e.target.value, target.selectionStart);
           }}
+          onKeyDown={handleKeyDown}
           className="min-h-[80px]"
         />
         {showMentionAutocomplete && (
@@ -439,6 +455,13 @@ export function EnhancedCommentInput({
         )}
       </div>
 
+      {/* Post button below textarea */}
+      <div className="flex justify-end pt-2">
+        <Button onClick={handleSubmit} disabled={isSubmitting} size="sm">
+          {isSubmitting ? "Posting..." : "Post"}
+        </Button>
+      </div>
+
       {attachments.length > 0 && (
         <MediaPreviewGrid
           media={mediaItems}
@@ -449,53 +472,47 @@ export function EnhancedCommentInput({
       )}
 
       {Object.entries(linkPreviews).map(([url, preview]) => (
-        <div key={url} className="border rounded p-3 bg-muted/50">
+        <div key={url} className="bg-muted/50 rounded border p-3">
           <div className="text-sm font-medium">{preview.title}</div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-muted-foreground text-xs">
             {preview.description}
           </div>
           <div className="text-xs text-blue-600">{url}</div>
         </div>
       ))}
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={attachments.length >= 5}
-          >
-            <MediaUploadIcon size={16} />
-          </Button>
-
-          <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
-            <PopoverTrigger asChild>
-              <Button type="button" variant="ghost" size="sm">
-                <SmileIcon size={16} />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <EmojiPicker onEmojiClick={handleEmojiSelect} />
-            </PopoverContent>
-          </Popover>
-
-          <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
-            <PopoverTrigger asChild>
-              <Button type="button" variant="ghost" size="sm">
-                <GifIcon size={16} />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0">
-              <GifPicker onGifSelect={handleGifSelect} />
-            </PopoverContent>
-          </Popover>
-        </div>
-
-        <Button onClick={handleSubmit} disabled={isSubmitting}>
-          {isSubmitting ? "Posting..." : "Post"}
+      <div className="flex items-center gap-2">
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={attachments.length >= 5}
+        >
+          <MediaUploadIcon size={16} />
         </Button>
+
+        <Popover open={showEmojiPicker} onOpenChange={setShowEmojiPicker}>
+          <PopoverTrigger asChild>
+            <Button type="button" variant="ghost" size="sm">
+              <SmileIcon size={16} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <EmojiPicker onEmojiClick={handleEmojiSelect} />
+          </PopoverContent>
+        </Popover>
+
+        <Popover open={showGifPicker} onOpenChange={setShowGifPicker}>
+          <PopoverTrigger asChild>
+            <Button type="button" variant="ghost" size="sm">
+              <GifIcon size={16} />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0">
+            <GifPicker onGifSelect={handleGifSelect} />
+          </PopoverContent>
+        </Popover>
       </div>
 
       <input

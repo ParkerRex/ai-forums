@@ -318,7 +318,7 @@ export default function PostDetail({
   };
 
   return (
-    <div className="bg-gray-50 py-8 dark:bg-gray-950">
+    <div className="bg-gray-50 py-8 dark:bg-black">
       <div className="mx-auto max-w-4xl px-4">
         <div className="mb-4 flex items-center">
           <Button
@@ -341,7 +341,7 @@ export default function PostDetail({
 
         <Card className="w-full overflow-hidden shadow-sm">
           <div className="flex">
-            <div className="bg-muted/50 dark:bg-muted/20 hidden flex-col items-center p-2 sm:flex">
+            <div className="bg-muted/50 hidden flex-col items-center p-2 sm:flex dark:bg-black">
               <VoteButton
                 targetId={post._id}
                 targetType="post"
@@ -487,7 +487,7 @@ export default function PostDetail({
                         alt={post.title}
                         width={800}
                         height={600}
-                        className="h-auto max-h-[70vh] w-full bg-gray-100 object-contain dark:bg-gray-800"
+                        className="h-auto max-h-[70vh] w-full bg-gray-100 object-contain dark:bg-black"
                         placeholder="blur"
                         blurDataURL={getMediaPlaceholder()}
                       />
@@ -552,7 +552,7 @@ export default function PostDetail({
                         >
                           <Card className="rounded-none border-0 shadow-none">
                             {post.linkImage && (
-                              <div className="bg-muted relative h-40 sm:h-48">
+                              <div className="bg-muted relative h-40 sm:h-48 dark:bg-black">
                                 <Image
                                   src={post.linkImage}
                                   alt={post.linkTitle || "Link preview"}

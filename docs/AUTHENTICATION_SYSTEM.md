@@ -1,8 +1,8 @@
-****# VAI-VEX Authentication System Documentation
+****# VAI Authentication System Documentation
 
 ## Overview
 
-This document provides comprehensive technical documentation for the VAI-VEX authentication system, which integrates Clerk for user authentication with Convex for backend data management. This system supports both modern Clerk-based authentication and legacy email-based authentication with automatic migration.
+This document provides comprehensive technical documentation for the VAI authentication system, which integrates Clerk for user authentication with Convex for backend data management. This system supports both modern Clerk-based authentication and legacy email-based authentication with automatic migration.
 
 ## Table of Contents
 
@@ -619,7 +619,7 @@ If migrating from a legacy authentication system:
 
 ## Conclusion
 
-The VAI-VEX authentication system provides a robust, scalable solution that combines Clerk's modern authentication capabilities with Convex's real-time backend. The lazy synchronization approach simplifies implementation while maintaining data consistency, and the dual lookup strategy enables seamless migration from legacy systems.
+The VAI authentication system provides a robust, scalable solution that combines Clerk's modern authentication capabilities with Convex's real-time backend. The lazy synchronization approach simplifies implementation while maintaining data consistency, and the dual lookup strategy enables seamless migration from legacy systems.
 
 Key benefits:
 - **Simplified Development**: Minimal boilerplate code

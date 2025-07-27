@@ -32,13 +32,13 @@ describe("useGitHubIssues", () => {
         id: 1,
         number: 1,
         title: "Issue 1",
-        html_url: "https://github.com/joinvai/vai-vex/issues/1",
+        html_url: "https://github.com/joinvai/VAI/issues/1",
       },
       {
         id: 2,
         number: 2,
         title: "Issue 2",
-        html_url: "https://github.com/joinvai/vai-vex/issues/2",
+        html_url: "https://github.com/joinvai/VAI/issues/2",
       },
     ];
 
@@ -71,7 +71,7 @@ describe("useGitHubIssues", () => {
         id: 3,
         number: 3,
         title: "Issue 3",
-        html_url: "https://github.com/joinvai/vai-vex/issues/3",
+        html_url: "https://github.com/joinvai/VAI/issues/3",
       },
     ];
 

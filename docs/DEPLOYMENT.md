@@ -1,4 +1,4 @@
-# VAI-VEX Deployment Guide
+# VAI Deployment Guide
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@
 
 ## Overview
 
-This guide covers deploying the VAI-VEX platform to production, including the Next.js frontend, Convex backend, and all necessary integrations.
+This guide covers deploying the VAI platform to production, including the Next.js frontend, Convex backend, and all necessary integrations.
 
 ## Prerequisites
 
@@ -62,7 +62,7 @@ NEXT_PUBLIC_STRIPE_MEMBER_PRICE_ID=price_...
 R2_ACCOUNT_ID=...
 R2_ACCESS_KEY_ID=...
 R2_SECRET_ACCESS_KEY=...
-R2_BUCKET_NAME=vai-vex-production
+R2_BUCKET_NAME=VAI-production
 R2_PUBLIC_URL=https://files.vai.community
 
 # Application
@@ -197,7 +197,7 @@ In Stripe Dashboard:
 ```bash
 # In Vercel Dashboard
 1. Import Git Repository
-2. Select vai-vex repository
+2. Select VAI repository
 3. Choose Next.js framework preset
 ```
 

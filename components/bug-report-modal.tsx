@@ -230,7 +230,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Submit Bug Report</DialogTitle>
           <DialogDescription>
@@ -347,12 +347,12 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
 
           <div className="space-y-2">
             <Label>Environment Information</Label>
-            <div className="p-3 bg-muted rounded-md text-sm">
+            <div className="bg-muted rounded-md p-3 text-sm">
               <div>
                 <strong>Browser:</strong> {browserInfo}
               </div>
               <div>
-                <strong>Platform:</strong> VAI-VEX
+                <strong>Platform:</strong> VAI
               </div>
             </div>
           </div>
@@ -381,28 +381,28 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                           alt={file.name}
                           width={80}
                           height={80}
-                          className="w-20 h-20 object-cover rounded border"
+                          className="h-20 w-20 rounded border object-cover"
                         />
                       ) : (
-                        <div className="w-20 h-20 bg-muted rounded border flex flex-col items-center justify-center p-2">
+                        <div className="bg-muted flex h-20 w-20 flex-col items-center justify-center rounded border p-2">
                           {file.type === "application/pdf" ? (
-                            <FileText className="w-8 h-8 text-muted-foreground mb-1" />
+                            <FileText className="text-muted-foreground mb-1 h-8 w-8" />
                           ) : file.type === "application/msword" ||
                             file.type ===
                               "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ? (
-                            <FileText className="w-8 h-8 text-blue-600 mb-1" />
+                            <FileText className="mb-1 h-8 w-8 text-blue-600" />
                           ) : (
-                            <FileIcon className="w-8 h-8 text-muted-foreground mb-1" />
+                            <FileIcon className="text-muted-foreground mb-1 h-8 w-8" />
                           )}
                           <span
-                            className="text-xs text-center truncate w-full"
+                            className="w-full truncate text-center text-xs"
                             title={file.name}
                           >
                             {file.name.length > 10
                               ? file.name.substring(0, 7) + "..."
                               : file.name}
                           </span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-muted-foreground text-xs">
                             {(file.size / 1024).toFixed(0)}KB
                           </span>
                         </div>
@@ -411,10 +411,10 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                         type="button"
                         variant="destructive"
                         size="sm"
-                        className="absolute -top-2 -right-2 w-6 h-6 p-0"
+                        className="absolute -right-2 -top-2 h-6 w-6 p-0"
                         onClick={() => handleRemoveAttachment(index)}
                       >
-                        <X className="w-3 h-3" />
+                        <X className="h-3 w-3" />
                       </Button>
                     </div>
                   ))}
@@ -446,7 +446,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
             )}
           </div>
 
-          <div className="flex justify-end space-x-3 pt-4 border-t">
+          <div className="flex justify-end space-x-3 border-t pt-4">
             <Button
               type="button"
               variant="outline"
@@ -458,7 +458,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Submitting...
                 </>
               ) : (

@@ -13,13 +13,7 @@
     "lint:theme": "tsx scripts/audit-theme.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:visual": "playwright test",
-    "export:members": "tsx scripts/export-members.ts",
-    "billing:template": "tsx scripts/generate-billing-template.ts",
-    "billing:transform": "tsx scripts/transform-billing-data.ts",
-    "billing:transform-actual": "tsx scripts/transform-billing-actual.ts",
-    "billing:validate": "tsx scripts/validate-billing-data.ts",
-    "migrate:clerk-accounts": "npx convex run migrations/create_clerk_accounts_for_legacy_members"
+    "test:visual": "playwright test"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.839.0",

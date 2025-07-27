@@ -1,6 +1,6 @@
-# VAI-VEX Documentation
+# VAI Documentation
 
-Welcome to the VAI-VEX platform documentation. This directory contains comprehensive guides for developers, administrators, and contributors.
+Welcome to the VAI platform documentation. This directory contains comprehensive guides for developers, administrators, and contributors.
 
 ## Documentation Structure
 
@@ -18,7 +18,7 @@ Welcome to the VAI-VEX platform documentation. This directory contains comprehen
 
 ## System Overview
 
-The VAI-VEX platform is a modern community platform built with:
+The VAI platform is a modern community platform built with:
 - **Frontend**: Next.js 15 + React 19 + TypeScript
 - **Backend**: Convex (real-time database + serverless)
 - **Authentication**: Clerk

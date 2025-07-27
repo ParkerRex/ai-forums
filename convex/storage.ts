@@ -88,6 +88,11 @@ export const generateUploadUrl = action({
     fileName: v.string(),
   },
   handler: async (ctx, args) => {
+    // DEBUG: Log request details to investigate blocked uploads
+    console.log("[generateUploadUrl] Incoming request", {
+      contentType: args.contentType,
+      fileName: args.fileName,
+    });
     const bucket = process.env.R2_BUCKET;
     if (!bucket) {
       throw new Error("R2_BUCKET environment variable is not set");
@@ -154,6 +159,12 @@ export const uploadFile = action({
     fileName: v.string(),
   },
   handler: async (ctx, args) => {
+    // DEBUG: Log request details to investigate blocked uploads
+    console.log("[uploadFile] Incoming request", {
+      contentType: args.contentType,
+      fileName: args.fileName,
+      dataSize: args.fileData.length,
+    });
     const bucket = process.env.R2_BUCKET;
     if (!bucket) {
       throw new Error("R2_BUCKET environment variable is not set");

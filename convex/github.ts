@@ -30,7 +30,7 @@ export const createFeatureRequest = action({
 
     const GITHUB_API_URL = 'https://api.github.com';
     const OWNER = 'joinvai';
-    const REPO = 'vai-vex';
+    const REPO = 'VAI';
 
     const issueBody = `## Feature Description
 ${args.description}
@@ -144,7 +144,7 @@ export const createBugReport = action({
 
     const GITHUB_API_URL = 'https://api.github.com';
     const OWNER = 'joinvai';
-    const REPO = 'vai-vex';
+    const REPO = 'VAI';
 
     const issueBody = `## Bug Description
 ${args.title}
@@ -160,7 +160,7 @@ ${args.actualBehavior}
 
 ## Environment
 - Browser: ${args.browserInfo}
-- Platform: VAI-VEX
+- Platform: VAI
 ${memberInfo ? `- Reported by: ${memberInfo.name} (${memberInfo.email})` : '- Reported by: Anonymous user'}
 
 ## Severity

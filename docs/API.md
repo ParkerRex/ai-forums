@@ -1,4 +1,4 @@
-# VAI-VEX API Documentation
+# VAI API Documentation
 
 ## Table of Contents
 
@@ -24,7 +24,7 @@
 
 ## Overview
 
-The VAI-VEX platform provides a comprehensive API built on Convex for real-time data synchronization, authentication, and payment processing. This documentation covers the public-facing queries and mutations available to developers.
+The VAI platform provides a comprehensive API built on Convex for real-time data synchronization, authentication, and payment processing. This documentation covers the public-facing queries and mutations available to developers.
 
 ## Authentication
 
@@ -485,11 +485,11 @@ const posts = useQuery(api.posts.listPosts);
 
 ## Versioning
 
-The VAI-VEX API is currently not explicitly versioned. Backward-compatible changes are introduced directly. For breaking changes, a new API version will be introduced with clear migration paths.
+The VAI API is currently not explicitly versioned. Backward-compatible changes are introduced directly. For breaking changes, a new API version will be introduced with clear migration paths.
 
 ## Support
 
 For API support and questions:
-- GitHub Issues: [https://github.com/vai-vex/vai-vex/issues](https://github.com/vai-vex/vai-vex/issues)
+- GitHub Issues: [https://github.com/VAI/VAI/issues](https://github.com/VAI/VAI/issues)
 - Discord: #dev-support channel
 - Email: dev@vai.community
