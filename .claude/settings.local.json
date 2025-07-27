@@ -39,7 +39,8 @@
       "mcp__convex__runOneoffQuery",
       "mcp__convex__tables",
       "WebFetch(domain:neil.computer)",
-      "Bash(unzip:*)"
+      "Bash(unzip:*)",
+      "WebFetch(domain:www.npmjs.com)"
     ],
     "deny": []
   }

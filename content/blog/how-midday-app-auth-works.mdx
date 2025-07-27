@@ -1,0 +1,1429 @@
+---
+title: "How Midday App Auth Works: A Deep Dive into Modern Authentication"
+date: "2025-07-27"
+description: "A comprehensive technical breakdown of Midday's authentication system covering OAuth, API keys, JWT tokens, MFA, and session management"
+---
+
+Building a robust authentication system is one of the most critical challenges in modern web development. Midday's open-source codebase offers an excellent real-world example of how to implement authentication at scale.
+
+This deep dive explores their multi-layered authentication architecture, from OAuth providers to API key management, with practical code examples you can adapt for your own projects. 
+
+## Architecture Overview
+
+Midday's authentication system is built on five core layers:
+
+1. **OAuth Authentication** - Social login via Supabase Auth (Google, GitHub, Apple)
+2. **API Key Authentication** - Programmatic access with scoped permissions
+3. **JWT Token Verification** - Stateless authentication for API requests
+4. **Session Management** - Server-side sessions with intelligent caching
+5. **Multi-Factor Authentication** - TOTP-based 2FA for enhanced security
+
+Let's explore each layer with code examples and implementation details.
+
+
+## Environment Setup
+
+Before diving into the code, here's the essential environment configuration. Midday uses a multi-region database setup with separate URLs for different geographic locations:
+```bash
+# Core Supabase settings
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+SUPABASE_SERVICE_KEY=your-service-key
+SUPABASE_JWT_SECRET=your-jwt-secret
+
+# Database URLs (for multi-region setup)
+DATABASE_PRIMARY_URL=postgresql://...
+DATABASE_FRA_URL=postgresql://...
+DATABASE_SJC_URL=postgresql://...
+DATABASE_IAD_URL=postgresql://...
+```
+
+### OAuth Provider Configuration
+```bash
+# Gmail OAuth (for inbox integration)
+GMAIL_CLIENT_ID=your-gmail-client-id
+GMAIL_CLIENT_SECRET=your-gmail-client-secret
+GMAIL_REDIRECT_URI=https://your-app.com/api/auth/gmail/callback
+
+# Outlook OAuth (for inbox integration)
+OUTLOOK_CLIENT_ID=your-outlook-client-id
+OUTLOOK_CLIENT_SECRET=your-outlook-client-secret
+OUTLOOK_REDIRECT_URI=https://your-app.com/api/auth/outlook/callback
+```
+
+### Security Configuration
+```bash
+# Encryption for API keys and sensitive data
+MIDDAY_ENCRYPTION_KEY=64-character-hex-string
+
+# JWT secrets for custom tokens
+INVOICE_JWT_SECRET=your-invoice-jwt-secret
+
+# API configuration
+ALLOWED_API_ORIGINS="http://localhost:3001,https://your-app.com"
+```
+
+## OAuth Authentication Implementation
+
+Midday uses Supabase Auth for OAuth providers, with separate client configurations for browser and server contexts.
+
+### Browser Client Setup
+```typescript
+import { createBrowserClient } from "@supabase/ssr";
+import type { Database } from "../types";
+
+export const createClient = () => {
+  return createBrowserClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+  );
+};
+```
+
+### Server Client Setup
+
+The server client handles both regular and admin operations with proper cookie management:
+```typescript
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
+import type { Database } from "../types";
+
+type CreateClientOptions = {
+  admin?: boolean;
+  schema?: "public" | "storage";
+};
+
+export async function createClient(options?: CreateClientOptions) {
+  const { admin = false, ...rest } = options ?? {};
+  const cookieStore = await cookies();
+
+  const key = admin
+    ? process.env.SUPABASE_SERVICE_KEY!
+    : process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+
+  const auth = admin
+    ? {
+        persistSession: false,
+        autoRefreshToken: false,
+        detectSessionInUrl: false,
+      }
+    : {};
+
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    key,
+    {
+      ...rest,
+      cookies: {
+        getAll() {
+          return cookieStore.getAll();
+        },
+        setAll(cookiesToSet) {
+          try {
+            for (const { name, value, options } of cookiesToSet) {
+              cookieStore.set(name, value, options);
+            }
+          } catch {
+            // Handle Server Component context
+          }
+        },
+      },
+      auth,
+    },
+  );
+}
+```
+
+### OAuth Provider Components
+
+Here's how Midday implements Google Sign-In with support for both web and desktop applications:
+```typescript
+import { createClient } from "@midday/supabase/client";
+import { getUrl } from "@/utils/environment";
+import { isDesktopApp } from "@midday/desktop-client";
+
+export function GoogleSignIn({ returnTo }: { returnTo?: string }) {
+  const [isLoading, setLoading] = useState(false);
+  const supabase = createClient();
+
+  const handleSignIn = async () => {
+    setLoading(true);
+
+    if (isDesktopApp()) {
+      const redirectTo = new URL("/api/auth/callback", getUrl());
+      redirectTo.searchParams.append("provider", "google");
+      redirectTo.searchParams.append("client", "desktop");
+
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectTo.toString(),
+          queryParams: {
+            prompt: "select_account",
+            client: "desktop",
+          },
+        },
+      });
+    } else {
+      const redirectTo = new URL("/api/auth/callback", getUrl());
+      
+      if (returnTo) {
+        redirectTo.searchParams.append("return_to", returnTo);
+      }
+      
+      redirectTo.searchParams.append("provider", "google");
+
+      await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectTo.toString(),
+          queryParams: {
+            prompt: "select_account",
+          },
+        },
+      });
+    }
+
+    setTimeout(() => setLoading(false), 2000);
+  };
+
+  return (
+    <button onClick={handleSignIn} disabled={isLoading}>
+      {isLoading ? "Signing in..." : "Continue with Google"}
+    </button>
+  );
+}
+```
+
+GitHub and Apple sign-in follow the same pattern, with `provider: "github"` or `provider: "apple"` respectively. The key difference is that GitHub doesn't require the `prompt` parameter.
+
+### OAuth Callback Handler
+
+The callback handler is where the OAuth flow completes. It handles desktop app authentication, stores user preferences, and manages team setup:
+```typescript
+import { createClient } from "@midday/supabase/server";
+import { getSession } from "@midday/supabase/cached-queries";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+
+export async function GET(req: NextRequest) {
+  const cookieStore = await cookies();
+  const requestUrl = new URL(req.url);
+  const code = requestUrl.searchParams.get("code");
+  const client = requestUrl.searchParams.get("client");
+  const returnTo = requestUrl.searchParams.get("return_to");
+  const provider = requestUrl.searchParams.get("provider");
+
+  // Handle desktop app authentication
+  if (client === "desktop") {
+    return NextResponse.redirect(`${requestUrl.origin}/verify?code=${code}`);
+  }
+
+  // Store preferred provider in cookie
+  if (provider) {
+    cookieStore.set("preferred-signin-provider", provider, {
+      expires: addYears(new Date(), 1),
+    });
+  }
+
+  if (code) {
+    const supabase = await createClient();
+    await supabase.auth.exchangeCodeForSession(code);
+
+    const { data: { session } } = await getSession();
+
+    if (session) {
+      const userId = session.user.id;
+
+      // Track sign-in event
+      const analytics = await setupAnalytics({
+        userId,
+        fullName: session.user.user_metadata?.full_name,
+      });
+
+      await analytics.track({
+        event: "SignIn",
+        channel: "web",
+      });
+
+      // Handle team setup flow
+      const { count } = await supabase
+        .from("users_on_team")
+        .select("*", { count: "exact" })
+        .eq("user_id", userId);
+
+      if (count === 0 && !returnTo?.startsWith("teams/invite/")) {
+        return NextResponse.redirect(`${requestUrl.origin}/teams/create`);
+      }
+    }
+  }
+
+  // Redirect to return URL or home
+  if (returnTo) {
+    return NextResponse.redirect(`${requestUrl.origin}/${returnTo}`);
+  }
+
+  return NextResponse.redirect(requestUrl.origin);
+}
+```
+
+## API Key Authentication System
+
+For programmatic access, Midday implements a robust API key system with proper encryption and validation.
+
+### API Key Generation
+```typescript
+import { randomBytes } from "node:crypto";
+
+export function generateApiKey(): string {
+  const randomString = randomBytes(32).toString("hex");
+  return `mid_${randomString}`;
+}
+
+export function isValidApiKeyFormat(key: string): boolean {
+  return key.startsWith("mid_") && key.length === 68; // mid_ (4) + 64 hex chars
+}
+```
+
+### Authentication Middleware
+
+The middleware validates API keys, manages caching, and sets up the session context:
+```typescript
+import { getApiKeyByToken, updateApiKeyLastUsedAt } from "@api/db/queries/api-keys";
+import { getUserById } from "@api/db/queries/users";
+import { isValidApiKeyFormat } from "@api/utils/api-keys";
+import { apiKeyCache } from "@api/utils/cache/api-key-cache";
+import { userCache } from "@api/utils/cache/user-cache";
+import { expandScopes } from "@api/utils/scopes";
+import { hash } from "@midday/encryption";
+import type { MiddlewareHandler } from "hono";
+import { HTTPException } from "hono/http-exception";
+
+export const withAuth: MiddlewareHandler = async (c, next) => {
+  const authHeader = c.req.header("Authorization");
+  const token = authHeader?.split(" ")[1];
+
+  if (token && !isValidApiKeyFormat(token)) {
+    throw new HTTPException(401, { message: "Invalid API key format" });
+  }
+
+  if (!token) {
+    throw new HTTPException(401, { message: "Unauthorized" });
+  }
+
+  const db = c.get("db");
+  const keyHash = hash(token);
+
+  // Check cache first for API key
+  let apiKey = apiKeyCache.get(keyHash);
+
+  if (!apiKey) {
+    apiKey = await getApiKeyByToken(db, keyHash);
+    if (apiKey) {
+      apiKeyCache.set(keyHash, apiKey);
+    }
+  }
+
+  if (!apiKey) {
+    throw new HTTPException(401, { message: "Invalid API key" });
+  }
+
+  // Check cache first for user
+  let user = userCache.get(apiKey.userId);
+
+  if (!user) {
+    user = await getUserById(db, apiKey.userId);
+    if (user) {
+      userCache.set(apiKey.userId, user);
+    }
+  }
+
+  if (!user) {
+    throw new HTTPException(401, { message: "User not found" });
+  }
+
+  const session = {
+    teamId: apiKey.teamId,
+    user: {
+      id: user.id,
+      email: user.email,
+      full_name: user.fullName,
+    },
+  };
+
+  c.set("session", session);
+  c.set("teamId", session.teamId);
+  c.set("scopes", expandScopes(apiKey.scopes ?? []));
+
+  // Update last used timestamp
+  updateApiKeyLastUsedAt(db, apiKey.id);
+
+  await next();
+};
+```
+
+### Caching Strategy
+
+Midday uses LRU caching to optimize performance and reduce database queries:
+```typescript
+import type { ApiKey } from "@api/db/queries/api-keys";
+import { LRUCache } from "lru-cache";
+
+const cache = new LRUCache<string, any>({
+  max: 5_000, // up to 5k entries
+  ttl: 1000 * 60 * 30, // 30 minutes
+});
+
+const prefix = "api-key";
+
+export const apiKeyCache = {
+  get: (key: string): ApiKey | undefined => cache.get(`${prefix}:${key}`),
+  set: (key: string, value: ApiKey) => cache.set(`${prefix}:${key}`, value),
+  delete: (key: string) => cache.delete(`${prefix}:${key}`),
+};
+```
+
+The user cache follows the same pattern:
+```typescript
+import { LRUCache } from "lru-cache";
+
+export const cache = new LRUCache<string, any>({
+  max: 5_000,
+  ttl: 1000 * 60 * 30, // 30 minutes
+});
+
+const prefix = "user";
+
+export const userCache = {
+  get: (key: string) => cache.get(`${prefix}:${key}`),
+  set: (key: string, value: any) => cache.set(`${prefix}:${key}`, value),
+  delete: (key: string) => cache.delete(`${prefix}:${key}`),
+};
+```
+
+## JWT Token Verification
+
+For stateless authentication, Midday verifies JWT tokens issued by Supabase:
+```typescript
+import { jwtVerify } from "jose";
+
+interface SupabaseJWTPayload {
+  sub: string;
+  user_metadata?: {
+    email?: string;
+    full_name?: string;
+  };
+}
+
+export interface Session {
+  user: {
+    id: string;
+    email?: string;
+    full_name?: string;
+  };
+}
+
+export async function verifyAccessToken(
+  accessToken?: string,
+): Promise<Session | null> {
+  if (!accessToken) return null;
+
+  try {
+    const { payload } = await jwtVerify(
+      accessToken,
+      new TextEncoder().encode(process.env.SUPABASE_JWT_SECRET),
+    );
+
+    const supabasePayload = payload as SupabaseJWTPayload;
+
+    return {
+      user: {
+        id: supabasePayload.sub!,
+        email: supabasePayload.user_metadata?.email,
+        full_name: supabasePayload.user_metadata?.full_name,
+      },
+    };
+  } catch (error) {
+    return null;
+  }
+}
+```
+
+## Scope-Based Authorization
+
+Midday implements granular permission control through a comprehensive scope system:
+```typescript
+export const SCOPES = [
+  "bank-accounts.read",
+  "bank-accounts.write",
+  "customers.read",
+  "customers.write",
+  "documents.read",
+  "documents.write",
+  "inbox.read",
+  "inbox.write",
+  "invoices.read",
+  "invoices.write",
+  "metrics.read",
+  "search.read",
+  "tags.read",
+  "tags.write",
+  "teams.read",
+  "teams.write",
+  "tracker-entries.read",
+  "tracker-entries.write",
+  "tracker-projects.read",
+  "tracker-projects.write",
+  "transactions.read",
+  "transactions.write",
+  "users.read",
+  "users.write",
+  "apis.all", // All API scopes
+  "apis.read", // All read scopes
+] as const;
+
+export type Scope = (typeof SCOPES)[number];
+
+export const expandScopes = (scopes: string[]): string[] => {
+  if (scopes.includes("apis.all")) {
+    return SCOPES.filter((scope) => !scope.startsWith("apis."));
+  }
+
+  if (scopes.includes("apis.read")) {
+    return SCOPES.filter(
+      (scope) => scope.endsWith(".read") && !scope.startsWith("apis."),
+    );
+  }
+
+  return scopes.filter((scope) => !scope.startsWith("apis."));
+};
+```
+
+The scope middleware enforces these permissions:
+```typescript
+import type { Scope } from "@api/utils/scopes";
+import type { MiddlewareHandler } from "hono";
+
+export const withRequiredScope = (
+  ...requiredScopes: Scope[]
+): MiddlewareHandler => {
+  return async (c, next) => {
+    const scopes = c.get("scopes") as Scope[] | undefined;
+
+    if (!scopes) {
+      return c.json(
+        {
+          error: "Unauthorized",
+          description: "No scopes found. Authentication is required.",
+        },
+        401,
+      );
+    }
+
+    const hasRequiredScope = requiredScopes.some((requiredScope) =>
+      scopes.includes(requiredScope),
+    );
+
+    if (!hasRequiredScope) {
+      return c.json(
+        {
+          error: "Forbidden",
+          description: `Insufficient permissions. Required scopes: ${requiredScopes.join(", ")}`,
+        },
+        403,
+      );
+    }
+
+    await next();
+  };
+};
+```
+
+## Middleware Configuration
+
+Midday separates public and protected endpoints with different middleware stacks:
+```typescript
+import type { MiddlewareHandler } from "hono";
+import { rateLimiter } from "hono-rate-limiter";
+import { withAuth } from "./auth";
+import { withDatabase } from "./db";
+import { withPrimaryReadAfterWrite } from "./primary-read-after-write";
+
+/**
+ * Public endpoint middleware - only attaches database with smart routing
+ * No authentication required
+ */
+export const publicMiddleware: MiddlewareHandler[] = [withDatabase];
+
+/**
+ * Protected endpoint middleware - requires authentication
+ * Includes database with smart routing and authentication
+ * Note: withAuth must be first to set session in context
+ */
+export const protectedMiddleware: MiddlewareHandler[] = [
+  withDatabase,
+  withAuth,
+  rateLimiter({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    limit: 100,
+    keyGenerator: (c) => {
+      return c.get("session")?.user?.id ?? "unknown";
+    },
+    statusCode: 429,
+    message: "Rate limit exceeded",
+  }),
+  withPrimaryReadAfterWrite,
+];
+
+export { withRequiredScope } from "./scope";
+```
+
+### Next.js Session Management
+
+The Next.js middleware handles session updates, MFA verification, and authentication redirects:
+```typescript
+import { updateSession } from "@midday/supabase/middleware";
+import { createClient } from "@midday/supabase/server";
+import { createI18nMiddleware } from "next-international/middleware";
+import { type NextRequest, NextResponse } from "next/server";
+
+const I18nMiddleware = createI18nMiddleware({
+  locales: ["en"],
+  defaultLocale: "en",
+  urlMappingStrategy: "rewrite",
+});
+
+export async function middleware(request: NextRequest) {
+  const response = await updateSession(request, I18nMiddleware(request));
+  const supabase = await createClient();
+  const url = new URL("/", request.url);
+  const nextUrl = request.nextUrl;
+
+  const pathnameLocale = nextUrl.pathname.split("/", 2)?.[1];
+  const pathnameWithoutLocale = pathnameLocale
+    ? nextUrl.pathname.slice(pathnameLocale.length + 1)
+    : nextUrl.pathname;
+
+  const newUrl = new URL(pathnameWithoutLocale || "/", request.url);
+  const encodedSearchParams = `${newUrl?.pathname?.substring(1)}${newUrl.search}`;
+
+  const { data: { session } } = await supabase.auth.getSession();
+
+  // 1. Not authenticated - redirect to login
+  if (
+    !session &&
+    newUrl.pathname !== "/login" &&
+    !newUrl.pathname.includes("/i/") &&
+    !newUrl.pathname.includes("/verify") &&
+    !newUrl.pathname.includes("/all-done") &&
+    !newUrl.pathname.includes("/desktop/search")
+  ) {
+    const url = new URL("/login", request.url);
+
+    if (encodedSearchParams) {
+      url.searchParams.append("return_to", encodedSearchParams);
+    }
+
+    return NextResponse.redirect(url);
+  }
+
+  // 2. Authenticated - check MFA requirements
+  if (session) {
+    // Handle team invite flows
+    if (newUrl.pathname !== "/teams/create" && newUrl.pathname !== "/teams") {
+      const inviteCodeMatch = newUrl.pathname.startsWith("/teams/invite/");
+
+      if (inviteCodeMatch) {
+        return NextResponse.redirect(
+          `${url.origin}${request.nextUrl.pathname}`,
+        );
+      }
+    }
+
+    // 3. Check MFA Verification
+    const { data: mfaData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+    if (
+      mfaData &&
+      mfaData.nextLevel === "aal2" &&
+      mfaData.nextLevel !== mfaData.currentLevel &&
+      newUrl.pathname !== "/mfa/verify"
+    ) {
+      const url = new URL("/mfa/verify", request.url);
+
+      if (encodedSearchParams) {
+        url.searchParams.append("return_to", encodedSearchParams);
+      }
+
+      return NextResponse.redirect(url);
+    }
+  }
+
+  return response;
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|api).*)"],
+};
+```
+
+## Multi-Factor Authentication
+
+Midday implements TOTP-based 2FA using authenticator apps. Here's the verification component:
+```typescript
+import { createClient } from "@midday/supabase/client";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@midday/ui/input-otp";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+
+export function VerifyMfa() {
+  const [isValidating, setValidating] = useState(false);
+  const [error, setError] = useState(false);
+  const supabase = createClient();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const onComplete = async (code: string) => {
+    setError(false);
+
+    if (!isValidating) {
+      setValidating(true);
+
+      // Get available MFA factors
+      const factors = await supabase.auth.mfa.listFactors();
+
+      if (factors.error || !factors.data) {
+        setValidating(false);
+        setError(true);
+        return;
+      }
+
+      const totpFactor = factors.data.totp[0];
+
+      if (!totpFactor) {
+        setValidating(false);
+        setError(true);
+        return;
+      }
+
+      const factorId = totpFactor.id;
+
+      // Create MFA challenge
+      const challenge = await supabase.auth.mfa.challenge({ factorId });
+
+      if (challenge.error) {
+        setValidating(false);
+        setError(true);
+        return;
+      }
+
+      const challengeId = challenge.data.id;
+
+      // Verify MFA code
+      const verify = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId,
+        code,
+      });
+
+      if (verify.error) {
+        setValidating(false);
+        setError(true);
+        return;
+      }
+
+      // Redirect to original destination
+      router.push(
+        `${window.location.origin}/${searchParams.get("return_to") || ""}`,
+      );
+    }
+  };
+
+  return (
+    <div className="pb-4">
+      <div className="text-center">
+        <h1 className="text-lg mb-2 font-serif">Verify your identity.</h1>
+        <p className="text-[#878787] text-sm mb-8">
+          Please enter the code from your authenticator app.
+        </p>
+      </div>
+
+      <div className="flex w-full mb-6">
+        <InputOTP
+          onComplete={onComplete}
+          maxLength={6}
+          autoFocus
+          className={error ? "invalid" : undefined}
+          disabled={isValidating}
+          render={({ slots }) => (
+            <InputOTPGroup>
+              {slots.map((slot, index) => (
+                <InputOTPSlot key={index.toString()} {...slot} />
+              ))}
+            </InputOTPGroup>
+          )}
+        />
+      </div>
+
+      <p className="text-xs text-[#878787] text-center font-mono">
+        Open your authenticator apps like 1Password, Authy, etc. to verify your
+        identity.
+      </p>
+    </div>
+  );
+}
+```
+
+## Desktop App Authentication
+
+Midday's desktop app uses deep linking for seamless OAuth authentication:
+
+1. Desktop app opens browser with `client=desktop` parameter
+2. OAuth callback detects desktop client and redirects to verification page
+3. Verification page triggers deep link back to desktop app
+4. Desktop app exchanges code for session
+
+### Deep Link Handler
+```typescript
+"use client";
+
+import Image from "next/image";
+import appIcon from "public/appicon.png";
+import { useEffect, useRef } from "react";
+
+interface DesktopSignInVerifyCodeProps {
+  code: string;
+}
+
+export function DesktopSignInVerifyCode({
+  code,
+}: DesktopSignInVerifyCodeProps) {
+  const hasRunned = useRef(false);
+
+  useEffect(() => {
+    if (code && !hasRunned.current) {
+      // Trigger deep link to desktop app
+      window.location.replace(`midday://api/auth/callback?code=${code}`);
+      hasRunned.current = true;
+    }
+  }, [code]);
+
+  return (
+    <div>
+      <div className="h-screen flex flex-col items-center justify-center text-center text-sm text-[#606060]">
+        <Image
+          src={appIcon}
+          width={80}
+          height={80}
+          alt="Midday"
+          quality={100}
+          className="mb-10"
+        />
+        <p>Signing in...</p>
+        <p className="mb-4">
+          If Midday doesn't open in a few seconds,{" "}
+          <a
+            className="underline"
+            href={`midday://api/auth/callback?code=${code}`}
+          >
+            click here
+          </a>
+          .
+        </p>
+        <p>You may close this browser tab when done</p>
+      </div>
+    </div>
+  );
+}
+```
+
+The desktop app registers the `midday://` URL scheme to handle authentication callbacks.
+
+## Database Schema
+
+The authentication system relies on four core tables:
+
+- **users** - User profiles with preferences and settings
+- **api_keys** - Encrypted API keys with scopes and usage tracking
+- **teams** - Organization data for multi-tenant support
+- **users_on_team** - Many-to-many relationship for team membership
+
+## Encryption and Security
+
+Midday uses AES-256-GCM encryption for sensitive data like API keys:
+```typescript
+import crypto from "node:crypto";
+
+const ALGORITHM = "aes-256-gcm";
+const IV_LENGTH = 16;
+const AUTH_TAG_LENGTH = 16;
+
+function getKey(): Buffer {
+  const key = process.env.MIDDAY_ENCRYPTION_KEY;
+  if (!key) {
+    throw new Error("MIDDAY_ENCRYPTION_KEY environment variable is not set.");
+  }
+  if (Buffer.from(key, "hex").length !== 32) {
+    throw new Error(
+      "MIDDAY_ENCRYPTION_KEY must be a 64-character hex string (32 bytes).",
+    );
+  }
+  return Buffer.from(key, "hex");
+}
+
+export function encrypt(text: string): string {
+  const key = getKey();
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
+
+  let encrypted = cipher.update(text, "utf8", "hex");
+  encrypted += cipher.final("hex");
+
+  const authTag = cipher.getAuthTag();
+
+  const encryptedPayload = Buffer.concat([
+    iv,
+    authTag,
+    Buffer.from(encrypted, "hex"),
+  ]).toString("base64");
+
+  return encryptedPayload;
+}
+
+export function decrypt(encryptedPayload: string): string {
+  const key = getKey();
+  const dataBuffer = Buffer.from(encryptedPayload, "base64");
+
+  const iv = dataBuffer.subarray(0, IV_LENGTH);
+  const authTag = dataBuffer.subarray(IV_LENGTH, IV_LENGTH + AUTH_TAG_LENGTH);
+  const encryptedText = dataBuffer.subarray(IV_LENGTH + AUTH_TAG_LENGTH);
+
+  const decipher = crypto.createDecipheriv(ALGORITHM, key, iv);
+  decipher.setAuthTag(authTag);
+
+  let decrypted = decipher.update(encryptedText.toString("hex"), "hex", "utf8");
+  decrypted += decipher.final("utf8");
+
+  return decrypted;
+}
+
+export function hash(str: string): string {
+  return crypto.createHash("sha256").update(str).digest("hex");
+}
+```
+
+## TRPC Integration
+
+For type-safe API calls, Midday integrates authentication into TRPC context:
+```typescript
+import { connectDb } from "@api/db";
+import type { Database } from "@api/db";
+import { createClient } from "@api/services/supabase";
+import { verifyAccessToken } from "@api/utils/auth";
+import type { Session } from "@api/utils/auth";
+import { getGeoContext } from "@api/utils/geo";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { TRPCError, initTRPC } from "@trpc/server";
+import type { Context } from "hono";
+import superjson from "superjson";
+
+type TRPCContext = {
+  session: Session | null;
+  supabase: SupabaseClient;
+  db: Database;
+  geo: ReturnType<typeof getGeoContext>;
+  teamId?: string;
+};
+
+export const createTRPCContext = async (
+  _: unknown,
+  c: Context,
+): Promise<TRPCContext> => {
+  const accessToken = c.req.header("Authorization")?.split(" ")[1];
+  const session = await verifyAccessToken(accessToken);
+  const supabase = await createClient(accessToken);
+  const db = await connectDb();
+  const geo = getGeoContext(c.req);
+
+  return {
+    session,
+    supabase,
+    db,
+    geo,
+  };
+};
+
+const t = initTRPC.context<TRPCContext>().create({
+  transformer: superjson,
+});
+
+export const createTRPCRouter = t.router;
+export const createCallerFactory = t.createCallerFactory;
+
+// Protected procedure that requires authentication
+export const protectedProcedure = t.procedure.use(async (opts) => {
+  if (!opts.ctx.session) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "You must be logged in to access this resource",
+    });
+  }
+
+  return opts.next({
+    ctx: {
+      ...opts.ctx,
+      session: opts.ctx.session,
+    },
+  });
+});
+
+// Public procedure that doesn't require authentication
+export const publicProcedure = t.procedure;
+```
+
+## Session Management
+
+Midday uses React's cache function to optimize session queries and custom middleware for session updates:
+```typescript
+import { type CookieOptions, createServerClient } from "@supabase/ssr";
+import type { NextRequest, NextResponse } from "next/server";
+
+export async function updateSession(
+  request: NextRequest,
+  response: NextResponse,
+) {
+  createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return request.cookies.get(name)?.value;
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          request.cookies.set({ name, value, ...options });
+          response.cookies.set({ name, value, ...options });
+        },
+        remove(name: string, options: CookieOptions) {
+          request.cookies.set({ name, value: "", ...options });
+          response.cookies.set({ name, value: "", ...options });
+        },
+      },
+    },
+  );
+
+  return response;
+}
+```
+
+## Key Database Operations
+
+### User Management
+```typescript
+import type { Database } from "@api/db";
+import { teams, users, usersOnTeam } from "@api/db/schema";
+import { eq } from "drizzle-orm";
+
+export const getUserById = async (db: Database, id: string) => {
+  const [result] = await db
+    .select({
+      id: users.id,
+      fullName: users.fullName,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+      locale: users.locale,
+      timeFormat: users.timeFormat,
+      dateFormat: users.dateFormat,
+      weekStartsOnMonday: users.weekStartsOnMonday,
+      timezone: users.timezone,
+      teamId: users.teamId,
+      team: {
+        id: teams.id,
+        name: teams.name,
+        logoUrl: teams.logoUrl,
+        plan: teams.plan,
+        inboxId: teams.inboxId,
+        createdAt: teams.createdAt,
+        countryCode: teams.countryCode,
+      },
+    })
+    .from(users)
+    .leftJoin(teams, eq(users.teamId, teams.id))
+    .where(eq(users.id, id));
+
+  return result;
+};
+
+export type UpdateUserParams = {
+  id: string;
+  fullName?: string | null;
+  teamId?: string | null;
+  email?: string | null;
+  avatarUrl?: string | null;
+  locale?: string | null;
+  timeFormat?: number | null;
+  dateFormat?: string | null;
+  weekStartsOnMonday?: boolean | null;
+};
+
+export const updateUser = async (db: Database, data: UpdateUserParams) => {
+  const { id, ...updateData } = data;
+
+  const [result] = await db
+    .update(users)
+    .set(updateData)
+    .where(eq(users.id, id))
+    .returning({
+      id: users.id,
+      fullName: users.fullName,
+      email: users.email,
+      avatarUrl: users.avatarUrl,
+      locale: users.locale,
+      timeFormat: users.timeFormat,
+      dateFormat: users.dateFormat,
+      weekStartsOnMonday: users.weekStartsOnMonday,
+      timezone: users.timezone,
+      teamId: users.teamId,
+    });
+
+  return result;
+};
+```
+
+### API Key Management
+
+The API key system includes creation, rotation, and usage tracking:
+```typescript
+import type { Database } from "@api/db";
+import { apiKeys, users } from "@api/db/schema";
+import { generateApiKey } from "@api/utils/api-keys";
+import { apiKeyCache } from "@api/utils/cache/api-key-cache";
+import { encrypt, hash } from "@midday/encryption";
+import { and, eq } from "drizzle-orm";
+
+export type ApiKey = {
+  id: string;
+  name: string;
+  userId: string;
+  teamId: string;
+  createdAt: string;
+  scopes: string[] | null;
+};
+
+export const getApiKeyByToken = async (
+  db: Database,
+  keyHash: string,
+): Promise<ApiKey | null> => {
+  const [result] = await db
+    .select({
+      id: apiKeys.id,
+      name: apiKeys.name,
+      userId: apiKeys.userId,
+      teamId: apiKeys.teamId,
+      createdAt: apiKeys.createdAt,
+      scopes: apiKeys.scopes,
+    })
+    .from(apiKeys)
+    .where(eq(apiKeys.keyHash, keyHash));
+
+  return result || null;
+};
+
+export const getApiKeysByTeam = async (db: Database, teamId: string) => {
+  return db
+    .select({
+      id: apiKeys.id,
+      name: apiKeys.name,
+      createdAt: apiKeys.createdAt,
+      lastUsedAt: apiKeys.lastUsedAt,
+      scopes: apiKeys.scopes,
+      user: {
+        id: users.id,
+        fullName: users.fullName,
+        email: users.email,
+      },
+    })
+    .from(apiKeys)
+    .leftJoin(users, eq(apiKeys.userId, users.id))
+    .where(eq(apiKeys.teamId, teamId))
+    .orderBy(apiKeys.createdAt);
+};
+
+export const upsertApiKey = async (
+  db: Database,
+  data: {
+    id?: string;
+    name: string;
+    userId: string;
+    teamId: string;
+    scopes: string[];
+  },
+) => {
+  const apiKey = generateApiKey();
+  const keyHash = hash(apiKey);
+  const keyEncrypted = encrypt(apiKey);
+
+  if (data.id) {
+    // Update existing API key
+    const [result] = await db
+      .update(apiKeys)
+      .set({
+        name: data.name,
+        scopes: data.scopes,
+        keyEncrypted,
+        keyHash,
+      })
+      .where(and(eq(apiKeys.id, data.id), eq(apiKeys.teamId, data.teamId)))
+      .returning({
+        id: apiKeys.id,
+        name: apiKeys.name,
+        createdAt: apiKeys.createdAt,
+        scopes: apiKeys.scopes,
+      });
+
+    // Clear cache for old key
+    apiKeyCache.delete(keyHash);
+
+    return { ...result, key: apiKey };
+  } else {
+    // Create new API key
+    const [result] = await db
+      .insert(apiKeys)
+      .values({
+        name: data.name,
+        userId: data.userId,
+        teamId: data.teamId,
+        scopes: data.scopes,
+        keyEncrypted,
+        keyHash,
+      })
+      .returning({
+        id: apiKeys.id,
+        name: apiKeys.name,
+        createdAt: apiKeys.createdAt,
+        scopes: apiKeys.scopes,
+      });
+
+    return { ...result, key: apiKey };
+  }
+};
+
+export const updateApiKeyLastUsedAt = async (
+  db: Database,
+  apiKeyId: string,
+) => {
+  // Update asynchronously to avoid blocking the request
+  db.update(apiKeys)
+    .set({ lastUsedAt: new Date().toISOString() })
+    .where(eq(apiKeys.id, apiKeyId))
+    .execute()
+    .catch((error) => {
+      console.error("Failed to update API key last used at:", error);
+    });
+};
+
+export const deleteApiKey = async (
+  db: Database,
+  data: { id: string; teamId: string },
+) => {
+  const [result] = await db
+    .delete(apiKeys)
+    .where(and(eq(apiKeys.id, data.id), eq(apiKeys.teamId, data.teamId)))
+    .returning({ id: apiKeys.id });
+
+  return result;
+};
+```
+
+## Real-World Implementation Examples
+
+### Protected API Route
+```typescript
+import { Hono } from "hono";
+import { protectedMiddleware, withRequiredScope } from "../middleware";
+import { getUserById, updateUser } from "@api/db/queries/users";
+
+const app = new Hono();
+
+// Apply protected middleware to all routes
+app.use("*", ...protectedMiddleware);
+
+// Get current user - requires users.read scope
+app.get("/me", withRequiredScope("users.read"), async (c) => {
+  const session = c.get("session");
+  const db = c.get("db");
+
+  const user = await getUserById(db, session.user.id);
+
+  if (!user) {
+    return c.json({ error: "User not found" }, 404);
+  }
+
+  return c.json({ user });
+});
+
+// Update current user - requires users.write scope
+app.patch("/me", withRequiredScope("users.write"), async (c) => {
+  const session = c.get("session");
+  const db = c.get("db");
+  const body = await c.req.json();
+
+  const updatedUser = await updateUser(db, {
+    id: session.user.id,
+    ...body,
+  });
+
+  return c.json({ user: updatedUser });
+});
+
+export default app;
+```
+
+### TRPC Router Example
+```typescript
+import { updateUserSchema } from "@api/schemas/users";
+import { createTRPCRouter, protectedProcedure } from "@api/trpc/init";
+import { getUserById, updateUser } from "@api/db/queries/users";
+
+export const usersRouter = createTRPCRouter({
+  me: protectedProcedure.query(async ({ ctx: { db, session } }) => {
+    return getUserById(db, session.user.id);
+  }),
+
+  update: protectedProcedure
+    .input(updateUserSchema)
+    .mutation(async ({ ctx: { db, session }, input }) => {
+      return updateUser(db, {
+        id: session.user.id,
+        ...input,
+      });
+    }),
+});
+```
+
+### React Authentication Hook
+```typescript
+import { createClient } from "@midday/supabase/client";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+
+export function useAuth() {
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const supabase = createClient();
+  const router = useRouter();
+
+  useEffect(() => {
+    // Get initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, [supabase.auth]);
+
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    router.push("/login");
+  };
+
+  return {
+    session,
+    loading,
+    signOut,
+    user: session?.user ?? null,
+  };
+}
+```
+
+## Security Best Practices
+
+### Environment Security
+- Never expose service keys - use `SUPABASE_SERVICE_KEY` only server-side
+- Rotate encryption keys regularly
+- Use separate keys for each environment (dev, staging, prod)
+
+### API Key Management
+- Store only hashed API keys in the database
+- Encrypt sensitive data with AES-256-GCM
+- Implement rate limiting per user/API key
+- Use granular scopes for permission control
+- Track usage with last accessed timestamps
+
+### Session Management
+- Use LRU caching for performance
+- Clear cache on user/key updates
+- Configure appropriate session timeouts
+- Use secure cookie attributes (httpOnly, sameSite)
+
+### OAuth Security
+- Validate and whitelist redirect URIs
+- Implement state parameter for CSRF prevention
+- Store tokens securely client-side
+- Use PKCE for public clients
+
+### Database Security
+- Use parameterized queries to prevent SQL injection
+- Implement Row Level Security (RLS) policies
+- Audit authentication events and failures
+- Maintain secure, encrypted backups
+
+## Production Deployment
+
+Midday handles environment-specific configurations intelligently, with automatic URL detection and Row Level Security (RLS) policies for database access control.
+
+Key deployment considerations:
+- Enable RLS on all authentication tables
+- Create policies for user-specific data access
+- Configure environment-specific URLs
+- Set up proper CORS policies for API access
+
+## Testing Strategies
+
+Midday's authentication system includes comprehensive unit and integration tests:
+
+### Unit Tests
+- API key format validation
+- JWT token verification
+- Encryption/decryption functions
+- Scope expansion logic
+
+### Integration Tests
+- End-to-end OAuth flows
+- API key authentication
+- Session management
+- MFA verification
+
+### Testing Tips
+- Use test-specific environment variables
+- Mock external services (Supabase, OAuth providers)
+- Test edge cases (expired tokens, invalid scopes)
+- Verify rate limiting behavior
+
+## Key Takeaways
+
+Midday's authentication architecture demonstrates several best practices:
+
+1. **Layered Security** - Multiple authentication methods for different use cases
+2. **Performance Optimization** - Strategic caching reduces database load
+3. **Type Safety** - TRPC integration ensures type-safe API calls
+4. **Granular Permissions** - Scope-based authorization for fine-grained access control
+5. **Cross-Platform Support** - Seamless authentication across web and desktop
+6. **Production-Ready** - Comprehensive error handling and security measures
+
+The complete source code is available in [Midday's GitHub repository](https://github.com/midday-ai/midday), providing a valuable reference for building your own robust authentication system.
+
+## Further Reading
+
+- [Supabase Auth Documentation](https://supabase.com/docs/guides/auth)
+- [JWT Best Practices](https://tools.ietf.org/html/rfc8725)
+- [OAuth 2.0 Security Best Practices](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-security-topics)

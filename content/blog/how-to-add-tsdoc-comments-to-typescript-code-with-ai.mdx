@@ -1,0 +1,162 @@
+---
+title: "How to Add TSDoc Comments to TypeScript Code with AI"
+date: "2025-07-27"
+description: "Transform undocumented TypeScript code into well-documented, AI-friendly code with this comprehensive TSDoc prompt"
+---
+
+Ever inherited a TypeScript codebase with zero documentation? Or realized your own code is incomprehensible six months later? This prompt transforms AI into a documentation expert that adds meaningful TSDoc comments to any TypeScript code.
+
+## What is TSDoc?
+
+TSDoc is the TypeScript equivalent of JSDoc—a standardized way to document your code using specially formatted comments. These comments appear directly in your IDE, making your code self-documenting.
+
+```typescript
+/**
+ * Calculates the total price including tax
+ * @param price - The base price in cents
+ * @param taxRate - The tax rate as a decimal (e.g., 0.08 for 8%)
+ * @returns The total price including tax, in cents
+ */
+function calculateTotal(price: number, taxRate: number): number {
+  return Math.round(price * (1 + taxRate));
+}
+```
+
+## Why TSDoc Matters More Than Ever
+
+### For Humans:
+- **IDE Intelligence**: Hover over any function to see its documentation
+- **Autocomplete Context**: Parameters and return types explained as you type
+- **Team Onboarding**: New developers understand code purpose instantly
+- **Future You**: Remember why you made specific decisions
+
+### For AI/LLMs:
+- **Context Understanding**: AI tools grasp your code's intent, not just syntax
+- **Better Suggestions**: Copilot and similar tools provide more relevant completions
+- **Accurate Refactoring**: AI understands constraints and edge cases
+- **Codebase Navigation**: AI can answer questions about your code more accurately
+
+## The TSDoc Documentation Prompt
+
+```
+You are an AI assistant tasked with adding TSdocs (@tsDocs ) comments to a piece of code to make it more understandable for AI systems or human developers. Your goal is to analyze the code and add appropriate comments that explain its functionality, structure, and important considerations.  
+  
+Here is the code you need to comment:  
+  
+<code>  
+@hooks  
+</code>  
+  
+To complete this task, follow these steps:  
+  
+1. Carefully analyze the code to understand its structure and functionality.  
+2. Identify key components such as functions, classes, loops, conditionals, and any complex logic.  
+3. Add comments that explain:  
+- The purpose of functions, classes, or code blocks  
+- How complex algorithms or logic work  
+- Any assumptions or limitations in the code  
+- The meaning of important variables or data structures  
+- Any potential edge cases or error handling  
+  
+When adding comments, adhere to these guidelines:  
+  
+- Use clear and concise language  
+- Avoid stating the obvious (e.g., don't just restate what the code does)  
+- Focus on the "why" and "how" rather than just the "what"  
+- Use TSDoc style comments for functions, classes, and modules  
+- Use single-line comments (//) for brief in-line explanations  
+- Use multi-line comments (/* */) for longer explanations that don't fit TSDoc style  
+  
+Your output should be the original code with your added comments. Make sure to preserve the original code's formatting and structure. Present your commented code inside <commented_code> tags.  
+  
+Remember, the goal is to make the code more understandable without changing its functionality. Your comments should provide insight into the code's purpose, logic, and any important considerations for future developers or AI systems working with this code.
+```
+
+## How This Prompt Works
+
+### 1. Intelligent Analysis
+The prompt instructs AI to analyze your code deeply before adding comments, understanding:
+- Function relationships and dependencies
+- Data flow and transformations
+- Edge cases and error handling
+- Performance considerations
+
+### 2. Strategic Documentation
+Instead of commenting every line, it focuses on:
+- Complex algorithms that need explanation
+- Business logic and domain-specific rules
+- Non-obvious design decisions
+- Potential gotchas and limitations
+
+### 3. TSDoc Best Practices
+The prompt ensures proper formatting:
+- `@param` tags for function parameters
+- `@returns` descriptions for return values
+- `@throws` for potential exceptions
+- `@example` for usage demonstrations
+
+## Real Example: Before and After
+
+### Before:
+```typescript
+function processUserData(users: User[], threshold: number) {
+  return users
+    .filter(u => u.score > threshold && u.active)
+    .map(u => ({
+      ...u,
+      rank: calculateRank(u.score),
+      tier: u.score > 90 ? 'gold' : u.score > 70 ? 'silver' : 'bronze'
+    }))
+    .sort((a, b) => b.score - a.score);
+}
+```
+
+### After:
+```typescript
+/**
+ * Processes and ranks active users based on their scores
+ * @param users - Array of user objects to process
+ * @param threshold - Minimum score required for inclusion
+ * @returns Sorted array of active users above threshold with rank and tier
+ * @example
+ * const topUsers = processUserData(allUsers, 50);
+ * // Returns users with score > 50, ranked and tiered
+ */
+function processUserData(users: User[], threshold: number) {
+  return users
+    .filter(u => u.score > threshold && u.active)
+    .map(u => ({
+      ...u,
+      rank: calculateRank(u.score), // Custom ranking algorithm based on percentiles
+      tier: u.score > 90 ? 'gold' : u.score > 70 ? 'silver' : 'bronze'
+    }))
+    .sort((a, b) => b.score - a.score); // Descending order by score
+}
+```
+
+## Best Use Cases
+
+### 1. Legacy Code Documentation
+Transform that undocumented utility file into a well-documented resource that new team members can understand immediately.
+
+### 2. Open Source Projects
+Make your project more contributor-friendly by ensuring every public API is properly documented.
+
+### 3. AI-Powered Development
+Prepare your codebase for AI tools by adding context that helps them understand your code's purpose and constraints.
+
+### 4. Code Reviews
+Add documentation before reviews to help reviewers understand your implementation choices.
+
+## Tips for Maximum Value
+
+1. **Run on Critical Files First**: Start with your most complex or frequently used modules
+2. **Review AI Output**: The AI might miss domain-specific context—add it manually
+3. **Keep Comments Updated**: Treat documentation as part of your code
+4. **Use with TypeScript**: The prompt works best with TypeScript's type information
+
+## Start Documenting Today
+
+Copy this prompt, paste your code where it says `@hooks`, and watch as AI transforms your undocumented TypeScript into a well-documented, maintainable codebase.
+
+Your future self (and your AI coding assistant) will thank you.
