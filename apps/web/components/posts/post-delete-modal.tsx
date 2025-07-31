@@ -1,0 +1,133 @@
+"use client";
+
+import { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "@/web/convex/_generated/api";
+import { Id } from "@/web/convex/_generated/dataModel";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/web/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/web/components/ui/alert";
+import { Loader2, AlertTriangle } from "lucide-react";
+import { toast } from "sonner";
+
+interface PostDeleteModalProps {
+  postId: Id<"posts">;
+  postTitle: string;
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+}
+
+export function PostDeleteModal({
+  postId,
+  postTitle,
+  isOpen,
+  onClose,
+  onSuccess,
+}: PostDeleteModalProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+
+  // Mutation
+  const deletePost = useMutation(api.posts.deletePost);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    setDeleteError(null);
+
+    try {
+      await deletePost({ postId });
+
+      toast.success("Post deleted successfully!");
+
+      if (onSuccess) {
+        onSuccess();
+      }
+      onClose();
+    } catch (error) {
+      console.error("Failed to delete post:", error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Failed to delete post. Please try again.";
+      setDeleteError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (!isDeleting) {
+      onClose();
+    }
+  };
+
+  return (
+    <AlertDialog open={isOpen} onOpenChange={onClose}>
+      <AlertDialogContent data-testid="delete-confirm-modal">
+        <AlertDialogHeader>
+          <AlertDialogTitle className="flex items-center gap-2">
+            <AlertTriangle className="text-destructive h-5 w-5" />
+            Delete Post
+          </AlertDialogTitle>
+          <AlertDialogDescription asChild>
+            <div className="space-y-3">
+              <p>
+                Are you sure you want to delete{" "}
+                <strong data-testid="delete-modal-title">
+                  &ldquo;{postTitle}&rdquo;
+                </strong>
+                ?
+              </p>
+              <p className="text-muted-foreground text-sm">
+                This action cannot be undone. The post will be permanently
+                removed from the community.
+              </p>
+            </div>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+
+        {deleteError && (
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>{deleteError}</AlertDescription>
+          </Alert>
+        )}
+
+        <AlertDialogFooter>
+          <AlertDialogCancel
+            onClick={handleCancel}
+            disabled={isDeleting}
+            data-testid="cancel-delete-button"
+          >
+            Cancel
+          </AlertDialogCancel>
+          <AlertDialogAction
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            data-testid="confirm-delete-button"
+          >
+            {isDeleting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Deleting...
+              </>
+            ) : (
+              "Delete Post"
+            )}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+}
