@@ -9,8 +9,8 @@ import { api } from "@/web/convex/_generated/api";
 import { subscriptionAnalytics } from "@/lib/analytics";
 import { formatTierName } from "@/lib/format";
 
-import { Badge } from "../components/ui/badge";
-import { Button } from "../components/ui/button";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,13 +18,13 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "../components/ui/breadcrumb";
+} from "./ui/breadcrumb";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "../components/ui/dialog";
+} from "./ui/dialog";
 import {
   Sidebar,
   SidebarContent,
@@ -34,7 +34,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-} from "../components/ui/sidebar";
+} from "./ui/sidebar";
 
 const settingsNav = [
   { name: "Notifications", icon: Bell },
@@ -135,7 +135,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <Button
                       onClick={() => {
                         subscriptionAnalytics.manageClicked(
-                          member.tier || "free",
+                          member.tier || "free"
                         );
                         setIsSubscriptionLoading(true);
                         onOpenChange(false);

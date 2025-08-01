@@ -11,20 +11,20 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Textarea } from "../components/ui/textarea";
-import { Label } from "../components/ui/label";
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
+import { Label } from "./ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "../components/ui/select";
+} from "./ui/select";
 import { X, Loader2, FileText, FileIcon } from "lucide-react";
-import { LinkIcon } from "../components/icons/link";
+import { LinkIcon } from "./icons/link";
 import { toast } from "sonner";
 import Image from "next/image";
 import { getBrowserInfo } from "@/lib/browser-detection";
@@ -117,7 +117,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
         setAttachmentPreviews((prev) => [...prev, ...previewUrls]);
       }
     },
-    [attachments],
+    [attachments]
   );
 
   const handleRemoveAttachment = useCallback(
@@ -129,7 +129,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
       }
       setAttachmentPreviews((prev) => prev.filter((_, i) => i !== index));
     },
-    [attachmentPreviews],
+    [attachmentPreviews]
   );
 
   const onSubmit = async (data: BugReportFormData) => {
@@ -156,7 +156,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                     `Uploading ${file.name}: ${progress.percentage}%`,
                     {
                       id: fileKey,
-                    },
+                    }
                   );
                 } else {
                   toast.success(`${file.name} uploaded successfully`, {
@@ -170,7 +170,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
             console.error("Failed to upload attachment:", uploadError);
             toast.error(
               `Failed to upload ${file.name}. Continuing without this attachment.`,
-              { id: fileKey },
+              { id: fileKey }
             );
           }
         }
@@ -198,7 +198,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
           >
             View issue #{result.issueNumber}
           </a>
-        </div>,
+        </div>
       );
 
       reset();
@@ -329,7 +329,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               onValueChange={(value) =>
                 setValue(
                   "severity",
-                  value as "Low" | "Medium" | "High" | "Critical",
+                  value as "Low" | "Medium" | "High" | "Critical"
                 )
               }
             >

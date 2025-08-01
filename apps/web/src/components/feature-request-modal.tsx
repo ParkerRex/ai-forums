@@ -11,15 +11,15 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "../components/ui/dialog";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
+} from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import { X, Loader2, FileText, FileIcon } from "lucide-react";
-import { LinkIcon } from "../components/icons/link";
+import { LinkIcon } from "./icons/link";
 import { toast } from "sonner";
 import Image from "next/image";
-import { RichTextEditor } from "../components/posts/rich-text-editor";
+import { RichTextEditor } from "./posts/rich-text-editor";
 import {
   validateMediaFile,
   getFilePreviewUrl,
@@ -92,7 +92,7 @@ export function FeatureRequestModal({
         setAttachmentPreviews((prev) => [...prev, ...previewUrls]);
       }
     },
-    [attachments],
+    [attachments]
   );
 
   const handleRemoveAttachment = useCallback(
@@ -104,7 +104,7 @@ export function FeatureRequestModal({
       }
       setAttachmentPreviews((prev) => prev.filter((_, i) => i !== index));
     },
-    [attachmentPreviews],
+    [attachmentPreviews]
   );
 
   const onSubmit = async (data: FeatureRequestFormData) => {
@@ -135,7 +135,7 @@ export function FeatureRequestModal({
                     `Uploading ${file.name}: ${progress.percentage}%`,
                     {
                       id: fileKey,
-                    },
+                    }
                   );
                 } else {
                   toast.success(`${file.name} uploaded successfully`, {
@@ -149,7 +149,7 @@ export function FeatureRequestModal({
             console.error("Failed to upload screenshot:", uploadError);
             toast.error(
               `Failed to upload ${file.name}. Continuing without this screenshot.`,
-              { id: fileKey },
+              { id: fileKey }
             );
           }
         }
@@ -172,7 +172,7 @@ export function FeatureRequestModal({
           >
             View issue #{result.issueNumber}
           </a>
-        </div>,
+        </div>
       );
 
       reset();

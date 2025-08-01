@@ -35,9 +35,7 @@
     "apps/web/.next/types/**/*.ts",
     "next-env.d.ts",
     ".next/types/**/*.ts",
-    "src/types/**/*.d.ts",
-    "../../packages/backend/lib/auth-client.ts",
-    "../../packages/backend/lib/auth.ts"
+    "src/types/**/*.d.ts"
   ],
   "exclude": [
     "node_modules"

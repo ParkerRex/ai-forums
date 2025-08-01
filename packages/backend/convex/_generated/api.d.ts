@@ -28,6 +28,7 @@ import type * as payments_refund from "../payments/refund.js";
 import type * as payments_renewalReminders from "../payments/renewalReminders.js";
 import type * as payments_retryFailedPayment from "../payments/retryFailedPayment.js";
 import type * as payments_webhooks from "../payments/webhooks.js";
+import type * as presence from "../presence.js";
 import type * as todos from "../todos.js";
 import type * as util from "../util.js";
 
@@ -66,6 +67,7 @@ declare const fullApi: ApiFromModules<{
   "payments/renewalReminders": typeof payments_renewalReminders;
   "payments/retryFailedPayment": typeof payments_retryFailedPayment;
   "payments/webhooks": typeof payments_webhooks;
+  presence: typeof presence;
   todos: typeof todos;
   util: typeof util;
 }>;
@@ -81,6 +83,57 @@ export declare const internal: FilterApi<
 >;
 
 export declare const components: {
+  presence: {
+    public: {
+      disconnect: FunctionReference<
+        "mutation",
+        "internal",
+        { sessionToken: string },
+        null
+      >;
+      heartbeat: FunctionReference<
+        "mutation",
+        "internal",
+        {
+          interval?: number;
+          roomId: string;
+          sessionId: string;
+          userId: string;
+        },
+        { roomToken: string; sessionToken: string }
+      >;
+      list: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; roomToken: string },
+        Array<{ lastDisconnected: number; online: boolean; userId: string }>
+      >;
+      listRoom: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; onlineOnly?: boolean; roomId: string },
+        Array<{ lastDisconnected: number; online: boolean; userId: string }>
+      >;
+      listUser: FunctionReference<
+        "query",
+        "internal",
+        { limit?: number; onlineOnly?: boolean; userId: string },
+        Array<{ lastDisconnected: number; online: boolean; roomId: string }>
+      >;
+      removeRoom: FunctionReference<
+        "mutation",
+        "internal",
+        { roomId: string },
+        null
+      >;
+      removeRoomUser: FunctionReference<
+        "mutation",
+        "internal",
+        { roomId: string; userId: string },
+        null
+      >;
+    };
+  };
   betterAuth: {
     adapterTest: {
       count: FunctionReference<"query", "internal", any, any>;

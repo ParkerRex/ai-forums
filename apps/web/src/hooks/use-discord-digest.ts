@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { useCurrentMember } from "./use-current-member";
-import type { NewsItem } from "../features/news/utils/news-sources/types";
+import type { NewsItem } from "../../features/news/utils/news-sources/types";
 
 // Discord digest entry interface (matches database schema)
 interface DiscordDigestEntry {
@@ -50,36 +50,42 @@ interface CachedDiscordData {
  */
 function transformDiscordEntryToNewsItem(entry: DiscordDigestEntry): NewsItem {
   const defaultGuildId = "1355280592962453585"; // VAI Discord server
-  
+
   // Create meaningful title from the message
   const maxContentLength = 100;
   const reactionCount = entry.reactions.reduce((sum, r) => sum + r.count, 0);
-  
+
   let title: string;
   if (entry.content && entry.content.trim()) {
-    const truncatedContent = entry.content.length > maxContentLength 
-      ? `${entry.content.substring(0, maxContentLength)}...`
-      : entry.content;
-    
-    const reactionIndicator = reactionCount > 0 ? ` (${reactionCount} reactions)` : '';
+    const truncatedContent =
+      entry.content.length > maxContentLength
+        ? `${entry.content.substring(0, maxContentLength)}...`
+        : entry.content;
+
+    const reactionIndicator =
+      reactionCount > 0 ? ` (${reactionCount} reactions)` : "";
     title = `${entry.author.username}: ${truncatedContent}${reactionIndicator}`;
   } else {
-    const reactionIndicator = reactionCount > 0 ? ` with ${reactionCount} reactions` : '';
+    const reactionIndicator =
+      reactionCount > 0 ? ` with ${reactionCount} reactions` : "";
     title = `${entry.author.username} in #${entry.channelName}${reactionIndicator}`;
   }
-  
+
   // Create Discord message URL
   const url = `https://discord.com/channels/${defaultGuildId}/${entry.channelId}/${entry.messageId}`;
-  
+
   return {
     title,
     url,
     publishedDate: new Date(entry.timestamp).toISOString(),
     author: entry.author.username,
-    summary: entry.summary || (entry.content ? 
-      (entry.content.length > 150 ? `${entry.content.substring(0, 150)}...` : entry.content) :
-      `Message from ${entry.author.username} in #${entry.channelName}`
-    ),
+    summary:
+      entry.summary ||
+      (entry.content
+        ? entry.content.length > 150
+          ? `${entry.content.substring(0, 150)}...`
+          : entry.content
+        : `Message from ${entry.author.username} in #${entry.channelName}`),
     source: "Discord",
   };
 }
@@ -95,10 +101,12 @@ export function useDiscordDigest(limit?: number) {
   // Convex queries
   const discordDigestData = useQuery(
     api.discordQueries.getDiscordDigest,
-    member ? { 
-      userId: member._id, 
-      limit: limit || 20
-    } : "skip"
+    member
+      ? {
+          userId: member._id,
+          limit: limit || 20,
+        }
+      : "skip"
   );
   const discordPreferences = useQuery(
     api.newsFeedSources.getDiscordPreferences,
@@ -110,7 +118,7 @@ export function useDiscordDigest(limit?: number) {
     if (!discordDigestData || !Array.isArray(discordDigestData)) {
       return [];
     }
-    
+
     try {
       return discordDigestData.map(transformDiscordEntryToNewsItem);
     } catch (error) {
@@ -168,7 +176,7 @@ export function useDiscordDigest(limit?: number) {
     } catch (error) {
       console.error("Failed to clear cache during refresh:", error);
     }
-    
+
     // Note: Convex queries automatically refetch when their dependencies change
     // The cache clearing will ensure we don't show stale cached data
     // The query will naturally refetch due to Convex's reactive nature
@@ -184,22 +192,23 @@ export function useDiscordDigest(limit?: number) {
   }, []);
 
   // Determine loading state
-  const loading = discordDigestData === undefined || discordPreferences === undefined;
-  
+  const loading =
+    discordDigestData === undefined || discordPreferences === undefined;
+
   // Determine error state
   const error = useMemo(() => {
     if (!member) {
       return "Please sign in to view Discord digest";
     }
-    
+
     if (discordPreferences === undefined) {
       return null; // Still loading preferences
     }
-    
+
     if (!discordPreferences?.enabled) {
       return "Discord digest is not enabled. Please enable it in your news source settings.";
     }
-    
+
     // If we have no data and we're not loading, there might be an issue
     if (!loading && (!discordDigestData || discordDigestData.length === 0)) {
       // Try to load from cache as fallback
@@ -209,7 +218,7 @@ export function useDiscordDigest(limit?: number) {
       }
       return null; // No error, just no data available
     }
-    
+
     return null;
   }, [member, discordPreferences, loading, discordDigestData, loadFromCache]);
 
@@ -218,13 +227,13 @@ export function useDiscordDigest(limit?: number) {
     if (messages.length > 0) {
       return messages;
     }
-    
+
     // If we have an error but no fresh data, try to use cached data
     if (error && error.includes("cached content")) {
       const cachedData = loadFromCache();
       return cachedData || [];
     }
-    
+
     return messages;
   }, [messages, error, loadFromCache]);
 

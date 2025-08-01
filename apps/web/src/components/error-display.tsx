@@ -2,8 +2,8 @@
 
 import React from "react";
 import { AlertTriangle, RefreshCw, Wifi, WifiOff } from "lucide-react";
-import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
-import { Button } from "../components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "./ui/alert";
+import { Button } from "./ui/button";
 
 import { useNetworkStatus } from "@/hooks/use-network-status";
 
@@ -83,7 +83,7 @@ export function ErrorDisplay({
  */
 export function processError(
   error: Error | string,
-  context?: string,
+  context?: string
 ): ErrorInfo {
   const errorMessage = typeof error === "string" ? error : error.message;
   const errorName = typeof error === "string" ? "" : error.name;

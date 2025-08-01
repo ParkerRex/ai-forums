@@ -4,8 +4,8 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useGitHubIssues } from "@/lib/github";
 import { Loader2, ChevronDown } from "lucide-react";
-import { BugReportModal } from "../components/bug-report-modal";
-import { FeatureRequestModal } from "../components/feature-request-modal";
+import { BugReportModal } from "./bug-report-modal";
+import { FeatureRequestModal } from "./feature-request-modal";
 
 const CACHE_KEY = "vai_roadmap_cache";
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
@@ -47,7 +47,7 @@ export function SidebarRoadmapComponent() {
           JSON.stringify({
             data: issues,
             timestamp: Date.now(),
-          }),
+          })
         );
       } catch (error) {
         console.error("Failed to cache issues:", error);
