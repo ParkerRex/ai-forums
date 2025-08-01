@@ -7,21 +7,18 @@
         /* These settings are not required by Convex and can be modified. */
         "allowJs": true,
         "strict": true,
-        "skipLibCheck": true,
-        "jsx": "react",
         /* These compiler options are required by Convex */
         "target": "ESNext",
         "lib": [
             "ES2021",
-            "dom",
-            "ESNext.Array",
-            "DOM.Iterable"
+            "dom"
         ],
         "forceConsistentCasingInFileNames": true,
         "allowSyntheticDefaultImports": true,
         "module": "ESNext",
         "moduleResolution": "Bundler",
         "isolatedModules": true,
+        "skipLibCheck": true,
         "noEmit": true
     },
     "include": [

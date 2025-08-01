@@ -1,20 +1,6 @@
-/**
- * Stripe Pricing Configuration
- *
- * Centralized server-side configuration for Stripe price IDs.
- * This keeps price IDs secure and prevents client-side exposure.
- *
- * All price IDs are stored as server-side environment variables
- * without the NEXT_PUBLIC_ prefix for security.
- */
-
 export type Tier = "founding_member" | "early_bird" | "member";
 export type BillingInterval = "monthly" | "yearly";
 
-/**
- * Centralized Stripe price configuration
- * Maps tier and billing interval to Stripe price IDs
- */
 export const STRIPE_PRICES: Record<Tier, Record<BillingInterval, string>> = {
   founding_member: {
     monthly: process.env.STRIPE_FOUNDING_MONTHLY_PRICE_ID!,
@@ -37,11 +23,16 @@ export const STRIPE_PRICES: Record<Tier, Record<BillingInterval, string>> = {
  * @returns Stripe price ID
  * @throws Error if price ID is not configured
  */
-export function getStripePrice(tier: Tier, billingInterval: BillingInterval): string {
+export function getStripePrice(
+  tier: Tier,
+  billingInterval: BillingInterval
+): string {
   const priceId = STRIPE_PRICES[tier]?.[billingInterval];
 
   if (!priceId) {
-    throw new Error(`Stripe price ID not configured for tier: ${tier}, billing: ${billingInterval}`);
+    throw new Error(
+      `Stripe price ID not configured for tier: ${tier}, billing: ${billingInterval}`
+    );
   }
 
   return priceId;
@@ -53,18 +44,20 @@ export function getStripePrice(tier: Tier, billingInterval: BillingInterval): st
  */
 export function validateStripeConfiguration(): void {
   const requiredPrices = [
-    'STRIPE_FOUNDING_MONTHLY_PRICE_ID',
-    'STRIPE_FOUNDING_YEARLY_PRICE_ID',
-    'STRIPE_EARLY_BIRD_MONTHLY_PRICE_ID',
-    'STRIPE_EARLY_BIRD_YEARLY_PRICE_ID',
-    'STRIPE_MEMBER_MONTHLY_PRICE_ID',
-    'STRIPE_MEMBER_YEARLY_PRICE_ID',
+    "STRIPE_FOUNDING_MONTHLY_PRICE_ID",
+    "STRIPE_FOUNDING_YEARLY_PRICE_ID",
+    "STRIPE_EARLY_BIRD_MONTHLY_PRICE_ID",
+    "STRIPE_EARLY_BIRD_YEARLY_PRICE_ID",
+    "STRIPE_MEMBER_MONTHLY_PRICE_ID",
+    "STRIPE_MEMBER_YEARLY_PRICE_ID",
   ];
 
-  const missing = requiredPrices.filter(key => !process.env[key]);
+  const missing = requiredPrices.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
-    throw new Error(`Missing required Stripe price environment variables: ${missing.join(', ')}`);
+    throw new Error(
+      `Missing required Stripe price environment variables: ${missing.join(", ")}`
+    );
   }
 }
 
@@ -72,7 +65,10 @@ export function validateStripeConfiguration(): void {
  * Get pricing information for display purposes
  * This returns the actual pricing amounts, not the Stripe price IDs
  */
-export const PRICING_INFO: Record<Tier, { name: string; monthly: number; yearly: number; badge?: string }> = {
+export const PRICING_INFO: Record<
+  Tier,
+  { name: string; monthly: number; yearly: number; badge?: string }
+> = {
   founding_member: {
     name: "Founding Member",
     monthly: 39,
