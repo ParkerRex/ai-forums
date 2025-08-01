@@ -29,13 +29,7 @@ export const FONT_OPTIONS: FontOption[] = [
   },
 
   // Google Fonts (loaded in layout.tsx)
-  {
-    value: "Inter",
-    label: "Inter",
-    category: "google",
-    weights: [400, 700],
-    hasClassName: true,
-  },
+
     {
     value: "IBM Plex Mono",
     label: "IBM Plex Mono",
@@ -70,7 +64,7 @@ export const FONT_OPTIONS: FontOption[] = [
   },
 ] as const;
 
-export const DEFAULT_FONT = "Arial";
+export const DEFAULT_FONT = "IBM Plex Mono";
 
 // Type-safe font family union
 export type FontFamily = (typeof FONT_OPTIONS)[number]["value"];

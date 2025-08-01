@@ -1,29 +1,17 @@
-import type { Metadata } from "next";
+import { ThemeProvider } from "@/web/components/theme-provider";
+import { Analytics } from "@vercel/analytics/react"
+import Script from "next/script"
 import "./globals.css";
+import { Toaster } from "../components/ui/sonner";
+import { TooltipProvider } from "../components/ui/tooltip";
+import { baseMetadata } from "./metadata";
+import { defaultFont } from "../lib/font-config";
 import ConvexClientProvider from "@/web/components/convex-client-provider";
 import { ClerkProvider } from "@clerk/nextjs";
-import Header from "@/web/components/header/header";
-import { Toaster } from "@/web/components/ui/sonner";
+import Header from "../components/header/header";
 import { NetworkStatusIndicator } from "@/web/components/error-display";
-import { ThemeProvider } from "@/web/components/theme-provider";
-import { GlobalSearch } from "@/web/components/header/global-search";
-import { Footer } from "@/web/components/header/footer";
-import { ActivateSubscriptionBanner } from "@/web/components/payments/activate-subscription-banner";
-
-import localFont from "next/font/local";
-
-const myFont = localFont({
-  src: "../public/fonts/MonaspaceArgon-Regular.otf",
-});
-
-export const metadata: Metadata = {
-  title: "The Place AI Engineers Hang Out and Learn",
-  description:
-    "The Best Place to Learn Alongside Engineers from companies like Google and Microsoft",
-  icons: {
-    icon: "/vai.svg",
-  },
-};
+import { GlobalSearch } from "../components/header/global-search";
+import { Footer } from "../components/header/footer";
 
 export default function RootLayout({
   children,
@@ -32,22 +20,28 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${myFont.className} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
+        <head>
+          <BotIdClient protect={protectedRoutes} />
+        </head>
+      <body className={`${defaultFont.className} font-sans antialiased`}>
+        <ThemeProvider attribute="class" defaultTheme="dark">
           <ClerkProvider dynamic>
             <ConvexClientProvider>
-              <ActivateSubscriptionBanner />
+              <Analytics />
+              <Toaster />
               <Header />
+
               <div className="pb-[24px]">{children}</div>
               <Footer />
               <GlobalSearch />
-              <Toaster />
               <NetworkStatusIndicator />
+              <Script
+    src="https://cdn.databuddy.cc/databuddy.js"
+    data-client-id="cKQTB8wgJ9fpU28ml8Zdv"
+    data-enable-batching="true"
+    crossOrigin="anonymous"
+    async
+  ></Script>
             </ConvexClientProvider>
           </ClerkProvider>
         </ThemeProvider>

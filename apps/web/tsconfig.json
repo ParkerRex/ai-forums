@@ -24,32 +24,20 @@
     ],
     "paths": {
       "@/*": [
-        "./*"
-      ],
-      "@/features/*": [
-        "./features/*"
-      ],
-      "@/shared/*": [
-        "./shared/*"
+        "./src/*"
       ]
-    }
+    },
+    "forceConsistentCasingInFileNames": true
   },
   "include": [
-    "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
+    "apps/web/.next/types/**/*.ts",
+    "next-env.d.ts",
     ".next/types/**/*.ts",
-    "web/app/page.tsx.bak"
+    "src/types/**/*.d.ts"
   ],
   "exclude": [
-    "node_modules",
-    "web/components/ui/**",
-    "**/*.test.ts",
-    "**/*.test.tsx",
-    "**/*.spec.ts",
-    "**/*.spec.tsx",
-    "playwright/**",
-    "**/__tests__/**",
-    "scripts/**"
+    "node_modules"
   ]
 }

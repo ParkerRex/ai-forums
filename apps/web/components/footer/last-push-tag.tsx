@@ -43,7 +43,6 @@ export function LastPushTag() {
   }
 
   return (
-    <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="text-muted-foreground flex cursor-default select-none items-center gap-1.5 font-mono text-xs uppercase tracking-tighter">
@@ -57,6 +56,5 @@ export function LastPushTag() {
           </p>
         </TooltipContent>
       </Tooltip>
-    </TooltipProvider>
   );
 }

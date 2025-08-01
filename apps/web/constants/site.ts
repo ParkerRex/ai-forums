@@ -1,4 +1,4 @@
-export const SITE_URL = "https://opencut.app";
+export const SITE_URL = "https://joinvai.com"
 
 export const SITE_INFO = {
   title: "VAI",
@@ -15,7 +15,7 @@ export const EXTERNAL_TOOLS = [
     name: "Marble",
     description:
       "Modern headless CMS for content management and the blog for VAI",
-    url: "https://marblecms.com?utm_source=opencut",
+    url: "https://marblecms.com?utm_source=joinvai",
     icon: "MarbleIcon" as const,
   },
   {
@@ -27,7 +27,7 @@ export const EXTERNAL_TOOLS = [
   {
     name: "Databuddy",
     description: "GDPR compliant analytics and user insights for VAI",
-    url: "https://databuddy.cc?utm_source=opencut",
+    url: "https://databuddy.cc?utm_source=joinvai",
     icon: "DataBuddyIcon" as const,
   },
 ];

@@ -1,52 +1,52 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { getSessionCookie } from "better-auth/cookies";
+import { createAuth } from "./lib/auth";
+import { NextRequest, NextResponse } from "next/server";
+import { betterFetch } from "@better-fetch/fetch";
 
-// Routes that require authentication
-const isProtectedRoute = createRouteMatcher([
-  "/server",
-  "/account(.*)",
-  "/settings(.*)",
-]);
+type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];
+const getSession = async (request: NextRequest) => {
+  const { data: session } = await betterFetch<Session>(
+    "/api/auth/get-session",
+    {
+      baseURL: request.nextUrl.origin,
+      headers: {
+        cookie: request.headers.get("cookie") ?? "",
+        origin: request.nextUrl.origin,
+      },
+    },
+  );
+  return session;
+};
 
-// Routes that are always public
-const isPublicRoute = createRouteMatcher([
-  "/",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/pricing",
-  "/membership/success",
-  "/api(.*)",
-  "/blog(.*)",
-]);
+const signInRoutes = ["/sign-in", "/sign-up", "/verify-2fa"];
 
-// Routes that should bypass all middleware (including Clerk)
-const isBypassRoute = createRouteMatcher([
-  "/api/stripe/webhook",
-]);
+// Just check cookie, recommended approach
+export default async function middleware(request: NextRequest) {
+  const sessionCookie = getSessionCookie(request);
+  // Uncomment to fetch the session (not recommended)
+  // const session = await getSession(request);
 
+  const isSignInRoute = signInRoutes.includes(request.nextUrl.pathname);
 
-export default clerkMiddleware(async (auth, req) => {
-  // Bypass middleware entirely for webhook endpoints
-  if (isBypassRoute(req)) {
+  if (isSignInRoute && !sessionCookie) {
     return NextResponse.next();
   }
 
-  const authResult = await auth();
-  const { userId } = authResult;
+  if (!isSignInRoute && !sessionCookie) {
+    return NextResponse.redirect(new URL("/sign-in", request.url));
+  }
 
-  // Protected routes require authentication
-  if (isProtectedRoute(req)) {
-    await auth.protect();
+  if (isSignInRoute || request.nextUrl.pathname === "/") {
+    return NextResponse.redirect(
+      new URL("/dashboard/client-only", request.url),
+    );
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
-  matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
-  ],
+  // Run middleware on all routes except static assets and api routes
+  matcher: ["/((?!.*\\..*|_next|api/auth).*)", "/", "/trpc(.*)"],
 };
