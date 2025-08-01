@@ -38,7 +38,7 @@ export const updateDiscordPreferences = mutation({
     // If enabling Discord, add or update Discord source in customSources
     if (args.enabled) {
       const discordSourceIndex = updatedPreferences.customSources.findIndex(
-        source => source.type === "discord"
+        (source) => source.type === "discord"
       );
 
       const discordSource = {
@@ -58,9 +58,10 @@ export const updateDiscordPreferences = mutation({
       }
     } else {
       // If disabling Discord, remove Discord source from customSources
-      updatedPreferences.customSources = updatedPreferences.customSources.filter(
-        source => source.type !== "discord"
-      );
+      updatedPreferences.customSources =
+        updatedPreferences.customSources.filter(
+          (source) => source.type !== "discord"
+        );
     }
 
     // Update member preferences
@@ -91,16 +92,16 @@ export const getDiscordPreferences = query({
     }
 
     const { newsPreferences } = member;
-    
+
     // Check if Discord is enabled via the quick toggle
     const discordEnabled = newsPreferences.discordEnabled || false;
-    
+
     // Get guild ID from environment variables (always the same for all users)
     const guildId = process.env.DISCORD_GUILD_ID || "1355280592962453585";
-    
+
     // Find Discord source in customSources for channel config
     const discordSource = newsPreferences.customSources.find(
-      source => source.type === "discord"
+      (source) => source.type === "discord"
     );
 
     return {
@@ -143,7 +144,7 @@ export const toggleDiscordDigest = mutation({
     if (newEnabledState) {
       // Add Discord source if enabling
       const discordSourceIndex = updatedPreferences.customSources.findIndex(
-        source => source.type === "discord"
+        (source) => source.type === "discord"
       );
 
       const discordSource = {
@@ -161,9 +162,10 @@ export const toggleDiscordDigest = mutation({
       }
     } else {
       // Remove Discord source if disabling
-      updatedPreferences.customSources = updatedPreferences.customSources.filter(
-        source => source.type !== "discord"
-      );
+      updatedPreferences.customSources =
+        updatedPreferences.customSources.filter(
+          (source) => source.type !== "discord"
+        );
     }
 
     await ctx.db.patch(args.userId, {
@@ -196,7 +198,7 @@ export const getDiscordSourceConfig = query({
 
     // Find Discord source in customSources
     const discordSource = member.newsPreferences.customSources.find(
-      source => source.type === "discord"
+      (source) => source.type === "discord"
     );
 
     // Type guard to ensure we only return Discord sources

@@ -2,17 +2,13 @@ import { convexAdapter } from "@convex-dev/better-auth";
 import { convex } from "@convex-dev/better-auth/plugins";
 import { genericOAuth, organization, twoFactor } from "better-auth/plugins";
 import { emailOTP } from "better-auth/plugins";
-import {
-  sendMagicLink,
-  sendOTPVerification,
-  sendEmailVerification,
-  sendResetPassword,
-} from "../convex/email";
+
 import { magicLink } from "better-auth/plugins";
 import { betterAuth, BetterAuthOptions } from "better-auth";
 import { betterAuthComponent } from "../convex/auth";
 import { requireMutationCtx } from "@convex-dev/better-auth/utils";
 import { GenericCtx } from "../convex/_generated/server";
+import { sendEmailVerification, sendResetPassword } from "../convex/email";
 
 // Split out options so they can be passed to the convex plugin
 const createOptions = (ctx: GenericCtx) =>

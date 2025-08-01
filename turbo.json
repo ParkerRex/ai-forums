@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.com/schema.json",
   "globalDependencies": ["**/.env.*local"],
+  "ui": "tui",
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
@@ -23,6 +24,9 @@
     },
     "format": {
       "dependsOn": ["^format"]
+    },
+    "clean": {
+      "cache": false
     }
   }
 }

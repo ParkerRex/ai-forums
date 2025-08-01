@@ -1,14 +1,14 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "@/web/convex/_generated/api";
+import { api } from "@packages/backend/convex/_generated/api";
 import PostHeader from "../components/posts/post-header";
 import PostList from "../components/posts/post-list";
 import PostSidebar from "../components/posts/post-sidebar";
 import { notFound } from "next/navigation";
 import { useState } from "react";
 import { use } from "react";
-import { Badge } from "../components/ui/badge";
+import { Badge } from "../../../components/ui/badge";
 
 interface CategoryPageClientProps {
   /** Promise containing the dynamic route parameters */
@@ -18,19 +18,6 @@ interface CategoryPageClientProps {
   }>;
 }
 
-/**
- * Category Page Client Component
- *
- * Renders the category page with post filtering, sorting, and interactive features.
- * Handles loading states, error states, and category validation.
- *
- * @param params - Promise containing the dynamic route parameters
- * @returns JSX element rendering the category page with posts
- *
- * @example
- * // Used by server component:
- * <CategoryPageClient params={Promise.resolve({ category: "workflows" })} />
- */
 export default function CategoryPageClient({
   params,
 }: CategoryPageClientProps) {
@@ -43,12 +30,12 @@ export default function CategoryPageClient({
   // Uses conditional query - skips if no categoryName to avoid unnecessary requests
   const category = useQuery(
     api.categories.getCategoryByName,
-    categoryName ? { name: categoryName } : "skip",
+    categoryName ? { name: categoryName } : "skip"
   );
 
   // State for post sorting - controls how posts are ordered in the list
   const [sortBy, setSortBy] = useState<"newest" | "popular" | "trending">(
-    "newest",
+    "newest"
   );
 
   // Show loading skeleton while fetching category data
@@ -58,18 +45,18 @@ export default function CategoryPageClient({
       <div className="mx-auto max-w-7xl px-4 py-6">
         <div className="animate-pulse">
           {/* Category header skeleton */}
-          <div className="bg-muted mb-4 h-8 w-48 rounded-none"></div>
-          <div className="bg-muted mb-2 h-4 w-96 rounded-none"></div>
+          <div className="bg-muted mb-4 h-8 w-48 rounded-none" />
+          <div className="bg-muted mb-2 h-4 w-96 rounded-none" />
           <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-4">
             {/* Post list skeleton */}
             <div className="space-y-4 lg:col-span-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-muted h-32 rounded-none"></div>
+                <div key={i} className="bg-muted h-32 rounded-none" />
               ))}
             </div>
             {/* Sidebar skeleton */}
             <div className="lg:col-span-1">
-              <div className="bg-muted h-64 rounded-none"></div>
+              <div className="bg-muted h-64 rounded-none" />
             </div>
           </div>
         </div>

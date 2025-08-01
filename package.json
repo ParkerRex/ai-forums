@@ -8,6 +8,9 @@
     "typescript": "5.8.3",
     "ultracite": "5.0.48"
   },
+  "engines": {
+    "node": ">=18.8.0"
+  },
   "workspaces": [
     "apps/*",
     "packages/*"

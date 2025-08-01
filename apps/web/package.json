@@ -99,7 +99,6 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
-    "@edge-runtime/vm": "^5.0.0",
     "@tailwindcss/postcss": "^4.1.11",
     "@types/node": "^20",
     "@types/bun": "1.2.19",
