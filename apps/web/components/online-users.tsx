@@ -7,7 +7,7 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
+} from "../components/ui/avatar";
 import Link from "next/link";
 import { memberProfileUrl } from "@/lib/slug-utils";
 import { Id } from "@/web/convex/_generated/dataModel";

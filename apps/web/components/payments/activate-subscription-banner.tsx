@@ -5,7 +5,7 @@ import { api } from "@/web/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import { X } from "lucide-react";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 
 /**
  * ActivateSubscriptionBanner - Consolidated banner for subscription activation

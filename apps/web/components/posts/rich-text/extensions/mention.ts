@@ -3,7 +3,7 @@ import { ReactRenderer } from '@tiptap/react';
 import { Suggestion, SuggestionOptions, SuggestionProps, SuggestionKeyDownProps } from '@tiptap/suggestion';
 import type { Editor, Range } from '@tiptap/core';
 import tippy, { Instance as TippyInstance } from 'tippy.js';
-import { MentionAutocomplete } from '@/web/components/comments/mention-autocomplete';
+import { MentionAutocomplete } from '../components/comments/mention-autocomplete';
 import { Id } from '@/web/convex/_generated/dataModel';
 
 // Type for member data returned by search

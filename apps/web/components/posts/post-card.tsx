@@ -1,17 +1,17 @@
 import { useRouter } from "next/navigation";
-import { Button } from "@/web/components/ui/button";
-import { ArrowBigUpIcon } from "@/web/components/icons/arrow-big-up";
-import { MessageSquareIcon } from "@/web/components/icons/message-square";
-import { UploadIcon } from "@/web/components/ui/upload";
+import { Button } from "../components/ui/button";
+import { ArrowBigUpIcon } from "../components/icons/arrow-big-up";
+import { MessageSquareIcon } from "../components/icons/message-square";
+import { UploadIcon } from "../components/ui/upload";
 import { Id } from "@/web/convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { useState, useRef } from "react";
-import PostPreview from "@/web/components/posts/post-preview";
+import PostPreview from "../components/posts/post-preview";
 import { PostData } from "@/lib/post-preview-utils";
 import { useMutationError } from "@/hooks/use-mutation-error";
-import { PostBookmarkButton } from "@/web/components/posts/post-bookmark-button";
+import { PostBookmarkButton } from "../components/posts/post-bookmark-button";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 

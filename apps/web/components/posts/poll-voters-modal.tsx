@@ -9,18 +9,18 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
+} from "../components/ui/dialog";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/web/components/ui/tabs";
+} from "../components/ui/tabs";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
+} from "../components/ui/avatar";
 import Link from "next/link";
 import { memberProfileUrl } from "@/lib/utils";
 import { Loader2 } from "lucide-react";

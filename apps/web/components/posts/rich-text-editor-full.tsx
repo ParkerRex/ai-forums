@@ -11,7 +11,7 @@ import {
 import { Markdown } from "tiptap-markdown";
 import { useAction, useConvex } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Bold,
   Italic,

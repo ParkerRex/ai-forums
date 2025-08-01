@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import { X } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "convex/react";

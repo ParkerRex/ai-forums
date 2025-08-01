@@ -8,8 +8,8 @@ import {
   lazy,
   Suspense,
 } from "react";
-import { Button } from "@/web/components/ui/button";
-import { Textarea } from "@/web/components/ui/textarea";
+import { Button } from "../components/ui/button";
+import { Textarea } from "../components/ui/textarea";
 import { Wand2 } from "lucide-react";
 
 // Lazy load the full rich text editor

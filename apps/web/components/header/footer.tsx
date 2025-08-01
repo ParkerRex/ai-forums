@@ -2,7 +2,7 @@ import React from "react";
 import { DiscordStatus } from "./discord-status";
 import { LastPushTag } from "../footer/last-push-tag";
 import { WeeklyCountdown } from "../footer/weekly-countdown";
-import { ThemeToggleSwitch } from "@/web/components/theme-toggle-switch";
+import { ThemeToggleSwitch } from "../components/theme-toggle-switch";
 
 export function Footer() {
   return (

@@ -1,7 +1,7 @@
 "use client";
 
 import DOMPurify from "dompurify";
-import { LinkBadge } from "@/web/components/posts/link-badge";
+import { LinkBadge } from "../components/posts/link-badge";
 import { useEffect, useRef, useState } from "react";
 import { unified } from "unified";
 import rehypeParse from "rehype-parse";

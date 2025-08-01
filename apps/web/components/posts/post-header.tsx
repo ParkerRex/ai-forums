@@ -4,17 +4,17 @@ import Link from "next/link";
 import { useQuery } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Id } from "@/web/convex/_generated/dataModel";
-import { Skeleton } from "@/web/components/ui/skeleton";
+import { Skeleton } from "../components/ui/skeleton";
 import { usePathname } from "next/navigation";
-import PostHeaderSkeleton from "@/web/components/posts/post-header-skeleton";
-import { HomeIcon, HomeIconHandle } from "@/web/components/icons/home";
-import { Button } from "@/web/components/ui/button";
-import { ClapIcon } from "@/web/components/icons/clap";
-import { SquareStackIcon } from "@/web/components/icons/square-stack";
-import { FlaskIcon } from "@/web/components/icons/flask";
-import { FlameIcon } from "@/web/components/icons/flame";
-import { PartyPopperIcon } from "@/web/components/icons/party-popper";
-import { SortPopover } from "@/web/components/posts/sort-popover";
+import PostHeaderSkeleton from "../components/posts/post-header-skeleton";
+import { HomeIcon, HomeIconHandle } from "../components/icons/home";
+import { Button } from "../components/ui/button";
+import { ClapIcon } from "../components/icons/clap";
+import { SquareStackIcon } from "../components/icons/square-stack";
+import { FlaskIcon } from "../components/icons/flask";
+import { FlameIcon } from "../components/icons/flame";
+import { PartyPopperIcon } from "../components/icons/party-popper";
+import { SortPopover } from "../components/posts/sort-popover";
 
 interface PostHeaderProps {
   sortBy?: "newest" | "popular" | "trending";

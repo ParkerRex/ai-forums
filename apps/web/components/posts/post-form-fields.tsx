@@ -4,23 +4,23 @@ import { useState, useCallback, lazy, Suspense, useEffect } from "react";
 import { useQuery, useAction } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Id } from "@/web/convex/_generated/dataModel";
-import { Button } from "@/web/components/ui/button";
-import { Input } from "@/web/components/ui/input";
-import { Label } from "@/web/components/ui/label";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/web/components/ui/select";
-import { Card, CardContent } from "@/web/components/ui/card";
+} from "../components/ui/select";
+import { Card, CardContent } from "../components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/web/components/ui/tabs";
+} from "../components/ui/tabs";
 import {
   PostFormData,
   validatePostForm,
@@ -38,9 +38,9 @@ import { toast } from "sonner";
 
 // Lazy load heavy components
 const RichTextEditor = lazy(
-  () => import("@/web/components/posts/rich-text-editor"),
+  () => import("../components/posts/rich-text-editor"),
 );
-const PostPreview = lazy(() => import("@/web/components/posts/post-preview"));
+const PostPreview = lazy(() => import("../components/posts/post-preview"));
 
 // Extended form data with media/link fields
 export interface ExtendedPostFormData extends PostFormData {

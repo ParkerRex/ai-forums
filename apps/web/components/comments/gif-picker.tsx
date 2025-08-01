@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Input } from "@/web/components/ui/input";
-import { Button } from "@/web/components/ui/button";
+import { Input } from "../components/ui/input";
+import { Button } from "../components/ui/button";
 import { Search } from "lucide-react";
 import Image from "next/image";
 import { GiphyFetch } from "@giphy/js-fetch-api";

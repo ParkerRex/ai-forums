@@ -7,7 +7,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/web/components/ui/dialog";
+} from "../components/ui/dialog";
 import { FileText, Clock, Star } from "lucide-react";
 
 interface DraftsModalProps {

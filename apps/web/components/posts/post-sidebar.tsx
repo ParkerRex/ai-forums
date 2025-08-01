@@ -1,6 +1,6 @@
 "use client";
-import { OnlineUsers } from "@/web/components/online-users";
-import { SidebarRoadmapComponent } from "@/web/components/sidebar-roadmap-component";
+import { OnlineUsers } from "../components/online-users";
+import { SidebarRoadmapComponent } from "../components/sidebar-roadmap-component";
 
 export default function PostSidebar() {
   return (

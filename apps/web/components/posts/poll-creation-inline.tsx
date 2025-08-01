@@ -1,16 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input } from "@/web/components/ui/input";
-import { Label } from "@/web/components/ui/label";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/web/components/ui/select";
-import { Button } from "@/web/components/ui/button";
+} from "../components/ui/select";
+import { Button } from "../components/ui/button";
 import { Plus, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 

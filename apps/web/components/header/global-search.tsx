@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { useSearchHotkey } from "@/hooks/use-search-hotkey";
-import { MembershipCTAModal } from "@/web/components/members/membership-cta-modal";
+import { MembershipCTAModal } from "../components/members/membership-cta-modal";
 import {
   CommandDialog,
   CommandEmpty,
@@ -13,9 +13,9 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@/web/components/ui/command";
-import { Badge } from "@/web/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/web/components/ui/avatar";
+} from "../components/ui/command";
+import { Badge } from "../components/ui/badge";
+import { Avatar, AvatarFallback } from "../components/ui/avatar";
 import {
   Search,
   FileText,

@@ -2,18 +2,18 @@
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useAction } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Avatar,
   AvatarImage,
   AvatarFallback,
-} from "@/web/components/ui/avatar";
+} from "../components/ui/avatar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
+} from "../components/ui/dialog";
 import { Loader2, Upload, Trash2, User } from "lucide-react";
 import { toast } from "sonner";
 import ReactCrop, {

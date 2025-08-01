@@ -4,15 +4,15 @@ import { useForm } from "react-hook-form";
 import { useMutation } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Id } from "@/web/convex/_generated/dataModel";
-import { Button } from "@/web/components/ui/button";
-import { Input } from "@/web/components/ui/input";
-import { Textarea } from "@/web/components/ui/textarea";
-import { Label } from "@/web/components/ui/label";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Label } from "../components/ui/label";
 import { Loader2, Save, X, Globe } from "lucide-react";
 import { useState } from "react";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useNetworkStatus } from "@/hooks/use-network-status";
-import { AvatarUpload } from "@/web/components/members/avatar-upload";
+import { AvatarUpload } from "../components/members/avatar-upload";
 
 interface Member {
   _id: Id<"members">;

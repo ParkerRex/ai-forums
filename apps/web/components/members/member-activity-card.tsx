@@ -1,7 +1,7 @@
 import { useRouter } from "next/navigation";
-import { Button } from "@/web/components/ui/button";
-import { ArrowBigUpIcon } from "@/web/components/icons/arrow-big-up";
-import { MessageSquareIcon } from "@/web/components/icons/message-square";
+import { Button } from "../components/ui/button";
+import { ArrowBigUpIcon } from "../components/icons/arrow-big-up";
+import { MessageSquareIcon } from "../components/icons/message-square";
 import { cn } from "@/lib/utils";
 import { useRef } from "react";
 

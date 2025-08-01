@@ -13,8 +13,8 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/web/components/ui/alert-dialog";
-import { Alert, AlertDescription } from "@/web/components/ui/alert";
+} from "../components/ui/alert-dialog";
+import { Alert, AlertDescription } from "../components/ui/alert";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 

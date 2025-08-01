@@ -7,12 +7,12 @@ import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@/web/components/ui/hover-card";
+} from "../components/ui/hover-card";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
+} from "../components/ui/avatar";
 import { Id } from "@/web/convex/_generated/dataModel";
 import Link from "next/link";
 import { memberProfileUrl } from "@/lib/utils";

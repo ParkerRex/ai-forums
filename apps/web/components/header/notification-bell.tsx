@@ -3,9 +3,9 @@
 import React from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
-import { BellIcon } from "@/web/components/icons/bell";
-import { Button } from "@/web/components/ui/button";
-import { Badge } from "@/web/components/ui/badge";
+import { BellIcon } from "../components/icons/bell";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
 import { useCurrentMember } from "@/hooks/use-current-member";
 
 interface NotificationBellProps {

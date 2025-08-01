@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   PostFormFields,
   ExtendedPostFormData,
-} from "@/web/components/posts/post-form-fields";
+} from "../components/posts/post-form-fields";
 import { PostFormData } from "@/lib/form-validation";
 import { useMutation } from "convex/react";
 import { api } from "@/web/convex/_generated/api";

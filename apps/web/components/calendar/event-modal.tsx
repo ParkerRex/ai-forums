@@ -47,19 +47,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
-import { Input } from "@/web/components/ui/input";
-import { Textarea } from "@/web/components/ui/textarea";
-import { Label } from "@/web/components/ui/label";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Label } from "../components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/web/components/ui/select";
-import { Switch } from "@/web/components/ui/switch";
+} from "../components/ui/select";
+import { Switch } from "../components/ui/switch";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";

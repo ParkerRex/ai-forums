@@ -1,27 +1,27 @@
 "use client";
 import Link from "next/link";
-import { Button } from "@/web/components/ui/button";
-import { Input } from "@/web/components/ui/input";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import { Bookmark, BookOpen } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/web/components/ui/tooltip";
-import { UsersIcon, UsersIconHandle } from "@/web/components/ui/users";
+} from "../components/ui/tooltip";
+import { UsersIcon, UsersIconHandle } from "../components/ui/users";
 import {
   CalendarDaysIcon,
   CalendarDaysIconHandle,
-} from "@/web/components/icons/calendar-days";
-import { AuthButton } from "@/web/components/auth/auth-button";
-import { NotificationDropdown } from "@/web/components/header/notification-dropdown";
+} from "../components/icons/calendar-days";
+import { AuthButton } from "../components/auth/auth-button";
+import { NotificationDropdown } from "../components/header/notification-dropdown";
 import { Authenticated, Unauthenticated } from "convex/react";
 import React from "react";
-import { SearchIcon, SearchIconHandle } from "@/web/components/icons/search";
-import { MemberDropdown } from "@/web/components/header/member-dropdown";
-import { HeaderProvider } from "@/web/components/header/header-provider";
-import { HeaderIconLink } from "@/web/components/header/header-icon-link";
-import { HeaderLogo } from "@/web/components/header/header-logo";
+import { SearchIcon, SearchIconHandle } from "../components/icons/search";
+import { MemberDropdown } from "../components/header/member-dropdown";
+import { HeaderProvider } from "../components/header/header-provider";
+import { HeaderIconLink } from "../components/header/header-icon-link";
+import { HeaderLogo } from "../components/header/header-logo";
 // We intentionally do NOT import useSearchHotkey here because we
 // only need to *trigger* the global search dialog. The actual
 // open/close state is maintained inside the GlobalSearch

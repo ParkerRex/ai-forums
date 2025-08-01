@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits, TextChannel, Message } from 'discord.js';
+import { Client, GatewayIntentBits, TextChannel, Message } from "discord.js";
 
 export interface DiscordMessage {
   id: string;
@@ -19,7 +19,7 @@ export interface DiscordMessage {
 
 export class DiscordClient {
   private client: Client;
-  private isReady: boolean = false;
+  private isReady = false;
 
   constructor() {
     this.client = new Client({
@@ -31,13 +31,13 @@ export class DiscordClient {
       ],
     });
 
-    this.client.on('ready', () => {
+    this.client.on("ready", () => {
       console.log(`Discord bot logged in as ${this.client.user?.tag}`);
       this.isReady = true;
     });
 
-    this.client.on('error', (error: Error) => {
-      console.error('Discord client error:', error);
+    this.client.on("error", (error: Error) => {
+      console.error("Discord client error:", error);
     });
   }
 
@@ -48,12 +48,14 @@ export class DiscordClient {
       // Wait for the client to be ready
       if (!this.isReady) {
         await new Promise((resolve) => {
-          this.client.once('ready', resolve);
+          this.client.once("ready", resolve);
         });
       }
     } catch (error) {
-      console.error('Failed to connect to Discord:', error);
-      throw new Error(`Discord connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Failed to connect to Discord:", error);
+      throw new Error(
+        `Discord connection failed: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   }
 
@@ -62,7 +64,7 @@ export class DiscordClient {
       await this.client.destroy();
       this.isReady = false;
     } catch (error) {
-      console.error('Error disconnecting from Discord:', error);
+      console.error("Error disconnecting from Discord:", error);
     }
   }
 
@@ -72,7 +74,7 @@ export class DiscordClient {
     channels?: string[]
   ): Promise<DiscordMessage[]> {
     if (!this.isReady) {
-      throw new Error('Discord client is not ready');
+      throw new Error("Discord client is not ready");
     }
 
     try {
@@ -88,7 +90,9 @@ export class DiscordClient {
       const textChannels = guildChannels.filter(
         (channel): channel is TextChannel =>
           channel?.type === 0 && // GUILD_TEXT
-          (!channels || channels.includes(channel.id) || channels.includes(channel.name))
+          (!channels ||
+            channels.includes(channel.id) ||
+            channels.includes(channel.name))
       );
 
       for (const channel of Array.from(textChannels.values())) {
@@ -96,15 +100,20 @@ export class DiscordClient {
           const messages = await this.fetchMessagesFromChannel(channel, since);
           allMessages.push(...messages);
         } catch (error) {
-          console.error(`Error fetching messages from channel ${channel.name}:`, error);
+          console.error(
+            `Error fetching messages from channel ${channel.name}:`,
+            error
+          );
           // Continue with other channels even if one fails
         }
       }
 
       return allMessages;
     } catch (error) {
-      console.error('Error fetching messages from guild:', error);
-      throw new Error(`Failed to fetch messages: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      console.error("Error fetching messages from guild:", error);
+      throw new Error(
+        `Failed to fetch messages: ${error instanceof Error ? error.message : "Unknown error"}`
+      );
     }
   }
 
@@ -132,7 +141,10 @@ export class DiscordClient {
         if (relevantMessages.size === 0) break;
 
         for (const message of Array.from(relevantMessages.values())) {
-          const discordMessage = await this.transformMessage(message, channel.name);
+          const discordMessage = await this.transformMessage(
+            message,
+            channel.name
+          );
           messages.push(discordMessage);
         }
 
@@ -148,12 +160,18 @@ export class DiscordClient {
 
       return messages;
     } catch (error) {
-      console.error(`Error fetching messages from channel ${channel.name}:`, error);
+      console.error(
+        `Error fetching messages from channel ${channel.name}:`,
+        error
+      );
       throw error;
     }
   }
 
-  private async transformMessage(message: Message, channelName: string): Promise<DiscordMessage> {
+  private async transformMessage(
+    message: Message,
+    channelName: string
+  ): Promise<DiscordMessage> {
     const reactions: Array<{ emoji: string; count: number }> = [];
 
     // Process reactions
@@ -185,7 +203,9 @@ export class DiscordClient {
 }
 
 // Utility function to create and manage a Discord client instance
-export async function createDiscordClient(token: string): Promise<DiscordClient> {
+export async function createDiscordClient(
+  token: string
+): Promise<DiscordClient> {
   const client = new DiscordClient();
   await client.connect(token);
   return client;
@@ -193,9 +213,12 @@ export async function createDiscordClient(token: string): Promise<DiscordClient>
 
 // Error handling utilities
 export class DiscordError extends Error {
-  constructor(message: string, public readonly code?: string) {
+  constructor(
+    message: string,
+    public readonly code?: string
+  ) {
     super(message);
-    this.name = 'DiscordError';
+    this.name = "DiscordError";
   }
 }
 
@@ -208,7 +231,7 @@ export function handleDiscordError(error: unknown): DiscordError {
     return new DiscordError(error.message);
   }
 
-  return new DiscordError('Unknown Discord error occurred');
+  return new DiscordError("Unknown Discord error occurred");
 }
 
 // Rate limiting utilities
@@ -217,7 +240,7 @@ export class RateLimiter {
   private readonly maxRequests: number;
   private readonly timeWindow: number;
 
-  constructor(maxRequests: number = 50, timeWindowMs: number = 60000) {
+  constructor(maxRequests = 50, timeWindowMs = 60_000) {
     this.maxRequests = maxRequests;
     this.timeWindow = timeWindowMs;
   }
@@ -226,7 +249,9 @@ export class RateLimiter {
     const now = Date.now();
 
     // Remove old requests outside the time window
-    this.requests = this.requests.filter(time => now - time < this.timeWindow);
+    this.requests = this.requests.filter(
+      (time) => now - time < this.timeWindow
+    );
 
     if (this.requests.length >= this.maxRequests) {
       const oldestRequest = Math.min(...this.requests);
@@ -234,7 +259,7 @@ export class RateLimiter {
 
       if (waitTime > 0) {
         console.log(`Rate limit reached, waiting ${waitTime}ms`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
+        await new Promise((resolve) => setTimeout(resolve, waitTime));
       }
     }
 

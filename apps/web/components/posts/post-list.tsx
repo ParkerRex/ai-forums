@@ -2,10 +2,10 @@
 import { usePaginatedQuery } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Id } from "@/web/convex/_generated/dataModel";
-import PostCard from "@/web/components/posts/post-card";
+import PostCard from "../components/posts/post-card";
 import { useUserVotes } from "@/hooks/use-user-votes";
 import { useMemo } from "react";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import { Loader2 } from "lucide-react";
 
 interface PostListProps {

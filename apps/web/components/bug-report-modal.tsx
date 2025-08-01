@@ -11,20 +11,20 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
-import { Input } from "@/web/components/ui/input";
-import { Textarea } from "@/web/components/ui/textarea";
-import { Label } from "@/web/components/ui/label";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Label } from "../components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/web/components/ui/select";
+} from "../components/ui/select";
 import { X, Loader2, FileText, FileIcon } from "lucide-react";
-import { LinkIcon } from "@/web/components/icons/link";
+import { LinkIcon } from "../components/icons/link";
 import { toast } from "sonner";
 import Image from "next/image";
 import { getBrowserInfo } from "@/lib/browser-detection";

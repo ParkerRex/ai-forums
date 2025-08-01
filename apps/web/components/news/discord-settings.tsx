@@ -4,11 +4,11 @@ import { useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Id } from "@/web/convex/_generated/dataModel";
-import { Switch } from "@/web/components/ui/switch";
-import { Label } from "@/web/components/ui/label";
-import { Button } from "@/web/components/ui/button";
-import { Badge } from "@/web/components/ui/badge";
-import { Separator } from "@/web/components/ui/separator";
+import { Switch } from "../components/ui/switch";
+import { Label } from "../components/ui/label";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
 import { toast } from "sonner";
 import {
   MessageSquare,

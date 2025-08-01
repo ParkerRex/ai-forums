@@ -5,8 +5,8 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/web/components/ui/tooltip";
-import { Button } from "@/web/components/ui/button";
+} from "../components/ui/tooltip";
+import { Button } from "../components/ui/button";
 import type React from "react";
 
 interface HeaderIconLinkProps {

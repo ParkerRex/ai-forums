@@ -3,18 +3,18 @@
 import * as React from "react";
 import { ArrowDownWideNarrow } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/web/components/ui/popover";
+} from "../components/ui/popover";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/web/components/ui/tooltip";
+} from "../components/ui/tooltip";
 import { useSortHotkey, type SortOption } from "@/hooks/use-sort-hotkey";
 
 // Constants for sort options

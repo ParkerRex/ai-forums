@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "@/web/components/ui/button";
-import { Card } from "@/web/components/ui/card";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
 import { Lock, Zap, Shield, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAction } from "convex/react";

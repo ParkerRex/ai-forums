@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { RefreshCw } from "lucide-react";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import { toast } from "sonner";
 import { useNewsFeed, NewsItem } from "../hooks/use-news-feed";
 

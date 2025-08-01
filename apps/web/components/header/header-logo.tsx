@@ -6,7 +6,7 @@ import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@/web/components/ui/tooltip";
+} from "../components/ui/tooltip";
 
 export const HeaderLogo = () => {
   return (

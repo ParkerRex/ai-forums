@@ -1,7 +1,7 @@
 "use client";
 
-import { badgeVariants } from "@/web/components/ui/badge";
-import { LinkIcon } from "@/web/components/icons/link";
+import { badgeVariants } from "../components/ui/badge";
+import { LinkIcon } from "../components/icons/link";
 import { cn } from "@/lib/utils";
 
 export interface LinkBadgeProps {

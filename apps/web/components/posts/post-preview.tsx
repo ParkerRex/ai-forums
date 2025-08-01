@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
-import { Card, CardContent } from "@/web/components/ui/card";
+import { Card, CardContent } from "../components/ui/card";
 import {
   getPostPreviewAsset,
   getContentExcerpt,
@@ -30,12 +30,12 @@ import {
   Pin,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MemberHoverCardWrapper } from "@/web/components/members/member-hover-card";
+import { MemberHoverCardWrapper } from "../components/members/member-hover-card";
 import {
   Avatar,
   AvatarImage,
   AvatarFallback,
-} from "@/web/components/ui/avatar";
+} from "../components/ui/avatar";
 import { getInitials } from "@/lib/avatar-utils";
 
 interface PostPreviewProps {

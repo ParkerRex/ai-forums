@@ -5,8 +5,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
-import { Badge } from "@/web/components/ui/badge";
+} from "../components/ui/avatar";
+import { Badge } from "../components/ui/badge";
 import {
   Github,
   Twitter,
@@ -19,7 +19,7 @@ import {
   MessageCircle,
   ThumbsUp,
 } from "lucide-react";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import { memberProfileUrl } from "@/lib/slug-utils";
 import type { Id } from "@/web/convex/_generated/dataModel";
 

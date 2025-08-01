@@ -4,10 +4,10 @@ import { useState, useCallback, lazy, Suspense, useEffect } from "react";
 import { useMutation, useQuery, useConvex, useAction } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Id } from "@/web/convex/_generated/dataModel";
-import { Button } from "@/web/components/ui/button";
-import { Input } from "@/web/components/ui/input";
-import { Label } from "@/web/components/ui/label";
-import { PreviewGenerationDialog } from "@/web/components/posts/preview-generation-dialog";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { PreviewGenerationDialog } from "../components/posts/preview-generation-dialog";
 // import {
 //   Select,
 //   SelectContent,
@@ -15,15 +15,15 @@ import { PreviewGenerationDialog } from "@/web/components/posts/preview-generati
 //   SelectTrigger,
 //   SelectValue,
 // } from "@/components/ui/select";
-import { Alert, AlertDescription } from "@/web/components/ui/alert";
-import { DraftsModal } from "@/web/components/posts/drafts-modal";
+import { Alert, AlertDescription } from "../components/ui/alert";
+import { DraftsModal } from "../components/posts/drafts-modal";
 import {
   PollCreationInline,
   PollData,
-} from "@/web/components/posts/poll-creation-inline";
-import { MediaUploadSection } from "@/web/components/posts/media-upload-section";
-import { CategoryToggleGroup } from "@/web/components/posts/category-toggle-group";
-import { PostPreviewToggle } from "@/web/components/posts/post-preview-toggle";
+} from "../components/posts/poll-creation-inline";
+import { MediaUploadSection } from "../components/posts/media-upload-section";
+import { CategoryToggleGroup } from "../components/posts/category-toggle-group";
+import { PostPreviewToggle } from "../components/posts/post-preview-toggle";
 import { MediaItem } from "@/types";
 import {
   PostFormData,
@@ -48,9 +48,9 @@ import { cn } from "@/lib/utils";
 
 // Lazy load heavy components
 const RichTextEditor = lazy(
-  () => import("@/web/components/posts/rich-text-editor"),
+  () => import("../components/posts/rich-text-editor"),
 );
-const PostPreview = lazy(() => import("@/web/components/posts/post-preview"));
+const PostPreview = lazy(() => import("../components/posts/post-preview"));
 
 interface PostCreationFormProps {
   onSuccess?: (postId: Id<"posts">) => void;

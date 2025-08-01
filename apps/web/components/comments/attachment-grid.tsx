@@ -2,10 +2,10 @@
 
 import { useMemo } from "react";
 import { MediaItem } from "@/types";
-import { PDFPreview } from "@/web/components/posts/pdf-preview";
-import { YouTubePreview } from "@/web/components/posts/youtube-preview";
-import { VideoPreview } from "@/web/components/posts/video-preview";
-import { Badge } from "@/web/components/ui/badge";
+import { PDFPreview } from "../components/posts/pdf-preview";
+import { YouTubePreview } from "../components/posts/youtube-preview";
+import { VideoPreview } from "../components/posts/video-preview";
+import { Badge } from "../components/ui/badge";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 

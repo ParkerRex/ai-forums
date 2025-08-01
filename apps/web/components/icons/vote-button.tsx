@@ -1,10 +1,10 @@
 "use client";
 
 import React from "react";
-import { Button } from "@/web/components/ui/button";
-import { ArrowBigUpIcon } from "@/web/components/icons/arrow-big-up";
-import { VoteHoverCard } from "@/web/components/posts/vote-hover-card";
-import { MembershipCTAModal } from "@/web/components/members/membership-cta-modal";
+import { Button } from "../components/ui/button";
+import { ArrowBigUpIcon } from "../components/icons/arrow-big-up";
+import { VoteHoverCard } from "../components/posts/vote-hover-card";
+import { MembershipCTAModal } from "../components/members/membership-cta-modal";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { Id } from "@/web/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";

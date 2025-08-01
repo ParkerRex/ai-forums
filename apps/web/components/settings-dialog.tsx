@@ -9,8 +9,8 @@ import { api } from "@/web/convex/_generated/api";
 import { subscriptionAnalytics } from "@/lib/analytics";
 import { formatTierName } from "@/lib/format";
 
-import { Badge } from "@/web/components/ui/badge";
-import { Button } from "@/web/components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,13 +18,13 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@/web/components/ui/breadcrumb";
+} from "../components/ui/breadcrumb";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "@/web/components/ui/dialog";
+} from "../components/ui/dialog";
 import {
   Sidebar,
   SidebarContent,
@@ -34,7 +34,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarProvider,
-} from "@/web/components/ui/sidebar";
+} from "../components/ui/sidebar";
 
 const settingsNav = [
   { name: "Notifications", icon: Bell },

@@ -18,7 +18,7 @@
 
 import React, { useState } from "react";
 import { Bookmark } from "lucide-react";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Authenticated, Unauthenticated } from "convex/react";

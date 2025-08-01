@@ -17,20 +17,20 @@ import {
 import { api } from "@/web/convex/_generated/api";
 import { SortableCommentItem } from "./sortable-comment-item";
 import { Id } from "@/web/convex/_generated/dataModel";
-import { Avatar, AvatarFallback } from "@/web/components/ui/avatar";
-import { Button } from "@/web/components/ui/button";
+import { Avatar, AvatarFallback } from "../components/ui/avatar";
+import { Button } from "../components/ui/button";
 import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInButton } from "@clerk/nextjs";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { formatDistanceToNow } from "date-fns";
 import { ChevronDown, ChevronRight, GripVertical } from "lucide-react";
-import { MessageSquareIcon } from "@/web/components/icons/message-square";
-import { LinkIcon } from "@/web/components/icons/link";
-import { VoteButton } from "@/web/components/icons/vote-button";
+import { MessageSquareIcon } from "../components/icons/message-square";
+import { LinkIcon } from "../components/icons/link";
+import { VoteButton } from "../components/icons/vote-button";
 import {
   CommentThreadContainer,
   isLastChildComment,
-} from "@/web/components/comments/comment-thread-line";
+} from "../components/comments/comment-thread-line";
 import Link from "next/link";
 import Image from "next/image";
 import { memberProfileUrl } from "@/lib/utils";
@@ -39,8 +39,8 @@ import { motion } from "framer-motion";
 import CommentActionsMenu from "./comment-actions-menu";
 import { useParams } from "next/navigation";
 import { toast } from "sonner";
-import { UploadIcon } from "@/web/components/ui/upload";
-import { MemberHoverCardWrapper } from "@/web/components/members/member-hover-card";
+import { UploadIcon } from "../components/ui/upload";
+import { MemberHoverCardWrapper } from "../components/members/member-hover-card";
 import { useUserVotes } from "@/hooks/use-user-votes";
 
 type AttachmentType = {

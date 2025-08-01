@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { MediaItem } from "@/types";
 import { Play, Pause, Video, Volume2, VolumeX } from "lucide-react";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import { formatDuration } from "@/lib/utils";
 
 interface VideoPreviewProps {

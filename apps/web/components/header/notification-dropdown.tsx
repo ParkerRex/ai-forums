@@ -11,11 +11,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/web/components/ui/dropdown-menu";
-import { Button } from "@/web/components/ui/button";
-import { Avatar, AvatarFallback } from "@/web/components/ui/avatar";
+} from "../components/ui/dropdown-menu";
+import { Button } from "../components/ui/button";
+import { Avatar, AvatarFallback } from "../components/ui/avatar";
 import { NotificationBell } from "./notification-bell";
-import { Badge } from "@/web/components/ui/badge";
+import { Badge } from "../components/ui/badge";
 import Link from "next/link";
 import { Id } from "@/web/convex/_generated/dataModel";
 

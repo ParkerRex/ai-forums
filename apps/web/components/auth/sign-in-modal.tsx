@@ -7,8 +7,8 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
 import { LogIn } from "lucide-react";
 
 interface SignInModalProps {

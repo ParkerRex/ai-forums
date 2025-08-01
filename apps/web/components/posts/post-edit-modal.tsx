@@ -10,9 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
-import { Alert, AlertDescription } from "@/web/components/ui/alert";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Alert, AlertDescription } from "../components/ui/alert";
 import { PostFormFields, ExtendedPostFormData } from "./post-form-fields";
 import { PostFormData, validatePostForm } from "@/lib/form-validation";
 import { uploadMedia } from "@/lib/upload-media";

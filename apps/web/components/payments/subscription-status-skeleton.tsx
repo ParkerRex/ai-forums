@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@/web/components/ui/skeleton";
+import { Skeleton } from "../components/ui/skeleton";
 
 export function SubscriptionStatusSkeleton() {
   return (

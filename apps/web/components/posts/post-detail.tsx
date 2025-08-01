@@ -14,35 +14,35 @@ import {
   MessageSquare,
   Upload,
 } from "lucide-react";
-import { Button } from "@/web/components/ui/button";
-import { Card, CardContent } from "@/web/components/ui/card";
-import { VoteButton } from "@/web/components/icons/vote-button";
-import { Badge } from "@/web/components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Card, CardContent } from "../components/ui/card";
+import { VoteButton } from "../components/icons/vote-button";
+import { Badge } from "../components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   DropdownMenuSeparator,
-} from "@/web/components/ui/dropdown-menu";
+} from "../components/ui/dropdown-menu";
 import { Id } from "@/web/convex/_generated/dataModel";
 import { useRef, useState } from "react";
 import React from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { getMediaPlaceholder } from "@/lib/post-preview-utils";
-import { RenderTipTapContent } from "@/web/components/posts/render-post-content";
+import { RenderTipTapContent } from "../components/posts/render-post-content";
 import { memberProfileUrl } from "@/lib/utils";
 import { useMutationError } from "@/hooks/use-mutation-error";
-import { PostBookmarkButton } from "@/web/components/posts/post-bookmark-button";
+import { PostBookmarkButton } from "../components/posts/post-bookmark-button";
 import { isYouTubeUrl, getYouTubeVideoId } from "@/lib/youtube-utils";
-import { YouTubeEmbed } from "@/web/components/posts/youtube-embed";
-import { PollDisplay } from "@/web/components/posts/poll-display";
-import { AttachmentGrid } from "@/web/components/comments/attachment-grid";
+import { YouTubeEmbed } from "../components/posts/youtube-embed";
+import { PollDisplay } from "../components/posts/poll-display";
+import { AttachmentGrid } from "../components/comments/attachment-grid";
 import { toast } from "sonner";
-import { Paywall } from "@/web/components/payments/paywall";
-import { MemberHoverCardWrapper } from "@/web/components/members/member-hover-card";
-import { PostEditInline } from "@/web/components/posts/post-edit-inline";
+import { Paywall } from "../components/payments/paywall";
+import { MemberHoverCardWrapper } from "../components/members/member-hover-card";
+import { PostEditInline } from "../components/posts/post-edit-inline";
 
 interface Post {
   _id: Id<"posts">;

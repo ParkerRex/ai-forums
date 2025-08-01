@@ -4,13 +4,13 @@ import { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Id } from "@/web/convex/_generated/dataModel";
-import { Button } from "@/web/components/ui/button";
-import { Progress } from "@/web/components/ui/progress";
+import { Button } from "../components/ui/button";
+import { Progress } from "../components/ui/progress";
 import { Clock, Users, CheckCircle } from "lucide-react";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import { useUser } from "@clerk/nextjs";
-import { PollVotersModal } from "@/web/components/posts/poll-voters-modal";
+import { PollVotersModal } from "../components/posts/poll-voters-modal";
 
 interface PollOption {
   id: string;

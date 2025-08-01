@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/web/components/ui/tooltip";
+} from "../components/ui/tooltip";
 
 export function DiscordStatus() {
   // TODO: Implement useDiscordPresence hook

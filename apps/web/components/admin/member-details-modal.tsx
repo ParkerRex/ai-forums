@@ -24,15 +24,15 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
-import { Badge } from "@/web/components/ui/badge";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/web/components/ui/tabs";
+} from "../components/ui/tabs";
 import {
   Table,
   TableBody,
@@ -40,13 +40,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/web/components/ui/table";
+} from "../components/ui/table";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/web/components/ui/dropdown-menu";
+} from "../components/ui/dropdown-menu";
 import { PaymentDetailsModal } from "./payment-details-modal";
 import {
   tierConfig,

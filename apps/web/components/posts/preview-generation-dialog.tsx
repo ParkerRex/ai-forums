@@ -8,10 +8,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
-import { Textarea } from "@/web/components/ui/textarea";
-import { Alert, AlertDescription } from "@/web/components/ui/alert";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Textarea } from "../components/ui/textarea";
+import { Alert, AlertDescription } from "../components/ui/alert";
 import { Loader2, Sparkles, Check, Edit2 } from "lucide-react";
 
 interface PreviewGenerationDialogProps {

@@ -6,19 +6,19 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/web/components/ui/dropdown-menu";
+} from "../components/ui/dropdown-menu";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
+} from "../components/ui/avatar";
 import { User, Settings, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useClerk } from "@clerk/nextjs";
-import { SettingsDialog } from "@/web/components/settings-dialog";
+import { SettingsDialog } from "../components/settings-dialog";
 
 /**
  * MemberDropdown component provides a user profile dropdown menu with member information

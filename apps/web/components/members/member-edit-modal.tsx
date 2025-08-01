@@ -6,7 +6,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
+} from "../components/ui/dialog";
 import MemberEditForm from "./member-edit-form";
 import { Id } from "@/web/convex/_generated/dataModel";
 

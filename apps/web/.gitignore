@@ -1,3 +1,5 @@
 # Turborepo
 .turbo
 .vercel
+
+.env.local

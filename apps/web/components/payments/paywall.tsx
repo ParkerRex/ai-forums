@@ -10,20 +10,20 @@
 
 "use client";
 
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/web/components/ui/card";
-import { Badge } from "@/web/components/ui/badge";
+} from "../components/ui/card";
+import { Badge } from "../components/ui/badge";
 import { Lock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { MembershipCTAModal } from "../members/membership-cta-modal";
 import { useAuth } from "@clerk/nextjs";
 import { SignIn } from "@clerk/nextjs";
-import { Dialog, DialogContent } from "@/web/components/ui/dialog";
+import { Dialog, DialogContent } from "../components/ui/dialog";
 import { paywallAnalytics } from "@/lib/analytics";
 
 /**

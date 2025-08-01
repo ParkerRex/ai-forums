@@ -9,24 +9,24 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
+} from "../components/ui/dialog";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/web/components/ui/card";
-import { Tabs, TabsList, TabsTrigger } from "@/web/components/ui/tabs";
+} from "../components/ui/card";
+import { Tabs, TabsList, TabsTrigger } from "../components/ui/tabs";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
-import { Badge } from "@/web/components/ui/badge";
-import { ScrollArea } from "@/web/components/ui/scroll-area";
-import { Separator } from "@/web/components/ui/separator";
+} from "../components/ui/avatar";
+import { Badge } from "../components/ui/badge";
+import { ScrollArea } from "../components/ui/scroll-area";
+import { Separator } from "../components/ui/separator";
 import { Clock, User, FileText, Eye } from "lucide-react";
-import { RenderTipTapContent } from "@/web/components/posts/render-post-content";
+import { RenderTipTapContent } from "../components/posts/render-post-content";
 
 interface PostHistoryModalProps {
   postId: Id<"posts">;

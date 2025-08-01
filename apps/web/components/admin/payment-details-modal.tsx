@@ -21,21 +21,21 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
-import { Badge } from "@/web/components/ui/badge";
-import { Separator } from "@/web/components/ui/separator";
-import { Input } from "@/web/components/ui/input";
-import { Label } from "@/web/components/ui/label";
-import { Textarea } from "@/web/components/ui/textarea";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/web/components/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/web/components/ui/alert";
+} from "../components/ui/select";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
 import { toast } from "sonner";
 import { paymentStatusConfig } from "@/lib/admin-config";
 import { formatCentsAsCurrency } from "@/lib/format";

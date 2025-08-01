@@ -12,10 +12,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
-import { Badge } from "@/web/components/ui/badge";
-import { ToggleGroup, ToggleGroupItem } from "@/web/components/ui/toggle-group";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { ToggleGroup, ToggleGroupItem } from "../components/ui/toggle-group";
 import {
   CheckCircle,
   Star,

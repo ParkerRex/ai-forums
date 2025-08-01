@@ -9,14 +9,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/web/components/ui/table";
+} from "../components/ui/table";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
-import { TierBadge } from "@/web/components/icons/tier-badge";
-import { MemberHoverCardWrapper } from "@/web/components/members/member-hover-card";
+} from "../components/ui/avatar";
+import { TierBadge } from "../components/icons/tier-badge";
+import { MemberHoverCardWrapper } from "../components/members/member-hover-card";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { memberProfileUrl } from "@/lib/utils";

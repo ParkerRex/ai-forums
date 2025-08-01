@@ -3,16 +3,16 @@
 import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useAction, useConvex } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
-import { Button } from "@/web/components/ui/button";
-import { Textarea } from "@/web/components/ui/textarea";
+import { Button } from "../components/ui/button";
+import { Textarea } from "../components/ui/textarea";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/web/components/ui/popover";
-import { MediaUploadIcon } from "@/web/components/icons/media-upload";
-import { GifIcon } from "@/web/components/icons/gif";
-import { SmileIcon } from "@/web/components/icons/smile";
+} from "../components/ui/popover";
+import { MediaUploadIcon } from "../components/icons/media-upload";
+import { GifIcon } from "../components/icons/gif";
+import { SmileIcon } from "../components/icons/smile";
 import { toast } from "sonner";
 import EmojiPicker from "emoji-picker-react";
 import {
@@ -24,7 +24,7 @@ import {
 import { GifPicker } from "./gif-picker";
 import { MentionAutocomplete } from "./mention-autocomplete";
 import { Id } from "@/web/convex/_generated/dataModel";
-import { MediaPreviewGrid } from "@/web/components/posts/media-preview-grid";
+import { MediaPreviewGrid } from "../components/posts/media-preview-grid";
 import { MediaItem } from "@/types";
 
 type AttachmentType = {

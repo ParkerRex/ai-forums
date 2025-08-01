@@ -2,12 +2,12 @@
 
 import { useState, useCallback, useRef } from "react";
 import { MediaItem } from "@/types";
-import { MediaPreviewGrid } from "@/web/components/posts/media-preview-grid";
-import { Button } from "@/web/components/ui/button";
-import { Label } from "@/web/components/ui/label";
-import { Input } from "@/web/components/ui/input";
+import { MediaPreviewGrid } from "../components/posts/media-preview-grid";
+import { Button } from "../components/ui/button";
+import { Label } from "../components/ui/label";
+import { Input } from "../components/ui/input";
 import { Link, X, Plus } from "lucide-react";
-import { MediaUploadIcon } from "@/web/components/icons/media-upload";
+import { MediaUploadIcon } from "../components/icons/media-upload";
 import { toast } from "sonner";
 import { validateMediaFile } from "@/lib/upload-media";
 import { extractYouTubeId, getYouTubeThumbnail } from "@/lib/youtube-utils";

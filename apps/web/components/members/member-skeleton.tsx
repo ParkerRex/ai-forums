@@ -1,6 +1,6 @@
-import { Skeleton } from "@/web/components/ui/skeleton";
+import { Skeleton } from "../components/ui/skeleton";
 import { Loader2 } from "lucide-react";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 
 // Export the header skeleton from the dedicated component
 export { default as MemberHeaderSkeleton } from "./member-header-skeleton";

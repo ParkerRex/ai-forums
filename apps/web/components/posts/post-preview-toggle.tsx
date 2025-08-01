@@ -1,15 +1,15 @@
 "use client";
 
 import React, { useRef } from "react";
-import { Toggle } from "@/web/components/ui/toggle";
+import { Toggle } from "../components/ui/toggle";
 import {
   PenToolIcon,
   PenToolIconHandle,
-} from "@/web/components/icons/pen-tool";
+} from "../components/icons/pen-tool";
 import {
   TelescopeIcon,
   TelescopeIconHandle,
-} from "@/web/components/icons/telescope";
+} from "../components/icons/telescope";
 import { cn } from "@/lib/utils";
 
 /**

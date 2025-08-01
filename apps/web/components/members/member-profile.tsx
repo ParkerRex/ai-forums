@@ -5,18 +5,18 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
-import { Button } from "@/web/components/ui/button";
+} from "../components/ui/avatar";
+import { Button } from "../components/ui/button";
 import { CalendarDays, Globe, Github, Youtube, Linkedin } from "lucide-react";
 import { Id } from "@/web/convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { useConvexAuth } from "convex/react";
-import MemberEditModal from "@/web/components/members/member-edit-modal";
-import { MemberProfileFieldIndicator } from "@/web/components/members/member-profile-field-indicator";
-import { MemberProfileFieldModal } from "@/web/components/members/member-profile-field-modal";
+import MemberEditModal from "../components/members/member-edit-modal";
+import { MemberProfileFieldIndicator } from "../components/members/member-profile-field-indicator";
+import { MemberProfileFieldModal } from "../components/members/member-profile-field-modal";
 import { detectCountryFromLocation, getFlagEmoji } from "@/lib/country-utils";
-import { Dialog, DialogContent, DialogTitle } from "@/web/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "../components/ui/dialog";
 
 interface MemberProfileProps {
   member: {

@@ -10,7 +10,7 @@ import {
   CreditCard,
   HelpCircle,
 } from "lucide-react";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Card,
   CardContent,
@@ -18,8 +18,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/web/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/web/components/ui/alert";
+} from "../components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
 import {
   getPaymentError,
   formatErrorDisplay,

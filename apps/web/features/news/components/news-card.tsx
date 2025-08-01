@@ -1,4 +1,4 @@
-import { Card, CardContent } from "@/web/components/ui/card";
+import { Card, CardContent } from "../components/ui/card";
 import { ExternalLink } from "lucide-react";
 
 interface NewsItem {

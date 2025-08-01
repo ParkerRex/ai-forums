@@ -11,8 +11,8 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/web/components/ui/dropdown-menu";
-import { Button } from "@/web/components/ui/button";
+} from "../components/ui/dropdown-menu";
+import { Button } from "../components/ui/button";
 import {
   MoreHorizontal,
   Edit,
@@ -32,7 +32,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/web/components/ui/alert-dialog";
+} from "../components/ui/alert-dialog";
 
 interface CommentActionsMenuProps {
   commentId: Id<"comments">;

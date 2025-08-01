@@ -2,8 +2,8 @@
 
 import React from "react";
 import { AlertTriangle, RefreshCw, Wifi, WifiOff } from "lucide-react";
-import { Alert, AlertTitle, AlertDescription } from "@/web/components/ui/alert";
-import { Button } from "@/web/components/ui/button";
+import { Alert, AlertTitle, AlertDescription } from "../components/ui/alert";
+import { Button } from "../components/ui/button";
 
 import { useNetworkStatus } from "@/hooks/use-network-status";
 

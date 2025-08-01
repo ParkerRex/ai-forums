@@ -3,16 +3,16 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useConvex, useQuery } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
-import { Button } from "@/web/components/ui/button";
-import { Textarea } from "@/web/components/ui/textarea";
+import { Button } from "../components/ui/button";
+import { Textarea } from "../components/ui/textarea";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
-import { MarkdownRenderer } from "@/web/components/posts/markdown-renderer";
+} from "../components/ui/avatar";
+import { MarkdownRenderer } from "../components/posts/markdown-renderer";
 import {
   Bold,
   Italic,

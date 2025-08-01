@@ -1,16 +1,16 @@
 "use client";
 
 import { Filter, X, Search } from "lucide-react";
-import { Badge } from "@/web/components/ui/badge";
-import { Button } from "@/web/components/ui/button";
-import { Input } from "@/web/components/ui/input";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/web/components/ui/select";
+} from "../components/ui/select";
 import { tierConfig } from "@/lib/admin-config";
 
 export type StatusFilter = "all" | "active" | "cancelled" | "churned";

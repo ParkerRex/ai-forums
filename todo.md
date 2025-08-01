@@ -18,16 +18,16 @@
 
 ### auth
 
-- [ ] `middleware.ts`
+- [x] `middleware.ts`
 - uses getSessionCookie from better auth.
 - uses betterFetch -- whats this do?
 - calls createAuth from from `lib/auth`
-- [ ] `lib/auth.ts`
+- [x] `lib/auth.ts`
       this is a combination of better auth plugins and resend. they split out the options, and use a generic ctx function.
-- [ ] `app/api/auth/[...all]/route.ts`
+- [x] `app/api/auth/[...all]/route.ts`
       uses a custom `nextJsHandler` function from their better-auth package.
       sets up an endpoint for `GET` and `POST`
-- [ ] `lib/auth-client.ts`
+- [x] `lib/auth-client.ts`
       imports `twoFactorClient`, `magicLinkClient`, `emailOTPClient`, `genericOAuthClient` from the better-auth client plugins.
       exports the authclients for use.
 
@@ -35,16 +35,35 @@ what i can remove: all the annoying preview stuff.
 
 just do the normal landing page.
 
-- [ ] `app/page.tsx`
-- [ ] `(unauth)/sign-in/page.tsx`
-- [ ] `(unauth)/sign-up/page.tsx`
-- [ ] `sign-in/SignIn.tsx`
-- [ ] `sign-up/SignUp.tsx`
-- [ ] `(auth)/hq/page.tsx`
-- [ ] `reset-password/page.tsx`
-- [ ] `settings/page.tsx`
+- [x] `app/page.tsx` this goes to the dashboard right now...
+- [x] `(unauth)/sign-in/page.tsx`
+- [x] `(unauth)/sign-up/page.tsx`
+- [x] `sign-in/SignIn.tsx`
+- [x] `sign-up/SignUp.tsx`
+- [x] `(auth)/hq/page.tsx`
+- [x] `reset-password/page.tsx`
+- [x] `settings/page.tsx`
+
+convex section...
+
+- [x] `auth.config.ts`
+      brings in the providers aka the site url.
+- [x] `auth.ts`
+      the beefy part of the integration. it accounts for createUser, deleteUser, updateUser, createSession, isAuthenticated..
 
 - we need to write a helper function for authenticating calls.
+
+- [ ] resend setup for onboarding emails
+
+Production Checklist
+
+- [ ] Update all env vars
+  - [ ] Remove the clerk ones
+  - [ ] Update the vercel account
+  - [ ] Remove the cloudflare ones
+- [ ] env vars for `RESEND_API_KEY` `RESEND_WEBHOOK_SECRET``
+
+how would this work for making calls?
 
 questions:
 

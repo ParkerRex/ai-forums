@@ -1,6 +1,6 @@
 "use client";
 
-import { Id } from "@/web/convex/_generated/dataModel";
+import { Id } from "../convex/_generated/dataModel";
 import { useMutation } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { format } from "date-fns";
@@ -14,9 +14,9 @@ import {
   DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/web/components/ui/badge";
-import { Button } from "@/web/components/ui/button";
-import { Checkbox } from "@/web/components/ui/checkbox";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
+import { Checkbox } from "../components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,7 +24,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/web/components/ui/dropdown-menu";
+} from "../components/ui/dropdown-menu";
 import {
   Card,
   CardContent,
@@ -32,12 +32,12 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/web/components/ui/card";
+} from "../components/ui/card";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/web/components/ui/avatar";
+} from "../components/ui/avatar";
 import { tierConfig, memberStatusConfig } from "@/lib/admin-config";
 import {
   getMemberDisplayName,

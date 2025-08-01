@@ -4,8 +4,8 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useGitHubIssues } from "@/lib/github";
 import { Loader2, ChevronDown } from "lucide-react";
-import { BugReportModal } from "@/web/components/bug-report-modal";
-import { FeatureRequestModal } from "@/web/components/feature-request-modal";
+import { BugReportModal } from "../components/bug-report-modal";
+import { FeatureRequestModal } from "../components/feature-request-modal";
 
 const CACHE_KEY = "vai_roadmap_cache";
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes

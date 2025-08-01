@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { Avatar, AvatarFallback } from "@/web/components/ui/avatar";
+import { Avatar, AvatarFallback } from "../components/ui/avatar";
 import { Id } from "@/web/convex/_generated/dataModel";
 
 interface MentionAutocompleteProps {

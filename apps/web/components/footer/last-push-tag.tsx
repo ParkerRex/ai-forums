@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import { useLastCommit } from "@/lib/github";
 import { formatDurationAgo } from "@/lib/time-utils";
-import { GithubIcon } from "@/web/components/icons/github";
+import { GithubIcon } from "../components/icons/github";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/web/components/ui/tooltip";
+} from "../components/ui/tooltip";
 
 export function LastPushTag() {
   const { lastCommit, commitData, isLoading, isError } = useLastCommit();

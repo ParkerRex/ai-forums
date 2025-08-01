@@ -7,11 +7,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
-import { Input } from "@/web/components/ui/input";
-import { Textarea } from "@/web/components/ui/textarea";
-import { Label } from "@/web/components/ui/label";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Textarea } from "../components/ui/textarea";
+import { Label } from "../components/ui/label";
 import { Loader2, Save, X, Globe } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
@@ -19,7 +19,7 @@ import { Id } from "@/web/convex/_generated/dataModel";
 import { useForm } from "react-hook-form";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useNetworkStatus } from "@/hooks/use-network-status";
-import { AvatarUpload } from "@/web/components/members/avatar-upload";
+import { AvatarUpload } from "../components/members/avatar-upload";
 
 interface MemberProfileFieldModalProps {
   memberId: Id<"members">;

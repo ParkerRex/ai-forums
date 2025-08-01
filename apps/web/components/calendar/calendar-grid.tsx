@@ -35,7 +35,7 @@ import { useQuery } from "convex/react";
 import { api } from "@/web/convex/_generated/api";
 import { Doc } from "@/web/convex/_generated/dataModel";
 import { EventCard } from "./event-card";
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 

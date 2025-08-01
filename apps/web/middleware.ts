@@ -14,7 +14,7 @@ const getSession = async (request: NextRequest) => {
         cookie: request.headers.get("cookie") ?? "",
         origin: request.nextUrl.origin,
       },
-    },
+    }
   );
   return session;
 };
@@ -39,7 +39,7 @@ export default async function middleware(request: NextRequest) {
 
   if (isSignInRoute || request.nextUrl.pathname === "/") {
     return NextResponse.redirect(
-      new URL("/dashboard/client-only", request.url),
+      new URL("/dashboard/client-only", request.url)
     );
   }
 

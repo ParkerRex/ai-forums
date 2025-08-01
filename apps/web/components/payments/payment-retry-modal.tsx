@@ -12,9 +12,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
-import { Button } from "@/web/components/ui/button";
-import { Alert, AlertDescription } from "@/web/components/ui/alert";
+} from "../components/ui/dialog";
+import { Button } from "../components/ui/button";
+import { Alert, AlertDescription } from "../components/ui/alert";
 import { CreditCard, RefreshCw, AlertCircle, CheckCircle } from "lucide-react";
 import { getPaymentError } from "@/lib/payment-error-utils";
 import { toast } from "sonner";

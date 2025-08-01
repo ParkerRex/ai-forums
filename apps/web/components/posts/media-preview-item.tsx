@@ -3,12 +3,12 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { MediaItem } from "@/types";
-import { PDFPreview } from "@/web/components/posts/pdf-preview";
-import { YouTubePreview } from "@/web/components/posts/youtube-preview";
-import { VideoPreview } from "@/web/components/posts/video-preview";
-import { Button } from "@/web/components/ui/button";
-import { Badge } from "@/web/components/ui/badge";
-import { Progress } from "@/web/components/ui/progress";
+import { PDFPreview } from "../components/posts/pdf-preview";
+import { YouTubePreview } from "../components/posts/youtube-preview";
+import { VideoPreview } from "../components/posts/video-preview";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Progress } from "../components/ui/progress";
 import { X, GripVertical, AlertCircle } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";

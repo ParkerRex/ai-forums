@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Badge } from "@/web/components/ui/badge";
+import { Badge } from "../components/ui/badge";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatTierName } from "@/lib/format";

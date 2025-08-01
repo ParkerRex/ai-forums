@@ -11,8 +11,8 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Badge } from "@/web/components/ui/badge";
-import { Button } from "@/web/components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Button } from "../components/ui/button";
 import {
   Table,
   TableBody,
@@ -20,13 +20,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/web/components/ui/table";
+} from "../components/ui/table";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-} from "@/web/components/ui/card";
+} from "../components/ui/card";
 import { PaymentDetailsModal } from "./payment-details-modal";
 import { paymentStatusConfig } from "@/lib/admin-config";
 import { formatCentsAsCurrency } from "@/lib/format";

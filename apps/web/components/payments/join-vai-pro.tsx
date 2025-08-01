@@ -1,14 +1,14 @@
 "use client";
 
-import { Button } from "@/web/components/ui/button";
+import { Button } from "../components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/web/components/ui/dialog";
-import { ScrollArea } from "@/web/components/ui/scroll-area";
-import { Badge } from "@/web/components/ui/badge";
+} from "../components/ui/dialog";
+import { ScrollArea } from "../components/ui/scroll-area";
+import { Badge } from "../components/ui/badge";
 import { Check, X, Sparkles, Zap, Crown, Star } from "lucide-react";
 import { useState } from "react";
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { TooltipProvider } from "@/web/components/ui/tooltip";
+import { TooltipProvider } from "../components/ui/tooltip";
 
 interface HeaderProviderProps {
   children: React.ReactNode;
