@@ -4,8 +4,7 @@
   "private": true,
   "packageManager": "bun@1.2.18",
   "scripts": {
-    "dev": "",
-    "dev:frontend": "next dev",
+    "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "biome check src/",
