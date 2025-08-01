@@ -2,18 +2,13 @@
 
 import { useQuery } from "convex/react";
 import { api } from "@packages/backend/convex/_generated/api";
-import PostHeader from "../components/posts/post-header";
-import PostList from "../components/posts/post-list";
-import PostSidebar from "../components/posts/post-sidebar";
 import { notFound } from "next/navigation";
 import { useState } from "react";
 import { use } from "react";
 import { Badge } from "../../../components/ui/badge";
 
 interface CategoryPageClientProps {
-  /** Promise containing the dynamic route parameters */
   params: Promise<{
-    /** The category name from the URL path */
     category: string;
   }>;
 }

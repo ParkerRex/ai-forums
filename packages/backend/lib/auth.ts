@@ -8,7 +8,12 @@ import { betterAuth, BetterAuthOptions } from "better-auth";
 import { betterAuthComponent } from "../convex/auth";
 import { requireMutationCtx } from "@convex-dev/better-auth/utils";
 import { GenericCtx } from "../convex/_generated/server";
-import { sendEmailVerification, sendResetPassword } from "../convex/email";
+import {
+  sendEmailVerification,
+  sendMagicLink,
+  sendOTPVerification,
+  sendResetPassword,
+} from "../convex/email";
 
 // Split out options so they can be passed to the convex plugin
 const createOptions = (ctx: GenericCtx) =>
@@ -39,18 +44,18 @@ const createOptions = (ctx: GenericCtx) =>
         });
       },
     },
-    // socialProviders: {
-    //   github: {
-    //     clientId: process.env.GITHUB_CLIENT_ID as string,
-    //     clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-    //   },
-    //   google: {
-    //     clientId: process.env.GOOGLE_CLIENT_ID as string,
-    //     clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    //     accessType: "offline",
-    //     prompt: "select_account+consent",
-    //   },
-    // },
+    socialProviders: {
+      github: {
+        clientId: process.env.GITHUB_CLIENT_ID as string,
+        clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
+      },
+      google: {
+        clientId: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        accessType: "offline",
+        prompt: "select_account+consent",
+      },
+    },
     user: {
       deleteUser: {
         enabled: true,
@@ -73,19 +78,19 @@ const createOptions = (ctx: GenericCtx) =>
           });
         },
       }),
-      //   twoFactor(),
-      //   genericOAuth({
-      //     config: [
-      //       {
-      //         providerId: "slack",
-      //         clientId: process.env.SLACK_CLIENT_ID as string,
-      //         clientSecret: process.env.SLACK_CLIENT_SECRET as string,
-      //         discoveryUrl: "https://slack.com/.well-known/openid-configuration",
-      //         scopes: ["openid", "email", "profile"],
-      //       },
-      //     ],
-      //   }),
-      //   organization(),
+      twoFactor(),
+      genericOAuth({
+        config: [
+          {
+            providerId: "slack",
+            clientId: process.env.SLACK_CLIENT_ID as string,
+            clientSecret: process.env.SLACK_CLIENT_SECRET as string,
+            discoveryUrl: "https://slack.com/.well-known/openid-configuration",
+            scopes: ["openid", "email", "profile"],
+          },
+        ],
+      }),
+      organization(),
     ],
   }) satisfies BetterAuthOptions;
 

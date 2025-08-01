@@ -13,8 +13,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { authClient } from "@packages/backend/lib/auth-client";
 
 export default function SignIn() {
   const router = useRouter();
@@ -25,7 +25,7 @@ export default function SignIn() {
   const [otpLoading, setOtpLoading] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
   const [signInMethod, setSignInMethod] = useState<"password" | "passwordless">(
-    "passwordless",
+    "passwordless"
   );
   const [otpSent, setOtpSent] = useState(false);
 
@@ -51,7 +51,7 @@ export default function SignIn() {
           setOtpLoading(false);
           alert(ctx.error.message);
         },
-      },
+      }
     );
 
     console.log({ data, error });
@@ -89,7 +89,7 @@ export default function SignIn() {
           setMagicLinkLoading(false);
           alert(ctx.error.message);
         },
-      },
+      }
     );
   };
 
@@ -106,7 +106,7 @@ export default function SignIn() {
         onError: (ctx) => {
           alert(ctx.error.message);
         },
-      },
+      }
     );
   };
 
@@ -126,7 +126,7 @@ export default function SignIn() {
           setOtpLoading(false);
           alert(ctx.error.message);
         },
-      },
+      }
     );
   };
 
@@ -146,32 +146,12 @@ export default function SignIn() {
           setOtpLoading(false);
           alert(ctx.error.message);
         },
-      },
+      }
     );
   };
 
   const handleOtpSignIn = async () => {
-    if (!otpSent) {
-      await authClient.emailOtp.sendVerificationOtp(
-        {
-          email,
-          type: "sign-in",
-        },
-        {
-          onRequest: () => {
-            setOtpLoading(true);
-          },
-          onSuccess: () => {
-            setOtpLoading(false);
-            setOtpSent(true);
-          },
-          onError: (ctx) => {
-            setOtpLoading(false);
-            alert(ctx.error.message);
-          },
-        },
-      );
-    } else {
+    if (otpSent) {
       await authClient.signIn.emailOtp(
         {
           email,
@@ -189,7 +169,27 @@ export default function SignIn() {
             setOtpLoading(false);
             alert(ctx.error.message);
           },
+        }
+      );
+    } else {
+      await authClient.emailOtp.sendVerificationOtp(
+        {
+          email,
+          type: "sign-in",
         },
+        {
+          onRequest: () => {
+            setOtpLoading(true);
+          },
+          onSuccess: () => {
+            setOtpLoading(false);
+            setOtpSent(true);
+          },
+          onError: (ctx) => {
+            setOtpLoading(false);
+            alert(ctx.error.message);
+          },
+        }
       );
     }
   };
@@ -326,7 +326,7 @@ export default function SignIn() {
               className="text-sm"
               onClick={() => {
                 setSignInMethod(
-                  signInMethod === "password" ? "passwordless" : "password",
+                  signInMethod === "password" ? "passwordless" : "password"
                 );
                 setPassword("");
                 setOtp("");
@@ -422,6 +422,7 @@ export default function SignIn() {
               href="https://better-auth.com"
               className="underline"
               target="_blank"
+              rel="noopener"
             >
               <span className="dark:text-orange-200/90">better-auth.</span>
             </a>

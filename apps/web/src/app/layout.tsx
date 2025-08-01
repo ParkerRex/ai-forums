@@ -11,6 +11,7 @@ import Header from "../components/header/header";
 import { NetworkStatusIndicator } from "../components/error-display";
 import { GlobalSearch } from "../components/header/global-search";
 import { Footer } from "../components/header/footer";
+import { getCurrentUser } from "@packages/backend/convex/auth";
 
 export const metadata = baseMetaData;
 
@@ -19,6 +20,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = getCurrentUser;
+  console.log(user);
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${defaultFont.className} font-sans antialiased`}>

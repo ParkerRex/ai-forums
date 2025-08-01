@@ -11,8 +11,8 @@ export const authClient = createAuthClient({
   plugins: [
     magicLinkClient(),
     emailOTPClient(),
-    // twoFactorClient(),
-    // genericOAuthClient(),
+    twoFactorClient(),
+    genericOAuthClient(),
     convexClient(),
   ],
 });

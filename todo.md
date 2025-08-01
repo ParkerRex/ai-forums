@@ -1,8 +1,8 @@
 # Now
 
-- [ ] Set up Turborepo
-- [ ] swap out npm for bun
-- [ ] tsconfigs
+- [x] Set up Turborepo
+- [x] swap out npm for bun
+- [x] tsconfigs
 - [x] Configure project settings
 
 ## Convex Components to Implement
@@ -10,13 +10,16 @@
 - [ ] Swap out R2 for Convex Component
 - [ ] Google docs component
 - [ ] Chat component
-- [ ] Swap out custom online for convex component
+- [ ] Swap out custom online for convex component - [ ] read source
 - [x] swap out fonts for ibm plex mono google font
 - [ ] role based auth
-- [ ] swap out clerk for convex auth
-- [ ] Implement Biome
+- [x] Implement Biome
+- [x] setup resend transactional emails
+- [ ]
 
 ### auth
+
+files to update:
 
 - [x] `middleware.ts`
 - uses getSessionCookie from better auth.
@@ -31,9 +34,7 @@
       imports `twoFactorClient`, `magicLinkClient`, `emailOTPClient`, `genericOAuthClient` from the better-auth client plugins.
       exports the authclients for use.
 
-what i can remove: all the annoying preview stuff.
-
-just do the normal landing page.
+  > what i can remove: all the annoying preview stuff. just do the normal landing page.
 
 - [x] `app/page.tsx` this goes to the dashboard right now...
 - [x] `(unauth)/sign-in/page.tsx`
@@ -44,7 +45,7 @@ just do the normal landing page.
 - [x] `reset-password/page.tsx`
 - [x] `settings/page.tsx`
 
-convex section...
+**convex section...**
 
 - [x] `auth.config.ts`
       brings in the providers aka the site url.
@@ -53,7 +54,12 @@ convex section...
 
 - we need to write a helper function for authenticating calls.
 
-- [ ] resend setup for onboarding emails
+- [x] resend setup for onboarding emails
+      Table cleanup
+- [ ] remove `externalId`
+- [ ] rewrite schema
+- [ ] copy `members` schema to `table betterAuth`
+- [ ]
 
 Production Checklist
 

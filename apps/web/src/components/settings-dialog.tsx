@@ -3,12 +3,9 @@
 import * as React from "react";
 import { Bell, CreditCard, User, ExternalLink } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import { api } from "@/web/convex/_generated/api";
-import { subscriptionAnalytics } from "@/lib/analytics";
-import { formatTierName } from "@/lib/format";
-
+import { api } from "@packages/backend/convex/_generated/api";
+import { getCurrentUser } from "@packages/backend/convex/auth";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import {
@@ -35,6 +32,7 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "./ui/sidebar";
+import { convexToJson } from "convex/values";
 
 const settingsNav = [
   { name: "Notifications", icon: Bell },
@@ -52,10 +50,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [isSubscriptionLoading, setIsSubscriptionLoading] =
     React.useState(false);
   const router = useRouter();
-  const { user } = useUser();
-  const member = useQuery(api.members.getMemberByEmail, {
-    email: user?.emailAddresses[0]?.emailAddress || "",
-  });
+  const user = getCurrentUser;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -105,6 +100,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                 <div className="ml-auto flex gap-1 md:hidden">
                   {settingsNav.map((item) => (
                     <button
+                      type="button"
                       key={item.name}
                       onClick={() => setActiveSection(item.name)}
                       className={`rounded-md p-2 transition-colors ${
