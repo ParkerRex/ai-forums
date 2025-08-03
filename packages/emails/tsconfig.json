@@ -3,7 +3,12 @@
     "compilerOptions": {
         "rootDir": "src",
         "declaration": true,
-        "baseUrl": "src"
+        "baseUrl": "src",
+        "paths": {
+            "@vai/backend/*": [
+                "../../backend/*"
+            ]
+        }
     },
     "include": [
         "src/**/*"
