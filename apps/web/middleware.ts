@@ -3,7 +3,7 @@
 import { betterFetch } from "@better-fetch/fetch";
 import { getSessionCookie } from "better-auth/cookies";
 import { type NextRequest, NextResponse } from "next/server";
-import type { createAuth } from "../../packages/backend/lib/auth";
+import type { createAuth } from "@vai/backend/lib/auth";
 
 type Session = ReturnType<typeof createAuth>["$Infer"]["Session"];
 const getSession = async (request: NextRequest) => {

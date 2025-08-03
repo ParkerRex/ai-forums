@@ -1,6 +1,6 @@
 import { Heading, Link, Text } from "@react-email/components";
 import React from "react";
-import { BaseEmail, styles } from "./components/BaseEmail";
+import { BaseEmail, styles } from "./BaseEmail";
 
 interface MagicLinkEmailProps {
   url: string;

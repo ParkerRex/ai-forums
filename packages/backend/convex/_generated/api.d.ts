@@ -13,11 +13,11 @@ import type {
 	FilterApi,
 	FunctionReference,
 } from "convex/server";
-import type * as emails_components_BaseEmail from "../../../../apps/web/src/components/emails/components/BaseEmail.js";
-import type * as emails_magicLink from "../../../../apps/web/src/components/emails/magicLink.js";
-import type * as emails_resetPassword from "../../../../apps/web/src/components/emails/resetPassword.js";
-import type * as emails_verifyEmail from "../../../../apps/web/src/components/emails/verifyEmail.js";
-import type * as emails_verifyOTP from "../../../../apps/web/src/components/emails/verifyOTP.js";
+import type * as emails_components_BaseEmail from "../../../emails/src/emails/components/BaseEmail.js";
+import type * as emails_magicLink from "../../../emails/src/emails/magicLink.js";
+import type * as emails_resetPassword from "../../../emails/src/emails/resetPassword.js";
+import type * as emails_verifyEmail from "../../../emails/src/emails/verifyEmail.js";
+import type * as emails_verifyOTP from "../../../emails/src/emails/verifyOTP.js";
 import type * as auth from "../auth.js";
 import type * as email from "../email.js";
 import type * as http from "../http.js";

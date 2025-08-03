@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { authClient } from "@packages/backend/lib/auth-client";
+import { authClient } from "@vai/backend/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 type VerificationMethod = "totp" | "otp" | "backup";
@@ -158,10 +158,10 @@ export default function TwoFactorVerification() {
               {method === "totp"
                 ? "Enter code from authenticator app"
                 : method === "otp"
-                  ? otpSent
-                    ? "Enter verification code"
-                    : "Click below to receive a verification code"
-                  : "Enter backup code"}
+                ? otpSent
+                  ? "Enter verification code"
+                  : "Click below to receive a verification code"
+                : "Enter backup code"}
             </Label>
             <Input
               id="code"

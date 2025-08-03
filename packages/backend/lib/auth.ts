@@ -14,7 +14,7 @@ import {
 	sendMagicLink,
 	sendOTPVerification,
 	sendResetPassword,
-} from "../../apps/web/src/components/emails/verifyEmail";
+} from "@vai/emails/components/email";
 import type { GenericCtx } from "../convex/_generated/server";
 import { betterAuthComponent } from "../convex/auth";
 
