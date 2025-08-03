@@ -96,3 +96,42 @@ questions:
   }
 }
 ```
+
+## Skill Issues:
+
+- Testing
+- Unit tests first. Backend matters. Mock out the front end with fake stuff.
+- Integration tests: eg. if we work with twilio we want mock returns.
+- End to end tests with playwright.
+
+how would i set up the members table?
+
+```typescript
+interface Users {
+  subscriptionStatus;
+  membershipTier;
+  bio;
+  commentCount;
+  country;
+  email;
+  firstName;
+  lastName;
+  joinedDate;
+  lastOnline;
+  lastPayment;
+  linkGithub;
+  linkX;
+  linkYouTube;
+  city;
+  netVoteCount;
+  postCount;
+  role;
+  slug;
+  stripeCustomerId;
+  subscriptionEndDate;
+  subscriptionStatus;
+  tier;
+  websiteUrl;
+  _creationTime;
+}
+```

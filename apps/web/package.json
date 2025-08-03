@@ -12,7 +12,6 @@
     "format": "biome format src/ --write"
   },
   "dependencies": {
-    "@convex-dev/presence": "0.1.5",
     "@hello-pangea/dnd": "^18.0.1",
     "@hookform/resolvers": "^5.1.1",
     "@packages/backend": "*",
