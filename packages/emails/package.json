@@ -8,7 +8,7 @@
         "react": "19.1.1",
         "react-dom": "19.1.1",
         "react-email": "4.2.6",
-        "@vai/backend": "*",
+    
         "resend": "^4.2.0"
     },
     "devDependencies": {

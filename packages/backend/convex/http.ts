@@ -3,7 +3,7 @@ import { httpRouter } from "convex/server";
 import { betterAuthComponent } from "./auth";
 import { createAuth } from "../lib/auth";
 import { httpAction } from "./_generated/server";
-import { resend } from "@vai/emails/components/email";
+import { resend } from "../lib/email";
 
 const http = httpRouter();
 

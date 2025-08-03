@@ -1,13 +1,14 @@
-import "./polyfills";
 import type { RunMutationCtx } from "@convex-dev/better-auth";
 import { Resend } from "@convex-dev/resend";
 import { render } from "@react-email/components";
 import React from "react";
-import MagicLinkEmail from "./magicLink";
-import ResetPasswordEmail from "./resetPassword";
-import VerifyEmail from "./verifyEmail";
-import VerifyOTP from "./verifyOTP";
-import { components } from "@vai/backend/convex/_generated/api";
+
+import VerifyEmail from "@vai/emails/src/components/verifyEmail";
+import VerifyOTP from "@vai/emails/src/components/verifyOTP";
+import MagicLinkEmail from "@vai/emails/src/components/magicLink";
+import ResetPasswordEmail from "@vai/emails/src/components/resetPassword";
+
+import { components } from "../convex/_generated/api";
 
 export const resend: Resend = new Resend(components.resend, {
   testMode: false,
@@ -15,13 +16,7 @@ export const resend: Resend = new Resend(components.resend, {
 
 export const sendEmailVerification = async (
   ctx: RunMutationCtx,
-  {
-    to,
-    url,
-  }: {
-    to: string;
-    url: string;
-  }
+  { to, url }: { to: string; url: string }
 ) => {
   await resend.sendEmail(ctx, {
     from: "Test <onboarding@boboddy.business>",
@@ -33,13 +28,7 @@ export const sendEmailVerification = async (
 
 export const sendOTPVerification = async (
   ctx: RunMutationCtx,
-  {
-    to,
-    code,
-  }: {
-    to: string;
-    code: string;
-  }
+  { to, code }: { to: string; code: string }
 ) => {
   await resend.sendEmail(ctx, {
     from: "Test <onboarding@boboddy.business>",
@@ -51,13 +40,7 @@ export const sendOTPVerification = async (
 
 export const sendMagicLink = async (
   ctx: RunMutationCtx,
-  {
-    to,
-    url,
-  }: {
-    to: string;
-    url: string;
-  }
+  { to, url }: { to: string; url: string }
 ) => {
   await resend.sendEmail(ctx, {
     from: "Test <onboarding@boboddy.business>",
@@ -69,13 +52,7 @@ export const sendMagicLink = async (
 
 export const sendResetPassword = async (
   ctx: RunMutationCtx,
-  {
-    to,
-    url,
-  }: {
-    to: string;
-    url: string;
-  }
+  { to, url }: { to: string; url: string }
 ) => {
   await resend.sendEmail(ctx, {
     from: "Test <onboarding@boboddy.business>",
