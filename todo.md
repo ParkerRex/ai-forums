@@ -1,4 +1,5 @@
-# Now
+### Up next
+- redeploy `bunx convex deploy --once` with updated schemas`
 
 - [x] Set up Turborepo
 - [x] swap out npm for bun

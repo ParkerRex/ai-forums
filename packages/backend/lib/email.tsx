@@ -1,4 +1,3 @@
-import type { RunMutationCtx } from "@convex-dev/better-auth";
 import { Resend } from "@convex-dev/resend";
 import { render } from "@react-email/components";
 import React from "react";

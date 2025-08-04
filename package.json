@@ -4,16 +4,13 @@
 		"dev": "turbo run dev",
 		"build": "turbo run build",
 		"clean": "turbo run clean && rm -rf node_modules",
-		"check-types": "turbo run check-types",
-		"lint": "npx ultracite@latest lint",
-		"format": "npx ultracite@latest format"
+		"check-types": "turbo run check-types"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.1.2",
 		"husky": "9.1.7",
 		"turbo": "2.5.4",
-		"typescript": "5.8.3",
-		"ultracite": "5.0.48"
+		"typescript": "5.8.3"
 	},
 	"engines": {
 		"node": ">=18.8.0"
