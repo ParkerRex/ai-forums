@@ -5,7 +5,7 @@ import { api } from "@vai/backend/convex/_generated/api";
 import { notFound } from "next/navigation";
 import { useState } from "react";
 import { use } from "react";
-import { Badge } from "../../../components/ui/badge";
+import { Badge } from "@/components/ui/badge";
 
 interface CategoryPageClientProps {
   params: Promise<{

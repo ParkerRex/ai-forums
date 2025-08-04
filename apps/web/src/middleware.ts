@@ -2,21 +2,25 @@ import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 import { NextResponse } from 'next/server'
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)'])
-const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)', '/(.*)'])
+const isPublicRoute = createRouteMatcher(['/sign-in(.*)', '/sign-up(.*)', '/', '/blog(.*)', '/news(.*)', '/educate(.*)'])
 
 // for basics: https://clerk.com/docs/references/nextjs/clerk-middleware#protect-all-routes
 //
 // then theres the article about rbac which you can find looking thru the /admin routes
 
 export default clerkMiddleware(async (auth, req) => {
-  if (isPublicRoute(req)) {
+  if (!isPublicRoute(req)) {
     await auth.protect()
   }
-  // Protect all routes starting with `/admin`
-// if (isAdminRoute(req) && (await auth()).sessionClaims?.metadata?.role !== 'admin') {
-//  const url = newUrl('/', req.url)
-//    return NextResponse.redirect(url)
- // }
+  
+  // Protect admin routes with role check
+  if (isAdminRoute(req)) {
+    const { sessionClaims } = await auth()
+    if (sessionClaims?.metadata?.role !== 'admin') {
+      const url = new URL('/', req.url)
+      return NextResponse.redirect(url)
+    }
+  }
 })
 
 
