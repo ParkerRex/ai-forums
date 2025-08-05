@@ -1,5 +1,0 @@
-export const COMMENT_EDIT_WINDOW_HOURS = 24;
-export const COMMENT_EDIT_WINDOW_MS = COMMENT_EDIT_WINDOW_HOURS * 60 * 60 * 1000;
-
-const constants = { COMMENT_EDIT_WINDOW_HOURS, COMMENT_EDIT_WINDOW_MS };
-export default constants;

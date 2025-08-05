@@ -1,22 +1,57 @@
-import { SignIn } from "@clerk/nextjs"
+"use client";
+import { FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useSignIn } from "@clerk/nextjs";
+import SignInForm from "../SignInForm";
+import VerifyForm from "../../sign-up/VerifyForm";
 
-export default function Page() {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold tracking-tight">Welcome back</h1>
-          <p className="text-muted-foreground mt-2">Sign in to your account</p>
-        </div>
-        <SignIn 
-          appearance={{
-            elements: {
-              rootBox: "mx-auto",
-              card: "shadow-lg border-0 bg-card",
-            }
-          }}
-        />
-      </div>
-    </div>
-  )
-}
+const SignIn = () => {
+  const { isLoaded, signIn, setActive } = useSignIn();
+  const [clerkError, setClerkError] = useState("");
+  const [verifying, setVerifying] = useState(false);
+  const [code, setCode] = useState("");
+  const router = useRouter();
+
+  const signInWithEmail = async (emailAddress: string) => {
+    if (!isLoaded) {
+      return;
+    }
+
+    try {
+      await signIn.create({ identifier: emailAddress });
+      await signIn.prepareFirstFactor({ strategy: "email_code" });
+      setVerifying(true);
+    } catch (err: any) {
+      console.log(JSON.stringify(err, null, 2));
+      setClerkError(err.errors?.[0]?.message ?? "Something went wrong");
+    }
+  };
+
+  const handleVerify = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!isLoaded) return;
+
+    try {
+      const attempt = await signIn.attemptFirstFactor({
+        strategy: "email_code",
+        code,
+      });
+
+      if (attempt.status === "complete") {
+        await setActive({ session: attempt.createdSessionId });
+        router.push("/");
+      }
+    } catch (err: any) {
+      console.log(JSON.stringify(err, null, 2));
+      setClerkError(err.errors?.[0]?.message ?? "Invalid code");
+    }
+  };
+
+  return verifying ? (
+    <VerifyForm handleVerify={handleVerify} code={code} setCode={setCode} />
+  ) : (
+    <SignInForm signInWithEmail={signInWithEmail} clerkError={clerkError} />
+  );
+};
+
+export default SignIn;
