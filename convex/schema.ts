@@ -88,9 +88,8 @@ const members = defineTable({
 
   // Member status and lifecycle
   status: v.union(
-    v.literal("active"), // Active paying or engaged member
-    v.literal("cancelled"), // Subscription cancelled but still in grace period
-    v.literal("churned"), // Previously active, now inactive
+    v.literal("active"), // Active member
+    v.literal("inactive"), // Inactive member
     v.literal("duplicate"), // Duplicate account marked for cleanup
   ),
   joinedDate: v.number(), // Unix timestamp of account creation
@@ -106,7 +105,7 @@ const members = defineTable({
       v.literal("discord"),
     ),
   ),
-  signInToken: v.optional(v.string()), // Temporary token for auto-signin after checkout
+  signInToken: v.optional(v.string()), // Temporary token for auto-signin
 
   // Profile and location data
   country: v.optional(v.string()), // Country code or name
@@ -132,45 +131,6 @@ const members = defineTable({
   postCount: v.optional(v.number()), // Total posts created by member
   commentCount: v.optional(v.number()), // Total comments made by member
   netVoteCount: v.optional(v.number()), // Net votes received on all content
-
-  // Payment tier tracking (no free tier, scholarships handled via Stripe coupons)
-  tier: v.optional(
-    v.union(
-      v.literal("founding_member"),
-      v.literal("early_bird"),
-      v.literal("member"),
-      v.literal("scholarship"),
-    ),
-  ),
-
-  // Subscription management
-  subscriptionStatus: v.optional(
-    v.union(
-      v.literal("active"),
-      v.literal("cancelled"),
-      v.literal("past_due"),
-      v.literal("expired"),
-      v.literal("none"), // For members without active subscriptions
-    ),
-  ),
-  subscriptionEndDate: v.optional(v.number()), // Unix timestamp
-  billingInterval: v.optional(v.union(v.literal("monthly"), v.literal("yearly"))),
-
-  // Stripe integration
-  stripeCustomerId: v.optional(v.string()),
-  stripeSubscriptionId: v.optional(v.string()),
-
-  // Payment history tracking
-  lastPaymentDate: v.optional(v.number()),
-  amountCents: v.optional(v.number()),
-  lastPaymentFailure: v.optional(
-    v.object({
-      date: v.number(),
-      code: v.string(),
-      message: v.string(),
-      invoiceId: v.string(),
-    }),
-  ),
 
   // Access control and permissions
   role: v.optional(
@@ -213,7 +173,6 @@ const members = defineTable({
   .index("by_slug", ["slug"]) // URL routing by slug
   .index("by_externalId", ["externalId"]) // Auth lookup by Clerk ID
   .index("by_email", ["email"]) // Lookup by email for migrations
-  .index("by_stripeCustomerId", ["stripeCustomerId"]) // Stripe webhook lookups
   .searchIndex("search_members", {
     // Full-text member search
     searchField: "firstName",
@@ -679,12 +638,10 @@ const notifications = defineTable({
     v.literal("upvote"), // Content received upvote
     v.literal("follow"), // New follower (future feature)
     v.literal("comment_report"), // Comment reported (admin)
-    v.literal("payment_reminder"), // Subscription renewal reminder
   ),
   entityType: v.union(
     v.literal("post"), // Notification relates to post
     v.literal("comment"), // Notification relates to comment
-    v.literal("payment"), // Notification relates to payment/subscription
   ),
   entityId: v.string(), // ID of related content
   actorId: v.id("members"), // Member who triggered notification
@@ -932,102 +889,6 @@ const events = defineTable({
   });
 
 /**
- * Subscriptions table - Stripe subscription tracking and management
- *
- * Tracks active and historical subscriptions for members with full Stripe integration.
- * Maintains subscription lifecycle, billing intervals, and tier information.
- * Enables subscription management, renewal tracking, and churn analysis.
- */
-const subscriptions = defineTable({
-  memberId: v.id("members"),
-  stripeCustomerId: v.string(),
-  stripeSubscriptionId: v.string(),
-  stripePriceId: v.string(),
-  status: v.union(
-    v.literal("active"),
-    v.literal("cancelled"),
-    v.literal("past_due"),
-    v.literal("expired"),
-  ),
-  currentPeriodEnd: v.number(),
-  cancelAtPeriodEnd: v.boolean(),
-  tier: v.union(
-    v.literal("founding_member"),
-    v.literal("early_bird"),
-    v.literal("member"),
-    v.literal("scholarship"),
-  ),
-  billingInterval: v.union(v.literal("monthly"), v.literal("yearly")),
-  createdAt: v.number(),
-  updatedAt: v.number(),
-  lastFailureAt: v.optional(v.number()),
-})
-  .index("by_memberId", ["memberId"])
-  .index("by_stripeSubscriptionId", ["stripeSubscriptionId"])
-  .index("by_status", ["status"]);
-
-/**
- * Payments table - Transaction history and payment records
- *
- * Records all payment transactions including successful payments, refunds, and failures.
- * Stores detailed payment information for financial reporting and customer service.
- * Integrates with Stripe for payment processing and reconciliation.
- */
-const payments = defineTable({
-  memberId: v.id("members"),
-  subscriptionId: v.optional(v.id("subscriptions")),
-  stripePaymentIntentId: v.string(),
-  stripeInvoiceId: v.optional(v.string()),
-  amount: v.number(), // in cents
-  currency: v.string(),
-  status: v.union(
-    v.literal("succeeded"),
-    v.literal("pending"),
-    v.literal("failed"),
-    v.literal("refunded"),
-    v.literal("partially_refunded"),
-  ),
-  description: v.string(),
-  paymentMethod: v.object({
-    type: v.string(),
-    brand: v.optional(v.string()),
-    last4: v.string(),
-  }),
-  transactionFee: v.optional(v.number()),
-  netAmount: v.optional(v.number()),
-  failureReason: v.optional(v.string()),
-  failureCode: v.optional(v.string()),
-  refundedAmount: v.optional(v.number()),
-  createdAt: v.number(),
-})
-  .index("by_memberId", ["memberId"])
-  .index("by_stripePaymentIntentId", ["stripePaymentIntentId"])
-  .index("by_status", ["status"])
-  .index("by_createdAt", ["createdAt"]);
-
-/**
- * Stripe Webhook Events table - Webhook processing and idempotency
- *
- * Tracks Stripe webhook events to ensure idempotent processing and prevent duplicates.
- * Records processing status and errors for debugging and monitoring.
- * Essential for reliable webhook handling in distributed systems.
- */
-const stripeWebhookEvents = defineTable({
-  stripeEventId: v.string(),
-  type: v.string(),
-  processed: v.boolean(),
-  error: v.optional(v.string()),
-  createdAt: v.number(),
-  processedAt: v.optional(v.number()),
-  retryCount: v.optional(v.number()),
-  lastErrorAt: v.optional(v.number()),
-  needsRetry: v.optional(v.boolean()),
-})
-  .index("by_stripeEventId", ["stripeEventId"])
-  .index("by_processed", ["processed"])
-  .index("by_createdAt", ["createdAt"]);
-
-/**
  * News feed cache table for storing aggregated news articles.
  *
  * This table caches news articles fetched from multiple sources to reduce
@@ -1138,9 +999,6 @@ export default defineSchema({
   pollVotes, // Interactive poll participation
   commentReports, // Content moderation system
   events, // Community event management
-  subscriptions, // Stripe subscription tracking
-  payments, // Payment transaction history
-  stripeWebhookEvents, // Webhook event processing
   newsFeedCache, // News feed caching system
   discordDigest, // Discord daily digest archive
 });
