@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { LinkIcon } from "@/components/icons/link";
 import { VoteButton } from "@/components/icons/vote-button";
 import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
@@ -176,6 +176,10 @@ function CommentItemFlat({
         <div className="relative">
           {/* Avatar */}
           <Avatar className="relative z-10 h-10 w-10">
+            <AvatarImage
+              src={comment.member?.avatarUrl || ""}
+              alt={comment.member?.firstName || "User"}
+            />
             <AvatarFallback className="text-sm">
               {comment.member?.firstName?.[0]?.toUpperCase() || "?"}
             </AvatarFallback>

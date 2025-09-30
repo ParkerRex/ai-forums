@@ -27,7 +27,7 @@ import { LinkIcon } from "@/components/icons/link";
 import { MessageSquareIcon } from "@/components/icons/message-square";
 import { VoteButton } from "@/components/icons/vote-button";
 import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { UploadIcon } from "@/components/ui/upload";
 import { api } from "@/convex/_generated/api";
@@ -231,6 +231,10 @@ function CommentItem({
         <div className="flex items-start space-x-3">
           <MemberHoverCardWrapper member={comment.member}>
             <Avatar className="h-7 w-7 cursor-pointer">
+              <AvatarImage
+                src={comment.member?.avatarUrl || ""}
+                alt={comment.member?.firstName || "User"}
+              />
               <AvatarFallback className="bg-muted text-muted-foreground text-xs">
                 {comment.member?.firstName?.[0]?.toUpperCase() || "U"}
               </AvatarFallback>

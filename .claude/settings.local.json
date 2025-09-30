@@ -45,7 +45,8 @@
       "WebSearch",
       "Bash(bun install:*)",
       "Bash(bun run lint:*)",
-      "Bash(bun run lint:fix:*)"
+      "Bash(bun run lint:fix:*)",
+      "Bash(git commit:*)"
     ],
     "deny": []
   }
