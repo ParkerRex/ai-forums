@@ -35,6 +35,8 @@ interface MemberEditFormProps {
 }
 
 interface FormData {
+  firstName: string;
+  lastName: string;
   bio: string;
   location: string;
   githubHandle: string;
@@ -93,6 +95,8 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
     watch,
   } = useForm<FormData>({
     defaultValues: {
+      firstName: member.firstName || "",
+      lastName: member.lastName || "",
       bio: member.bio || "",
       location: member.location || "",
       githubHandle: extractHandle(member.linkGithub || "", "github"),
@@ -116,6 +120,8 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
 
     const updateData = {
       id: member._id,
+      firstName: data.firstName.trim() || undefined,
+      lastName: data.lastName.trim() || undefined,
       bio: data.bio.trim() || undefined,
       location: data.location.trim() || undefined,
       linkGithub: constructUrl(data.githubHandle, "github") || undefined,
@@ -155,6 +161,44 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
           onUpload={setAvatarUrl}
           onRemove={() => setAvatarUrl("")}
         />
+      </div>
+
+      {/* Name Fields */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="firstName">First Name</Label>
+          <Input
+            id="firstName"
+            placeholder="First name"
+            {...register("firstName", {
+              required: "First name is required",
+              maxLength: {
+                value: 50,
+                message: "First name must be less than 50 characters",
+              },
+            })}
+          />
+          {errors.firstName && (
+            <span className="text-sm text-red-600">{errors.firstName.message}</span>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="lastName">Last Name</Label>
+          <Input
+            id="lastName"
+            placeholder="Last name"
+            {...register("lastName", {
+              required: "Last name is required",
+              maxLength: {
+                value: 50,
+                message: "Last name must be less than 50 characters",
+              },
+            })}
+          />
+          {errors.lastName && (
+            <span className="text-sm text-red-600">{errors.lastName.message}</span>
+          )}
+        </div>
       </div>
 
       {/* Bio Field */}
