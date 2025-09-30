@@ -1,6 +1,6 @@
 "use client";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { Bookmark, BookOpen } from "lucide-react";
+import { Bookmark, BookOpen, Newspaper } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { AuthButton } from "@/components/auth/auth-button";
@@ -87,6 +87,9 @@ export default function Header() {
 
               <HeaderIconLink href="/educate" tooltip="educate">
                 <BookOpen size={18} />
+              </HeaderIconLink>
+              <HeaderIconLink href="/blog" tooltip="blog">
+                <Newspaper size={18} />
               </HeaderIconLink>
               <Authenticated>
                 <HeaderIconLink href="/bookmarks" tooltip="bookmarks">
