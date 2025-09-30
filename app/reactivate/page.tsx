@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useQuery, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { useAuth } from "@clerk/nextjs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
+import { useAction, useQuery } from "convex/react";
 import { Check, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { api } from "@/convex/_generated/api";
 
 /**
  * ReactivatePage Component
@@ -36,9 +36,7 @@ import { toast } from "sonner";
 export default function ReactivatePage() {
   // Billing period state - defaults to yearly to encourage longer commitments
   // and maximize savings for returning users
-  const [billingPeriod, setBillingPeriod] = useState<"yearly" | "monthly">(
-    "yearly",
-  );
+  const [billingPeriod, setBillingPeriod] = useState<"yearly" | "monthly">("yearly");
 
   // Loading state for the reactivation button to prevent double-clicks
   // and provide user feedback during Stripe checkout session creation
@@ -52,15 +50,11 @@ export default function ReactivatePage() {
 
   // Convex query to fetch user's subscription information including tier and status
   // This determines pricing and eligibility for reactivation
-  const subscriptionInfo = useQuery(
-    api.stripe.getSubscriptionInfo.getSubscriptionInfo,
-  );
+  const subscriptionInfo = useQuery(api.stripe.getSubscriptionInfo.getSubscriptionInfo);
 
   // Convex action to create Stripe checkout sessions for subscription reactivation
   // Handles server-side Stripe integration with tier-specific pricing
-  const createCheckoutSession = useAction(
-    api.stripe.checkout.createCheckoutSession,
-  );
+  const createCheckoutSession = useAction(api.stripe.checkout.createCheckoutSession);
 
   /**
    * Authentication Effect
@@ -118,8 +112,7 @@ export default function ReactivatePage() {
       case "founding_member":
         return {
           name: "Founding Member",
-          description:
-            "Your exclusive early supporter pricing - locked forever",
+          description: "Your exclusive early supporter pricing - locked forever",
           monthlyPrice: 39,
           yearlyPrice: 375,
           color: "bg-purple-500",
@@ -150,8 +143,7 @@ export default function ReactivatePage() {
   const tierInfo = getTierInfo();
 
   // Calculate current price based on selected billing period
-  const currentPrice =
-    billingPeriod === "yearly" ? tierInfo.yearlyPrice : tierInfo.monthlyPrice;
+  const currentPrice = billingPeriod === "yearly" ? tierInfo.yearlyPrice : tierInfo.monthlyPrice;
 
   // Calculate annual savings when choosing yearly billing
   // This helps encourage users to select the yearly option
@@ -159,9 +151,7 @@ export default function ReactivatePage() {
 
   // Calculate savings percentage for display in the UI
   // Rounded to nearest whole number for clean presentation
-  const savingsPercent = Math.round(
-    (savings / (tierInfo.monthlyPrice * 12)) * 100,
-  );
+  const savingsPercent = Math.round((savings / (tierInfo.monthlyPrice * 12)) * 100);
 
   /**
    * Handle Subscription Reactivation
@@ -190,10 +180,7 @@ export default function ReactivatePage() {
 
       // Create Stripe checkout session with tier-specific parameters
       const { checkoutUrl } = await createCheckoutSession({
-        tier: subscriptionInfo.tier as
-          | "founding_member"
-          | "early_bird"
-          | "member",
+        tier: subscriptionInfo.tier as "founding_member" | "early_bird" | "member",
         billingInterval: billingPeriod,
       });
 
@@ -236,9 +223,7 @@ export default function ReactivatePage() {
               <CardTitle className="text-2xl">{tierInfo.name}</CardTitle>
               {/* Conditional badge rendering for special tiers */}
               {tierInfo.badge && (
-                <Badge className={`${tierInfo.color} text-white`}>
-                  {tierInfo.badge}
-                </Badge>
+                <Badge className={`${tierInfo.color} text-white`}>{tierInfo.badge}</Badge>
               )}
             </div>
             {/* Tier description explaining the value proposition */}
@@ -259,9 +244,7 @@ export default function ReactivatePage() {
               >
                 <div>Monthly</div>
                 {/* Large price display to make cost comparison easy */}
-                <div className="mt-1 text-2xl font-bold">
-                  ${tierInfo.monthlyPrice}/mo
-                </div>
+                <div className="mt-1 text-2xl font-bold">${tierInfo.monthlyPrice}/mo</div>
               </button>
 
               {/* Yearly billing option button with savings badge */}
@@ -285,9 +268,7 @@ export default function ReactivatePage() {
                   ${Math.round(tierInfo.yearlyPrice / 12)}/mo
                 </div>
                 {/* Annual total for transparency */}
-                <div className="text-xs opacity-80">
-                  ${tierInfo.yearlyPrice} billed annually
-                </div>
+                <div className="text-xs opacity-80">${tierInfo.yearlyPrice} billed annually</div>
               </button>
             </div>
 
@@ -298,16 +279,14 @@ export default function ReactivatePage() {
                 {billingPeriod === "yearly" ? (
                   // Message for users who selected yearly billing
                   <>
-                    You&apos;ll save{" "}
-                    <span className="font-bold text-green-600">${savings}</span>{" "}
+                    You&apos;ll save <span className="font-bold text-green-600">${savings}</span>{" "}
                     per year with annual billing
                   </>
                 ) : (
                   // Encouragement message for users on monthly billing
                   <>
                     Switch to yearly and save{" "}
-                    <span className="font-bold text-green-600">${savings}</span>{" "}
-                    per year
+                    <span className="font-bold text-green-600">${savings}</span> per year
                   </>
                 )}
               </p>

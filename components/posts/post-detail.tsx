@@ -1,48 +1,48 @@
-import Link from "next/link";
-import Image from "next/image";
+import { useMutation, useQuery } from "convex/react";
 import {
-  Flag,
-  MoreHorizontal,
-  Play,
-  ExternalLink,
-  Edit,
-  Trash2,
-  History,
   ArrowLeft,
+  Edit,
+  ExternalLink,
+  Flag,
+  History,
+  MessageSquare,
+  MoreHorizontal,
   Pin,
   PinOff,
-  MessageSquare,
+  Play,
+  Trash2,
   Upload,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import type React from "react";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
+import { AttachmentGrid } from "@/components/comments/attachment-grid";
+import { VoteButton } from "@/components/icons/vote-button";
+import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
+import { Paywall } from "@/components/payments/paywall";
+import { PollDisplay } from "@/components/posts/poll-display";
+import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
+import { PostEditInline } from "@/components/posts/post-edit-inline";
+import { RenderTipTapContent } from "@/components/posts/render-post-content";
+import { YouTubeEmbed } from "@/components/posts/youtube-embed";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { VoteButton } from "@/components/icons/vote-button";
-import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Id } from "@/convex/_generated/dataModel";
-import { useRef, useState } from "react";
-import React from "react";
-import { useQuery, useMutation } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { getMediaPlaceholder } from "@/lib/post-preview-utils";
-import { RenderTipTapContent } from "@/components/posts/render-post-content";
-import { memberProfileUrl } from "@/lib/utils";
+import type { Id } from "@/convex/_generated/dataModel";
 import { useMutationError } from "@/hooks/use-mutation-error";
-import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
-import { isYouTubeUrl, getYouTubeVideoId } from "@/lib/youtube-utils";
-import { YouTubeEmbed } from "@/components/posts/youtube-embed";
-import { PollDisplay } from "@/components/posts/poll-display";
-import { AttachmentGrid } from "@/components/comments/attachment-grid";
-import { toast } from "sonner";
-import { Paywall } from "@/components/payments/paywall";
-import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
-import { PostEditInline } from "@/components/posts/post-edit-inline";
+import { getMediaPlaceholder } from "@/lib/post-preview-utils";
+import { memberProfileUrl } from "@/lib/utils";
+import { getYouTubeVideoId, isYouTubeUrl } from "@/lib/youtube-utils";
 
 interface Post {
   _id: Id<"posts">;
@@ -166,22 +166,16 @@ export default function PostDetail({
   // Voting state management
   const [isVoting, setIsVoting] = useState(false);
   const [optimisticNetVotes, setOptimisticNetVotes] = useState(post.netVotes);
-  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
-    null,
-  );
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const postType = post.type || "text";
 
   // Extract YouTube video IDs safely from URLs
   const mediaYouTubeId =
-    post.mediaUrl && isYouTubeUrl(post.mediaUrl)
-      ? getYouTubeVideoId(post.mediaUrl)
-      : null;
+    post.mediaUrl && isYouTubeUrl(post.mediaUrl) ? getYouTubeVideoId(post.mediaUrl) : null;
   const linkYouTubeId =
-    post.linkUrl && isYouTubeUrl(post.linkUrl)
-      ? getYouTubeVideoId(post.linkUrl)
-      : null;
+    post.linkUrl && isYouTubeUrl(post.linkUrl) ? getYouTubeVideoId(post.linkUrl) : null;
 
   // Convex queries and mutations
   const currentMember = useQuery(api.members.getCurrentMember);
@@ -197,23 +191,17 @@ export default function PostDetail({
   const unhighlightPost = useMutation(api.posts.unpinPost);
 
   // Determine current vote state (optimistic or actual)
-  const currentUserVote =
-    optimisticUserVote !== null ? optimisticUserVote : userVote;
+  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote;
 
   // Check if current user owns this post
-  const isMemberPost =
-    currentMember && post.member && currentMember._id === post.member?._id;
+  const isMemberPost = currentMember && post.member && currentMember._id === post.member?._id;
 
   // Check if current user is an admin
   const isAdmin = currentMember?.role === "admin";
 
   console.log("Debug member check:", {
-    currentMember: currentMember
-      ? { _id: currentMember._id, email: currentMember.email }
-      : null,
-    postMember: post.member
-      ? { _id: post.member?._id, username: post.member?.username }
-      : null,
+    currentMember: currentMember ? { _id: currentMember._id, email: currentMember.email } : null,
+    postMember: post.member ? { _id: post.member?._id, username: post.member?.username } : null,
     isMemberPost,
   });
 
@@ -382,12 +370,7 @@ export default function PostDetail({
                       {post.title}
                     </h1>
                     {isMemberPost && !isEditing && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={onEdit}
-                        className="ml-2"
-                      >
+                      <Button variant="outline" size="sm" onClick={onEdit} className="ml-2">
                         <Edit className="mr-1 h-3 w-3" />
                         Edit
                       </Button>
@@ -425,21 +408,15 @@ export default function PostDetail({
                             </DropdownMenuItem>
                           ) : (
                             <>
-                              <DropdownMenuItem
-                                onClick={() => handleHighlight("category")}
-                              >
+                              <DropdownMenuItem onClick={() => handleHighlight("category")}>
                                 <Pin className="mr-2 h-4 w-4" />
                                 Highlight in Category
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleHighlight("global")}
-                              >
+                              <DropdownMenuItem onClick={() => handleHighlight("global")}>
                                 <Pin className="mr-2 h-4 w-4" />
                                 Highlight Globally
                               </DropdownMenuItem>
-                              <DropdownMenuItem
-                                onClick={() => handleHighlight("both")}
-                              >
+                              <DropdownMenuItem onClick={() => handleHighlight("both")}>
                                 <Pin className="mr-2 h-4 w-4" />
                                 Highlight in Both
                               </DropdownMenuItem>
@@ -494,92 +471,82 @@ export default function PostDetail({
                     </div>
                   )}
 
-                  {postType === "video" && post.mediaUrl && (
-                    <>
-                      {mediaYouTubeId ? (
-                        <YouTubeEmbed
-                          videoId={mediaYouTubeId}
-                          title={post.title}
+                  {postType === "video" &&
+                    post.mediaUrl &&
+                    (mediaYouTubeId ? (
+                      <YouTubeEmbed videoId={mediaYouTubeId} title={post.title} />
+                    ) : isYouTubeUrl(post.mediaUrl) ? (
+                      <a
+                        href={post.mediaUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary block underline"
+                      >
+                        View on YouTube
+                      </a>
+                    ) : (
+                      <div className="relative overflow-hidden rounded-none bg-black">
+                        <video
+                          ref={videoRef}
+                          src={post.mediaUrl}
+                          className="h-auto max-h-[70vh] w-full"
+                          controls
+                          poster={post.thumbnailUrl}
+                          onPlay={() => setIsVideoPlaying(true)}
+                          onPause={() => setIsVideoPlaying(false)}
                         />
-                      ) : isYouTubeUrl(post.mediaUrl) ? (
-                        <a
-                          href={post.mediaUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-primary block underline"
-                        >
-                          View on YouTube
-                        </a>
-                      ) : (
-                        <div className="relative overflow-hidden rounded-none bg-black">
-                          <video
-                            ref={videoRef}
-                            src={post.mediaUrl}
-                            className="h-auto max-h-[70vh] w-full"
-                            controls
-                            poster={post.thumbnailUrl}
-                            onPlay={() => setIsVideoPlaying(true)}
-                            onPause={() => setIsVideoPlaying(false)}
-                          />
-                          {!isVideoPlaying && (
-                            <div
-                              className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/30"
-                              onClick={handleVideoPlay}
-                            >
-                              <div className="rounded-full bg-white/80 p-3 backdrop-blur-sm transition-colors hover:bg-white">
-                                <Play className="h-10 w-10 fill-black text-black" />
-                              </div>
+                        {!isVideoPlaying && (
+                          <div
+                            className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/30"
+                            onClick={handleVideoPlay}
+                          >
+                            <div className="rounded-full bg-white/80 p-3 backdrop-blur-sm transition-colors hover:bg-white">
+                              <Play className="h-10 w-10 fill-black text-black" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+
+                  {postType === "link" &&
+                    post.linkUrl &&
+                    (linkYouTubeId ? (
+                      <YouTubeEmbed videoId={linkYouTubeId} title={post.linkTitle || post.title} />
+                    ) : (
+                      <a
+                        href={post.linkUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="hover:border-primary/50 block overflow-hidden rounded-none border transition-colors"
+                      >
+                        <Card className="rounded-none border-0 shadow-none">
+                          {post.linkImage && (
+                            <div className="bg-muted relative h-40 sm:h-48 dark:bg-black">
+                              <Image
+                                src={post.linkImage}
+                                alt={post.linkTitle || "Link preview"}
+                                fill
+                                className="object-cover"
+                              />
                             </div>
                           )}
-                        </div>
-                      )}
-                    </>
-                  )}
-
-                  {postType === "link" && post.linkUrl && (
-                    <>
-                      {linkYouTubeId ? (
-                        <YouTubeEmbed
-                          videoId={linkYouTubeId}
-                          title={post.linkTitle || post.title}
-                        />
-                      ) : (
-                        <a
-                          href={post.linkUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="hover:border-primary/50 block overflow-hidden rounded-none border transition-colors"
-                        >
-                          <Card className="rounded-none border-0 shadow-none">
-                            {post.linkImage && (
-                              <div className="bg-muted relative h-40 sm:h-48 dark:bg-black">
-                                <Image
-                                  src={post.linkImage}
-                                  alt={post.linkTitle || "Link preview"}
-                                  fill
-                                  className="object-cover"
-                                />
-                              </div>
+                          <CardContent className="p-4">
+                            <h3 className="mb-1 text-base font-semibold">
+                              {post.linkTitle || post.linkUrl}
+                            </h3>
+                            {post.linkDescription && (
+                              <p className="text-muted-foreground line-clamp-2 text-sm">
+                                {post.linkDescription}
+                              </p>
                             )}
-                            <CardContent className="p-4">
-                              <h3 className="mb-1 text-base font-semibold">
-                                {post.linkTitle || post.linkUrl}
-                              </h3>
-                              {post.linkDescription && (
-                                <p className="text-muted-foreground line-clamp-2 text-sm">
-                                  {post.linkDescription}
-                                </p>
-                              )}
-                              <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
-                                <ExternalLink className="h-3 w-3" />
-                                <span>{new URL(post.linkUrl).hostname}</span>
-                              </div>
-                            </CardContent>
-                          </Card>
-                        </a>
-                      )}
-                    </>
-                  )}
+                            <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
+                              <ExternalLink className="h-3 w-3" />
+                              <span>{new URL(post.linkUrl).hostname}</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </a>
+                    ))}
 
                   {postType === "poll" && post.pollOptions && (
                     <PollDisplay
@@ -632,9 +599,7 @@ export default function PostDetail({
                     className="text-muted-foreground hover:bg-accent hover:text-foreground flex items-center gap-1.5 rounded-md px-3 py-2"
                   >
                     <MessageSquare size={18} />
-                    <span className="font-medium">
-                      {post.commentCount} Comments
-                    </span>
+                    <span className="font-medium">{post.commentCount} Comments</span>
                   </Button>
                   <PostBookmarkButton
                     targetId={post._id}

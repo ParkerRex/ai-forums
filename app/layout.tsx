@@ -1,16 +1,15 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import ConvexClientProvider from "@/components/convex-client-provider";
 import { ClerkProvider } from "@clerk/nextjs";
-import Header from "@/components/header/header";
-import { Toaster } from "@/components/ui/sonner";
-import { NetworkStatusIndicator } from "@/components/error-display";
-import { ThemeProvider } from "@/components/theme-provider";
-import { GlobalSearch } from "@/components/header/global-search";
-import { Footer } from "@/components/header/footer";
-import { ActivateSubscriptionBanner } from "@/components/payments/activate-subscription-banner";
-
 import localFont from "next/font/local";
+import ConvexClientProvider from "@/components/convex-client-provider";
+import { NetworkStatusIndicator } from "@/components/error-display";
+import { Footer } from "@/components/header/footer";
+import { GlobalSearch } from "@/components/header/global-search";
+import Header from "@/components/header/header";
+import { ActivateSubscriptionBanner } from "@/components/payments/activate-subscription-banner";
+import { ThemeProvider } from "@/components/theme-provider";
+import { Toaster } from "@/components/ui/sonner";
 
 const myFont = localFont({
   src: "../public/fonts/MonaspaceArgon-Regular.otf",

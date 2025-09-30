@@ -1,40 +1,49 @@
-import { action, query, mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { action, mutation, query } from "./_generated/server";
 
 export const fetchAINews = action({
   args: {
     categories: v.optional(v.array(v.string())),
-    customSources: v.optional(v.array(v.object({
-      type: v.union(v.literal("repository"), v.literal("website")),
-      url: v.string(),
-      name: v.string(),
-    }))),
+    customSources: v.optional(
+      v.array(
+        v.object({
+          type: v.union(v.literal("repository"), v.literal("website")),
+          url: v.string(),
+          name: v.string(),
+        }),
+      ),
+    ),
     limit: v.optional(v.number()),
   },
-  returns: v.array(v.object({
-    title: v.string(),
-    url: v.string(),
-    publishedDate: v.optional(v.string()),
-    author: v.optional(v.string()),
-    summary: v.optional(v.string()),
-    source: v.string(),
-  })),
-  handler: async (ctx, args) => {
+  returns: v.array(
+    v.object({
+      title: v.string(),
+      url: v.string(),
+      publishedDate: v.optional(v.string()),
+      author: v.optional(v.string()),
+      summary: v.optional(v.string()),
+      source: v.string(),
+    }),
+  ),
+  handler: async (_ctx, args) => {
     const limit = args.limit || 10;
     const results = [];
 
     try {
       const defaultQuery = "latest AI developments machine learning artificial intelligence";
-      const response = await fetch(`${process.env.NEXT_PUBLIC_CONVEX_URL?.replace('convex.cloud', 'vercel.app') || 'http://localhost:3000'}/api/news`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_CONVEX_URL?.replace("convex.cloud", "vercel.app") || "http://localhost:3000"}/api/news`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: defaultQuery,
+            numResults: Math.ceil(limit * 0.7),
+          }),
         },
-        body: JSON.stringify({
-          query: defaultQuery,
-          numResults: Math.ceil(limit * 0.7),
-        }),
-      });
+      );
 
       if (response.ok) {
         const defaultNews = await response.json();
@@ -53,16 +62,17 @@ export const fetchAINews = action({
       if (args.customSources) {
         for (const source of args.customSources.slice(0, 2)) {
           try {
-            const customResponse = await fetch(`${process.env.NEXT_PUBLIC_CONVEX_URL?.replace('convex.cloud', 'vercel.app') || 'http://localhost:3000'}/api/news`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                query: `${source.name} latest updates`,
-                numResults: Math.ceil(limit * 0.15),
-                includeDomains:
-                  (() => {
+            const customResponse = await fetch(
+              `${process.env.NEXT_PUBLIC_CONVEX_URL?.replace("convex.cloud", "vercel.app") || "http://localhost:3000"}/api/news`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                  query: `${source.name} latest updates`,
+                  numResults: Math.ceil(limit * 0.15),
+                  includeDomains: (() => {
                     if (source.type !== "website") return undefined;
                     try {
                       const host = new URL(source.url).hostname;
@@ -71,8 +81,9 @@ export const fetchAINews = action({
                       return undefined;
                     }
                   })(),
-              }),
-            });
+                }),
+              },
+            );
 
             if (customResponse.ok) {
               const customNews = await customResponse.json();
@@ -93,7 +104,7 @@ export const fetchAINews = action({
         }
       }
     } catch (error) {
-      console.error('Failed to fetch news:', error);
+      console.error("Failed to fetch news:", error);
     }
 
     return results
@@ -111,13 +122,15 @@ export const updateNewsPreferences = mutation({
     memberId: v.id("members"),
     preferences: v.object({
       enabledCategories: v.array(v.string()),
-      customSources: v.array(v.object({
-        type: v.union(v.literal("repository"), v.literal("website"), v.literal("discord")),
-        url: v.string(),
-        name: v.string(),
-        guildId: v.optional(v.string()),
-        channels: v.optional(v.array(v.string())),
-      })),
+      customSources: v.array(
+        v.object({
+          type: v.union(v.literal("repository"), v.literal("website"), v.literal("discord")),
+          url: v.string(),
+          name: v.string(),
+          guildId: v.optional(v.string()),
+          channels: v.optional(v.array(v.string())),
+        }),
+      ),
       refreshInterval: v.number(),
       discordEnabled: v.optional(v.boolean()),
     }),
@@ -133,18 +146,23 @@ export const updateNewsPreferences = mutation({
 
 export const getNewsPreferences = query({
   args: { memberId: v.id("members") },
-  returns: v.union(v.null(), v.object({
-    enabledCategories: v.array(v.string()),
-    customSources: v.array(v.object({
-      type: v.union(v.literal("repository"), v.literal("website"), v.literal("discord")),
-      url: v.string(),
-      name: v.string(),
-      guildId: v.optional(v.string()),
-      channels: v.optional(v.array(v.string())),
-    })),
-    refreshInterval: v.number(),
-    discordEnabled: v.optional(v.boolean()),
-  })),
+  returns: v.union(
+    v.null(),
+    v.object({
+      enabledCategories: v.array(v.string()),
+      customSources: v.array(
+        v.object({
+          type: v.union(v.literal("repository"), v.literal("website"), v.literal("discord")),
+          url: v.string(),
+          name: v.string(),
+          guildId: v.optional(v.string()),
+          channels: v.optional(v.array(v.string())),
+        }),
+      ),
+      refreshInterval: v.number(),
+      discordEnabled: v.optional(v.boolean()),
+    }),
+  ),
   handler: async (ctx, args) => {
     const member = await ctx.db.get(args.memberId);
     return member?.newsPreferences || null;

@@ -28,12 +28,12 @@
 
 "use client";
 
-import { useState } from "react";
+import { AlertCircle, ExternalLink, MessageSquare, RefreshCw, Settings } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { RefreshCw, Settings, MessageSquare, AlertCircle, ExternalLink } from "lucide-react";
 import { NewsCard } from "@/features/news/components";
 import { useDiscordDigest } from "@/hooks/use-discord-digest";
 
@@ -57,16 +57,8 @@ import { useDiscordDigest } from "@/hooks/use-discord-digest";
  * @returns {JSX.Element} The complete Discord digest page
  */
 export default function DiscordDigestPage() {
-  const {
-    messages,
-    loading,
-    error,
-    preferencesLoading,
-    refresh,
-    isEnabled,
-    hasMessages,
-    isEmpty,
-  } = useDiscordDigest();
+  const { messages, loading, error, preferencesLoading, refresh, isEnabled, hasMessages, isEmpty } =
+    useDiscordDigest();
 
   const [refreshing, setRefreshing] = useState(false);
 
@@ -115,7 +107,8 @@ export default function DiscordDigestPage() {
             <MessageSquare className="h-4 w-4" />
             <AlertDescription className="flex items-center justify-between">
               <span>
-                Discord digest is not enabled. Enable it in your news source settings to see Discord messages here.
+                Discord digest is not enabled. Enable it in your news source settings to see Discord
+                messages here.
               </span>
               <Button asChild variant="outline" size="sm">
                 <Link href="/settings/news-sources">
@@ -195,15 +188,8 @@ export default function DiscordDigestPage() {
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold">Discord Daily Digest</h1>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={refreshing}
-              >
-                <RefreshCw
-                  className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-                />
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
                 Retry
               </Button>
               <Button asChild variant="outline" size="sm">
@@ -225,12 +211,11 @@ export default function DiscordDigestPage() {
               <AlertCircle className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">Unable to Load Discord Messages</h3>
               <p className="text-muted-foreground mb-4">
-                We&apos;re having trouble connecting to Discord right now. Please try again in a few minutes.
+                We&apos;re having trouble connecting to Discord right now. Please try again in a few
+                minutes.
               </p>
               <Button onClick={handleRefresh} disabled={refreshing}>
-                <RefreshCw
-                  className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-                />
+                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
                 Try Again
               </Button>
             </CardContent>
@@ -248,15 +233,8 @@ export default function DiscordDigestPage() {
           <div className="flex items-center justify-between mb-8">
             <h1 className="text-3xl font-bold">Discord Daily Digest</h1>
             <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleRefresh}
-                disabled={refreshing}
-              >
-                <RefreshCw
-                  className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-                />
+              <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+                <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
                 Refresh
               </Button>
               <Button asChild variant="outline" size="sm">
@@ -273,13 +251,12 @@ export default function DiscordDigestPage() {
               <MessageSquare className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-lg font-semibold mb-2">No Discord Messages Today</h3>
               <p className="text-muted-foreground mb-4">
-                There were no popular Discord messages from yesterday. Check back tomorrow for new content!
+                There were no popular Discord messages from yesterday. Check back tomorrow for new
+                content!
               </p>
               <div className="flex gap-2 justify-center">
                 <Button onClick={handleRefresh} disabled={refreshing}>
-                  <RefreshCw
-                    className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-                  />
+                  <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
                   Refresh
                 </Button>
                 <Button asChild variant="outline">
@@ -315,15 +292,8 @@ export default function DiscordDigestPage() {
 
           {/* Control buttons for refresh and settings */}
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={refreshing}
-            >
-              <RefreshCw
-                className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
-              />
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+              <RefreshCw className={`w-4 h-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
               Refresh
             </Button>
             <Button asChild variant="outline" size="sm">
@@ -352,9 +322,7 @@ export default function DiscordDigestPage() {
 
         {/* Footer with Discord link */}
         <div className="mt-8 text-center">
-          <p className="text-sm text-muted-foreground mb-2">
-            Want to join the conversation?
-          </p>
+          <p className="text-sm text-muted-foreground mb-2">Want to join the conversation?</p>
           <Button asChild variant="outline" size="sm">
             <a
               href={process.env.NEXT_PUBLIC_DISCORD_INVITE_URL || "#"}

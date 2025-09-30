@@ -1,14 +1,14 @@
 "use client";
 
 import DOMPurify from "dompurify";
-import { LinkBadge } from "@/components/posts/link-badge";
 import { useEffect, useRef, useState } from "react";
-import { unified } from "unified";
 import rehypeParse from "rehype-parse";
-import rehypeStringify from "rehype-stringify";
-import rehypePrettyCode from "rehype-pretty-code";
 import type { Options } from "rehype-pretty-code";
+import rehypePrettyCode from "rehype-pretty-code";
+import rehypeStringify from "rehype-stringify";
 import { toast } from "sonner";
+import { unified } from "unified";
+import { LinkBadge } from "@/components/posts/link-badge";
 
 interface LinkPreview {
   title?: string;
@@ -36,10 +36,7 @@ const prettycodeOptions: Options = {
   grid: true,
 };
 
-export function RenderPostContent({
-  content,
-  linkPreviews = {},
-}: RenderPostContentProps) {
+export function RenderPostContent({ content, linkPreviews = {} }: RenderPostContentProps) {
   // Split content into paragraphs
   const paragraphs = content.split(/\n\s*\n/);
 
@@ -58,16 +55,12 @@ export function RenderPostContent({
   );
 }
 
-function renderParagraphWithLinks(
-  text: string,
-  linkPreviews: Record<string, LinkPreview>,
-) {
+function renderParagraphWithLinks(text: string, linkPreviews: Record<string, LinkPreview>) {
   const elements: React.ReactNode[] = [];
   let lastIndex = 0;
 
   // Match both markdown links and bare URLs
-  const linkRegex =
-    /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|(https?:\/\/[^\s]+)/g;
+  const linkRegex = /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\))|(https?:\/\/[^\s]+)/g;
   let match;
 
   while ((match = linkRegex.exec(text)) !== null) {
@@ -84,8 +77,7 @@ function renderParagraphWithLinks(
 
     // Determine the URL and display text
     const url = markdownUrl || bareUrl;
-    const displayText =
-      linkText || getDisplayTextForUrl(url, linkPreviews[url]);
+    const displayText = linkText || getDisplayTextForUrl(url, linkPreviews[url]);
 
     // Add the LinkBadge
     elements.push(

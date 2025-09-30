@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-
 interface YouTubeEmbedProps {
   url: string;
   title?: string;
@@ -22,7 +20,7 @@ export function YouTubeEmbed({
 
     for (const pattern of patterns) {
       const match = url.match(pattern);
-      if (match && match[1]) {
+      if (match?.[1]) {
         return match[1];
       }
     }

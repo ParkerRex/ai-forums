@@ -1,4 +1,4 @@
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 
 export interface PostData {
   _id: Id<"posts">;
@@ -77,14 +77,14 @@ export function getPostPreviewAsset(post: PostData): {
         url: post.mediaUrl,
         thumbnailUrl: post.thumbnailUrl || post.mediaUrl,
       };
-    
+
     case "video":
       return {
         type: "video",
         url: post.mediaUrl,
         thumbnailUrl: post.thumbnailUrl,
       };
-    
+
     case "link":
       return {
         type: "link",
@@ -93,12 +93,12 @@ export function getPostPreviewAsset(post: PostData): {
         title: post.linkTitle,
         description: post.linkDescription,
       };
-    
+
     case "poll":
       return {
         type: "poll",
       };
-    
+
     default:
       return {
         type: "text",
@@ -113,28 +113,26 @@ export function getPostPreviewAsset(post: PostData): {
 export function getContentExcerpt(
   content: string,
   maxLength: number = 150,
-  preview?: string
+  preview?: string,
 ): string {
   // If preview is available, use it
-  if (preview && preview.trim()) {
+  if (preview?.trim()) {
     return preview;
   }
-  
+
   // Otherwise, truncate content as before
   // Strip HTML tags if present
   const plainText = content.replace(/<[^>]*>/g, "");
-  
+
   if (plainText.length <= maxLength) {
     return plainText;
   }
-  
+
   // Find the last complete word before maxLength
   const truncated = plainText.substring(0, maxLength);
   const lastSpace = truncated.lastIndexOf(" ");
-  
-  return lastSpace > 0 
-    ? truncated.substring(0, lastSpace) + "..."
-    : truncated + "...";
+
+  return lastSpace > 0 ? `${truncated.substring(0, lastSpace)}...` : `${truncated}...`;
 }
 
 /**
@@ -147,7 +145,7 @@ export function formatPostStats(post: PostData): {
   score: number;
 } {
   const netVotes = post.upvotes - post.downvotes;
-  
+
   return {
     votes: formatCount(netVotes),
     comments: formatCount(post.commentCount),
@@ -161,10 +159,10 @@ export function formatPostStats(post: PostData): {
  */
 function formatCount(count: number): string {
   if (count >= 1000000) {
-    return (count / 1000000).toFixed(1).replace(/\.0$/, "") + "M";
+    return `${(count / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
   }
   if (count >= 1000) {
-    return (count / 1000).toFixed(1).replace(/\.0$/, "") + "k";
+    return `${(count / 1000).toFixed(1).replace(/\.0$/, "")}k`;
   }
   return count.toString();
 }
@@ -181,11 +179,11 @@ export interface AssetInfo {
  */
 export function getAssetOrientation(asset?: AssetInfo): "portrait" | "landscape" | "square" {
   if (!asset) return "landscape";
-  
+
   const width = asset.naturalWidth || asset.width || 16;
   const height = asset.naturalHeight || asset.height || 9;
   const ratio = width / height;
-  
+
   if (ratio > 1.2) return "landscape";
   if (ratio < 0.8) return "portrait";
   return "square";
@@ -197,7 +195,7 @@ export function getAssetOrientation(asset?: AssetInfo): "portrait" | "landscape"
 export function getPreviewClasses(
   size: PreviewSize,
   asset?: AssetInfo,
-  post?: PostData
+  post?: PostData,
 ): {
   wrapper: string;
   media: string;
@@ -207,7 +205,7 @@ export function getPreviewClasses(
   // If we have actual dimensions, use them for dynamic sizing
   if (post?.aspectRatio && post?.mediaWidth && post?.mediaHeight) {
     const aspectRatio = post.aspectRatio;
-    
+
     // For all sizes, let media display at full width with proper aspect ratio
     // Remove max height constraints to show media at actual size
     return {
@@ -216,13 +214,13 @@ export function getPreviewClasses(
       aspectRatio: "",
       dynamicStyle: {
         aspectRatio: aspectRatio.toString(),
-      }
+      },
     };
   }
-  
+
   // Fallback for posts without dimension data (legacy posts)
   const orientation = getAssetOrientation(asset);
-  
+
   switch (size) {
     case "small":
       return {
@@ -230,14 +228,14 @@ export function getPreviewClasses(
         media: "object-contain",
         aspectRatio: orientation === "portrait" ? "aspect-[9/16]" : "aspect-video",
       };
-    
+
     case "medium":
       return {
         wrapper: "w-full",
         media: "object-contain",
         aspectRatio: orientation === "portrait" ? "aspect-[9/16]" : "aspect-video",
       };
-    
+
     case "large":
       return {
         wrapper: "w-full",
@@ -263,14 +261,14 @@ export function getPreviewDimensions(size: PreviewSize): {
         maxHeight: "75px",
         thumbnailSize: "w-24 h-18",
       };
-    
+
     case "medium":
       return {
         maxWidth: "200px",
         maxHeight: "150px",
         thumbnailSize: "w-48 h-36",
       };
-    
+
     case "large":
       return {
         maxWidth: "100%",
@@ -322,13 +320,10 @@ export function getPostTypeLabel(post: PostData): string {
 /**
  * Check if media should autoplay (for videos/GIFs)
  */
-export function shouldAutoplay(
-  post: PostData,
-  userPreference: boolean = true
-): boolean {
+export function shouldAutoplay(post: PostData, userPreference: boolean = true): boolean {
   if (!userPreference) return false;
   if (post.type !== "video") return false;
-  
+
   // Don't autoplay if video is likely to have sound
   // In production, this would check video metadata
   return true;
@@ -346,15 +341,15 @@ export function getMediaPlaceholder(): string {
 export function extractYouTubeVideoId(url: string): string | null {
   try {
     const urlObj = new URL(url);
-    
-    if (urlObj.hostname.includes('youtu.be')) {
+
+    if (urlObj.hostname.includes("youtu.be")) {
       return urlObj.pathname.slice(1);
-    } else if (urlObj.hostname.includes('youtube.com') && urlObj.searchParams.has('v')) {
-      return urlObj.searchParams.get('v');
+    } else if (urlObj.hostname.includes("youtube.com") && urlObj.searchParams.has("v")) {
+      return urlObj.searchParams.get("v");
     }
-    
+
     return null;
   } catch {
     return null;
   }
-}          
+}

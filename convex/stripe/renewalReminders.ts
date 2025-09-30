@@ -1,5 +1,5 @@
-import { internalMutation } from "../_generated/server";
 import { internal } from "../_generated/api";
+import { internalMutation } from "../_generated/server";
 
 export const checkAndSendReminders = internalMutation({
   args: {},
@@ -7,9 +7,7 @@ export const checkAndSendReminders = internalMutation({
     // Get all members with active subscriptions
     const activeMembers = await ctx.db
       .query("members")
-      .filter((q) => 
-        q.eq(q.field("subscriptionStatus"), "active")
-      )
+      .filter((q) => q.eq(q.field("subscriptionStatus"), "active"))
       .collect();
 
     const now = Date.now();
@@ -27,7 +25,7 @@ export const checkAndSendReminders = internalMutation({
           ? await ctx.db
               .query("subscriptions")
               .withIndex("by_stripeSubscriptionId", (q) =>
-                q.eq("stripeSubscriptionId", member.stripeSubscriptionId!)
+                q.eq("stripeSubscriptionId", member.stripeSubscriptionId!),
               )
               .first()
           : null;

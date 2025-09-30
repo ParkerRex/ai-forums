@@ -1,11 +1,11 @@
 /**
  * @fileoverview Categories Module - Post organization and classification system
- * 
+ *
  * This module manages the category system that organizes posts into themed discussions.
  * Categories provide structure for content discovery, moderation boundaries, and
  * community organization. Each category has its own rules, visual branding, and
  * usage statistics.
- * 
+ *
  * Key features:
  * - Category creation and management
  * - Post count tracking and statistics
@@ -15,17 +15,17 @@
  * - Access control (public, private, inactive states)
  * - Default category initialization
  * - Category deletion with content cleanup
- * 
+ *
  * The system supports hierarchical organization and provides efficient querying
  * for category feeds and content discovery.
- * 
+ *
  * @author VAI Development Team
  * @version 1.0.0
  */
 
-import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import type { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 import { getAuthenticatedMember } from "./auth";
 
 /**
@@ -40,13 +40,13 @@ export const getAll = query({
 
 /**
  * Retrieves all active categories with post counts.
- * 
+ *
  * Returns a filtered list of active categories excluding legacy import categories.
  * Each category includes metadata like post count, description, and visual elements.
  * Used for category navigation, post creation forms, and directory pages.
- * 
+ *
  * @returns Array of active category objects with post counts
- * 
+ *
  * @example
  * ```typescript
  * const categories = await getCategories();
@@ -74,13 +74,13 @@ export const getCategories = query({
 
 /**
  * Retrieves a single category by its unique identifier.
- * 
+ *
  * Returns complete category information if the category exists and is active.
  * Used for category detail pages and validation during post operations.
- * 
+ *
  * @param categoryId - Unique identifier of the category
  * @returns Category object or null if not found/inactive
- * 
+ *
  * @example
  * ```typescript
  * const category = await getCategoryById({ categoryId: "cat123" });
@@ -102,13 +102,13 @@ export const getCategoryById = query({
 
 /**
  * Retrieves a category by its URL-friendly name for routing.
- * 
+ *
  * Used for SEO-friendly category URLs and navigation. Handles special cases
  * like legacy category filtering. Essential for category-based routing.
- * 
+ *
  * @param name - URL-safe category name identifier
  * @returns Category object or null if not found
- * 
+ *
  * @example
  * ```typescript
  * const category = await getCategoryByName({ name: "workflows" });
@@ -146,11 +146,11 @@ export const getCategoryStats = query({
 
     // Get recent posts (last 7 days)
     const sevenDaysAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const recentPosts = posts.filter(post => post.createdAt > sevenDaysAgo);
+    const recentPosts = posts.filter((post) => post.createdAt > sevenDaysAgo);
 
     // Get top contributors
     const authorCounts = new Map<Id<"members">, number>();
-    posts.forEach(post => {
+    posts.forEach((post) => {
       const count = authorCounts.get(post.memberId) || 0;
       authorCounts.set(post.memberId, count + 1);
     });
@@ -173,13 +173,13 @@ export const getCategoryStats = query({
 
 /**
  * Initializes the default category structure for a new community.
- * 
+ *
  * Creates the standard set of categories used by the VAI community including
  * Announcements, Workflows, Prompts, Connect, and Content. Only creates categories
  * that don't already exist. Requires authentication.
- * 
+ *
  * @returns Object with creation summary and new category IDs
- * 
+ *
  * @example
  * ```typescript
  * const result = await initializeCategories();
@@ -283,19 +283,19 @@ export const updateCategoryPostCount = mutation({
 
 /**
  * Searches categories by display name with fuzzy matching.
- * 
+ *
  * Provides search functionality for category discovery and selection.
  * Uses full-text search indexes for efficient querying across category names.
- * 
+ *
  * @param searchTerm - Text to search for in category names
  * @param limit - Maximum number of results to return (default: 10)
  * @returns Array of matching category objects
- * 
+ *
  * @example
  * ```typescript
- * const results = await searchCategories({ 
- *   searchTerm: "work", 
- *   limit: 5 
+ * const results = await searchCategories({
+ *   searchTerm: "work",
+ *   limit: 5
  * });
  * // Might return categories like "Workflows", "Networking", etc.
  * ```
@@ -313,8 +313,7 @@ export const searchCategories = query({
     const results = await ctx.db
       .query("categories")
       .withSearchIndex("search_categories", (q) =>
-        q.search("displayName", searchTerm)
-          .eq("status", "active")
+        q.search("displayName", searchTerm).eq("status", "active"),
       )
       .take(limit);
 
@@ -343,7 +342,9 @@ export const createSkoolCategory = mutation({
     // Get first member to use as creator
     const firstMember = await ctx.db.query("members").first();
     if (!firstMember) {
-      throw new Error("No members found. Please ensure at least one member exists before creating category.");
+      throw new Error(
+        "No members found. Please ensure at least one member exists before creating category.",
+      );
     }
 
     const now = Date.now();
@@ -420,7 +421,9 @@ export const seedCategories = mutation({
         const firstMember = await ctx.db.query("members").first();
 
         if (!firstMember) {
-          throw new Error("No members found. Please ensure at least one member exists before seeding categories.");
+          throw new Error(
+            "No members found. Please ensure at least one member exists before seeding categories.",
+          );
         }
 
         const categoryId = await ctx.db.insert("categories", {
@@ -441,7 +444,10 @@ export const seedCategories = mutation({
     return {
       message: `Seeded ${createdCategories.length} categories`,
       categoryIds: createdCategories,
-      totalCategories: await ctx.db.query("categories").collect().then(cats => cats.length),
+      totalCategories: await ctx.db
+        .query("categories")
+        .collect()
+        .then((cats) => cats.length),
     };
   },
 });
@@ -484,4 +490,4 @@ export const deleteCategoryByName = mutation({
       deletedCategoryId: category._id,
     };
   },
-}); 
+});

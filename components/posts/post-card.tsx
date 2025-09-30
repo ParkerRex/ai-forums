@@ -1,18 +1,17 @@
+import { Authenticated, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { ArrowBigUpIcon } from "@/components/icons/arrow-big-up";
 import { MessageSquareIcon } from "@/components/icons/message-square";
-import { UploadIcon } from "@/components/ui/upload";
-import { Id } from "@/convex/_generated/dataModel";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { useState, useRef } from "react";
-import PostPreview from "@/components/posts/post-preview";
-import { PostData } from "@/lib/post-preview-utils";
-import { useMutationError } from "@/hooks/use-mutation-error";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
-import { toast } from "sonner";
+import PostPreview from "@/components/posts/post-preview";
+import { Button } from "@/components/ui/button";
+import { UploadIcon } from "@/components/ui/upload";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useMutationError } from "@/hooks/use-mutation-error";
+import type { PostData } from "@/lib/post-preview-utils";
 import { cn } from "@/lib/utils";
 
 // Interface to match Convex post data structure
@@ -78,9 +77,7 @@ export default function PostCard({
   const [isVoting, setIsVoting] = useState(false);
 
   const [optimisticNetVotes, setOptimisticNetVotes] = useState(post.netVotes);
-  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
-    null,
-  );
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
 
   // Refs for animated icons
   const upvoteIconRef = useRef<{
@@ -114,8 +111,7 @@ export default function PostCard({
   // Use prop if provided, otherwise fall back to query
   const actualUserVote = userVote !== undefined ? userVote : userVoteQuery;
 
-  const currentUserVote =
-    optimisticUserVote !== null ? optimisticUserVote : actualUserVote;
+  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : actualUserVote;
 
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -227,20 +223,20 @@ export default function PostCard({
             </Button>
           </Authenticated>
           <Unauthenticated>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
-                onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
-                onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
-              >
-                <ArrowBigUpIcon
-                  ref={upvoteIconRef}
-                  size={18}
-                  className="text-muted-foreground hover:text-orange-500"
-                />
-                <span className="font-medium">{optimisticNetVotes}</span>
-              </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
+              onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+              onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
+            >
+              <ArrowBigUpIcon
+                ref={upvoteIconRef}
+                size={18}
+                className="text-muted-foreground hover:text-orange-500"
+              />
+              <span className="font-medium">{optimisticNetVotes}</span>
+            </Button>
           </Unauthenticated>
 
           {/* Comments */}
@@ -256,29 +252,21 @@ export default function PostCard({
               onMouseEnter={() => commentIconRef.current?.startAnimation()}
               onMouseLeave={() => commentIconRef.current?.stopAnimation()}
             >
-              <MessageSquareIcon
-                ref={commentIconRef}
-                size={12}
-                className="mr-1"
-              />
+              <MessageSquareIcon ref={commentIconRef} size={12} className="mr-1" />
               <span className="font-mono tracking-tighter">{post.commentCount}</span>
             </Button>
           </Authenticated>
           <Unauthenticated>
-                        <Button
-                variant="ghost"
-                size="sm"
-                className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
-                onMouseEnter={() => commentIconRef.current?.startAnimation()}
-                onMouseLeave={() => commentIconRef.current?.stopAnimation()}
-              >
-                <MessageSquareIcon
-                  ref={commentIconRef}
-                  size={10}
-                  className="mr-1"
-                />
-                <span className="font-mono tracking-tighter">{post.commentCount}</span>
-              </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
+              onMouseEnter={() => commentIconRef.current?.startAnimation()}
+              onMouseLeave={() => commentIconRef.current?.stopAnimation()}
+            >
+              <MessageSquareIcon ref={commentIconRef} size={10} className="mr-1" />
+              <span className="font-mono tracking-tighter">{post.commentCount}</span>
+            </Button>
           </Unauthenticated>
 
           {/* Bookmark and Share */}

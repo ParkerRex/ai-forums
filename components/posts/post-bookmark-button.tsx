@@ -16,13 +16,13 @@
  * @since 1.0.0
  */
 
-import React, { useState } from "react";
+import { Authenticated, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { Bookmark } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Authenticated, Unauthenticated } from "convex/react";
+import type React from "react";
+import { useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
 
 interface PostBookmarkButtonProps {
   targetId: string;
@@ -65,9 +65,7 @@ export function PostBookmarkButton({
         targetType,
       });
 
-      toast.success(
-        result.bookmarked ? "Added to bookmarks" : "Removed from bookmarks",
-      );
+      toast.success(result.bookmarked ? "Added to bookmarks" : "Removed from bookmarks");
     } catch (error) {
       console.error("Error bookmarking:", error);
       toast.error("Failed to update bookmark");
@@ -92,27 +90,21 @@ export function PostBookmarkButton({
           <Bookmark
             size={12}
             className={`transition-colors ${
-              isBookmarked
-                ? "fill-blue-500 text-blue-500"
-                : "text-muted-foreground"
+              isBookmarked ? "fill-blue-500 text-blue-500" : "text-muted-foreground"
             }`}
           />
-          {shouldShowLabel && (
-            <span className="ml-1 text-xs font-medium">{displayLabel}</span>
-          )}
+          {shouldShowLabel && <span className="ml-1 text-xs font-medium">{displayLabel}</span>}
         </Button>
       </Authenticated>
       <Unauthenticated>
-          <Button
-            variant={variant}
-            size={buttonSize}
-            className={`hover:bg-muted/50 h-auto rounded-none px-2 py-1 ${className}`}
-          >
-            <Bookmark size={12} className="text-muted-foreground" />
-            {shouldShowLabel && (
-              <span className="ml-1 text-xs font-medium">save</span>
-            )}
-          </Button>
+        <Button
+          variant={variant}
+          size={buttonSize}
+          className={`hover:bg-muted/50 h-auto rounded-none px-2 py-1 ${className}`}
+        >
+          <Bookmark size={12} className="text-muted-foreground" />
+          {shouldShowLabel && <span className="ml-1 text-xs font-medium">save</span>}
+        </Button>
       </Unauthenticated>
     </>
   );

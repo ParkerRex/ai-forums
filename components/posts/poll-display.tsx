@@ -1,16 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useUser } from "@clerk/nextjs";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { formatDistanceToNow } from "date-fns";
+import { CheckCircle, Clock, Users } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { PollVotersModal } from "@/components/posts/poll-voters-modal";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { Clock, Users, CheckCircle } from "lucide-react";
-import { toast } from "sonner";
-import { formatDistanceToNow } from "date-fns";
-import { useUser } from "@clerk/nextjs";
-import { PollVotersModal } from "@/components/posts/poll-voters-modal";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface PollOption {
   id: string;
@@ -36,18 +36,20 @@ export function PollDisplay({
   const { user } = useUser();
   const [isVoting, setIsVoting] = useState(false);
   const [showVotersModal, setShowVotersModal] = useState(false);
-  
+
   // Get poll results with current user's vote
   const pollResults = useQuery(
     api.polls.getPollResults,
-    currentUserId ? { pollId, userId: currentUserId } : { pollId }
-  ) as {
-    pollOptions: PollOption[];
-    totalVotes: number;
-    userVotedOptionId: string | null;
-    hasEnded: boolean;
-    endsAt?: number;
-  } | undefined;
+    currentUserId ? { pollId, userId: currentUserId } : { pollId },
+  ) as
+    | {
+        pollOptions: PollOption[];
+        totalVotes: number;
+        userVotedOptionId: string | null;
+        hasEnded: boolean;
+        endsAt?: number;
+      }
+    | undefined;
 
   const voteOnPoll = useMutation(api.polls.voteOnPoll);
 
@@ -137,14 +139,12 @@ export function PollDisplay({
                   </Button>
                 ) : (
                   <div className="flex items-center gap-2">
-                    {isVoted && (
-                      <CheckCircle className="h-4 w-4 text-green-600" />
-                    )}
+                    {isVoted && <CheckCircle className="h-4 w-4 text-green-600" />}
                     <span className="text-sm font-medium">{percentage}%</span>
                   </div>
                 )}
               </div>
-              
+
               <div className="relative">
                 <Progress value={percentage} className="h-6" />
                 <div className="absolute inset-0 flex items-center px-2">

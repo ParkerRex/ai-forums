@@ -2,16 +2,16 @@
 
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { MediaItem } from "@/types";
-import { PDFPreview } from "@/components/posts/pdf-preview";
-import { YouTubePreview } from "@/components/posts/youtube-preview";
-import { VideoPreview } from "@/components/posts/video-preview";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { X, GripVertical, AlertCircle } from "lucide-react";
+import { AlertCircle, GripVertical, X } from "lucide-react";
 import Image from "next/image";
+import { PDFPreview } from "@/components/posts/pdf-preview";
+import { VideoPreview } from "@/components/posts/video-preview";
+import { YouTubePreview } from "@/components/posts/youtube-preview";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import type { MediaItem } from "@/types";
 
 interface MediaPreviewItemProps {
   media: MediaItem;
@@ -45,15 +45,7 @@ export function MediaPreviewItem({
   const renderPreview = () => {
     switch (media.type) {
       case "image":
-        return (
-          <Image
-            src={media.url}
-            alt="Preview"
-            fill
-            className="object-cover"
-            unoptimized
-          />
-        );
+        return <Image src={media.url} alt="Preview" fill className="object-cover" unoptimized />;
       case "video":
         return <VideoPreview media={media} />;
       case "pdf":

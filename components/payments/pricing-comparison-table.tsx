@@ -97,23 +97,17 @@ export function PricingComparisonTable() {
       <table className="w-full border-collapse">
         <thead className="bg-background sticky top-0 z-10">
           <tr className="border-b">
-            <th className="min-w-[200px] p-4 text-left font-medium">
-              Features
-            </th>
+            <th className="min-w-[200px] p-4 text-left font-medium">Features</th>
             <th className="min-w-[140px] p-4 text-center font-medium">
               <div className="space-y-1">
                 <div className="text-lg">Free</div>
-                <div className="text-muted-foreground text-sm font-normal">
-                  $0/month
-                </div>
+                <div className="text-muted-foreground text-sm font-normal">$0/month</div>
               </div>
             </th>
             <th className="min-w-[140px] p-4 text-center font-medium">
               <div className="space-y-1">
                 <div className="text-lg">Member</div>
-                <div className="text-muted-foreground text-sm font-normal">
-                  $99/month
-                </div>
+                <div className="text-muted-foreground text-sm font-normal">$99/month</div>
               </div>
             </th>
           </tr>
@@ -125,9 +119,7 @@ export function PricingComparisonTable() {
                 <div className="space-y-1">
                   <div className="font-medium">{feature.name}</div>
                   {feature.description && (
-                    <div className="text-muted-foreground text-sm">
-                      {feature.description}
-                    </div>
+                    <div className="text-muted-foreground text-sm">{feature.description}</div>
                   )}
                 </div>
               </td>
@@ -139,9 +131,7 @@ export function PricingComparisonTable() {
                     <X className="text-muted-foreground mx-auto h-5 w-5" />
                   )
                 ) : (
-                  <span className="text-muted-foreground text-sm">
-                    {feature.free}
-                  </span>
+                  <span className="text-muted-foreground text-sm">{feature.free}</span>
                 )}
               </td>
               <td className="p-4 text-center">
@@ -167,9 +157,7 @@ interface CompactPricingComparisonProps {
   className?: string;
 }
 
-export function CompactPricingComparison({
-  className,
-}: CompactPricingComparisonProps) {
+export function CompactPricingComparison({ className }: CompactPricingComparisonProps) {
   const keyFeatures = features.slice(0, 6);
 
   return (
@@ -191,9 +179,7 @@ export function CompactPricingComparison({
                     <X className="text-muted-foreground mx-auto h-4 w-4" />
                   )
                 ) : (
-                  <span className="text-muted-foreground text-xs">
-                    {feature.free}
-                  </span>
+                  <span className="text-muted-foreground text-xs">{feature.free}</span>
                 )}
               </div>
               {/* Removed Founding Member column */}

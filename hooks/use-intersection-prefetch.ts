@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 
 export function useIntersectionPrefetch(href: string) {
   const ref = useRef<HTMLAnchorElement>(null);
@@ -26,7 +26,7 @@ export function useIntersectionPrefetch(href: string) {
         threshold: 0.5,
         // Start prefetching when element is 100px away from viewport
         rootMargin: "100px",
-      }
+      },
     );
 
     observer.observe(ref.current);
@@ -35,4 +35,4 @@ export function useIntersectionPrefetch(href: string) {
   }, [href, router]);
 
   return ref;
-} 
+}

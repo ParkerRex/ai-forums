@@ -1,7 +1,6 @@
 import { v } from "convex/values";
-import { internalAction, internalMutation, mutation } from "../_generated/server";
-import { Id } from "../_generated/dataModel";
 import { internal } from "../_generated/api";
+import { internalAction, internalMutation } from "../_generated/server";
 
 /**
  * Internal action to create a Clerk account for a guest member after Stripe checkout.
@@ -49,11 +48,13 @@ export const createClerkAccount = internalAction({
       if (!response.ok) {
         const error = await response.text();
         console.error("Clerk API error:", error);
-        
+
         // Check if user already exists
         if (response.status === 422) {
           const errorData = JSON.parse(error);
-          if (errorData.errors?.some((e: { code: string }) => e.code === "form_identifier_exists")) {
+          if (
+            errorData.errors?.some((e: { code: string }) => e.code === "form_identifier_exists")
+          ) {
             // User already exists, link to existing Clerk account
             const existingUserResponse = await fetch(
               `https://api.clerk.com/v1/users?email_address=${encodeURIComponent(args.email)}`,
@@ -61,50 +62,47 @@ export const createClerkAccount = internalAction({
                 headers: {
                   Authorization: `Bearer ${clerkSecretKey}`,
                 },
-              }
+              },
             );
-            
+
             if (existingUserResponse.ok) {
               const users = await existingUserResponse.json();
               if (users.data && users.data.length > 0) {
                 const existingUser = users.data[0];
                 const clerkUserId = existingUser.id;
-                
+
                 // Create sign-in token for existing user
-                const signInTokenResponse = await fetch(
-                  "https://api.clerk.com/v1/sign_in_tokens",
-                  {
-                    method: "POST",
-                    headers: {
-                      Authorization: `Bearer ${clerkSecretKey}`,
-                      "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                      user_id: clerkUserId,
-                      expires_in_seconds: 300,
-                    }),
-                  }
-                );
+                const signInTokenResponse = await fetch("https://api.clerk.com/v1/sign_in_tokens", {
+                  method: "POST",
+                  headers: {
+                    Authorization: `Bearer ${clerkSecretKey}`,
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({
+                    user_id: clerkUserId,
+                    expires_in_seconds: 300,
+                  }),
+                });
 
                 let signInToken = null;
                 if (signInTokenResponse.ok) {
                   const tokenData = await signInTokenResponse.json();
                   signInToken = tokenData.token;
                 }
-                
+
                 // Update member with existing Clerk ID
                 await ctx.runMutation(internal.auth.clerkAccounts.internalUpdateMemberWithClerkId, {
                   memberId: args.memberId,
                   clerkUserId,
                   signInToken,
                 });
-                
+
                 return { clerkUserId, signInToken, existingUser: true };
               }
             }
           }
         }
-        
+
         throw new Error(`Failed to create Clerk account: ${error}`);
       }
 
@@ -112,20 +110,17 @@ export const createClerkAccount = internalAction({
       const clerkUserId = clerkUser.id;
 
       // Create a sign-in token for auto-login
-      const signInTokenResponse = await fetch(
-        "https://api.clerk.com/v1/sign_in_tokens",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${clerkSecretKey}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            user_id: clerkUserId,
-            expires_in_seconds: 300, // 5 minutes
-          }),
-        }
-      );
+      const signInTokenResponse = await fetch("https://api.clerk.com/v1/sign_in_tokens", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${clerkSecretKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          user_id: clerkUserId,
+          expires_in_seconds: 300, // 5 minutes
+        }),
+      });
 
       let signInToken = null;
       if (signInTokenResponse.ok) {
@@ -141,8 +136,8 @@ export const createClerkAccount = internalAction({
       });
 
       if (signInToken) {
-        return { 
-          clerkUserId, 
+        return {
+          clerkUserId,
           signInToken,
           existingUser: false,
         };

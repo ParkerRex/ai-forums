@@ -1,22 +1,22 @@
 /**
  * Direct Stripe Checkout Module - Simplified checkout for unauthenticated users
- * 
+ *
  * This module provides a streamlined checkout experience that doesn't require
  * authentication. Users can purchase directly through Stripe, and accounts are
  * created automatically after successful payment.
- * 
+ *
  * Key features:
  * - No authentication required before purchase
  * - Email collection handled by Stripe
  * - Automatic member creation on successful payment
  * - Support for metadata to track source content
- * 
+ *
  * @module stripe/directCheckout
  */
 
-import { action } from "../_generated/server";
 import { v } from "convex/values";
 import Stripe from "stripe";
+import { action } from "../_generated/server";
 import { getStripePrice } from "./pricing";
 
 // Lazily instantiate the Stripe client so Convex's module analyzer
@@ -35,15 +35,15 @@ function getStripeClient(): Stripe {
 
 /**
  * Creates a direct checkout session for unauthenticated users
- * 
+ *
  * This action bypasses authentication requirements and creates a Stripe
  * checkout session directly. The user's email is collected by Stripe,
  * and a member account is created automatically upon successful payment.
- * 
+ *
  * @param email - Optional email to prefill in checkout
  * @param sourcePostId - Optional post ID that triggered the checkout
  * @returns Object containing the checkout URL and session ID
- * 
+ *
  * @example
  * ```typescript
  * const { url } = await createDirectCheckout({
@@ -58,7 +58,7 @@ export const createDirectCheckout = action({
     email: v.optional(v.string()),
     sourcePostId: v.optional(v.string()),
   },
-  handler: async (ctx, { email, sourcePostId }) => {
+  handler: async (_ctx, { email, sourcePostId }) => {
     try {
       // Get the monthly price ID from centralized configuration
       const priceId = getStripePrice("member", "monthly");
@@ -68,14 +68,14 @@ export const createDirectCheckout = action({
         checkoutType: "direct",
         timestamp: Date.now().toString(),
       };
-      
+
       if (sourcePostId) {
         metadata.sourcePostId = sourcePostId;
       }
 
       // Get Stripe client
       const stripe = getStripeClient();
-      
+
       // Create Stripe checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -86,7 +86,7 @@ export const createDirectCheckout = action({
           },
         ],
         mode: "subscription",
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}${sourcePostId ? `&source_post_id=${sourcePostId}` : ''}`,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}${sourcePostId ? `&source_post_id=${sourcePostId}` : ""}`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
         // Allow promotion codes for special offers
         allow_promotion_codes: true,
@@ -119,7 +119,7 @@ export const createDirectCheckout = action({
 
 /**
  * Creates a direct checkout session with yearly billing
- * 
+ *
  * Same as createDirectCheckout but uses the yearly price for users
  * who prefer annual billing with discount.
  */
@@ -128,7 +128,7 @@ export const createDirectCheckoutYearly = action({
     email: v.optional(v.string()),
     sourcePostId: v.optional(v.string()),
   },
-  handler: async (ctx, { email, sourcePostId }) => {
+  handler: async (_ctx, { email, sourcePostId }) => {
     try {
       // Get the yearly price ID from centralized configuration
       const priceId = getStripePrice("member", "yearly");
@@ -139,14 +139,14 @@ export const createDirectCheckoutYearly = action({
         billingInterval: "yearly",
         timestamp: Date.now().toString(),
       };
-      
+
       if (sourcePostId) {
         metadata.sourcePostId = sourcePostId;
       }
 
       // Get Stripe client
       const stripe = getStripeClient();
-      
+
       // Create Stripe checkout session
       const session = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -157,7 +157,7 @@ export const createDirectCheckoutYearly = action({
           },
         ],
         mode: "subscription",
-        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}${sourcePostId ? `&source_post_id=${sourcePostId}` : ''}`,
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/membership/success?session_id={CHECKOUT_SESSION_ID}${sourcePostId ? `&source_post_id=${sourcePostId}` : ""}`,
         cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/pricing`,
         allow_promotion_codes: true,
         billing_address_collection: "required",

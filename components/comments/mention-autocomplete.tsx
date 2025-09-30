@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface MentionAutocompleteProps {
   items: Array<{
@@ -20,11 +20,7 @@ interface MentionAutocompleteProps {
   onClose: () => void;
 }
 
-export function MentionAutocomplete({
-  items,
-  onSelect,
-  onClose,
-}: MentionAutocompleteProps) {
+export function MentionAutocomplete({ items, onSelect, onClose }: MentionAutocompleteProps) {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -101,10 +97,7 @@ export function MentionAutocomplete({
             }`}
             onClick={() => {
               console.log("MentionAutocomplete: Member clicked:", member);
-              console.log(
-                "MentionAutocomplete: About to call onSelect with member:",
-                member,
-              );
+              console.log("MentionAutocomplete: About to call onSelect with member:", member);
               onSelect(member);
               console.log("MentionAutocomplete: onSelect called successfully");
             }}
@@ -119,9 +112,7 @@ export function MentionAutocomplete({
               <div className="text-sm font-medium text-foreground truncate">
                 {member.firstName} {member.lastName}
               </div>
-              <div className="text-xs text-muted-foreground truncate">
-                @{member.slug}
-              </div>
+              <div className="text-xs text-muted-foreground truncate">@{member.slug}</div>
             </div>
           </div>
         ))}

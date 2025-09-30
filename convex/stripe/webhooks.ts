@@ -1,8 +1,8 @@
 import { v } from "convex/values";
-import { mutation, MutationCtx, internalMutation } from "../_generated/server";
-import { Id, Doc } from "../_generated/dataModel";
-import Stripe from "stripe";
+import type Stripe from "stripe";
 import { internal } from "../_generated/api";
+import type { Doc, Id } from "../_generated/dataModel";
+import { internalMutation, type MutationCtx, mutation } from "../_generated/server";
 
 // Validator for Stripe webhook event data
 // We use a permissive validator that accepts any object shape since Stripe
@@ -47,7 +47,7 @@ export const processWebhookEvent = mutation({
       .withIndex("by_stripeEventId", (q) => q.eq("stripeEventId", args.stripeEventId))
       .first();
 
-    if (existingEvent && existingEvent.processed) {
+    if (existingEvent?.processed) {
       console.log(`Event ${args.stripeEventId} already processed, skipping`);
       return;
     }
@@ -96,7 +96,7 @@ export const processWebhookEvent = mutation({
         .query("stripeWebhookEvents")
         .withIndex("by_stripeEventId", (q) => q.eq("stripeEventId", args.stripeEventId))
         .first();
-      
+
       if (event) {
         await ctx.db.patch(event._id, {
           processed: true,
@@ -105,18 +105,18 @@ export const processWebhookEvent = mutation({
       }
     } catch (error) {
       console.error(`Error processing webhook event ${args.type}:`, error);
-      
+
       // Get the event record
       const event = await ctx.db
         .query("stripeWebhookEvents")
         .withIndex("by_stripeEventId", (q) => q.eq("stripeEventId", args.stripeEventId))
         .first();
-      
+
       if (event) {
         const retryCount = event.retryCount || 0;
         const isCriticalEvent = WEBHOOK_RETRY_CONFIG.criticalEvents.includes(args.type);
         const shouldRetry = isCriticalEvent && retryCount < WEBHOOK_RETRY_CONFIG.maxRetries;
-        
+
         // Update event with error details
         await ctx.db.patch(event._id, {
           error: error instanceof Error ? error.message : "Unknown error",
@@ -124,12 +124,14 @@ export const processWebhookEvent = mutation({
           retryCount: retryCount + 1,
           ...(shouldRetry ? { needsRetry: true } : {}),
         });
-        
+
         // Schedule retry for critical events
         if (shouldRetry) {
           const retryDelay = WEBHOOK_RETRY_CONFIG.retryDelayMs[retryCount] || 30000;
-          console.log(`Scheduling retry ${retryCount + 1}/${WEBHOOK_RETRY_CONFIG.maxRetries} for ${args.type} in ${retryDelay}ms`);
-          
+          console.log(
+            `Scheduling retry ${retryCount + 1}/${WEBHOOK_RETRY_CONFIG.maxRetries} for ${args.type} in ${retryDelay}ms`,
+          );
+
           await ctx.scheduler.runAfter(retryDelay, internal.stripe.webhooks.retryWebhookEvent, {
             stripeEventId: args.stripeEventId,
             type: args.type,
@@ -143,10 +145,13 @@ export const processWebhookEvent = mutation({
           //   error: error instanceof Error ? error.message : "Unknown error",
           //   retryCount,
           // });
-          console.error(`Critical webhook event ${args.type} failed after ${retryCount} retries`, error);
+          console.error(
+            `Critical webhook event ${args.type} failed after ${retryCount} retries`,
+            error,
+          );
         }
       }
-      
+
       // Only throw error for non-retryable events
       if (!WEBHOOK_RETRY_CONFIG.criticalEvents.includes(args.type)) {
         throw error;
@@ -166,7 +171,7 @@ export const retryWebhookEvent = internalMutation({
   },
   handler: async (ctx, args) => {
     console.log(`Retrying webhook event ${args.type} (${args.stripeEventId})`);
-    
+
     // Reprocess the webhook event using the same logic
     // Check if we've already processed this event
     const existingEvent = await ctx.db
@@ -174,11 +179,11 @@ export const retryWebhookEvent = internalMutation({
       .withIndex("by_stripeEventId", (q) => q.eq("stripeEventId", args.stripeEventId))
       .first();
 
-    if (existingEvent && existingEvent.processed) {
+    if (existingEvent?.processed) {
       console.log(`Event ${args.stripeEventId} already processed during retry`);
       return;
     }
-    
+
     // Process based on event type
     switch (args.type) {
       case "checkout.session.completed":
@@ -200,7 +205,7 @@ export const retryWebhookEvent = internalMutation({
       default:
         console.log(`Unhandled event type in retry: ${args.type}`);
     }
-    
+
     // Mark as processed
     if (existingEvent) {
       await ctx.db.patch(existingEvent._id, {
@@ -217,17 +222,14 @@ export const retryWebhookEvent = internalMutation({
  * Updates member with subscription information after successful checkout
  * Handles both authenticated and direct (guest) checkouts
  */
-async function handleCheckoutSessionCompleted(
-  ctx: MutationCtx,
-  session: ExtendedCheckoutSession
-) {
+async function handleCheckoutSessionCompleted(ctx: MutationCtx, session: ExtendedCheckoutSession) {
   if (!session.subscription || !session.customer) {
     console.error("Missing subscription or customer in checkout session");
     return;
   }
 
   const memberId = session.metadata?.memberId as Id<"members">;
-  
+
   // Handle direct checkout (no memberId)
   if (!memberId) {
     // Check if this is a direct checkout
@@ -238,7 +240,7 @@ async function handleCheckoutSessionCompleted(
         console.error("No email found for direct checkout");
         return;
       }
-      
+
       // Extract customer name if available
       const customerName = session.customer_details?.name || "";
       const nameParts = customerName.split(" ");
@@ -246,7 +248,7 @@ async function handleCheckoutSessionCompleted(
       const lastName = nameParts.slice(1).join(" ") || "";
 
       // Check if member already exists with this email
-      let member = await ctx.db
+      const member = await ctx.db
         .query("members")
         .filter((q) => q.eq(q.field("email"), email))
         .first();
@@ -262,8 +264,8 @@ async function handleCheckoutSessionCompleted(
           lastPaymentDate: Date.now(),
           updatedAt: Date.now(),
           // Update names if they were empty and we got them from Stripe
-          ...((!member.firstName && firstName) ? { firstName } : {}),
-          ...((!member.lastName && lastName) ? { lastName } : {}),
+          ...(!member.firstName && firstName ? { firstName } : {}),
+          ...(!member.lastName && lastName ? { lastName } : {}),
         });
       } else {
         // Create new member for guest checkout
@@ -273,7 +275,7 @@ async function handleCheckoutSessionCompleted(
           firstName,
           lastName,
           // externalId will be set after Clerk account creation
-          slug: email.split("@")[0] + "-" + Math.random().toString(36).substring(7),
+          slug: `${email.split("@")[0]}-${Math.random().toString(36).substring(7)}`,
           stripeCustomerId: session.customer as string,
           stripeSubscriptionId: session.subscription as string,
           tier: "member",
@@ -284,10 +286,14 @@ async function handleCheckoutSessionCompleted(
           lastOnline: now,
           status: "active", // Set to active immediately since we're auto-creating account
           // Store location info if available
-          ...(session.customer_details?.address?.country ? { country: session.customer_details.address.country } : {}),
-          ...(session.customer_details?.address?.city ? { location: session.customer_details.address.city } : {}),
+          ...(session.customer_details?.address?.country
+            ? { country: session.customer_details.address.country }
+            : {}),
+          ...(session.customer_details?.address?.city
+            ? { location: session.customer_details.address.city }
+            : {}),
         });
-        
+
         // Schedule Clerk account creation
         await ctx.scheduler.runAfter(0, internal.auth.clerkAccounts.createClerkAccount, {
           email,
@@ -297,10 +303,10 @@ async function handleCheckoutSessionCompleted(
           lastName,
         });
       }
-      
+
       return;
     }
-    
+
     console.error("Missing memberId in session metadata");
     return;
   }
@@ -329,15 +335,14 @@ async function handleCheckoutSessionCompleted(
  * Handles customer.subscription.created and customer.subscription.updated webhook events
  * Syncs subscription status and details with member records
  */
-async function handleSubscriptionUpdate(
-  ctx: MutationCtx,
-  subscription: Stripe.Subscription
-) {
+async function handleSubscriptionUpdate(ctx: MutationCtx, subscription: Stripe.Subscription) {
   const extendedSubscription = subscription as ExtendedSubscription;
-  
+
   const member = await ctx.db
     .query("members")
-    .withIndex("by_stripeCustomerId", (q) => q.eq("stripeCustomerId", subscription.customer as string))
+    .withIndex("by_stripeCustomerId", (q) =>
+      q.eq("stripeCustomerId", subscription.customer as string),
+    )
     .first();
 
   if (!member) {
@@ -376,11 +381,12 @@ async function handleSubscriptionUpdate(
     .first();
 
   // Ensure tier is valid for subscriptions table (exclude "free" and "scholarship")
-  const validTier = (subscription.metadata?.tier as Doc<"subscriptions">["tier"]) || 
-    (member.tier === "founding_member" || member.tier === "early_bird" || member.tier === "member" 
-      ? member.tier 
-      : "member" as Doc<"subscriptions">["tier"]);
-  
+  const validTier =
+    (subscription.metadata?.tier as Doc<"subscriptions">["tier"]) ||
+    (member.tier === "founding_member" || member.tier === "early_bird" || member.tier === "member"
+      ? member.tier
+      : ("member" as Doc<"subscriptions">["tier"]));
+
   const subscriptionData = {
     memberId: member._id,
     stripeCustomerId: subscription.customer as string,
@@ -390,7 +396,10 @@ async function handleSubscriptionUpdate(
     currentPeriodEnd: extendedSubscription.current_period_end * 1000,
     cancelAtPeriodEnd: extendedSubscription.cancel_at_period_end,
     tier: validTier,
-    billingInterval: (subscription.metadata?.billingInterval as Doc<"subscriptions">["billingInterval"]) || member.billingInterval || "monthly",
+    billingInterval:
+      (subscription.metadata?.billingInterval as Doc<"subscriptions">["billingInterval"]) ||
+      member.billingInterval ||
+      "monthly",
     updatedAt: Date.now(),
   };
 
@@ -408,13 +417,12 @@ async function handleSubscriptionUpdate(
  * Handles customer.subscription.deleted webhook event
  * Marks member subscription as expired when cancelled
  */
-async function handleSubscriptionDeleted(
-  ctx: MutationCtx,
-  subscription: Stripe.Subscription
-) {
+async function handleSubscriptionDeleted(ctx: MutationCtx, subscription: Stripe.Subscription) {
   const member = await ctx.db
     .query("members")
-    .withIndex("by_stripeCustomerId", (q) => q.eq("stripeCustomerId", subscription.customer as string))
+    .withIndex("by_stripeCustomerId", (q) =>
+      q.eq("stripeCustomerId", subscription.customer as string),
+    )
     .first();
 
   if (!member) {
@@ -446,12 +454,9 @@ async function handleSubscriptionDeleted(
  * Handles invoice.payment_succeeded webhook event
  * Records successful payment and updates member payment history
  */
-async function handlePaymentSucceeded(
-  ctx: MutationCtx,
-  invoice: Stripe.Invoice
-) {
+async function handlePaymentSucceeded(ctx: MutationCtx, invoice: Stripe.Invoice) {
   const extendedInvoice = invoice as ExtendedInvoice;
-  
+
   if (!extendedInvoice.subscription || !invoice.customer) {
     return;
   }
@@ -475,7 +480,9 @@ async function handlePaymentSucceeded(
   // Get subscription record
   const subscription = await ctx.db
     .query("subscriptions")
-    .withIndex("by_stripeSubscriptionId", (q) => q.eq("stripeSubscriptionId", extendedInvoice.subscription!))
+    .withIndex("by_stripeSubscriptionId", (q) =>
+      q.eq("stripeSubscriptionId", extendedInvoice.subscription!),
+    )
     .first();
 
   // Record the payment
@@ -503,12 +510,9 @@ async function handlePaymentSucceeded(
  * Handles invoice.payment_failed webhook event
  * Updates subscription status to past_due and records failed payment
  */
-async function handlePaymentFailed(
-  ctx: MutationCtx,
-  invoice: Stripe.Invoice
-) {
+async function handlePaymentFailed(ctx: MutationCtx, invoice: Stripe.Invoice) {
   const extendedInvoice = invoice as ExtendedInvoice;
-  
+
   if (!extendedInvoice.subscription || !invoice.customer) {
     return;
   }
@@ -526,7 +530,7 @@ async function handlePaymentFailed(
   // Extract failure details for better error handling
   const failureCode = invoice.last_finalization_error?.code || "unknown";
   const failureMessage = invoice.last_finalization_error?.message || "Payment failed";
-  
+
   // Update subscription status to past_due
   await ctx.db.patch(member._id, {
     subscriptionStatus: "past_due",
@@ -541,7 +545,9 @@ async function handlePaymentFailed(
   // Get subscription record
   const subscription = await ctx.db
     .query("subscriptions")
-    .withIndex("by_stripeSubscriptionId", (q) => q.eq("stripeSubscriptionId", extendedInvoice.subscription!))
+    .withIndex("by_stripeSubscriptionId", (q) =>
+      q.eq("stripeSubscriptionId", extendedInvoice.subscription!),
+    )
     .first();
 
   if (subscription) {
@@ -570,7 +576,7 @@ async function handlePaymentFailed(
     failureCode,
     createdAt: Date.now(),
   });
-  
+
   // TODO: Schedule payment recovery email when notifications system is ready
   // await ctx.scheduler.runAfter(
   //   2 * 60 * 60 * 1000, // 2 hours
@@ -583,7 +589,7 @@ async function handlePaymentFailed(
   //     failureReason: failureMessage,
   //   }
   // );
-  
+
   // TODO: For critical members (founding, high LTV), escalate faster
   // if (member.tier === "founding_member" || member.tier === "early_bird") {
   //   await ctx.scheduler.runAfter(

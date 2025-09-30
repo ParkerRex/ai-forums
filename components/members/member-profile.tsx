@@ -1,18 +1,17 @@
 "use client";
+import { useConvexAuth, useQuery } from "convex/react";
+import { CalendarDays, Github, Globe, Linkedin, Youtube } from "lucide-react";
 import Image from "next/image";
-import React, { useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { CalendarDays, Globe, Github, Youtube, Linkedin } from "lucide-react";
-import { Id } from "@/convex/_generated/dataModel";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useConvexAuth } from "convex/react";
+import { useState } from "react";
 import MemberEditModal from "@/components/members/member-edit-modal";
 import { MemberProfileFieldIndicator } from "@/components/members/member-profile-field-indicator";
 import { MemberProfileFieldModal } from "@/components/members/member-profile-field-modal";
-import { detectCountryFromLocation, getFlagEmoji } from "@/lib/country-utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { detectCountryFromLocation, getFlagEmoji } from "@/lib/country-utils";
 
 interface MemberProfileProps {
   member: {
@@ -37,12 +36,7 @@ interface MemberProfileProps {
     postCount?: number;
     // Subscription fields (no free tier - platform operates with zero free users)
     tier?: "founding_member" | "early_bird" | "member" | "scholarship";
-    subscriptionStatus:
-      | "active"
-      | "cancelled"
-      | "past_due"
-      | "expired"
-      | "none";
+    subscriptionStatus: "active" | "cancelled" | "past_due" | "expired" | "none";
     subscriptionEndDate?: number;
     billingInterval?: "monthly" | "yearly";
   };
@@ -53,14 +47,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
   const currentMember = useQuery(api.members.getCurrentMember);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeFieldModal, setActiveFieldModal] = useState<
-    | "bio"
-    | "location"
-    | "github"
-    | "x"
-    | "youtube"
-    | "website"
-    | "avatar"
-    | null
+    "bio" | "location" | "github" | "x" | "youtube" | "website" | "avatar" | null
   >(null);
   const [isAvatarLightboxOpen, setIsAvatarLightboxOpen] = useState(false);
 
@@ -71,11 +58,8 @@ export default function MemberProfile({ member }: MemberProfileProps) {
   const canEdit = isAuthenticated && currentMember?._id === member.id;
 
   // Detect country from location or use the country field
-  const detectedCountryCode =
-    detectCountryFromLocation(member.location) || member.country;
-  const flagEmoji = detectedCountryCode
-    ? getFlagEmoji(detectedCountryCode)
-    : null;
+  const detectedCountryCode = detectCountryFromLocation(member.location) || member.country;
+  const flagEmoji = detectedCountryCode ? getFlagEmoji(detectedCountryCode) : null;
 
   // Transform member data for the edit modal
   const memberForEdit = {
@@ -93,8 +77,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
   };
 
   // Check if member has premium tier for verification badge
-  const isVerified =
-    member.tier === "founding_member" || member.tier === "early_bird";
+  const isVerified = member.tier === "founding_member" || member.tier === "early_bird";
 
   return (
     <div>
@@ -148,17 +131,12 @@ export default function MemberProfile({ member }: MemberProfileProps) {
               {member.firstName} {member.lastName}
             </h2>
             {isVerified && (
-              <svg
-                className="h-5 w-5 fill-current text-blue-500"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-5 w-5 fill-current text-blue-500" viewBox="0 0 24 24">
                 <path d="M22.25 12c0-1.43-.88-2.67-2.19-3.34.46-1.39.2-2.9-.81-3.91s-2.52-1.27-3.91-.81c-.66-1.31-1.91-2.19-3.34-2.19s-2.67.88-3.33 2.19c-1.4-.46-2.91-.2-3.92.81s-1.26 2.52-.8 3.91c-1.31.67-2.2 1.91-2.2 3.34s.89 2.67 2.2 3.34c-.46 1.39-.21 2.9.8 3.91s2.52 1.26 3.92.81c.66 1.31 1.9 2.19 3.33 2.19s2.68-.88 3.34-2.19c1.39.46 2.9.2 3.91-.81s1.27-2.52.81-3.91c1.31-.67 2.19-1.91 2.19-3.34zm-11.71 4.2L6.8 12.46l1.41-1.42 2.26 2.26 4.8-5.23 1.47 1.36-6.2 6.77z" />
               </svg>
             )}
           </div>
-          <p className="text-muted-foreground">
-            @{member.slug || member.email.split("@")[0]}
-          </p>
+          <p className="text-muted-foreground">@{member.slug || member.email.split("@")[0]}</p>
         </div>
 
         {/* Bio */}
@@ -231,10 +209,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
             </a>
           ) : (
             canEdit && (
-              <MemberProfileFieldIndicator
-                label="X"
-                onClick={() => setActiveFieldModal("x")}
-              />
+              <MemberProfileFieldIndicator label="X" onClick={() => setActiveFieldModal("x")} />
             )
           )}
           {member.linkYouTube ? (
@@ -326,10 +301,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
       )}
 
       {/* Avatar Lightbox */}
-      <Dialog
-        open={isAvatarLightboxOpen}
-        onOpenChange={setIsAvatarLightboxOpen}
-      >
+      <Dialog open={isAvatarLightboxOpen} onOpenChange={setIsAvatarLightboxOpen}>
         <DialogContent className="max-w-4xl overflow-hidden p-0">
           <DialogTitle className="sr-only">
             {member.firstName} {member.lastName}&apos;s profile photo

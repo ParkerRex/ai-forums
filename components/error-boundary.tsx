@@ -1,7 +1,8 @@
 "use client";
 
-import React, { Component, ReactNode } from "react";
-import { FullPageErrorDisplay, ErrorDisplay } from "./error-display";
+import type React from "react";
+import { Component, type ReactNode } from "react";
+import { ErrorDisplay, FullPageErrorDisplay } from "./error-display";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -84,13 +85,10 @@ interface QueryErrorBoundaryProps {
 
 export function QueryErrorBoundary({
   children,
-  context = "loading data"
+  context = "loading data",
 }: QueryErrorBoundaryProps) {
   return (
-    <ErrorBoundary
-      fallback="inline"
-      context={context}
-    >
+    <ErrorBoundary fallback="inline" context={context}>
       {children}
     </ErrorBoundary>
   );
@@ -101,14 +99,14 @@ export function QueryErrorBoundary({
  */
 export function PageErrorBoundary({
   children,
-  context = "loading page"
-}: { children: ReactNode; context?: string }) {
+  context = "loading page",
+}: {
+  children: ReactNode;
+  context?: string;
+}) {
   return (
-    <ErrorBoundary
-      fallback="page"
-      context={context}
-    >
+    <ErrorBoundary fallback="page" context={context}>
       {children}
     </ErrorBoundary>
   );
-} 
+}

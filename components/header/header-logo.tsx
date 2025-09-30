@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import Image from "next/image"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import Image from "next/image";
+import Link from "next/link";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 export const HeaderLogo = () => {
   return (
@@ -33,5 +33,5 @@ export const HeaderLogo = () => {
         <p>Go to VAI Home</p>
       </TooltipContent>
     </Tooltip>
-  )
-}
+  );
+};

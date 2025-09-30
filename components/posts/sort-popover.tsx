@@ -1,21 +1,12 @@
 "use client";
 
-import * as React from "react";
 import { ArrowDownWideNarrow } from "lucide-react";
-import { cn } from "@/lib/utils";
+import * as React from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { useSortHotkey, type SortOption } from "@/hooks/use-sort-hotkey";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { type SortOption, useSortHotkey } from "@/hooks/use-sort-hotkey";
+import { cn } from "@/lib/utils";
 
 // Constants for sort options
 const SORT_OPTIONS = [
@@ -78,11 +69,7 @@ const SortItem = React.memo(function SortItem({
   );
 });
 
-export function SortPopover({
-  sortBy = "newest",
-  onSortChange,
-  className,
-}: SortPopoverProps) {
+export function SortPopover({ sortBy = "newest", onSortChange, className }: SortPopoverProps) {
   const [open, setOpen] = React.useState(false);
 
   // Use the custom hook for keyboard shortcuts
@@ -131,17 +118,11 @@ export function SortPopover({
           </TooltipTrigger>
           <TooltipContent side="bottom" className="flex items-center gap-2">
             <span>Sort posts</span>
-            <kbd className="bg-primary/10 rounded px-1.5 py-0.5 font-mono text-xs">
-              S
-            </kbd>
+            <kbd className="bg-primary/10 rounded px-1.5 py-0.5 font-mono text-xs">S</kbd>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
-      <PopoverContent
-        className="bg-popover border-border w-48 p-0"
-        align="end"
-        sideOffset={4}
-      >
+      <PopoverContent className="bg-popover border-border w-48 p-0" align="end" sideOffset={4}>
         <div className="py-1" role="menu" aria-label="Sort options">
           {SORT_OPTIONS.map((option) => (
             <SortItem

@@ -1,21 +1,19 @@
 "use client";
 
-import { Id } from "@/convex/_generated/dataModel";
 import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import { format } from "date-fns";
-import {
-  Mail,
-  Shield,
-  Gift,
-  UserX,
-  Eye,
-  MoreVertical,
-  DollarSign,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { DollarSign, Eye, Gift, Mail, MoreVertical, Shield, UserX } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
@@ -25,24 +23,18 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { memberStatusConfig, tierConfig } from "@/lib/admin-config";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { tierConfig, memberStatusConfig } from "@/lib/admin-config";
-import {
+  formatTierPrice,
   getMemberDisplayName,
   getMemberInitials,
   getMemberStatus,
-  shouldShowBilling,
-  formatTierPrice,
   isScholarshipMember,
+  shouldShowBilling,
 } from "@/lib/admin-utils";
+import { cn } from "@/lib/utils";
 
 interface MemberCardProps {
   member: {
@@ -74,12 +66,8 @@ export function MemberCard({
   onViewDetails,
   variant = "card",
 }: MemberCardProps) {
-  const grantScholarship = useMutation(
-    api.admin.grantScholarship.grantScholarshipStatus,
-  );
-  const revokeScholarship = useMutation(
-    api.admin.grantScholarship.revokeScholarshipStatus,
-  );
+  const grantScholarship = useMutation(api.admin.grantScholarship.grantScholarshipStatus);
+  const revokeScholarship = useMutation(api.admin.grantScholarship.revokeScholarshipStatus);
   const updateRole = useMutation(api.admin.members.updateMemberRole);
 
   const fullName = getMemberDisplayName(member);
@@ -88,23 +76,15 @@ export function MemberCard({
 
   const isScholarship = isScholarshipMember(member);
 
-  const tierInfo = member.tier
-    ? tierConfig[member.tier as keyof typeof tierConfig]
-    : null;
+  const tierInfo = member.tier ? tierConfig[member.tier as keyof typeof tierConfig] : null;
 
-  const statusInfo =
-    memberStatusConfig[status as keyof typeof memberStatusConfig];
+  const statusInfo = memberStatusConfig[status as keyof typeof memberStatusConfig];
 
   if (variant === "list") {
     // Simplified list view for use in tables
     return (
       <div className="flex items-center gap-4 border-b p-4 hover:bg-gray-50">
-        {onSelect && (
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={() => onSelect(member._id)}
-          />
-        )}
+        {onSelect && <Checkbox checked={isSelected} onCheckedChange={() => onSelect(member._id)} />}
         <Avatar className="h-10 w-10">
           <AvatarImage src={member.avatarUrl} alt={fullName} />
           <AvatarFallback>{initials}</AvatarFallback>
@@ -124,11 +104,7 @@ export function MemberCard({
             {statusInfo.label}
           </Badge>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onViewDetails?.(member._id)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => onViewDetails?.(member._id)}>
           <Eye className="h-4 w-4" />
         </Button>
       </div>
@@ -140,10 +116,7 @@ export function MemberCard({
     <Card className="relative transition-shadow hover:shadow-md">
       {onSelect && (
         <div className="absolute left-4 top-4 z-10">
-          <Checkbox
-            checked={isSelected}
-            onCheckedChange={() => onSelect(member._id)}
-          />
+          <Checkbox checked={isSelected} onCheckedChange={() => onSelect(member._id)} />
         </div>
       )}
 
@@ -231,28 +204,18 @@ export function MemberCard({
       </CardHeader>
 
       <CardContent>
-        {member.bio && (
-          <p className="mb-4 line-clamp-2 text-sm text-gray-600">
-            {member.bio}
-          </p>
-        )}
+        {member.bio && <p className="mb-4 line-clamp-2 text-sm text-gray-600">{member.bio}</p>}
 
         <div className="space-y-3">
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Membership</span>
             <div className="flex items-center gap-2">
               {tierInfo && (
-                <Badge
-                  variant="outline"
-                  className={cn("text-xs", tierInfo.color)}
-                >
+                <Badge variant="outline" className={cn("text-xs", tierInfo.color)}>
                   {tierInfo.label}
                 </Badge>
               )}
-              <Badge
-                variant="outline"
-                className={cn("text-xs", statusInfo.color)}
-              >
+              <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
                 <statusInfo.icon className="mr-1 h-3 w-3" />
                 {statusInfo.label}
               </Badge>
@@ -263,11 +226,7 @@ export function MemberCard({
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Billing</span>
               <span className="text-sm font-medium">
-                {formatTierPrice(
-                  member.tier!,
-                  member.billingInterval!,
-                  member.amountCents,
-                )}
+                {formatTierPrice(member.tier!, member.billingInterval!, member.amountCents)}
               </span>
             </div>
           )}
@@ -284,33 +243,27 @@ export function MemberCard({
           <div className="flex items-center justify-between">
             <span className="text-sm text-gray-500">Joined</span>
             <span className="text-sm">
-              {member.joinedDate
-                ? format(new Date(member.joinedDate), "MMM d, yyyy")
-                : "Unknown"}
+              {member.joinedDate ? format(new Date(member.joinedDate), "MMM d, yyyy") : "Unknown"}
             </span>
           </div>
 
           {member.amountCents && member.amountCents > 0 && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">
-                  <DollarSign className="mr-1 inline h-3 w-3" />
-                  Revenue
-                </span>
-                <span className="text-sm font-medium">
-                  ${(member.amountCents / 100).toFixed(0)}/
-                  {member.billingInterval === "monthly" ? "mo" : "yr"}
-                </span>
-              </div>
-            )}
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">
+                <DollarSign className="mr-1 inline h-3 w-3" />
+                Revenue
+              </span>
+              <span className="text-sm font-medium">
+                ${(member.amountCents / 100).toFixed(0)}/
+                {member.billingInterval === "monthly" ? "mo" : "yr"}
+              </span>
+            </div>
+          )}
         </div>
       </CardContent>
 
       <CardFooter className="bg-gray-50">
-        <Button
-          variant="outline"
-          className="w-full"
-          onClick={() => onViewDetails?.(member._id)}
-        >
+        <Button variant="outline" className="w-full" onClick={() => onViewDetails?.(member._id)}>
           <Eye className="mr-2 h-4 w-4" />
           View Details
         </Button>

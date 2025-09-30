@@ -1,47 +1,43 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { SignInButton } from "@clerk/nextjs";
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  type DragEndEvent,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
 } from "@dnd-kit/core";
-import {
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import { api } from "@/convex/_generated/api";
-import { SortableCommentItem } from "./sortable-comment-item";
-import { Id } from "@/convex/_generated/dataModel";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Authenticated, Unauthenticated } from "convex/react";
-import { SignInButton } from "@clerk/nextjs";
-import { useMutationError } from "@/hooks/use-mutation-error";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { Authenticated, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
+import { motion } from "framer-motion";
 import { ChevronDown, ChevronRight, GripVertical } from "lucide-react";
-import { MessageSquareIcon } from "@/components/icons/message-square";
-import { LinkIcon } from "@/components/icons/link";
-import { VoteButton } from "@/components/icons/vote-button";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
   CommentThreadContainer,
   isLastChildComment,
 } from "@/components/comments/comment-thread-line";
-import Link from "next/link";
-import Image from "next/image";
-import { memberProfileUrl } from "@/lib/utils";
-import { EnhancedCommentInput } from "./enhanced-comment-input";
-import { motion } from "framer-motion";
-import CommentActionsMenu from "./comment-actions-menu";
-import { useParams } from "next/navigation";
-import { toast } from "sonner";
-import { UploadIcon } from "@/components/ui/upload";
+import { LinkIcon } from "@/components/icons/link";
+import { MessageSquareIcon } from "@/components/icons/message-square";
+import { VoteButton } from "@/components/icons/vote-button";
 import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { UploadIcon } from "@/components/ui/upload";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useMutationError } from "@/hooks/use-mutation-error";
 import { useUserVotes } from "@/hooks/use-user-votes";
+import { memberProfileUrl } from "@/lib/utils";
+import CommentActionsMenu from "./comment-actions-menu";
+import { EnhancedCommentInput } from "./enhanced-comment-input";
+import { SortableCommentItem } from "./sortable-comment-item";
 
 type AttachmentType = {
   id: string;
@@ -151,12 +147,8 @@ function CommentItem({
   const [isExpanded, setIsExpanded] = useState(true);
   const [isVoting, setIsVoting] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [optimisticNetVotes, setOptimisticNetVotes] = useState(
-    comment.netVotes,
-  );
-  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
-    null,
-  );
+  const [optimisticNetVotes, setOptimisticNetVotes] = useState(comment.netVotes);
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
 
   // Refs for animated icons
   const replyIconRef = useRef<{
@@ -170,8 +162,7 @@ function CommentItem({
   const editComment = useMutation(api.comments.editComment);
   const { handleMutationError, handleMutationSuccess } = useMutationError();
 
-  const currentUserVote =
-    optimisticUserVote !== null ? optimisticUserVote : userVote || null;
+  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote || null;
 
   // Threading is now handled by CommentThreadContainer
 
@@ -215,41 +206,27 @@ function CommentItem({
     }
   };
 
-  const shouldReduceMotion =
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const shouldReduceMotion = window?.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const highlightVariants = {
     initial: {
-      backgroundColor: shouldReduceMotion
-        ? "var(--comment-highlight)"
-        : "var(--comment-highlight)",
+      backgroundColor: shouldReduceMotion ? "var(--comment-highlight)" : "var(--comment-highlight)",
     },
     animate: {
-      backgroundColor: shouldReduceMotion
-        ? "var(--comment-highlight)"
-        : "transparent",
+      backgroundColor: shouldReduceMotion ? "var(--comment-highlight)" : "transparent",
     },
     exit: { backgroundColor: "transparent" },
   };
 
   return (
-    <CommentThreadContainer
-      depth={comment.depth}
-      isLastChild={isLastChild}
-      className="space-y-3"
-    >
+    <CommentThreadContainer depth={comment.depth} isLastChild={isLastChild} className="space-y-3">
       <motion.div
         id={`comment-${comment._id}`}
         className="py-4 transition-all duration-300"
         variants={highlightVariants}
         initial={isNewlyCreated ? "initial" : false}
         animate={isNewlyCreated ? "animate" : false}
-        transition={
-          shouldReduceMotion
-            ? { duration: 0 }
-            : { duration: 1, ease: "easeOut" }
-        }
+        transition={shouldReduceMotion ? { duration: 0 } : { duration: 1, ease: "easeOut" }}
       >
         <div className="flex items-start space-x-3">
           <MemberHoverCardWrapper member={comment.member}>
@@ -324,26 +301,19 @@ function CommentItem({
                   isSubmitting={false}
                   className="mb-2"
                 />
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => setIsEditing(false)}
-                >
+                <Button size="sm" variant="outline" onClick={() => setIsEditing(false)}>
                   Cancel
                 </Button>
               </div>
             ) : (
-              <p className="text-foreground whitespace-pre-wrap text-sm">
-                {comment.content}
-              </p>
+              <p className="text-foreground whitespace-pre-wrap text-sm">{comment.content}</p>
             )}
 
             {comment.attachments && comment.attachments.length > 0 && (
               <div className="mt-3 space-y-2">
                 {comment.attachments!.map((attachment) => (
                   <div key={attachment.id} className="bg-muted/30 rounded p-2">
-                    {attachment.type === "image" ||
-                    attachment.type === "gif" ? (
+                    {attachment.type === "image" || attachment.type === "gif" ? (
                       <div className="relative">
                         <Image
                           src={attachment.url}
@@ -383,9 +353,7 @@ function CommentItem({
               Object.entries(comment.linkPreviews!).map(([url, preview]) => (
                 <div key={url} className="bg-muted/50 mt-3 rounded p-3">
                   <div className="text-sm font-medium">{preview.title}</div>
-                  <div className="text-muted-foreground text-xs">
-                    {preview.description}
-                  </div>
+                  <div className="text-muted-foreground text-xs">{preview.description}</div>
                   <a
                     href={url}
                     target="_blank"
@@ -465,8 +433,7 @@ function CommentItem({
                   ) : (
                     <ChevronRight className="group-hover:text-foreground mr-1 h-3.5 w-3.5 transition-colors" />
                   )}
-                  {comment.replies.length}{" "}
-                  {comment.replies.length === 1 ? "reply" : "replies"}
+                  {comment.replies.length} {comment.replies.length === 1 ? "reply" : "replies"}
                 </Button>
               )}
 
@@ -494,13 +461,7 @@ function CommentItem({
             <EnhancedCommentInput
               placeholder={`Reply to ${comment.member?.firstName || "this comment"}...`}
               onSubmit={(content, attachments, linkPreviews, mentions) =>
-                onSubmitReply(
-                  comment._id,
-                  content,
-                  attachments,
-                  linkPreviews,
-                  mentions,
-                )
+                onSubmitReply(comment._id, content, attachments, linkPreviews, mentions)
               }
               isSubmitting={isSubmittingReply}
               className="mb-3"
@@ -594,8 +555,7 @@ function ReplyDragContext({
   };
 
   const canReorder =
-    currentMember &&
-    (isAdmin || replies.some((r) => r.member?._id === currentMember._id));
+    currentMember && (isAdmin || replies.some((r) => r.member?._id === currentMember._id));
 
   if (!canReorder) {
     return (
@@ -622,22 +582,11 @@ function ReplyDragContext({
   }
 
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <SortableContext
-        items={replies.map((r) => r._id)}
-        strategy={verticalListSortingStrategy}
-      >
+    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+      <SortableContext items={replies.map((r) => r._id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-3">
           {replies.map((reply, index) => (
-            <SortableCommentItem
-              key={reply._id}
-              comment={reply}
-              disabled={!canReorder}
-            >
+            <SortableCommentItem key={reply._id} comment={reply} disabled={!canReorder}>
               <CommentItem
                 comment={reply}
                 onReply={onReply}
@@ -660,16 +609,11 @@ function ReplyDragContext({
   );
 }
 
-export default function CommentSection({
-  postId,
-  targetCommentId,
-}: CommentSectionProps) {
+export default function CommentSection({ postId, targetCommentId }: CommentSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Id<"comments"> | null>(null);
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
-  const [newlyCreatedCommentIds, setNewlyCreatedCommentIds] = useState<
-    Set<string>
-  >(new Set());
+  const [newlyCreatedCommentIds, setNewlyCreatedCommentIds] = useState<Set<string>>(new Set());
 
   const params = useParams();
 
@@ -713,13 +657,9 @@ export default function CommentSection({
       const expandParentComments = () => {
         let currentElement = element;
         while (currentElement) {
-          const parentComment = currentElement.closest(
-            '[data-comment-collapsed="true"]',
-          );
+          const parentComment = currentElement.closest('[data-comment-collapsed="true"]');
           if (parentComment) {
-            const expandButton = parentComment.querySelector(
-              "[data-expand-button]",
-            );
+            const expandButton = parentComment.querySelector("[data-expand-button]");
             if (expandButton) {
               (expandButton as HTMLElement).click();
             }
@@ -732,8 +672,7 @@ export default function CommentSection({
 
       const headerOffset = 100;
       const elementPosition = element.getBoundingClientRect().top;
-      const offsetPosition =
-        elementPosition + window.pageYOffset - headerOffset;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
 
       window.scrollTo({
         top: offsetPosition,
@@ -863,13 +802,7 @@ export default function CommentSection({
       });
     } catch (error) {
       handleMutationError(error, () =>
-        handleSubmitReply(
-          parentId,
-          content,
-          attachments,
-          linkPreviews,
-          mentions,
-        ),
+        handleSubmitReply(parentId, content, attachments, linkPreviews, mentions),
       );
     } finally {
       setIsSubmittingReply(false);
@@ -892,9 +825,7 @@ export default function CommentSection({
   return (
     <div className="mt-8">
       <div className="space-y-6">
-        <h3 className="text-foreground text-lg font-semibold">
-          Comments ({totalComments})
-        </h3>
+        <h3 className="text-foreground text-lg font-semibold">Comments ({totalComments})</h3>
 
         <Authenticated>
           <div className="mb-6">

@@ -18,16 +18,8 @@ export function useMutationError() {
   const { isOnline } = useNetworkStatus();
 
   const handleMutationError = useCallback(
-    (
-      error: unknown,
-      retryFn?: () => Promise<void>,
-      options: MutationErrorOptions = {}
-    ) => {
-      const {
-        context = "performing action",
-        maxRetries = 3,
-        showToast = true,
-      } = options;
+    (error: unknown, retryFn?: () => Promise<void>, options: MutationErrorOptions = {}) => {
+      const { context = "performing action", maxRetries = 3, showToast = true } = options;
 
       const processedError = processError(error, context);
 
@@ -49,7 +41,9 @@ export function useMutationError() {
                 } catch (retryError) {
                   // If retry fails, show another error toast without retry option
                   const retryProcessedError = processError(retryError, context);
-                  toast.error(`Failed after ${maxRetries} attempts: ${retryProcessedError.message}`);
+                  toast.error(
+                    `Failed after ${maxRetries} attempts: ${retryProcessedError.message}`,
+                  );
                 }
               },
             },
@@ -63,7 +57,7 @@ export function useMutationError() {
         }
       }
     },
-    [isOnline]
+    [isOnline],
   );
 
   const handleMutationSuccess = useCallback((message: string = "Action completed successfully") => {
@@ -76,4 +70,4 @@ export function useMutationError() {
     handleMutationError,
     handleMutationSuccess,
   };
-} 
+}

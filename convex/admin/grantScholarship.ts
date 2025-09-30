@@ -23,7 +23,8 @@ export const grantScholarshipStatus = mutation({
     // This function is deprecated - scholarships should be granted via Stripe coupons
     return {
       success: false,
-      message: "Scholarships are now handled via Stripe coupons. Use early_bird tier with 100% discount coupon."
+      message:
+        "Scholarships are now handled via Stripe coupons. Use early_bird tier with 100% discount coupon.",
     };
   },
 });
@@ -49,7 +50,7 @@ export const revokeScholarshipStatus = mutation({
     // This function is deprecated - scholarships should be managed via Stripe dashboard
     return {
       success: false,
-      message: "Scholarships are now handled via Stripe coupons. Manage via Stripe dashboard."
+      message: "Scholarships are now handled via Stripe coupons. Manage via Stripe dashboard.",
     };
   },
 });

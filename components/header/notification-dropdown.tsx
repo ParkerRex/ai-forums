@@ -1,9 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useCurrentMember } from "@/hooks/use-current-member";
+import { useMutation, useQuery } from "convex/react";
+import Link from "next/link";
+import { useState } from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,12 +14,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useCurrentMember } from "@/hooks/use-current-member";
 import { NotificationBell } from "./notification-bell";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
-import { Id } from "@/convex/_generated/dataModel";
 
 /**
  * NotificationData Interface
@@ -44,13 +44,7 @@ interface NotificationData {
   recipientId: Id<"members">;
 
   // Type of notification - determines icon, message format, and behavior
-  type:
-    | "mention"
-    | "reply"
-    | "upvote"
-    | "follow"
-    | "comment_report"
-    | "payment_reminder";
+  type: "mention" | "reply" | "upvote" | "follow" | "comment_report" | "payment_reminder";
 
   // Type of entity that triggered the notification (post, comment, or payment)
   entityType: "post" | "comment" | "payment";
@@ -136,9 +130,7 @@ export function NotificationDropdown() {
 
   // Mutation to mark all notifications as read at once
   // Provides bulk action for user convenience
-  const markAllAsRead = useMutation(
-    api.notifications.markAllNotificationsAsRead,
-  );
+  const markAllAsRead = useMutation(api.notifications.markAllNotificationsAsRead);
 
   // Early return if user is not authenticated
   // Prevents showing notifications to unauthenticated users
@@ -155,10 +147,7 @@ export function NotificationDropdown() {
    * @param {boolean} read - Current read status to avoid unnecessary API calls
    * @returns {Promise<void>} Async function that handles the click interaction
    */
-  const handleNotificationClick = async (
-    notificationId: string,
-    read: boolean,
-  ) => {
+  const handleNotificationClick = async (notificationId: string, read: boolean) => {
     // Only mark as read if currently unread to avoid unnecessary database writes
     if (!read) {
       await markAsRead({
@@ -246,17 +235,11 @@ export function NotificationDropdown() {
           <DropdownMenuLabel>Notifications</DropdownMenuLabel>
 
           {/* Show "Mark all read" button only when unread notifications exist */}
-          {notifications &&
-            notifications.some((n: NotificationData) => !n.read) && (
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs"
-                onClick={handleMarkAllAsRead}
-              >
-                Mark all read
-              </Button>
-            )}
+          {notifications?.some((n: NotificationData) => !n.read) && (
+            <Button variant="ghost" size="sm" className="text-xs" onClick={handleMarkAllAsRead}>
+              Mark all read
+            </Button>
+          )}
         </div>
 
         <DropdownMenuSeparator />
@@ -273,9 +256,7 @@ export function NotificationDropdown() {
               <DropdownMenuItem
                 key={notification._id}
                 className="p-0"
-                onClick={() =>
-                  handleNotificationClick(notification._id, notification.read)
-                }
+                onClick={() => handleNotificationClick(notification._id, notification.read)}
               >
                 {/* Link wrapper for navigation - styled as full-width interactive area */}
                 <Link
@@ -310,9 +291,7 @@ export function NotificationDropdown() {
                     </div>
 
                     {/* Relative timestamp for user-friendly time display */}
-                    <p className="text-muted-foreground mt-1 text-xs">
-                      {notification.timeAgo}
-                    </p>
+                    <p className="text-muted-foreground mt-1 text-xs">{notification.timeAgo}</p>
                   </div>
                 </Link>
               </DropdownMenuItem>

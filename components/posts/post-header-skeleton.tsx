@@ -7,7 +7,7 @@ export default function PostHeaderSkeleton() {
         <div className="flex space-x-4 overflow-x-auto pb-2">
           {/* All Posts Tab Skeleton */}
           <Skeleton className="h-6 w-20" />
-          
+
           {/* Category Tabs Skeletons */}
           {[...Array(5)].map((_, i) => (
             <Skeleton key={i} className="h-6 w-24" />
@@ -22,4 +22,4 @@ export default function PostHeaderSkeleton() {
       </div>
     </div>
   );
-} 
+}

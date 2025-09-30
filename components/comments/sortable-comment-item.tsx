@@ -15,16 +15,9 @@ export function SortableCommentItem({
   children,
   disabled = false,
 }: SortableCommentItemProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ 
-    id: comment._id, 
-    disabled 
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: comment._id,
+    disabled,
   });
 
   const style = {
@@ -35,13 +28,16 @@ export function SortableCommentItem({
 
   return (
     <div ref={setNodeRef} style={style}>
-      {React.cloneElement(children as React.ReactElement<{
-        dragHandleProps?: { [key: string]: unknown };
-        isDragging?: boolean;
-      }>, {
-        dragHandleProps: { ...attributes, ...listeners },
-        isDragging,
-      })}
+      {React.cloneElement(
+        children as React.ReactElement<{
+          dragHandleProps?: { [key: string]: unknown };
+          isDragging?: boolean;
+        }>,
+        {
+          dragHandleProps: { ...attributes, ...listeners },
+          isDragging,
+        },
+      )}
     </div>
   );
 }

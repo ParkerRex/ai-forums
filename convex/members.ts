@@ -1,10 +1,10 @@
 /**
  * @fileoverview Members Module - User profile management and community statistics
- * 
+ *
  * This module handles all member-related operations including profile management,
  * statistics calculation, search functionality, and community engagement tracking.
  * It supports both legacy email-based authentication and modern Clerk integration.
- * 
+ *
  * Key features:
  * - Member profile management with rich metadata
  * - Cached statistics for performance (posts, comments, votes)
@@ -14,22 +14,22 @@
  * - Social links and professional information
  * - Member activity feeds and engagement metrics
  * - Profile validation and URL slug management
- * 
+ *
  * The module includes comprehensive caching strategies to maintain performance
  * while providing real-time data for member directories and profiles.
- * 
+ *
  * @author VAI Development Team
  * @version 1.0.0
  */
 
-import { query, mutation, type QueryCtx, internalMutation } from "./_generated/server";
-import { v, ConvexError } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { Doc } from "./_generated/dataModel";
+import { ConvexError, v } from "convex/values";
 import { generateMemberSlug } from "../lib/slug-utils";
-import type { MutationCtx } from "./_generated/server";
-import { getAuthenticatedMember } from "./auth";
 import { api, internal } from "./_generated/api";
+import type { Doc } from "./_generated/dataModel";
+import type { MutationCtx } from "./_generated/server";
+import { mutation, type QueryCtx, query } from "./_generated/server";
+import { getAuthenticatedMember } from "./auth";
 
 // Shared validator for transformed member data
 const MemberUIValidator = v.object({
@@ -67,28 +67,30 @@ const MemberUIValidator = v.object({
   // Role
   role: v.optional(v.union(v.literal("user"), v.literal("admin"))),
   // Subscription fields
-  tier: v.optional(v.union(
-    v.literal("founding_member"),
-    v.literal("early_bird"),
-    v.literal("member"),
-    v.literal("scholarship")
-  )),
+  tier: v.optional(
+    v.union(
+      v.literal("founding_member"),
+      v.literal("early_bird"),
+      v.literal("member"),
+      v.literal("scholarship"),
+    ),
+  ),
   subscriptionStatus: v.union(
     v.literal("active"),
     v.literal("cancelled"),
     v.literal("past_due"),
     v.literal("expired"),
-    v.literal("none")
+    v.literal("none"),
   ),
   subscriptionEndDate: v.optional(v.number()),
-  billingInterval: v.optional(v.union(
-    v.literal("monthly"),
-    v.literal("yearly")
-  )),
+  billingInterval: v.optional(v.union(v.literal("monthly"), v.literal("yearly"))),
 });
 
 // Helper to backfill missing cached stats for a member with background caching
-async function computeAndCacheMemberStats(ctx: QueryCtx, member: Doc<"members">): Promise<Doc<"members">> {
+async function computeAndCacheMemberStats(
+  ctx: QueryCtx,
+  member: Doc<"members">,
+): Promise<Doc<"members">> {
   // If stats already exist, return early
   if (
     member.postCount !== undefined &&
@@ -232,12 +234,12 @@ export const getMembersWithStats = query({
   handler: async (ctx) => {
     // Get all members and filter by status in memory to include both active and churned
     const allMembers = await ctx.db.query("members").collect();
-    const members = allMembers.filter(member => 
-      member.status === "active" || member.status === "churned"
+    const members = allMembers.filter(
+      (member) => member.status === "active" || member.status === "churned",
     );
 
     const membersWithStats = await Promise.all(
-      members.map((member) => computeAndCacheMemberStats(ctx, member))
+      members.map((member) => computeAndCacheMemberStats(ctx, member)),
     );
 
     return membersWithStats.map(transformMemberForUI);
@@ -254,12 +256,12 @@ export const getAllMembers = query({
   handler: async (ctx) => {
     // Get all members and filter by status in memory to include both active and churned
     const allMembers = await ctx.db.query("members").collect();
-    const members = allMembers.filter(member => 
-      member.status === "active" || member.status === "churned"
+    const members = allMembers.filter(
+      (member) => member.status === "active" || member.status === "churned",
     );
 
     const membersWithStats = await Promise.all(
-      members.map((member) => computeAndCacheMemberStats(ctx, member))
+      members.map((member) => computeAndCacheMemberStats(ctx, member)),
     );
 
     return membersWithStats.map(transformMemberForUI);
@@ -290,63 +292,90 @@ export const getMemberPosts = query({
     paginationOpts: paginationOptsValidator,
   },
   returns: v.object({
-    page: v.array(v.object({
-      _id: v.id("posts"),
-      title: v.string(),
-      content: v.string(),
-      preview: v.optional(v.string()),
-      slug: v.string(),
-      createdAt: v.number(),
-      updatedAt: v.number(),
-      memberId: v.id("members"),
-      categoryId: v.id("categories"),
-      status: v.union(v.literal("active"), v.literal("deleted"), v.literal("hidden"), v.literal("archived")),
-      upvotes: v.number(),
-      downvotes: v.number(),
-      netVotes: v.number(),
-      commentCount: v.number(),
-      viewCount: v.number(),
-      isPinned: v.optional(v.boolean()),
-      isLocked: v.optional(v.boolean()),
-      editedAt: v.optional(v.number()),
-      editReason: v.optional(v.string()),
-      isFree: v.optional(v.boolean()),
-      type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"), v.literal("poll"))),
-      mediaUrl: v.optional(v.string()),
-      thumbnailUrl: v.optional(v.string()),
-      aspectRatio: v.optional(v.number()),
-      mediaWidth: v.optional(v.number()),
-      mediaHeight: v.optional(v.number()),
-      linkUrl: v.optional(v.string()),
-      linkTitle: v.optional(v.string()),
-      linkDescription: v.optional(v.string()),
-      linkImage: v.optional(v.string()),
-      pollOptions: v.optional(v.array(v.object({
-        id: v.string(),
-        text: v.string(),
-        voteCount: v.number(),
-      }))),
-      pollEndsAt: v.optional(v.number()),
-      totalPollVotes: v.optional(v.number()),
-      pinScope: v.optional(v.union(v.literal("category"), v.literal("global"), v.literal("both"))),
-      // Add computed fields
-      timeAgo: v.string(),
-      member: v.union(v.object({
-        _id: v.id("members"),
-        firstName: v.string(),
-        lastName: v.string(),
-        email: v.string(),
-        username: v.string(),
+    page: v.array(
+      v.object({
+        _id: v.id("posts"),
+        title: v.string(),
+        content: v.string(),
+        preview: v.optional(v.string()),
         slug: v.string(),
-        avatarUrl: v.optional(v.string()),
-      }), v.null()),
-      category: v.union(v.object({
-        _id: v.id("categories"),
-        name: v.string(),
-        displayName: v.string(),
-        icon: v.optional(v.string()),
-      }), v.null()),
-    })),
+        createdAt: v.number(),
+        updatedAt: v.number(),
+        memberId: v.id("members"),
+        categoryId: v.id("categories"),
+        status: v.union(
+          v.literal("active"),
+          v.literal("deleted"),
+          v.literal("hidden"),
+          v.literal("archived"),
+        ),
+        upvotes: v.number(),
+        downvotes: v.number(),
+        netVotes: v.number(),
+        commentCount: v.number(),
+        viewCount: v.number(),
+        isPinned: v.optional(v.boolean()),
+        isLocked: v.optional(v.boolean()),
+        editedAt: v.optional(v.number()),
+        editReason: v.optional(v.string()),
+        isFree: v.optional(v.boolean()),
+        type: v.optional(
+          v.union(
+            v.literal("text"),
+            v.literal("image"),
+            v.literal("video"),
+            v.literal("link"),
+            v.literal("poll"),
+          ),
+        ),
+        mediaUrl: v.optional(v.string()),
+        thumbnailUrl: v.optional(v.string()),
+        aspectRatio: v.optional(v.number()),
+        mediaWidth: v.optional(v.number()),
+        mediaHeight: v.optional(v.number()),
+        linkUrl: v.optional(v.string()),
+        linkTitle: v.optional(v.string()),
+        linkDescription: v.optional(v.string()),
+        linkImage: v.optional(v.string()),
+        pollOptions: v.optional(
+          v.array(
+            v.object({
+              id: v.string(),
+              text: v.string(),
+              voteCount: v.number(),
+            }),
+          ),
+        ),
+        pollEndsAt: v.optional(v.number()),
+        totalPollVotes: v.optional(v.number()),
+        pinScope: v.optional(
+          v.union(v.literal("category"), v.literal("global"), v.literal("both")),
+        ),
+        // Add computed fields
+        timeAgo: v.string(),
+        member: v.union(
+          v.object({
+            _id: v.id("members"),
+            firstName: v.string(),
+            lastName: v.string(),
+            email: v.string(),
+            username: v.string(),
+            slug: v.string(),
+            avatarUrl: v.optional(v.string()),
+          }),
+          v.null(),
+        ),
+        category: v.union(
+          v.object({
+            _id: v.id("categories"),
+            name: v.string(),
+            displayName: v.string(),
+            icon: v.optional(v.string()),
+          }),
+          v.null(),
+        ),
+      }),
+    ),
     isDone: v.boolean(),
     continueCursor: v.union(v.string(), v.null()),
   }),
@@ -403,23 +432,27 @@ export const getMemberPosts = query({
           totalPollVotes: post.totalPollVotes,
           pinScope: post.pinScope,
           timeAgo,
-          member: member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            email: member.email,
-            username: member.email, // Use email as username for now
-            slug: member.slug,
-            avatarUrl: member.avatarUrl,
-          } : null,
-          category: category ? {
-            _id: category._id,
-            name: category.name,
-            displayName: category.displayName,
-            icon: category.icon,
-          } : null,
+          member: member
+            ? {
+                _id: member._id,
+                firstName: member.firstName,
+                lastName: member.lastName,
+                email: member.email,
+                username: member.email, // Use email as username for now
+                slug: member.slug,
+                avatarUrl: member.avatarUrl,
+              }
+            : null,
+          category: category
+            ? {
+                _id: category._id,
+                name: category.name,
+                displayName: category.displayName,
+                icon: category.icon,
+              }
+            : null,
         };
-      })
+      }),
     );
 
     return {
@@ -439,21 +472,25 @@ export const getMemberActivity = query({
     paginationOpts: paginationOptsValidator,
   },
   returns: v.object({
-    page: v.array(v.object({
-      _id: v.id("comments"),
-      content: v.string(),
-      createdAt: v.number(),
-      postId: v.id("posts"),
-      netVotes: v.number(),
-      timeAgo: v.string(),
-      post: v.optional(v.object({
-        _id: v.id("posts"),
-        title: v.string(),
-        slug: v.string(),
-        categoryId: v.id("categories"),
-        categoryName: v.string(),
-      })),
-    })),
+    page: v.array(
+      v.object({
+        _id: v.id("comments"),
+        content: v.string(),
+        createdAt: v.number(),
+        postId: v.id("posts"),
+        netVotes: v.number(),
+        timeAgo: v.string(),
+        post: v.optional(
+          v.object({
+            _id: v.id("posts"),
+            title: v.string(),
+            slug: v.string(),
+            categoryId: v.id("categories"),
+            categoryName: v.string(),
+          }),
+        ),
+      }),
+    ),
     isDone: v.boolean(),
     continueCursor: v.union(v.string(), v.null()),
   }),
@@ -473,7 +510,7 @@ export const getMemberActivity = query({
 
         // Fetch category if post exists
         const category = post ? await ctx.db.get(post.categoryId) : null;
-        
+
         return {
           _id: comment._id,
           content: comment.content,
@@ -481,15 +518,17 @@ export const getMemberActivity = query({
           postId: comment.postId,
           netVotes: comment.netVotes,
           timeAgo,
-          post: post ? {
-            _id: post._id,
-            title: post.title,
-            slug: post.slug,
-            categoryId: post.categoryId,
-            categoryName: category?.name || "general",
-          } : undefined,
+          post: post
+            ? {
+                _id: post._id,
+                title: post.title,
+                slug: post.slug,
+                categoryId: post.categoryId,
+                categoryName: category?.name || "general",
+              }
+            : undefined,
         };
-      })
+      }),
     );
 
     return {
@@ -552,13 +591,9 @@ export const searchMembersWithStats = query({
 
       // Exact matches first
       const aExactMatch =
-        aFirstName === searchTerm ||
-        aLastName === searchTerm ||
-        aLocation === searchTerm;
+        aFirstName === searchTerm || aLastName === searchTerm || aLocation === searchTerm;
       const bExactMatch =
-        bFirstName === searchTerm ||
-        bLastName === searchTerm ||
-        bLocation === searchTerm;
+        bFirstName === searchTerm || bLastName === searchTerm || bLocation === searchTerm;
 
       if (aExactMatch && !bExactMatch) return -1;
       if (!aExactMatch && bExactMatch) return 1;
@@ -582,7 +617,7 @@ export const searchMembersWithStats = query({
 
     // Ensure stats are present for the members we're about to return
     const enrichedMembers = await Promise.all(
-      sortedMembers.slice(0, limit).map((m) => computeAndCacheMemberStats(ctx, m))
+      sortedMembers.slice(0, limit).map((m) => computeAndCacheMemberStats(ctx, m)),
     );
 
     return enrichedMembers.map(transformMemberForUI);
@@ -643,13 +678,9 @@ export const searchMembers = query({
 
       // Exact matches first
       const aExactMatch =
-        aFirstName === searchTerm ||
-        aLastName === searchTerm ||
-        aLocation === searchTerm;
+        aFirstName === searchTerm || aLastName === searchTerm || aLocation === searchTerm;
       const bExactMatch =
-        bFirstName === searchTerm ||
-        bLastName === searchTerm ||
-        bLocation === searchTerm;
+        bFirstName === searchTerm || bLastName === searchTerm || bLocation === searchTerm;
 
       if (aExactMatch && !bExactMatch) return -1;
       if (!aExactMatch && bExactMatch) return 1;
@@ -673,7 +704,7 @@ export const searchMembers = query({
 
     // Ensure stats are present for the members we're about to return
     const enrichedMembers = await Promise.all(
-      sortedMembers.slice(0, limit).map((m) => computeAndCacheMemberStats(ctx, m))
+      sortedMembers.slice(0, limit).map((m) => computeAndCacheMemberStats(ctx, m)),
     );
 
     return enrichedMembers.map(transformMemberForUI);
@@ -786,9 +817,9 @@ export const updateMemberProfile = mutation({
     // Handle avatar URL update and delete old avatar if needed
     if (args.avatarUrl !== undefined && args.avatarUrl !== member.avatarUrl) {
       const oldUrl = member.avatarUrl;
-      if (oldUrl && oldUrl.includes('/uploads/')) {
+      if (oldUrl?.includes("/uploads/")) {
         // Extract object key from URL (part after '/uploads/')
-        const parts = oldUrl.split('/uploads/');
+        const parts = oldUrl.split("/uploads/");
         if (parts.length > 1) {
           const objectKey = `uploads/${parts[1]}`;
           try {
@@ -796,7 +827,7 @@ export const updateMemberProfile = mutation({
             await ctx.scheduler.runAfter(0, api.storage.deleteObject, { objectKey });
           } catch (error) {
             // Log error but continue with profile update
-            console.error('Avatar deletion scheduling error:', error);
+            console.error("Avatar deletion scheduling error:", error);
           }
         }
       }
@@ -805,27 +836,83 @@ export const updateMemberProfile = mutation({
     // Filter out undefined values (excluding id)
     const { id, ...updates } = args;
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([, value]) => value !== undefined)
+      Object.entries(updates).filter(([, value]) => value !== undefined),
     );
-    
+
     // Auto-detect country from location if location is being updated
     let countryUpdate = {};
     if (args.location) {
       // Import the detection function inline to avoid circular dependencies
       const detectCountryFromLocation = (location: string): string | null => {
         const normalized = location.toLowerCase().trim();
-        
+
         // Check for US states
-        const parts = location.split(',').map(p => p.trim());
+        const parts = location.split(",").map((p) => p.trim());
         if (parts.length >= 2) {
           const lastPart = parts[parts.length - 1].toUpperCase();
-          const usStates = new Set(["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "FL", "GA", "HI", "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH", "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT", "VT", "VA", "WA", "WV", "WI", "WY"]);
+          const usStates = new Set([
+            "AL",
+            "AK",
+            "AZ",
+            "AR",
+            "CA",
+            "CO",
+            "CT",
+            "DE",
+            "FL",
+            "GA",
+            "HI",
+            "ID",
+            "IL",
+            "IN",
+            "IA",
+            "KS",
+            "KY",
+            "LA",
+            "ME",
+            "MD",
+            "MA",
+            "MI",
+            "MN",
+            "MS",
+            "MO",
+            "MT",
+            "NE",
+            "NV",
+            "NH",
+            "NJ",
+            "NM",
+            "NY",
+            "NC",
+            "ND",
+            "OH",
+            "OK",
+            "OR",
+            "PA",
+            "RI",
+            "SC",
+            "SD",
+            "TN",
+            "TX",
+            "UT",
+            "VT",
+            "VA",
+            "WA",
+            "WV",
+            "WI",
+            "WY",
+          ]);
           if (usStates.has(lastPart)) return "US";
         }
-        
+
         // Check common patterns
         if (normalized.includes("usa") || normalized.includes("united states")) return "US";
-        if (normalized.includes("uk") || normalized.includes("united kingdom") || normalized.includes("england")) return "GB";
+        if (
+          normalized.includes("uk") ||
+          normalized.includes("united kingdom") ||
+          normalized.includes("england")
+        )
+          return "GB";
         if (normalized.includes("canada")) return "CA";
         if (normalized.includes("australia")) return "AU";
         if (normalized.includes("germany") || normalized.includes("deutschland")) return "DE";
@@ -836,10 +923,10 @@ export const updateMemberProfile = mutation({
         if (normalized.includes("japan")) return "JP";
         if (normalized.includes("india")) return "IN";
         if (normalized.includes("brazil") || normalized.includes("brasil")) return "BR";
-        
+
         return null;
       };
-      
+
       const detectedCountry = detectCountryFromLocation(args.location);
       if (detectedCountry) {
         countryUpdate = { country: detectedCountry };
@@ -892,31 +979,36 @@ export const getMemberComments = query({
     paginationOpts: paginationOptsValidator,
   },
   returns: v.object({
-    page: v.array(v.object({
-      _id: v.id("comments"),
-      content: v.string(),
-      createdAt: v.number(),
-      updatedAt: v.number(),
-      memberId: v.id("members"),
-      postId: v.id("posts"),
-      parentCommentId: v.optional(v.id("comments")),
-      status: v.union(v.literal("active"), v.literal("deleted"), v.literal("hidden")),
-      upvotes: v.number(),
-      downvotes: v.number(),
-      netVotes: v.number(),
-      depth: v.number(),
-      childCount: v.number(),
-      editedAt: v.optional(v.number()),
-      editReason: v.optional(v.string()),
-      // Add computed fields
-      timeAgo: v.string(),
-      post: v.union(v.object({
-        _id: v.id("posts"),
-        title: v.string(),
-        slug: v.string(),
-        categoryId: v.id("categories"),
-      }), v.null()),
-    })),
+    page: v.array(
+      v.object({
+        _id: v.id("comments"),
+        content: v.string(),
+        createdAt: v.number(),
+        updatedAt: v.number(),
+        memberId: v.id("members"),
+        postId: v.id("posts"),
+        parentCommentId: v.optional(v.id("comments")),
+        status: v.union(v.literal("active"), v.literal("deleted"), v.literal("hidden")),
+        upvotes: v.number(),
+        downvotes: v.number(),
+        netVotes: v.number(),
+        depth: v.number(),
+        childCount: v.number(),
+        editedAt: v.optional(v.number()),
+        editReason: v.optional(v.string()),
+        // Add computed fields
+        timeAgo: v.string(),
+        post: v.union(
+          v.object({
+            _id: v.id("posts"),
+            title: v.string(),
+            slug: v.string(),
+            categoryId: v.id("categories"),
+          }),
+          v.null(),
+        ),
+      }),
+    ),
     isDone: v.boolean(),
     continueCursor: v.union(v.string(), v.null()),
   }),
@@ -951,14 +1043,16 @@ export const getMemberComments = query({
           editedAt: comment.editedAt,
           editReason: comment.editReason,
           timeAgo,
-          post: post ? {
-            _id: post._id,
-            title: post.title,
-            slug: post.slug,
-            categoryId: post.categoryId,
-          } : null,
+          post: post
+            ? {
+                _id: post._id,
+                title: post.title,
+                slug: post.slug,
+                categoryId: post.categoryId,
+              }
+            : null,
         };
-      })
+      }),
     );
 
     return {
@@ -986,9 +1080,11 @@ export const getMemberStats = query({
     }
 
     // Use cached values if available
-    if (member.postCount !== undefined && 
-        member.commentCount !== undefined && 
-        member.netVoteCount !== undefined) {
+    if (
+      member.postCount !== undefined &&
+      member.commentCount !== undefined &&
+      member.netVoteCount !== undefined
+    ) {
       return {
         postCount: member.postCount,
         commentCount: member.commentCount,
@@ -1014,29 +1110,42 @@ export const getMemberStats = query({
     const commentCount = comments.length;
 
     // Calculate net votes received on member's content (posts + comments)
-    const postIds = posts.map(p => p._id);
-    const commentIds = comments.map(c => c._id);
-    
+    const postIds = posts.map((p) => p._id);
+    const commentIds = comments.map((c) => c._id);
+
     const [postVotes, commentVotes] = await Promise.all([
       // Get votes on member's posts
-      postIds.length > 0 ? 
-        Promise.all(postIds.map(postId => 
-          ctx.db.query("votes")
-            .withIndex("by_target_and_type", (q) => q.eq("targetId", postId.toString()).eq("targetType", "post"))
-            .collect()
-        )).then(results => results.flat()) : [],
-      // Get votes on member's comments  
-      commentIds.length > 0 ?
-        Promise.all(commentIds.map(commentId =>
-          ctx.db.query("votes")
-            .withIndex("by_target_and_type", (q) => q.eq("targetId", commentId.toString()).eq("targetType", "comment"))
-            .collect()
-        )).then(results => results.flat()) : [],
+      postIds.length > 0
+        ? Promise.all(
+            postIds.map((postId) =>
+              ctx.db
+                .query("votes")
+                .withIndex("by_target_and_type", (q) =>
+                  q.eq("targetId", postId.toString()).eq("targetType", "post"),
+                )
+                .collect(),
+            ),
+          ).then((results) => results.flat())
+        : [],
+      // Get votes on member's comments
+      commentIds.length > 0
+        ? Promise.all(
+            commentIds.map((commentId) =>
+              ctx.db
+                .query("votes")
+                .withIndex("by_target_and_type", (q) =>
+                  q.eq("targetId", commentId.toString()).eq("targetType", "comment"),
+                )
+                .collect(),
+            ),
+          ).then((results) => results.flat())
+        : [],
     ]);
 
     const allVotes = [...postVotes, ...commentVotes];
-    const netVoteCount = allVotes.filter(v => v.voteType === "upvote").length - 
-                        allVotes.filter(v => v.voteType === "downvote").length;
+    const netVoteCount =
+      allVotes.filter((v) => v.voteType === "upvote").length -
+      allVotes.filter((v) => v.voteType === "downvote").length;
 
     return { postCount, commentCount, netVoteCount };
   },
@@ -1061,8 +1170,8 @@ export const searchMembersEnhanced = query({
       // Use search index for text search
       members = await ctx.db
         .query("members")
-        .withSearchIndex("search_members", (q) => 
-          q.search("firstName", searchTerm).eq("status", "active")
+        .withSearchIndex("search_members", (q) =>
+          q.search("firstName", searchTerm).eq("status", "active"),
         )
         .take(limit * 2); // Get more to filter by skills
     } else {
@@ -1076,10 +1185,10 @@ export const searchMembersEnhanced = query({
 
     // Filter by skills if provided
     if (skillsFilter && skillsFilter.length > 0) {
-      const skillsLower = skillsFilter.map(s => s.toLowerCase());
-      members = members.filter(member => {
-        const memberSkills = (member.skills || []).map(s => s.toLowerCase());
-        return skillsLower.some(skill => memberSkills.includes(skill));
+      const skillsLower = skillsFilter.map((s) => s.toLowerCase());
+      members = members.filter((member) => {
+        const memberSkills = (member.skills || []).map((s) => s.toLowerCase());
+        return skillsLower.some((skill) => memberSkills.includes(skill));
       });
     }
 
@@ -1090,25 +1199,29 @@ export const searchMembersEnhanced = query({
 /**
  * Helper function to ensure unique member slug
  */
-async function ensureUniqueMemberSlug(ctx: MutationCtx, baseSlug: string, excludeMemberId?: string): Promise<string> {
+async function ensureUniqueMemberSlug(
+  ctx: MutationCtx,
+  baseSlug: string,
+  excludeMemberId?: string,
+): Promise<string> {
   let uniqueSlug = baseSlug;
   let counter = 2;
-  
+
   while (true) {
     const existing = await ctx.db
       .query("members")
       .withIndex("by_slug", (q) => q.eq("slug", uniqueSlug))
       .first();
-    
+
     // If no existing member has this slug, or the existing member is the one we're updating
     if (!existing || (excludeMemberId && existing._id === excludeMemberId)) {
       break;
     }
-    
+
     uniqueSlug = `${baseSlug}-${counter}`;
     counter++;
   }
-  
+
   return uniqueSlug;
 }
 
@@ -1123,7 +1236,7 @@ export const getMemberBySlug = query({
       .query("members")
       .withIndex("by_slug", (q) => q.eq("slug", args.slug))
       .first();
-    
+
     if (!member) {
       return null;
     }
@@ -1137,28 +1250,28 @@ export const getMemberBySlug = query({
  */
 export const getOnlineMembers = query({
   args: {},
-  returns: v.array(v.object({
-    _id: v.id("members"),
-    firstName: v.string(),
-    lastName: v.string(),
-    avatarUrl: v.optional(v.string()),
-    fullName: v.string(),
-    initials: v.string(),
-    slug: v.string(),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id("members"),
+      firstName: v.string(),
+      lastName: v.string(),
+      avatarUrl: v.optional(v.string()),
+      fullName: v.string(),
+      initials: v.string(),
+      slug: v.string(),
+    }),
+  ),
   handler: async (ctx) => {
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
-    
+
     const onlineMembers = await ctx.db
       .query("members")
-      .withIndex("by_lastOnline", (q) => 
-        q.gt("lastOnline", fiveMinutesAgo)
-      )
+      .withIndex("by_lastOnline", (q) => q.gt("lastOnline", fiveMinutesAgo))
       .filter((q) => q.eq(q.field("status"), "active"))
       .order("desc")
       .take(10); // Limit to prevent overcrowding
 
-    return onlineMembers.map(member => ({
+    return onlineMembers.map((member) => ({
       _id: member._id,
       firstName: member.firstName,
       lastName: member.lastName,
@@ -1179,14 +1292,9 @@ export const getMemberByEmail = query({
   handler: async (ctx, { email }) => {
     const member = await ctx.db
       .query("members")
-      .filter((q) => 
-        q.and(
-          q.eq(q.field("email"), email),
-          q.eq(q.field("status"), "active")
-        )
-      )
+      .filter((q) => q.and(q.eq(q.field("email"), email), q.eq(q.field("status"), "active")))
       .first();
-    
+
     return member;
   },
 });
@@ -1202,34 +1310,31 @@ export const searchByName = query({
   },
   handler: async (ctx, args) => {
     let members: Doc<"members">[] = [];
-    
+
     if (args.name) {
       // Search by full name
       const [firstName, ...lastNameParts] = args.name.split(" ");
       const lastName = lastNameParts.join(" ");
-      
+
       members = await ctx.db
         .query("members")
-        .filter((q) => 
-          q.and(
-            q.eq(q.field("firstName"), firstName),
-            q.eq(q.field("lastName"), lastName)
-          )
+        .filter((q) =>
+          q.and(q.eq(q.field("firstName"), firstName), q.eq(q.field("lastName"), lastName)),
         )
         .collect();
     } else if (args.firstName && args.lastName) {
       // Search by first and last name
       members = await ctx.db
         .query("members")
-        .filter((q) => 
+        .filter((q) =>
           q.and(
             q.eq(q.field("firstName"), args.firstName),
-            q.eq(q.field("lastName"), args.lastName)
-          )
+            q.eq(q.field("lastName"), args.lastName),
+          ),
         )
         .collect();
     }
-    
+
     return members;
   },
 });
@@ -1241,9 +1346,7 @@ export const getMembersWithImportedEmails = query({
   args: {},
   handler: async (ctx) => {
     const allMembers = await ctx.db.query("members").collect();
-    return allMembers.filter(member => 
-      member.email && member.email.endsWith("@imported.com")
-    );
+    return allMembers.filter((member) => member.email?.endsWith("@imported.com"));
   },
 });
 
@@ -1259,12 +1362,12 @@ export const updateMember = mutation({
   },
   handler: async (ctx, args) => {
     const { memberId, ...updates } = args;
-    
+
     // Filter out undefined values
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([, value]) => value !== undefined)
+      Object.entries(updates).filter(([, value]) => value !== undefined),
     );
-    
+
     if (Object.keys(filteredUpdates).length > 0) {
       await ctx.db.patch(memberId, {
         ...filteredUpdates,
@@ -1306,17 +1409,17 @@ export const updateMemberForMerge = mutation({
   },
   handler: async (ctx, args) => {
     const { memberId, ...updates } = args;
-    
+
     // Filter out undefined values
     const filteredUpdates = Object.fromEntries(
-      Object.entries(updates).filter(([, value]) => value !== undefined)
+      Object.entries(updates).filter(([, value]) => value !== undefined),
     );
-    
+
     // Generate new slug for the updated name
     const fullName = `${args.firstName} ${args.lastName}`;
     const baseSlug = generateMemberSlug(fullName);
     const uniqueSlug = await ensureUniqueMemberSlug(ctx, baseSlug, memberId);
-    
+
     await ctx.db.patch(memberId, {
       ...filteredUpdates,
       slug: uniqueSlug,
@@ -1346,4 +1449,3 @@ function getTimeAgo(timestamp: number): string {
   if (minutes > 0) return `${minutes}m`;
   return `${seconds}s`;
 }
-

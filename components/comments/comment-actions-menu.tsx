@@ -1,21 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
-import { MoreHorizontal, Edit, Trash2, Link2, Flag, Loader2 } from "lucide-react";
+import { Edit, Flag, Link2, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { COMMENT_EDIT_WINDOW_MS } from "@/lib/constants";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,6 +15,17 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { COMMENT_EDIT_WINDOW_MS } from "@/lib/constants";
 
 interface CommentActionsMenuProps {
   commentId: Id<"comments">;
@@ -57,9 +57,9 @@ export default function CommentActionsMenu({
 
   const canEdit = useMemo(() => {
     if (!isOwnComment && !isAdmin) return false;
-    
+
     if (isAdmin) return true;
-    
+
     const commentAge = Date.now() - commentCreatedAt;
     return commentAge <= COMMENT_EDIT_WINDOW_MS;
   }, [isOwnComment, isAdmin, commentCreatedAt]);
@@ -115,10 +115,7 @@ export default function CommentActionsMenu({
                   Edit (24h window expired)
                 </DropdownMenuItem>
               ) : null}
-              <DropdownMenuItem
-                onClick={() => setShowDeleteDialog(true)}
-                className="text-red-600"
-              >
+              <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-600">
                 <Trash2 className="mr-2 h-4 w-4" />
                 Delete
               </DropdownMenuItem>
@@ -130,9 +127,7 @@ export default function CommentActionsMenu({
             Copy link
           </DropdownMenuItem>
           {!isOwnComment && (
-            <DropdownMenuItem
-              onClick={() => setShowReportDialog(true)}
-            >
+            <DropdownMenuItem onClick={() => setShowReportDialog(true)}>
               <Flag className="mr-2 h-4 w-4" />
               Report
             </DropdownMenuItem>
@@ -145,8 +140,7 @@ export default function CommentActionsMenu({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete comment?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. The comment will be permanently
-              removed.
+              This action cannot be undone. The comment will be permanently removed.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -186,14 +180,8 @@ interface CommentReportDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-function CommentReportDialog({
-  commentId,
-  open,
-  onOpenChange,
-}: CommentReportDialogProps) {
-  const [reason, setReason] = useState<
-    "spam" | "inappropriate" | "harassment" | "other"
-  >("spam");
+function CommentReportDialog({ commentId, open, onOpenChange }: CommentReportDialogProps) {
+  const [reason, setReason] = useState<"spam" | "inappropriate" | "harassment" | "other">("spam");
   const [reasonText, setReasonText] = useState("");
   const [isReporting, setIsReporting] = useState(false);
   const reportComment = useMutation(api.comments.reportComment);
@@ -221,9 +209,7 @@ function CommentReportDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Report comment</AlertDialogTitle>
-          <AlertDialogDescription>
-            Why are you reporting this comment?
-          </AlertDialogDescription>
+          <AlertDialogDescription>Why are you reporting this comment?</AlertDialogDescription>
         </AlertDialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
@@ -260,7 +246,7 @@ function CommentReportDialog({
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
             onClick={handleReport}
-            disabled={reason === "other" && !reasonText.trim() || isReporting}
+            disabled={(reason === "other" && !reasonText.trim()) || isReporting}
           >
             {isReporting ? (
               <>

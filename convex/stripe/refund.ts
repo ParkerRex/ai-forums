@@ -1,22 +1,28 @@
 import { v } from "convex/values";
-import { mutation, internalMutation, action, query, QueryCtx, MutationCtx } from "../_generated/server";
 import { internal } from "../_generated/api";
-import { Doc } from "../_generated/dataModel";
+import type { Doc } from "../_generated/dataModel";
+import {
+  action,
+  internalMutation,
+  type MutationCtx,
+  type QueryCtx,
+  query,
+} from "../_generated/server";
 
 // Helper to check if user is admin
 async function requireAdmin(ctx: QueryCtx | MutationCtx): Promise<Doc<"members">> {
   const user = await ctx.auth.getUserIdentity();
   if (!user) throw new Error("Not authenticated");
-  
+
   const member = await ctx.db
     .query("members")
     .filter((q) => q.eq(q.field("email"), user.email))
     .first();
-    
+
   if (!member || member.role !== "admin") {
     throw new Error("Not authorized");
   }
-  
+
   return member;
 }
 
@@ -33,16 +39,16 @@ export const updatePaymentForRefund = internalMutation({
   handler: async (ctx, args) => {
     const payment = await ctx.db.get(args.paymentId);
     if (!payment) throw new Error("Payment not found");
-    
+
     // Update original payment
     const newRefundedAmount = (payment.refundedAmount || 0) + args.refundAmount;
     const isFullyRefunded = newRefundedAmount >= payment.amount;
-    
+
     await ctx.db.patch(args.paymentId, {
       refundedAmount: newRefundedAmount,
       status: isFullyRefunded ? "refunded" : "partially_refunded",
     });
-    
+
     // Create audit record for the refund
     await ctx.db.insert("payments", {
       memberId: payment.memberId,
@@ -60,7 +66,7 @@ export const updatePaymentForRefund = internalMutation({
       // Store admin info in payment record for audit
       failureReason: `Refunded by admin: ${args.adminId}`,
     });
-    
+
     // Create notification for the member
     await ctx.db.insert("notifications", {
       recipientId: payment.memberId,
@@ -80,26 +86,36 @@ export const refundPayment = action({
   args: {
     paymentId: v.id("payments"),
     amount: v.optional(v.number()), // Amount in cents, optional for partial refunds
-    reason: v.optional(v.union(
-      v.literal("duplicate"),
-      v.literal("fraudulent"),
-      v.literal("requested_by_customer"),
-      v.literal("other")
-    )),
+    reason: v.optional(
+      v.union(
+        v.literal("duplicate"),
+        v.literal("fraudulent"),
+        v.literal("requested_by_customer"),
+        v.literal("other"),
+      ),
+    ),
     notes: v.optional(v.string()),
   },
-  handler: async (ctx, args): Promise<{ success: boolean; refundId: string; refundedAmount: number; status: "fully_refunded" | "partially_refunded" }> => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{
+    success: boolean;
+    refundId: string;
+    refundedAmount: number;
+    status: "fully_refunded" | "partially_refunded";
+  }> => {
     // First, verify admin status and get payment details
-    const { payment, admin, refundAmount }: { payment: Doc<"payments">; admin: Doc<"members">; refundAmount: number } = await ctx.runMutation(
-      internal.stripe.refund.validateRefund,
-      args
-    );
-    
+    const {
+      payment,
+      admin,
+      refundAmount,
+    }: { payment: Doc<"payments">; admin: Doc<"members">; refundAmount: number } =
+      await ctx.runMutation(internal.stripe.refund.validateRefund, args);
+
     // Call Stripe API
-    const stripe = new (await import("stripe")).default(
-      process.env.STRIPE_SECRET_KEY!
-    );
-    
+    const stripe = new (await import("stripe")).default(process.env.STRIPE_SECRET_KEY!);
+
     try {
       // Create refund in Stripe
       const refund = await stripe.refunds.create({
@@ -113,7 +129,7 @@ export const refundPayment = action({
           payment_id: args.paymentId,
         },
       });
-      
+
       // Update our database
       await ctx.runMutation(internal.stripe.refund.updatePaymentForRefund, {
         paymentId: args.paymentId,
@@ -123,7 +139,7 @@ export const refundPayment = action({
         reason: args.reason,
         notes: args.notes,
       });
-      
+
       return {
         success: true,
         refundId: refund.id,
@@ -132,9 +148,9 @@ export const refundPayment = action({
       };
     } catch (error) {
       console.error("Stripe refund error:", error);
-      
+
       const errorMessage = error instanceof Error ? error.message : String(error);
-      
+
       // Log failed refund attempt
       await ctx.runMutation(internal.stripe.refund.logFailedRefund, {
         paymentId: args.paymentId,
@@ -142,7 +158,7 @@ export const refundPayment = action({
         error: errorMessage,
         amount: refundAmount,
       });
-      
+
       throw new Error(`Failed to process refund: ${errorMessage}`);
     }
   },
@@ -153,49 +169,51 @@ export const validateRefund = internalMutation({
   args: {
     paymentId: v.id("payments"),
     amount: v.optional(v.number()),
-    reason: v.optional(v.union(
-      v.literal("duplicate"),
-      v.literal("fraudulent"),
-      v.literal("requested_by_customer"),
-      v.literal("other")
-    )),
+    reason: v.optional(
+      v.union(
+        v.literal("duplicate"),
+        v.literal("fraudulent"),
+        v.literal("requested_by_customer"),
+        v.literal("other"),
+      ),
+    ),
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const admin = await requireAdmin(ctx);
-    
+
     // Get the payment
     const payment = await ctx.db.get(args.paymentId);
     if (!payment) {
       throw new Error("Payment not found");
     }
-    
+
     // Check if payment can be refunded
     if (payment.status !== "succeeded") {
       throw new Error("Only successful payments can be refunded");
     }
-    
+
     // Calculate refund amount
     const refundAmount = args.amount || payment.amount;
     const alreadyRefunded = payment.refundedAmount || 0;
     const remainingRefundable = payment.amount - alreadyRefunded;
-    
+
     if (refundAmount <= 0) {
       throw new Error("Refund amount must be greater than zero");
     }
-    
+
     if (refundAmount > remainingRefundable) {
       throw new Error(`Cannot refund more than $${(remainingRefundable / 100).toFixed(2)}`);
     }
-    
+
     // Check if payment is too old (Stripe has limits)
     const paymentAge = Date.now() - payment.createdAt;
     const maxRefundAge = 180 * 24 * 60 * 60 * 1000; // 180 days
-    
+
     if (paymentAge > maxRefundAge) {
       throw new Error("Payment is too old to refund (>180 days)");
     }
-    
+
     return { payment, admin, refundAmount };
   },
 });
@@ -208,9 +226,11 @@ export const logFailedRefund = internalMutation({
     error: v.string(),
     amount: v.number(),
   },
-  handler: async (ctx, args) => {
-    console.error(`Failed refund attempt by admin ${args.adminId} for payment ${args.paymentId}: ${args.error}`);
-    
+  handler: async (_ctx, args) => {
+    console.error(
+      `Failed refund attempt by admin ${args.adminId} for payment ${args.paymentId}: ${args.error}`,
+    );
+
     // Could store this in a separate audit log table if needed
     // For now, just log it
   },
@@ -223,30 +243,30 @@ export const getRefundEligibility = query({
   },
   handler: async (ctx, args) => {
     await requireAdmin(ctx);
-    
+
     const payment = await ctx.db.get(args.paymentId);
     if (!payment) {
       return { eligible: false, reason: "Payment not found" };
     }
-    
+
     if (payment.status !== "succeeded") {
       return { eligible: false, reason: "Only successful payments can be refunded" };
     }
-    
+
     const alreadyRefunded = payment.refundedAmount || 0;
     const remainingRefundable = payment.amount - alreadyRefunded;
-    
+
     if (remainingRefundable <= 0) {
       return { eligible: false, reason: "Payment has been fully refunded" };
     }
-    
+
     const paymentAge = Date.now() - payment.createdAt;
     const maxRefundAge = 180 * 24 * 60 * 60 * 1000; // 180 days
-    
+
     if (paymentAge > maxRefundAge) {
       return { eligible: false, reason: "Payment is too old to refund (>180 days)" };
     }
-    
+
     return {
       eligible: true,
       maxRefundAmount: remainingRefundable,

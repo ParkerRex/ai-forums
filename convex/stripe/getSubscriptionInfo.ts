@@ -1,5 +1,5 @@
-import { query } from "../_generated/server";
 import { format } from "date-fns";
+import { query } from "../_generated/server";
 
 export const getSubscriptionInfo = query({
   handler: async (ctx) => {
@@ -23,7 +23,7 @@ export const getSubscriptionInfo = query({
       ? await ctx.db
           .query("subscriptions")
           .withIndex("by_stripeSubscriptionId", (q) =>
-            q.eq("stripeSubscriptionId", member.stripeSubscriptionId!)
+            q.eq("stripeSubscriptionId", member.stripeSubscriptionId!),
           )
           .first()
       : null;
@@ -32,9 +32,9 @@ export const getSubscriptionInfo = query({
     let renewalInfo = null;
     if (member.subscriptionStatus === "active" && member.subscriptionEndDate) {
       const daysUntilRenewal = Math.ceil(
-        (member.subscriptionEndDate - Date.now()) / (1000 * 60 * 60 * 24)
+        (member.subscriptionEndDate - Date.now()) / (1000 * 60 * 60 * 24),
       );
-      
+
       renewalInfo = {
         nextBillingDate: format(new Date(member.subscriptionEndDate), "MMMM d, yyyy"),
         daysUntilRenewal,
@@ -42,8 +42,8 @@ export const getSubscriptionInfo = query({
           daysUntilRenewal > 1
             ? `Renews in ${daysUntilRenewal} days`
             : daysUntilRenewal === 1
-            ? "Renews tomorrow"
-            : "Renews today",
+              ? "Renews tomorrow"
+              : "Renews today",
       };
     }
 
@@ -76,9 +76,7 @@ export const getSubscriptionInfo = query({
       lastPaymentDate: member.lastPaymentDate
         ? format(new Date(member.lastPaymentDate), "MMMM d, yyyy")
         : null,
-      lastPaymentAmount: member.amountCents
-        ? formatAmount(member.amountCents)
-        : null,
+      lastPaymentAmount: member.amountCents ? formatAmount(member.amountCents) : null,
       cancelAtPeriodEnd: subscription?.cancelAtPeriodEnd || false,
       recentPayments: recentPayments.map((payment) => ({
         id: payment._id,
@@ -92,18 +90,18 @@ export const getSubscriptionInfo = query({
         member.tier === "founding_member"
           ? "Founding Member"
           : member.tier === "early_bird"
-          ? "Early Bird"
-          : member.tier === "member"
-          ? "Member"
-          : member.tier === "scholarship"
-          ? "Scholarship"
-          : "Free",
+            ? "Early Bird"
+            : member.tier === "member"
+              ? "Member"
+              : member.tier === "scholarship"
+                ? "Scholarship"
+                : "Free",
       billingIntervalDisplay:
         member.billingInterval === "monthly"
           ? "Monthly"
           : member.billingInterval === "yearly"
-          ? "Yearly"
-          : null,
+            ? "Yearly"
+            : null,
     };
   },
 });

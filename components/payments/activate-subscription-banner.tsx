@@ -1,11 +1,11 @@
 "use client";
 
-import { useQuery, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useAction, useQuery } from "convex/react";
 import { X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
 
 /**
  * ActivateSubscriptionBanner - Consolidated banner for subscription activation
@@ -24,18 +24,14 @@ import { Button } from "@/components/ui/button";
 export function ActivateSubscriptionBanner() {
   const router = useRouter();
   const currentMember = useQuery(api.auth.current);
-  const createCheckoutSession = useAction(
-    api.stripe.checkout.createCheckoutSession,
-  );
+  const createCheckoutSession = useAction(api.stripe.checkout.createCheckoutSession);
 
   const [isCreatingSession, setIsCreatingSession] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
 
   // Check if banner was dismissed in localStorage
   useEffect(() => {
-    const dismissedUntil = localStorage.getItem(
-      "activateSubscriptionBannerDismissedUntil",
-    );
+    const dismissedUntil = localStorage.getItem("activateSubscriptionBannerDismissedUntil");
     if (dismissedUntil && new Date(dismissedUntil) > new Date()) {
       setIsVisible(false);
     }
@@ -85,10 +81,7 @@ export function ActivateSubscriptionBanner() {
     }
 
     // For members without subscriptions (migrated), check grace period
-    if (
-      currentMember.subscriptionStatus === "none" ||
-      !currentMember.subscriptionStatus
-    ) {
+    if (currentMember.subscriptionStatus === "none" || !currentMember.subscriptionStatus) {
       const nextBilling = getNextBillingDate(currentMember.joinedDate);
       const now = new Date();
       const daysUntilBilling = Math.ceil(
@@ -150,9 +143,7 @@ export function ActivateSubscriptionBanner() {
     } else {
       // For migrated members approaching billing
       const nextBilling = getNextBillingDate(currentMember.joinedDate);
-      const daysUntil = Math.ceil(
-        (nextBilling.getTime() - Date.now()) / (1000 * 60 * 60 * 24),
-      );
+      const daysUntil = Math.ceil((nextBilling.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
       return `Hey ${firstName}! Your ${tierInfo.name} billing starts in ${daysUntil} days`;
     }
   };
@@ -197,10 +188,7 @@ export function ActivateSubscriptionBanner() {
   const handleDismiss = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    localStorage.setItem(
-      "activateSubscriptionBannerDismissedUntil",
-      tomorrow.toISOString(),
-    );
+    localStorage.setItem("activateSubscriptionBannerDismissedUntil", tomorrow.toISOString());
     setIsVisible(false);
   };
 
@@ -222,9 +210,7 @@ export function ActivateSubscriptionBanner() {
                   {tierInfo.badge}
                 </span>
               )}
-              <p className="text-foreground text-sm font-medium">
-                {getMessage()}
-              </p>
+              <p className="text-foreground text-sm font-medium">{getMessage()}</p>
             </div>
 
             <Button

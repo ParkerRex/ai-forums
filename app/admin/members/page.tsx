@@ -1,40 +1,28 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import type { MemberWithStatus, MembershipStats } from "@/types/admin";
+import { useMutation, useQuery } from "convex/react";
 import { format } from "date-fns";
-import Image from "next/image";
 import {
-  Search,
+  Calendar,
   ChevronDown,
   ChevronUp,
-  MoreVertical,
-  User,
-  Mail,
-  Calendar,
   CreditCard,
-  Shield,
   DollarSign,
   Download,
-  Filter,
   Eye,
+  Filter,
+  Gift,
+  Mail,
+  MoreVertical,
+  Search,
+  Shield,
+  User,
   UserCheck,
   UserX,
-  Gift,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
+import Image from "next/image";
+import { useMemo, useState } from "react";
+import { MemberDetailsModal } from "@/components/admin/member-details-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -46,6 +34,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -53,16 +42,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MemberDetailsModal } from "@/components/admin/member-details-modal";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
+import type { MembershipStats, MemberWithStatus } from "@/types/admin";
 
-type SortField =
-  | "name"
-  | "email"
-  | "joinedAt"
-  | "lastActiveAt"
-  | "tier"
-  | "status"
-  | "revenue";
+type SortField = "name" | "email" | "joinedAt" | "lastActiveAt" | "tier" | "status" | "revenue";
 type SortOrder = "asc" | "desc";
 
 // Note: No free tier - platform operates with zero free users
@@ -105,17 +98,14 @@ const statusConfig = {
 
 export default function AdminMembersPage() {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<
-    "all" | "active" | "cancelled" | "churned"
-  >("all");
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "cancelled" | "churned">(
+    "all",
+  );
   const [tierFilter, setTierFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("joinedAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  const [selectedMemberId, setSelectedMemberId] =
-    useState<Id<"members"> | null>(null);
-  const [selectedMembers, setSelectedMembers] = useState<Set<Id<"members">>>(
-    new Set(),
-  );
+  const [selectedMemberId, setSelectedMemberId] = useState<Id<"members"> | null>(null);
+  const [selectedMembers, setSelectedMembers] = useState<Set<Id<"members">>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
@@ -124,9 +114,7 @@ export default function AdminMembersPage() {
     search: search || undefined,
   }) as MemberWithStatus[] | undefined;
 
-  const stats = useQuery(api.admin.members.getMembershipStats) as
-    | MembershipStats
-    | undefined;
+  const stats = useQuery(api.admin.members.getMembershipStats) as MembershipStats | undefined;
   // Note: Scholarships now handled via Stripe coupons, not mutations
   const updateRole = useMutation(api.admin.members.updateMemberRole);
 
@@ -272,10 +260,7 @@ export default function AdminMembersPage() {
         {/* Stats Cards skeleton */}
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="bg-card border-border rounded-none border p-4"
-            >
+            <div key={i} className="bg-card border-border rounded-none border p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <div className="bg-muted mb-2 h-4 w-24 animate-pulse rounded" />
@@ -345,9 +330,7 @@ export default function AdminMembersPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">Members</h1>
-            <p className="text-muted-foreground mt-1">
-              Manage member accounts and subscriptions
-            </p>
+            <p className="text-muted-foreground mt-1">Manage member accounts and subscriptions</p>
           </div>
           <Button onClick={exportMembers} variant="outline">
             <Download className="mr-2 h-4 w-4" />
@@ -361,12 +344,8 @@ export default function AdminMembersPage() {
         <div className="bg-card border-border rounded-none border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">
-                Total Members
-              </p>
-              <p className="text-foreground mt-1 text-2xl font-bold">
-                {stats.totalMembers}
-              </p>
+              <p className="text-muted-foreground text-sm font-medium">Total Members</p>
+              <p className="text-foreground mt-1 text-2xl font-bold">{stats.totalMembers}</p>
             </div>
             <div className="bg-muted flex h-12 w-12 items-center justify-center rounded-none">
               <User className="text-muted-foreground h-6 w-6" />
@@ -377,18 +356,10 @@ export default function AdminMembersPage() {
         <div className="bg-card border-border rounded-none border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">
-                Active Subscribers
-              </p>
-              <p className="text-chart-2 mt-1 text-2xl font-bold">
-                {stats.statusStats.active}
-              </p>
+              <p className="text-muted-foreground text-sm font-medium">Active Subscribers</p>
+              <p className="text-chart-2 mt-1 text-2xl font-bold">{stats.statusStats.active}</p>
               <p className="text-muted-foreground mt-1 text-xs">
-                {(
-                  (stats.statusStats.active / stats.totalMembers) *
-                  100
-                ).toFixed(1)}
-                % of total
+                {((stats.statusStats.active / stats.totalMembers) * 100).toFixed(1)}% of total
               </p>
             </div>
             <div className="bg-chart-2/10 flex h-12 w-12 items-center justify-center rounded-none">
@@ -400,15 +371,11 @@ export default function AdminMembersPage() {
         <div className="bg-card border-border rounded-none border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">
-                Monthly Revenue
-              </p>
+              <p className="text-muted-foreground text-sm font-medium">Monthly Revenue</p>
               <p className="text-foreground mt-1 text-2xl font-bold">
                 {stats.revenue.formattedMrr}
               </p>
-              <p className="text-muted-foreground mt-1 text-xs">
-                Recurring monthly
-              </p>
+              <p className="text-muted-foreground mt-1 text-xs">Recurring monthly</p>
             </div>
             <div className="bg-chart-1/10 flex h-12 w-12 items-center justify-center rounded-none">
               <DollarSign className="text-chart-1 h-6 w-6" />
@@ -419,15 +386,9 @@ export default function AdminMembersPage() {
         <div className="bg-card border-border rounded-none border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">
-                Churn Rate
-              </p>
+              <p className="text-muted-foreground text-sm font-medium">Churn Rate</p>
               <p className="text-destructive mt-1 text-2xl font-bold">
-                {(
-                  (stats.statusStats.churned / stats.totalMembers) *
-                  100
-                ).toFixed(1)}
-                %
+                {((stats.statusStats.churned / stats.totalMembers) * 100).toFixed(1)}%
               </p>
               <p className="text-muted-foreground mt-1 text-xs">
                 {stats.statusStats.churned} churned
@@ -463,9 +424,7 @@ export default function AdminMembersPage() {
             <Select
               value={statusFilter}
               onValueChange={(value) =>
-                setStatusFilter(
-                  value as "all" | "active" | "cancelled" | "churned",
-                )
+                setStatusFilter(value as "all" | "active" | "cancelled" | "churned")
               }
             >
               <SelectTrigger className="w-[140px]">
@@ -500,9 +459,7 @@ export default function AdminMembersPage() {
         {/* Active filters */}
         {(statusFilter !== "all" || tierFilter !== "all" || search) && (
           <div className="mt-3 flex items-center gap-2">
-            <span className="text-muted-foreground text-sm">
-              Active filters:
-            </span>
+            <span className="text-muted-foreground text-sm">Active filters:</span>
             {statusFilter !== "all" && (
               <Badge variant="secondary" className="text-xs">
                 Status: {statusFilter}
@@ -538,8 +495,7 @@ export default function AdminMembersPage() {
       {selectedMembers.size > 0 && (
         <div className="bg-primary/5 border-primary/20 mb-4 flex items-center justify-between rounded-none border p-3">
           <span className="text-primary text-sm">
-            {selectedMembers.size} member{selectedMembers.size > 1 ? "s" : ""}{" "}
-            selected
+            {selectedMembers.size} member{selectedMembers.size > 1 ? "s" : ""} selected
           </span>
           <div className="flex gap-2">
             <Button size="sm" variant="outline">
@@ -562,8 +518,7 @@ export default function AdminMembersPage() {
               <TableHead className="w-12">
                 <Checkbox
                   checked={
-                    selectedMembers.size === paginatedMembers.length &&
-                    paginatedMembers.length > 0
+                    selectedMembers.size === paginatedMembers.length && paginatedMembers.length > 0
                   }
                   onCheckedChange={toggleAllSelection}
                 />
@@ -628,8 +583,7 @@ export default function AdminMembersPage() {
               const tierInfo = member.tier
                 ? tierConfig[member.tier as keyof typeof tierConfig]
                 : null;
-              const statusInfo =
-                statusConfig[member.status as keyof typeof statusConfig];
+              const statusInfo = statusConfig[member.status as keyof typeof statusConfig];
 
               return (
                 <TableRow key={member._id} className="hover:bg-muted/50">
@@ -655,12 +609,8 @@ export default function AdminMembersPage() {
                         )}
                       </div>
                       <div className="min-w-0">
-                        <div className="text-foreground truncate font-medium">
-                          {fullName}
-                        </div>
-                        <div className="text-muted-foreground truncate text-sm">
-                          {member.email}
-                        </div>
+                        <div className="text-foreground truncate font-medium">{fullName}</div>
+                        <div className="text-muted-foreground truncate text-sm">{member.email}</div>
                         {member.role === "admin" && (
                           <Badge variant="secondary" className="mt-1 text-xs">
                             <Shield className="mr-1 h-3 w-3" />
@@ -673,39 +623,27 @@ export default function AdminMembersPage() {
                   <TableCell>
                     <div className="space-y-1">
                       {tierInfo && (
-                        <Badge
-                          variant="outline"
-                          className={cn("text-xs", tierInfo.color)}
-                        >
+                        <Badge variant="outline" className={cn("text-xs", tierInfo.color)}>
                           {tierInfo.label}
                         </Badge>
                       )}
                       {member.billingInterval && (
                         <div className="text-muted-foreground text-xs">
-                          {tierInfo?.price}/
-                          {member.billingInterval === "monthly" ? "mo" : "yr"}
+                          {tierInfo?.price}/{member.billingInterval === "monthly" ? "mo" : "yr"}
                         </div>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={cn("text-xs", statusInfo.color)}
-                    >
+                    <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
                       <statusInfo.icon className="mr-1 h-3 w-3" />
                       {statusInfo.label}
                     </Badge>
-                    {member.status === "cancelled" &&
-                      member.subscriptionEndDate && (
-                        <div className="text-muted-foreground mt-1 text-xs">
-                          Ends{" "}
-                          {format(
-                            new Date(member.subscriptionEndDate),
-                            "MMM d",
-                          )}
-                        </div>
-                      )}
+                    {member.status === "cancelled" && member.subscriptionEndDate && (
+                      <div className="text-muted-foreground mt-1 text-xs">
+                        Ends {format(new Date(member.subscriptionEndDate), "MMM d")}
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
@@ -792,11 +730,8 @@ export default function AdminMembersPage() {
           <div className="border-border flex items-center justify-between border-t px-4 py-3">
             <div className="text-muted-foreground text-sm">
               Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
-              {Math.min(
-                currentPage * itemsPerPage,
-                filteredAndSortedMembers.length,
-              )}{" "}
-              of {filteredAndSortedMembers.length} members
+              {Math.min(currentPage * itemsPerPage, filteredAndSortedMembers.length)} of{" "}
+              {filteredAndSortedMembers.length} members
             </div>
             <div className="flex gap-2">
               <Button
@@ -810,9 +745,7 @@ export default function AdminMembersPage() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
               >
                 Next
@@ -824,10 +757,7 @@ export default function AdminMembersPage() {
 
       {/* Member Details Modal */}
       {selectedMemberId && (
-        <MemberDetailsModal
-          memberId={selectedMemberId}
-          onClose={() => setSelectedMemberId(null)}
-        />
+        <MemberDetailsModal memberId={selectedMemberId} onClose={() => setSelectedMemberId(null)} />
       )}
     </div>
   );

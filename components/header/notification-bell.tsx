@@ -1,11 +1,11 @@
 "use client";
 
-import React from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import React from "react";
 import { BellIcon } from "@/components/icons/bell";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
 import { useCurrentMember } from "@/hooks/use-current-member";
 
 interface NotificationBellProps {
@@ -19,10 +19,7 @@ export function NotificationBell({ onClick }: NotificationBellProps) {
     stopAnimation: () => void;
   }>(null);
 
-  const unreadCount = useQuery(
-    api.notifications.getUnreadNotificationCount,
-    member ? {} : "skip",
-  );
+  const unreadCount = useQuery(api.notifications.getUnreadNotificationCount, member ? {} : "skip");
 
   if (!member) return null;
 

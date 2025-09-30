@@ -13,7 +13,7 @@
  * @see CategoryPageClient - Client component that handles interactivity
  */
 
-import { Metadata } from "next";
+import type { Metadata } from "next";
 import CategoryPageClient from "./page-client";
 
 /**
@@ -43,9 +43,7 @@ interface CategoryPageProps {
  * // For URL: /workflows
  * // Returns: { title: "Workflows - VAI Community", description: "Browse workflows posts..." }
  */
-export async function generateMetadata({
-  params,
-}: CategoryPageProps): Promise<Metadata> {
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
   const { category: categoryName } = await params;
 
   // Map internal category names to user-friendly display names for SEO

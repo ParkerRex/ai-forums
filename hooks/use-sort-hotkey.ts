@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 function isInputFree(e: KeyboardEvent): boolean {
   const target = e.target as HTMLElement;
@@ -11,7 +11,7 @@ function isInputFree(e: KeyboardEvent): boolean {
   const tagName = target.tagName.toLowerCase();
 
   // Don't trigger if user is typing in an input field
-  if (tagName === 'input' || tagName === 'textarea' || target.contentEditable === 'true') {
+  if (tagName === "input" || tagName === "textarea" || target.contentEditable === "true") {
     return false;
   }
 
@@ -26,43 +26,50 @@ interface UseSortHotkeyProps {
   setIsOpen?: (open: boolean) => void;
 }
 
-export function useSortHotkey({ onSortChange, isOpen: controlledIsOpen, setIsOpen: setControlledIsOpen }: UseSortHotkeyProps = {}) {
+export function useSortHotkey({
+  onSortChange,
+  isOpen: controlledIsOpen,
+  setIsOpen: setControlledIsOpen,
+}: UseSortHotkeyProps = {}) {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
-  
+
   // Use controlled state if provided, otherwise use internal state
   const isOpen = controlledIsOpen !== undefined ? controlledIsOpen : internalIsOpen;
   const setIsOpen = setControlledIsOpen || setInternalIsOpen;
 
-  const handleSortSelection = useCallback((sortOption: SortOption) => {
-    onSortChange?.(sortOption);
-    setIsOpen(false);
-  }, [onSortChange, setIsOpen]);
+  const handleSortSelection = useCallback(
+    (sortOption: SortOption) => {
+      onSortChange?.(sortOption);
+      setIsOpen(false);
+    },
+    [onSortChange, setIsOpen],
+  );
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Handle 'S' key to open sort menu
-      if (e.key && e.key.toLowerCase() === 's' && isInputFree(e) && !e.metaKey && !e.ctrlKey) {
+      if (e.key && e.key.toLowerCase() === "s" && isInputFree(e) && !e.metaKey && !e.ctrlKey) {
         e.preventDefault();
         setIsOpen(!isOpen);
         return;
       }
-      
+
       // Handle number keys for quick selection when popover is open
       if (isOpen) {
-        switch(e.key) {
-          case '1':
+        switch (e.key) {
+          case "1":
             e.preventDefault();
             handleSortSelection("newest");
             break;
-          case '2':
+          case "2":
             e.preventDefault();
             handleSortSelection("popular");
             break;
-          case '3':
+          case "3":
             e.preventDefault();
             handleSortSelection("trending");
             break;
-          case 'Escape':
+          case "Escape":
             e.preventDefault();
             setIsOpen(false);
             break;

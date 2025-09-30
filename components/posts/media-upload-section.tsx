@@ -1,16 +1,16 @@
 "use client";
 
-import { useState, useCallback, useRef } from "react";
-import { MediaItem } from "@/types";
+import { Link, Plus, X } from "lucide-react";
+import { useCallback, useRef, useState } from "react";
+import { toast } from "sonner";
+import { MediaUploadIcon } from "@/components/icons/media-upload";
 import { MediaPreviewGrid } from "@/components/posts/media-preview-grid";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { Link, X, Plus } from "lucide-react";
-import { MediaUploadIcon } from "@/components/icons/media-upload";
-import { toast } from "sonner";
+import { Label } from "@/components/ui/label";
 import { validateMediaFile } from "@/lib/upload-media";
 import { extractYouTubeId, getYouTubeThumbnail } from "@/lib/youtube-utils";
+import type { MediaItem } from "@/types";
 
 interface MediaUploadSectionProps {
   media: MediaItem[];
@@ -102,9 +102,7 @@ export function MediaUploadSection({
     }
 
     // Check if this YouTube video is already added
-    if (
-      media.some((item) => item.type === "youtube" && item.videoId === videoId)
-    ) {
+    if (media.some((item) => item.type === "youtube" && item.videoId === videoId)) {
       toast.error("This YouTube video is already added");
       return;
     }
@@ -192,9 +190,7 @@ export function MediaUploadSection({
       ) : (
         <div
           className={`rounded-none border-2 border-dashed p-8 text-center transition-colors ${
-            isDragging
-              ? "border-green-700 bg-green-50 dark:bg-green-950"
-              : "border-border"
+            isDragging ? "border-green-700 bg-green-50 dark:bg-green-950" : "border-border"
           }`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}

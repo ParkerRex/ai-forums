@@ -1,6 +1,4 @@
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface PostAnalytics {
   viewCount: number;
@@ -13,25 +11,25 @@ interface PostAnalytics {
 export function usePostAnalytics(postId?: Id<"posts">): PostAnalytics | null {
   // TODO: Implement these API endpoints when analytics module is ready
   // For now, return simulated data
-  
+
   // Get view count for the post
   // const analytics = useQuery(
   //   api.analytics.getPostAnalytics,
   //   postId ? { postId } : "skip"
   // );
-  
+
   // Get active readers (users who viewed in last 5 minutes)
   // const activeReaders = useQuery(
   //   api.analytics.getActiveReaders,
   //   postId ? { postId } : "skip"
   // );
-  
+
   // Get bookmark count
   // const bookmarkCount = useQuery(
   //   api.bookmarks.getBookmarkCount,
   //   postId ? { targetId: postId, targetType: "post" as const } : "skip"
   // );
-  
+
   // Get related posts count
   // const relatedPosts = useQuery(
   //   api.posts.getRelatedPosts,
@@ -52,7 +50,7 @@ export function useSimulatedAnalytics() {
   // Simulate realistic view counts
   const baseViews = Math.floor(Math.random() * 2000) + 500;
   const activeReaders = Math.floor(Math.random() * 20) + 5;
-  
+
   return {
     viewCount: baseViews,
     activeReaders,

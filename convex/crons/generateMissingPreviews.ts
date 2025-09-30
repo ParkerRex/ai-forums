@@ -8,7 +8,7 @@ crons.interval(
   "generateMissingPreviews",
   { minutes: 5 },
   internal.previewGeneration.processMissingPreviews,
-  { batchSize: 5 }
+  { batchSize: 5 },
 );
 
 export default crons;

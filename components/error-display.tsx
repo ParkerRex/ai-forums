@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
 import { AlertTriangle, RefreshCw, Wifi, WifiOff } from "lucide-react";
-import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
 import { useNetworkStatus } from "@/hooks/use-network-status";
@@ -32,9 +31,7 @@ export function ErrorDisplay({ error, context, onRetry, className }: ErrorDispla
   return (
     <Alert variant="destructive" className={className}>
       <AlertTriangle className="h-4 w-4" />
-      <AlertTitle>
-        {processedError.type === "network" ? "Connection Error" : "Error"}
-      </AlertTitle>
+      <AlertTitle>{processedError.type === "network" ? "Connection Error" : "Error"}</AlertTitle>
       <AlertDescription className="mt-2">
         <p className="mb-3">{processedError.message}</p>
 
@@ -147,9 +144,7 @@ export function InlineErrorDisplay({ error, context, onRetry }: ErrorDisplayProp
           <AlertTriangle className="h-5 w-5 text-destructive" />
         </div>
         <div className="ml-3">
-          <h3 className="text-sm font-medium text-destructive">
-            {processedError.message}
-          </h3>
+          <h3 className="text-sm font-medium text-destructive">{processedError.message}</h3>
           {onRetry && processedError.canRetry && (
             <div className="mt-2">
               <Button
@@ -181,9 +176,7 @@ export function FullPageErrorDisplay({ error, context, onRetry }: ErrorDisplayPr
       <div className="max-w-md w-full text-center">
         <div className="mb-6">
           <AlertTriangle className="h-16 w-16 text-destructive mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            Something went wrong
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Something went wrong</h1>
           <p className="text-muted-foreground">{processedError.message}</p>
         </div>
 
@@ -217,11 +210,7 @@ export function FullPageErrorDisplay({ error, context, onRetry }: ErrorDisplayPr
             </Button>
           )}
 
-          <Button
-            variant="outline"
-            onClick={() => window.location.reload()}
-            className="w-full"
-          >
+          <Button variant="outline" onClick={() => window.location.reload()} className="w-full">
             Reload Page
           </Button>
         </div>
@@ -241,10 +230,13 @@ export function NetworkStatusIndicator() {
   }
 
   return (
-    <div className={`fixed top-4 right-4 z-50 px-3 py-2 rounded-md text-sm font-medium border ${isOnline
-      ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
-      : "bg-destructive/10 text-destructive border-destructive/20"
-      }`}>
+    <div
+      className={`fixed top-4 right-4 z-50 px-3 py-2 rounded-md text-sm font-medium border ${
+        isOnline
+          ? "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+          : "bg-destructive/10 text-destructive border-destructive/20"
+      }`}
+    >
       <div className="flex items-center">
         {isOnline ? (
           <>
@@ -261,5 +253,3 @@ export function NetworkStatusIndicator() {
     </div>
   );
 }
-
- 

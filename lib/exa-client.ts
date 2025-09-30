@@ -16,22 +16,22 @@ interface ExaSearchResponse {
 export async function searchNews(
   query: string,
   numResults: number = 10,
-  includeDomains?: string[]
+  includeDomains?: string[],
 ): Promise<ExaSearchResponse> {
   const apiKey = process.env.EXA_API_KEY;
   if (!apiKey) {
-    throw new Error('EXA API key not configured');
+    throw new Error("EXA API key not configured");
   }
-  
-  const response = await fetch('https://api.exa.ai/search', {
-    method: 'POST',
+
+  const response = await fetch("https://api.exa.ai/search", {
+    method: "POST",
     headers: {
-      'x-api-key': apiKey,
-      'Content-Type': 'application/json',
+      "x-api-key": apiKey,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       query,
-      category: 'news',
+      category: "news",
       numResults,
       includeDomains,
       contents: {
@@ -44,7 +44,7 @@ export async function searchNews(
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('EXA API error:', response.status, response.statusText);
+    console.error("EXA API error:", response.status, response.statusText);
     throw new Error(`EXA API error: ${response.status} - ${errorText}`);
   }
 
@@ -53,24 +53,24 @@ export async function searchNews(
 
 export async function summarize(text: string): Promise<string> {
   if (!text || text.trim().length === 0) {
-    return '';
+    return "";
   }
-  
+
   // For Phase 0, we'll return a truncated version of the text
   // In future phases, this could call an AI summarization API
   const maxLength = 150;
   const trimmed = text.trim();
-  
+
   if (trimmed.length <= maxLength) {
     return trimmed;
   }
-  
+
   // Find a good break point (end of sentence)
   let cutoff = maxLength;
-  const sentenceEnd = trimmed.lastIndexOf('.', maxLength);
+  const sentenceEnd = trimmed.lastIndexOf(".", maxLength);
   if (sentenceEnd > maxLength * 0.8) {
     cutoff = sentenceEnd + 1;
   }
-  
-  return trimmed.substring(0, cutoff).trim() + '...';
+
+  return `${trimmed.substring(0, cutoff).trim()}...`;
 }

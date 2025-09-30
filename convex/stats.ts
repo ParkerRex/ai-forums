@@ -1,5 +1,5 @@
-import { internalMutation } from "./_generated/server";
 import { v } from "convex/values";
+import { internalMutation } from "./_generated/server";
 
 /**
  * Recalculate and cache member stats
@@ -8,9 +8,9 @@ import { v } from "convex/values";
 export const recalcMemberStats = internalMutation({
   handler: async (ctx) => {
     const members = await ctx.db.query("members").collect();
-    
+
     let updatedCount = 0;
-    
+
     for (const member of members) {
       // Calculate stats for this member
       const [posts, comments] = await Promise.all([
@@ -30,29 +30,42 @@ export const recalcMemberStats = internalMutation({
       const commentCount = comments.length;
 
       // Calculate net votes received on member's content (posts + comments)
-      const postIds = posts.map(p => p._id);
-      const commentIds = comments.map(c => c._id);
-      
+      const postIds = posts.map((p) => p._id);
+      const commentIds = comments.map((c) => c._id);
+
       const [postVotes, commentVotes] = await Promise.all([
         // Get votes on member's posts
-        postIds.length > 0 ? 
-          Promise.all(postIds.map(postId => 
-            ctx.db.query("votes")
-              .withIndex("by_target_and_type", (q) => q.eq("targetId", postId.toString()).eq("targetType", "post"))
-              .collect()
-          )).then(results => results.flat()) : [],
-        // Get votes on member's comments  
-        commentIds.length > 0 ?
-          Promise.all(commentIds.map(commentId =>
-            ctx.db.query("votes")
-              .withIndex("by_target_and_type", (q) => q.eq("targetId", commentId.toString()).eq("targetType", "comment"))
-              .collect()
-          )).then(results => results.flat()) : [],
+        postIds.length > 0
+          ? Promise.all(
+              postIds.map((postId) =>
+                ctx.db
+                  .query("votes")
+                  .withIndex("by_target_and_type", (q) =>
+                    q.eq("targetId", postId.toString()).eq("targetType", "post"),
+                  )
+                  .collect(),
+              ),
+            ).then((results) => results.flat())
+          : [],
+        // Get votes on member's comments
+        commentIds.length > 0
+          ? Promise.all(
+              commentIds.map((commentId) =>
+                ctx.db
+                  .query("votes")
+                  .withIndex("by_target_and_type", (q) =>
+                    q.eq("targetId", commentId.toString()).eq("targetType", "comment"),
+                  )
+                  .collect(),
+              ),
+            ).then((results) => results.flat())
+          : [],
       ]);
 
       const allVotes = [...postVotes, ...commentVotes];
-      const netVoteCount = allVotes.filter(v => v.voteType === "upvote").length - 
-                          allVotes.filter(v => v.voteType === "downvote").length;
+      const netVoteCount =
+        allVotes.filter((v) => v.voteType === "upvote").length -
+        allVotes.filter((v) => v.voteType === "downvote").length;
 
       // Update member with cached stats
       await ctx.db.patch(member._id, {
@@ -61,10 +74,10 @@ export const recalcMemberStats = internalMutation({
         netVoteCount,
         updatedAt: Date.now(),
       });
-      
+
       updatedCount++;
     }
-    
+
     console.log(`Stats recalculation completed: updated ${updatedCount} members`);
     return { updatedMembers: updatedCount };
   },
@@ -99,29 +112,42 @@ export const recalcSingleMemberStats = internalMutation({
     const commentCount = comments.length;
 
     // Calculate net votes received on member's content (posts + comments)
-    const postIds = posts.map(p => p._id);
-    const commentIds = comments.map(c => c._id);
-    
+    const postIds = posts.map((p) => p._id);
+    const commentIds = comments.map((c) => c._id);
+
     const [postVotes, commentVotes] = await Promise.all([
       // Get votes on member's posts
-      postIds.length > 0 ? 
-        Promise.all(postIds.map(postId => 
-          ctx.db.query("votes")
-            .withIndex("by_target_and_type", (q) => q.eq("targetId", postId.toString()).eq("targetType", "post"))
-            .collect()
-        )).then(results => results.flat()) : [],
-      // Get votes on member's comments  
-      commentIds.length > 0 ?
-        Promise.all(commentIds.map(commentId =>
-          ctx.db.query("votes")
-            .withIndex("by_target_and_type", (q) => q.eq("targetId", commentId.toString()).eq("targetType", "comment"))
-            .collect()
-        )).then(results => results.flat()) : [],
+      postIds.length > 0
+        ? Promise.all(
+            postIds.map((postId) =>
+              ctx.db
+                .query("votes")
+                .withIndex("by_target_and_type", (q) =>
+                  q.eq("targetId", postId.toString()).eq("targetType", "post"),
+                )
+                .collect(),
+            ),
+          ).then((results) => results.flat())
+        : [],
+      // Get votes on member's comments
+      commentIds.length > 0
+        ? Promise.all(
+            commentIds.map((commentId) =>
+              ctx.db
+                .query("votes")
+                .withIndex("by_target_and_type", (q) =>
+                  q.eq("targetId", commentId.toString()).eq("targetType", "comment"),
+                )
+                .collect(),
+            ),
+          ).then((results) => results.flat())
+        : [],
     ]);
 
     const allVotes = [...postVotes, ...commentVotes];
-    const netVoteCount = allVotes.filter(v => v.voteType === "upvote").length - 
-                        allVotes.filter(v => v.voteType === "downvote").length;
+    const netVoteCount =
+      allVotes.filter((v) => v.voteType === "upvote").length -
+      allVotes.filter((v) => v.voteType === "downvote").length;
 
     // Update member with cached stats
     await ctx.db.patch(memberId, {
@@ -136,4 +162,4 @@ export const recalcSingleMemberStats = internalMutation({
 });
 
 // Note: Cron job can be set up later via Convex dashboard
-// For now, stats can be recalculated manually using recalcMemberStats 
+// For now, stats can be recalculated manually using recalcMemberStats

@@ -1,12 +1,11 @@
 #!/usr/bin/env node
 // Import posts and comments using Convex HTTP Actions
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 // Configuration
-const CONVEX_URL =
-  process.env.CONVEX_URL || "https://your-deployment.convex.site";
+const CONVEX_URL = process.env.CONVEX_URL || "https://your-deployment.convex.site";
 const IMPORT_TOKEN = process.env.IMPORT_SECRET_TOKEN;
 const BATCH_SIZE = 50;
 
@@ -37,21 +36,13 @@ async function main() {
   try {
     // Read the prepared data
     const posts = JSON.parse(
-      fs.readFileSync(
-        path.join(__dirname, "../migration-data/posts-import-fixed.json"),
-        "utf8",
-      ),
+      fs.readFileSync(path.join(__dirname, "../migration-data/posts-import-fixed.json"), "utf8"),
     );
     const comments = JSON.parse(
-      fs.readFileSync(
-        path.join(__dirname, "../migration-data/comments-import-fixed.json"),
-        "utf8",
-      ),
+      fs.readFileSync(path.join(__dirname, "../migration-data/comments-import-fixed.json"), "utf8"),
     );
 
-    console.log(
-      `Preparing to import ${posts.length} posts and ${comments.length} comments`,
-    );
+    console.log(`Preparing to import ${posts.length} posts and ${comments.length} comments`);
 
     // Import posts in batches
     const allPostIdMaps = {};
@@ -72,9 +63,7 @@ async function main() {
       try {
         const result = await importBatch("posts", { posts: postsWithCategory });
         Object.assign(allPostIdMaps, result.postIdMap);
-        console.log(
-          `Imported ${result.importedCount} of ${result.totalCount} posts`,
-        );
+        console.log(`Imported ${result.importedCount} of ${result.totalCount} posts`);
 
         if (result.errors?.length > 0) {
           console.warn("Import warnings:", result.errors);

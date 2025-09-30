@@ -1,11 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Plus, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
-import { Plus, X } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 export interface PollOption {
@@ -24,18 +30,22 @@ interface PollCreationInlineProps {
   disabled?: boolean;
 }
 
-export function PollCreationInline({ pollData, onChange, disabled = false }: PollCreationInlineProps) {
+export function PollCreationInline({
+  pollData,
+  onChange,
+  disabled = false,
+}: PollCreationInlineProps) {
   const [options, setOptions] = useState<PollOption[]>(
     pollData?.options || [
       { id: crypto.randomUUID(), text: "" },
-      { id: crypto.randomUUID(), text: "" }
-    ]
+      { id: crypto.randomUUID(), text: "" },
+    ],
   );
   const [duration, setDuration] = useState<PollData["duration"]>(pollData?.duration || "7d");
 
   // Update parent when options or duration change
   useEffect(() => {
-    const nonEmptyOptions = options.filter(opt => opt.text.trim());
+    const nonEmptyOptions = options.filter((opt) => opt.text.trim());
     if (nonEmptyOptions.length >= 2) {
       onChange({ options: nonEmptyOptions, duration });
     }
@@ -48,22 +58,18 @@ export function PollCreationInline({ pollData, onChange, disabled = false }: Pol
 
   const handleRemoveOption = (id: string) => {
     if (options.length <= 2) return;
-    setOptions(options.filter(opt => opt.id !== id));
+    setOptions(options.filter((opt) => opt.id !== id));
   };
 
   const handleOptionChange = (id: string, text: string) => {
-    setOptions(options.map(opt => 
-      opt.id === id ? { ...opt, text } : opt
-    ));
+    setOptions(options.map((opt) => (opt.id === id ? { ...opt, text } : opt)));
   };
 
   return (
     <div className="space-y-4">
       <div className="space-y-3">
-        <Label className="text-sm font-medium text-muted-foreground">
-          Poll Options
-        </Label>
-        
+        <Label className="text-sm font-medium text-muted-foreground">Poll Options</Label>
+
         {options.map((option, index) => (
           <div key={option.id} className="flex items-center gap-2">
             <Input
@@ -106,10 +112,11 @@ export function PollCreationInline({ pollData, onChange, disabled = false }: Pol
       </div>
 
       <div className="space-y-2">
-        <Label className="text-sm font-medium text-muted-foreground">
-          Poll Duration
-        </Label>
-        <Select value={duration} onValueChange={(value) => setDuration(value as PollData["duration"])}>
+        <Label className="text-sm font-medium text-muted-foreground">Poll Duration</Label>
+        <Select
+          value={duration}
+          onValueChange={(value) => setDuration(value as PollData["duration"])}
+        >
           <SelectTrigger disabled={disabled}>
             <SelectValue />
           </SelectTrigger>
@@ -122,14 +129,15 @@ export function PollCreationInline({ pollData, onChange, disabled = false }: Pol
         </Select>
       </div>
 
-      <div className={cn(
-        "text-xs text-muted-foreground",
-        options.filter(opt => opt.text.trim()).length < 2 && "text-yellow-500"
-      )}>
-        {options.filter(opt => opt.text.trim()).length < 2 
-          ? "At least 2 options required" 
-          : `${options.filter(opt => opt.text.trim()).length} options`
-        }
+      <div
+        className={cn(
+          "text-xs text-muted-foreground",
+          options.filter((opt) => opt.text.trim()).length < 2 && "text-yellow-500",
+        )}
+      >
+        {options.filter((opt) => opt.text.trim()).length < 2
+          ? "At least 2 options required"
+          : `${options.filter((opt) => opt.text.trim()).length} options`}
       </div>
     </div>
   );

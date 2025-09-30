@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import type { Variants } from 'motion/react';
-import { motion, useAnimation } from 'motion/react';
-import type { HTMLAttributes } from 'react';
-import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
-import { cn } from '@/lib/utils';
+import type { Variants } from "motion/react";
+import { motion, useAnimation } from "motion/react";
+import type { HTMLAttributes } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { cn } from "@/lib/utils";
 
 export interface SmileIconHandle {
   startAnimation: () => void;
@@ -23,25 +23,25 @@ const SmileIcon = forwardRef<SmileIconHandle, SmileIconProps>(
     useImperativeHandle(ref, () => {
       isControlledRef.current = true;
       return {
-        startAnimation: () => controls.start('animate'),
-        stopAnimation: () => controls.start('normal'),
+        startAnimation: () => controls.start("animate"),
+        stopAnimation: () => controls.start("normal"),
       };
     });
 
     const handleMouseEnter = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!isControlledRef.current) controls.start('animate');
+        if (!isControlledRef.current) controls.start("animate");
         onMouseEnter?.(e);
       },
-      [controls, onMouseEnter]
+      [controls, onMouseEnter],
     );
 
     const handleMouseLeave = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
-        if (!isControlledRef.current) controls.start('normal');
+        if (!isControlledRef.current) controls.start("normal");
         onMouseLeave?.(e);
       },
-      [controls, onMouseLeave]
+      [controls, onMouseLeave],
     );
 
     const faceVariants: Variants = {
@@ -49,7 +49,7 @@ const SmileIcon = forwardRef<SmileIconHandle, SmileIconProps>(
         scale: 1,
         rotate: 0,
         strokeWidth: 2,
-        transition: { duration: 0.3, ease: 'easeOut' },
+        transition: { duration: 0.3, ease: "easeOut" },
       },
       animate: {
         scale: [1, 1.15, 1.05, 1.1],
@@ -58,30 +58,30 @@ const SmileIcon = forwardRef<SmileIconHandle, SmileIconProps>(
         transition: {
           duration: 0.8,
           times: [0, 0.3, 0.6, 1],
-          ease: 'easeInOut',
+          ease: "easeInOut",
         },
       },
     };
 
     const mouthVariants: Variants = {
       normal: {
-        d: 'M8 14s1.5 2 4 2 4-2 4-2',
+        d: "M8 14s1.5 2 4 2 4-2 4-2",
         pathLength: 1,
         pathOffset: 0,
         strokeWidth: 2,
-        transition: { duration: 0.3, ease: 'easeOut' },
+        transition: { duration: 0.3, ease: "easeOut" },
       },
       animate: {
-        d: 'M7 13.5s2.5 3.5 5 3.5 5-3.5 5-3.5',
+        d: "M7 13.5s2.5 3.5 5 3.5 5-3.5 5-3.5",
         pathLength: [0.3, 1, 1],
         pathOffset: [0, 0, 0],
         strokeWidth: 2.5,
         transition: {
-          d: { duration: 0.4, ease: 'easeOut' },
+          d: { duration: 0.4, ease: "easeOut" },
           pathLength: {
             duration: 0.5,
             times: [0, 0.5, 1],
-            ease: 'easeInOut',
+            ease: "easeInOut",
           },
           delay: 0.1,
         },
@@ -92,7 +92,7 @@ const SmileIcon = forwardRef<SmileIconHandle, SmileIconProps>(
       normal: {
         scale: 1,
         opacity: 1,
-        transition: { duration: 0.3, ease: 'easeOut' },
+        transition: { duration: 0.3, ease: "easeOut" },
       },
       animate: {
         scale: [1, 1.5, 0.8, 1.2],
@@ -100,7 +100,7 @@ const SmileIcon = forwardRef<SmileIconHandle, SmileIconProps>(
         transition: {
           duration: 0.5,
           times: [0, 0.3, 0.6, 1],
-          ease: 'easeInOut',
+          ease: "easeInOut",
         },
       },
     };
@@ -154,9 +154,9 @@ const SmileIcon = forwardRef<SmileIconHandle, SmileIconProps>(
         </motion.svg>
       </div>
     );
-  }
+  },
 );
 
-SmileIcon.displayName = 'SmileIcon';
+SmileIcon.displayName = "SmileIcon";
 
 export { SmileIcon };

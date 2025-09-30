@@ -15,10 +15,12 @@ export interface CheckoutSessionData {
 /**
  * Retrieves checkout session data from Stripe
  */
-export async function getCheckoutSessionData(sessionId: string): Promise<CheckoutSessionData | null> {
+export async function getCheckoutSessionData(
+  sessionId: string,
+): Promise<CheckoutSessionData | null> {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['customer', 'subscription'],
+      expand: ["customer", "subscription"],
     });
 
     if (!session.customer_details?.email) {

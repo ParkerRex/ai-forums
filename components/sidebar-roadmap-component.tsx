@@ -1,11 +1,9 @@
 "use client";
-import React from "react";
-
-import { useState, useEffect } from "react";
-import { useGitHubIssues } from "@/lib/github";
-import { Loader2, ChevronDown } from "lucide-react";
+import { ChevronDown, Loader2 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { BugReportModal } from "@/components/bug-report-modal";
 import { FeatureRequestModal } from "@/components/feature-request-modal";
+import { useGitHubIssues } from "@/lib/github";
 
 const CACHE_KEY = "vai_roadmap_cache";
 const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
@@ -18,7 +16,6 @@ export function SidebarRoadmapComponent() {
   const [isFeatureModalOpen, setIsFeatureModalOpen] = useState(false);
 
   const { issues, isLoading, error } = useGitHubIssues(1);
-
 
   // Load cached issues on mount
   useEffect(() => {
@@ -61,12 +58,9 @@ export function SidebarRoadmapComponent() {
 
   if (error) {
     return (
-      <div className="text-xs text-gray-500 dark:text-gray-400 p-4">
-        Unable to load roadmap
-      </div>
+      <div className="text-xs text-gray-500 dark:text-gray-400 p-4">Unable to load roadmap</div>
     );
   }
-
 
   return (
     <div className="space-y-3">
@@ -77,11 +71,13 @@ export function SidebarRoadmapComponent() {
             onClick={() => setIsExpanded(!isExpanded)}
             className="text-xs text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100 transition-colors"
           >
-            <ChevronDown className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-180" : ""}`} />
+            <ChevronDown
+              className={`h-3 w-3 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+            />
           </button>
         )}
       </div>
-      
+
       {isLoading ? (
         <div className="flex justify-center py-8">
           <Loader2 className="h-4 w-4 animate-spin text-gray-400 dark:text-gray-500" />
@@ -99,7 +95,7 @@ export function SidebarRoadmapComponent() {
               {issue.title}
             </a>
           ))}
-          
+
           {!isExpanded && displayIssues.length > 3 && (
             <button
               onClick={() => setIsExpanded(true)}
@@ -110,7 +106,7 @@ export function SidebarRoadmapComponent() {
           )}
         </div>
       )}
-      
+
       <div className="flex gap-2 text-xs">
         <button
           onClick={() => setIsBugModalOpen(true)}
@@ -126,14 +122,11 @@ export function SidebarRoadmapComponent() {
           Request Feature
         </button>
       </div>
-      
-      <BugReportModal 
-        isOpen={isBugModalOpen} 
-        onClose={() => setIsBugModalOpen(false)} 
-      />
-      <FeatureRequestModal 
-        isOpen={isFeatureModalOpen} 
-        onClose={() => setIsFeatureModalOpen(false)} 
+
+      <BugReportModal isOpen={isBugModalOpen} onClose={() => setIsBugModalOpen(false)} />
+      <FeatureRequestModal
+        isOpen={isFeatureModalOpen}
+        onClose={() => setIsFeatureModalOpen(false)}
       />
     </div>
   );

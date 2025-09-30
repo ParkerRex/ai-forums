@@ -1,9 +1,9 @@
 "use client";
 
-import { useQuery, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useAction, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { api } from "@/convex/_generated/api";
 
 /**
  * ReactivateBannerInline component displays a subtle banner prompting users to reactivate their account.
@@ -24,9 +24,7 @@ import { useState, useEffect } from "react";
 export function ReactivateBannerInline() {
   const router = useRouter();
   const currentMember = useQuery(api.auth.current);
-  const createCheckoutSession = useAction(
-    api.stripe.checkout.createCheckoutSession,
-  );
+  const createCheckoutSession = useAction(api.stripe.checkout.createCheckoutSession);
   const [isCreatingSession, setIsCreatingSession] = useState(false);
 
   // Track if banner has been dismissed in this session
@@ -34,9 +32,7 @@ export function ReactivateBannerInline() {
 
   // Check if banner was dismissed in localStorage
   useEffect(() => {
-    const dismissedUntil = localStorage.getItem(
-      "reactivateBannerDismissedUntil",
-    );
+    const dismissedUntil = localStorage.getItem("reactivateBannerDismissedUntil");
     if (dismissedUntil && new Date(dismissedUntil) > new Date()) {
       setIsDismissed(true);
     }
@@ -55,10 +51,7 @@ export function ReactivateBannerInline() {
     // Check subscription status first
     if (currentMember.subscriptionStatus !== "active") {
       // If subscription is not active, check if it's cancelled but still within the period
-      if (
-        currentMember.subscriptionStatus === "cancelled" &&
-        currentMember.subscriptionEndDate
-      ) {
+      if (currentMember.subscriptionStatus === "cancelled" && currentMember.subscriptionEndDate) {
         const now = Date.now();
         return currentMember.subscriptionEndDate > now;
       }
@@ -66,15 +59,8 @@ export function ReactivateBannerInline() {
     }
 
     // Check tier - all paid tiers and scholarship have full access
-    const fullAccessTiers = [
-      "scholarship",
-      "founding_member",
-      "early_bird",
-      "member",
-    ];
-    return currentMember.tier
-      ? fullAccessTiers.includes(currentMember.tier)
-      : false;
+    const fullAccessTiers = ["scholarship", "founding_member", "early_bird", "member"];
+    return currentMember.tier ? fullAccessTiers.includes(currentMember.tier) : false;
   };
 
   // Don't show banner if:
@@ -119,10 +105,7 @@ export function ReactivateBannerInline() {
   const handleDismiss = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
-    localStorage.setItem(
-      "reactivateBannerDismissedUntil",
-      tomorrow.toISOString(),
-    );
+    localStorage.setItem("reactivateBannerDismissedUntil", tomorrow.toISOString());
     setIsDismissed(true);
   };
 

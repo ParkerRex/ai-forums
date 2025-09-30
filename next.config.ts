@@ -1,31 +1,35 @@
+import createMDX from "@next/mdx";
 import type { NextConfig } from "next";
-import createMDX from '@next/mdx';
-import rehypePrettyCode from 'rehype-pretty-code';
+import rehypePrettyCode from "rehype-pretty-code";
 
 const nextConfig: NextConfig = {
-  pageExtensions: ['js', 'jsx', 'ts', 'tsx', 'md', 'mdx'],
+  pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
   webpack: (config, { isServer }) => {
     // Handle canvas module for react-pdf
     if (isServer) {
       config.externals = config.externals || [];
-      config.externals.push('canvas');
+      config.externals.push("canvas");
     } else {
       config.resolve.fallback = {
         ...config.resolve.fallback,
         canvas: false,
       };
     }
-    
+
     return config;
   },
   images: {
     remotePatterns: [
       // Primary public bucket hostname (configurable)
-      ...(process.env.NEXT_PUBLIC_R2_HOSTNAME ? [{
-        protocol: "https" as const,
-        hostname: process.env.NEXT_PUBLIC_R2_HOSTNAME,
-        pathname: "/**",
-      }] : []),
+      ...(process.env.NEXT_PUBLIC_R2_HOSTNAME
+        ? [
+            {
+              protocol: "https" as const,
+              hostname: process.env.NEXT_PUBLIC_R2_HOSTNAME,
+              pathname: "/**",
+            },
+          ]
+        : []),
       // Legacy Cloudflare R2 S3-style endpoint for existing objects
       {
         protocol: "https",
@@ -78,18 +82,23 @@ const withMDX = createMDX({
   // Optionally provide remark and rehype plugins
   options: {
     remarkPlugins: [],
-    rehypePlugins: [[rehypePrettyCode, {
-      theme: {
-        dark: "github-dark-dimmed",
-        light: "github-light",
-      },
-      keepBackground: false,
-      defaultLang: {
-        block: "plaintext",
-        inline: "plaintext",
-      },
-      grid: true,
-    }]],
+    rehypePlugins: [
+      [
+        rehypePrettyCode,
+        {
+          theme: {
+            dark: "github-dark-dimmed",
+            light: "github-light",
+          },
+          keepBackground: false,
+          defaultLang: {
+            block: "plaintext",
+            inline: "plaintext",
+          },
+          grid: true,
+        },
+      ],
+    ],
   },
 });
 

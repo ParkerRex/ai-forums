@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { FeatureRequestModal } from "./feature-request-modal";
 
@@ -17,9 +17,7 @@ export function FeatureRequestButton() {
       >
         Add Feature
       </Button>
-      {open && (
-        <FeatureRequestModal isOpen={open} onClose={() => setOpen(false)} />
-      )}
+      {open && <FeatureRequestModal isOpen={open} onClose={() => setOpen(false)} />}
     </>
   );
 }

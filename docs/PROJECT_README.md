@@ -16,9 +16,8 @@ For a comprehensive overview of the project's documentation, please refer to the
 - **Payments:** [Stripe](https://stripe.com/)
 - **UI Components:** [Radix UI](https://www.radix-ui.com/) and [shadcn/ui](https://ui.shadcn.com/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-- **Testing:** [Vitest](https://vitest.dev/) and [Playwright](https://playwright.dev/)
-- **Linting:** [ESLint](https://eslint.org/)
-- **Formatting:** [Prettier](https://prettier.io/)
+- **Testing:** [Bun](https://bun.sh/) (native test runner)
+- **Linting/Formatting:** [Biome](https://biomejs.dev/)
 
 ## Getting Started
 
@@ -66,18 +65,12 @@ To get started with the project, you will need to have Node.js and npm installed
 
 ## Testing
 
-The project uses Vitest for unit and integration tests, and Playwright for end-to-end tests.
+The project uses Bun's native test runner for unit and integration tests.
 
--   **Run unit and integration tests:**
-
-    ```bash
-    npm test
-    ```
-
--   **Run end-to-end tests:**
+-   **Run tests:**
 
     ```bash
-    npx playwright test
+    bun test
     ```
 
 ## Contributing

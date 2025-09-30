@@ -2,7 +2,7 @@
 /**
  * Script to sync avatar URLs from Clerk to Convex database
  * Run this after uploading avatars to Clerk
- * 
+ *
  * Usage: node scripts/sync-clerk-avatars.js
  */
 
@@ -23,12 +23,12 @@ async function syncAvatars() {
   try {
     // Run the sync migration
     const result = await client.mutation("migrations/sync_clerk_avatars:syncClerkAvatars");
-    
+
     console.log("\n✅ Avatar sync completed!");
     console.log(`📊 Total members checked: ${result.total}`);
     console.log(`✨ Avatars updated: ${result.updated}`);
     console.log(`❌ Errors: ${result.errors}`);
-    
+
     if (result.errors > 0) {
       console.log("\n⚠️  Some avatars failed to sync. Check the logs for details.");
     }

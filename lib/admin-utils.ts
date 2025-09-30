@@ -1,6 +1,6 @@
 /**
  * Admin Utilities
- * 
+ *
  * Common utility functions for admin components
  */
 
@@ -44,7 +44,7 @@ export function getMemberStatus(member: Partial<Doc<"members">>): string {
     if (member.status === "duplicate") return "churned"; // Duplicates are churned
     return member.status;
   }
-  
+
   // Otherwise, derive from subscription status
   if (member.subscriptionStatus === "cancelled") {
     // If there's a future end date, they're cancelled but still active
@@ -53,17 +53,17 @@ export function getMemberStatus(member: Partial<Doc<"members">>): string {
     }
     return "churned";
   }
-  
+
   // Active status
   if (member.subscriptionStatus === "active") {
     return "active";
   }
-  
+
   // Past due
   if (member.subscriptionStatus === "past_due") {
     return "past_due";
   }
-  
+
   // Expired or no status
   return "churned";
 }
@@ -71,10 +71,7 @@ export function getMemberStatus(member: Partial<Doc<"members">>): string {
 /**
  * Check if member should show billing information
  */
-export function shouldShowBilling(member: {
-  tier?: string;
-  billingInterval?: string;
-}): boolean {
+export function shouldShowBilling(member: { tier?: string; billingInterval?: string }): boolean {
   return (
     member.tier !== undefined &&
     member.tier !== "free" &&
@@ -89,30 +86,28 @@ export function shouldShowBilling(member: {
 export function formatTierPrice(
   tier: string,
   billingInterval: "monthly" | "yearly",
-  amountCents?: number
+  amountCents?: number,
 ): string {
   // If we have a specific amount, use it
   if (amountCents !== undefined) {
     const amount = amountCents / 100;
-    return billingInterval === "yearly" 
-      ? `$${amount}/yr` 
-      : `$${amount}/mo`;
+    return billingInterval === "yearly" ? `$${amount}/yr` : `$${amount}/mo`;
   }
-  
+
   // Otherwise use default tier pricing
   const tierPricing: Record<string, { monthly: number; yearly: number }> = {
     founding_member: { monthly: 39, yearly: 375 },
     early_bird: { monthly: 50, yearly: 480 },
     member: { monthly: 99, yearly: 0 },
   };
-  
+
   const pricing = tierPricing[tier];
   if (!pricing) return "";
-  
+
   if (billingInterval === "yearly" && pricing.yearly > 0) {
     return `$${pricing.yearly}/yr`;
   }
-  
+
   return `$${pricing.monthly}/mo`;
 }
 

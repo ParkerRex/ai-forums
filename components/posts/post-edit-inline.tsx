@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { PostFormFields, ExtendedPostFormData } from "@/components/posts/post-form-fields";
-import { PostFormData } from "@/lib/form-validation";
 import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { toast } from "sonner";
+import { type ExtendedPostFormData, PostFormFields } from "@/components/posts/post-form-fields";
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import type { PostFormData } from "@/lib/form-validation";
 import { cn } from "@/lib/utils";
 
 interface PostEditInlineProps {
@@ -40,7 +40,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
   const editPost = useMutation(api.posts.editPost);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(new Set());
-  
+
   const [formData, setFormData] = useState<ExtendedPostFormData>({
     title: post.title,
     content: post.content,
@@ -55,7 +55,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
   });
 
   const handleFormDataChange = (data: Partial<ExtendedPostFormData>) => {
-    setFormData(prev => ({ ...prev, ...data }));
+    setFormData((prev) => ({ ...prev, ...data }));
   };
 
   const handleTouchedFieldsChange = (fields: Set<keyof PostFormData>) => {
@@ -64,7 +64,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.title.trim() || !formData.content.trim()) {
       toast.error("Title and content are required");
       return;
@@ -82,9 +82,13 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
         linkTitle: formData.type === "link" ? formData.linkTitle : undefined,
         linkDescription: formData.type === "link" ? formData.linkDescription : undefined,
         linkImage: formData.type === "link" ? formData.linkImage : undefined,
-        mediaUrl: formData.type === "video" || formData.type === "image" ? formData.mediaUrl : undefined,
+        mediaUrl:
+          formData.type === "video" || formData.type === "image" ? formData.mediaUrl : undefined,
         thumbnailUrl: formData.type === "video" ? formData.thumbnailUrl : undefined,
-        categoryId: formData.categoryId !== post.category?._id ? formData.categoryId as Id<"categories"> : undefined,
+        categoryId:
+          formData.categoryId !== post.category?._id
+            ? (formData.categoryId as Id<"categories">)
+            : undefined,
       });
 
       // Check if we need to redirect to a new URL
@@ -117,17 +121,12 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
         onTouchedFieldsChange={handleTouchedFieldsChange}
         isSubmitting={isSubmitting}
       />
-      
+
       <div className="flex items-center gap-2 pt-4">
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? "Updating..." : "Update post"}
         </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
           Cancel
         </Button>
       </div>

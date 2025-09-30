@@ -28,9 +28,9 @@
 
 "use client";
 
+import { format } from "date-fns";
 import { motion } from "framer-motion";
 import { Calendar, Clock, MapPin, Users } from "lucide-react";
-import { format } from "date-fns";
 
 /**
  * Event interface representing the structure of calendar events
@@ -204,9 +204,7 @@ export function EventCard({ event, size = "medium", onClick }: EventCardProps) {
           <h3 className="truncate font-semibold">{event.title}</h3>
 
           {/* Event description with line clamping */}
-          <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
-            {event.description}
-          </p>
+          <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">{event.description}</p>
 
           {/* Event metadata (time, attendees) */}
           <div className="text-muted-foreground mt-3 flex items-center gap-4 text-xs">

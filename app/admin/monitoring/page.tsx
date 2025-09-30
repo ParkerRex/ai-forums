@@ -1,12 +1,20 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { AlertCircle, CheckCircle, Clock, RefreshCw, TrendingDown, TrendingUp, XCircle } from "lucide-react";
 import { format } from "date-fns";
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  RefreshCw,
+  TrendingDown,
+  TrendingUp,
+  XCircle,
+} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { api } from "@/convex/_generated/api";
 
 export default function MonitoringPage() {
   const webhookHealth = useQuery(api.stripe.monitoring.getWebhookHealth);
@@ -51,9 +59,7 @@ export default function MonitoringPage() {
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold">Webhook Monitoring</h1>
-        <p className="text-muted-foreground">
-          Monitor Stripe webhook processing and system health
-        </p>
+        <p className="text-muted-foreground">Monitor Stripe webhook processing and system health</p>
       </div>
 
       {/* Health Status Card */}
@@ -85,9 +91,7 @@ export default function MonitoringPage() {
               </ul>
             </div>
           ) : (
-            <p className="text-sm text-muted-foreground">
-              All systems operating normally
-            </p>
+            <p className="text-sm text-muted-foreground">All systems operating normally</p>
           )}
         </CardContent>
       </Card>
@@ -120,10 +124,7 @@ export default function MonitoringPage() {
             <div className="text-2xl font-bold">
               {((1 - webhookHealth.metrics.failureRate) * 100).toFixed(1)}%
             </div>
-            <Progress
-              value={(1 - webhookHealth.metrics.failureRate) * 100}
-              className="mt-2"
-            />
+            <Progress value={(1 - webhookHealth.metrics.failureRate) * 100} className="mt-2" />
           </CardContent>
         </Card>
 
@@ -179,27 +180,30 @@ export default function MonitoringPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentFailures.map((failure: {
-                eventId: string;
-                type: string;
-                error: string | undefined;
-                createdAt: number;
-                age: number;
-              }) => (
-                <div
-                  key={failure.eventId}
-                  className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
-                >
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">{failure.type}</p>
-                    <p className="text-sm text-destructive">{failure.error}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {format(failure.createdAt, "PPp")} ({Math.round(failure.age / 1000 / 60)} minutes ago)
-                    </p>
+              {recentFailures.map(
+                (failure: {
+                  eventId: string;
+                  type: string;
+                  error: string | undefined;
+                  createdAt: number;
+                  age: number;
+                }) => (
+                  <div
+                    key={failure.eventId}
+                    className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
+                  >
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">{failure.type}</p>
+                      <p className="text-sm text-destructive">{failure.error}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {format(failure.createdAt, "PPp")} ({Math.round(failure.age / 1000 / 60)}{" "}
+                        minutes ago)
+                      </p>
+                    </div>
+                    <Badge variant="destructive">Failed</Badge>
                   </div>
-                  <Badge variant="destructive">Failed</Badge>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </CardContent>
         </Card>
@@ -209,19 +213,16 @@ export default function MonitoringPage() {
       <Card>
         <CardHeader>
           <CardTitle>Event Type Performance</CardTitle>
-          <CardDescription>
-            Success rates by webhook event type
-          </CardDescription>
+          <CardDescription>Success rates by webhook event type</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
             {Object.entries(webhookHealth.metrics.eventTypeMetrics || {}).map(
               ([eventType, metrics]) => {
                 const metricsData = metrics as { total: number; processed: number; failed: number };
-                const successRate = metricsData.total > 0
-                  ? (metricsData.processed / metricsData.total) * 100
-                  : 0;
-                
+                const successRate =
+                  metricsData.total > 0 ? (metricsData.processed / metricsData.total) * 100 : 0;
+
                 return (
                   <div key={eventType} className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -233,7 +234,7 @@ export default function MonitoringPage() {
                     <Progress value={successRate} />
                   </div>
                 );
-              }
+              },
             )}
           </div>
         </CardContent>

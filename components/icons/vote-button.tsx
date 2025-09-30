@@ -1,12 +1,12 @@
 "use client";
 
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { ArrowBigUpIcon } from "@/components/icons/arrow-big-up";
-import { VoteHoverCard } from "@/components/posts/vote-hover-card";
-import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 import { Authenticated, Unauthenticated } from "convex/react";
-import { Id } from "@/convex/_generated/dataModel";
+import React from "react";
+import { ArrowBigUpIcon } from "@/components/icons/arrow-big-up";
+import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
+import { VoteHoverCard } from "@/components/posts/vote-hover-card";
+import { Button } from "@/components/ui/button";
+import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
 
 interface VoteButtonProps {
@@ -77,9 +77,7 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
       <span
         className={cn(
           "ml-0.5 select-none text-xs font-medium",
-          isVoted
-            ? "text-orange-600 dark:text-orange-500"
-            : "text-muted-foreground",
+          isVoted ? "text-orange-600 dark:text-orange-500" : "text-muted-foreground",
         )}
       >
         {voteCount}

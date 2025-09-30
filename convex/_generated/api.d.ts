@@ -8,11 +8,7 @@
  * @module
  */
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
+import type { ApiFromModules, FilterApi, FunctionReference } from "convex/server";
 import type * as admin_grantScholarship from "../admin/grantScholarship.js";
 import type * as admin_manualWebhookProcessing from "../admin/manualWebhookProcessing.js";
 import type * as admin_members from "../admin/members.js";
@@ -182,11 +178,5 @@ declare const fullApi: ApiFromModules<{
   topics: typeof topics;
   votes: typeof votes;
 }>;
-export declare const api: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "public">
->;
-export declare const internal: FilterApi<
-  typeof fullApi,
-  FunctionReference<any, "internal">
->;
+export declare const api: FilterApi<typeof fullApi, FunctionReference<any, "public">>;
+export declare const internal: FilterApi<typeof fullApi, FunctionReference<any, "internal">>;

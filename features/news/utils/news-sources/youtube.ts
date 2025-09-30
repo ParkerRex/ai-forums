@@ -1,5 +1,5 @@
-import { NewsSource, RawItem } from "./types";
 import { fetchFromExa } from "./base";
+import type { NewsSource, RawItem } from "./types";
 
 export async function fetchItems(source: NewsSource): Promise<RawItem[]> {
   // For YouTube channels, we'll use Exa's search API

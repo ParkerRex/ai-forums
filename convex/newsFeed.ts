@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { action, query, mutation } from "./_generated/server";
 import { api } from "./_generated/api";
+import { action, mutation, query } from "./_generated/server";
 
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
 const MAX_ITEMS_PER_SOURCE = 5;
@@ -39,45 +39,46 @@ const DEFAULT_SOURCES: NewsSource[] = [
 // Helper to summarize text
 function summarizeText(text: string): string {
   if (!text || text.trim().length === 0) {
-    return '';
+    return "";
   }
-  
+
   const maxLength = 150;
   const trimmed = text.trim();
-  
+
   if (trimmed.length <= maxLength) {
     return trimmed;
   }
-  
+
   // Find a good break point (end of sentence)
   let cutoff = maxLength;
-  const sentenceEnd = trimmed.lastIndexOf('.', maxLength);
+  const sentenceEnd = trimmed.lastIndexOf(".", maxLength);
   if (sentenceEnd > maxLength * 0.8) {
     cutoff = sentenceEnd + 1;
   }
-  
-  return trimmed.substring(0, cutoff).trim() + '...';
+
+  return `${trimmed.substring(0, cutoff).trim()}...`;
 }
 
 // Helper to create meaningful titles for Discord messages
 function createDiscordMessageTitle(entry: any): string {
   const maxContentLength = 100;
   const reactionCount = entry.reactionScore || 0;
-  
+
   // If message has content, use it (truncated)
-  if (entry.content && entry.content.trim()) {
-    const truncatedContent = entry.content.length > maxContentLength 
-      ? `${entry.content.substring(0, maxContentLength)}...`
-      : entry.content;
-    
+  if (entry.content?.trim()) {
+    const truncatedContent =
+      entry.content.length > maxContentLength
+        ? `${entry.content.substring(0, maxContentLength)}...`
+        : entry.content;
+
     // Add reaction indicator if there are reactions
-    const reactionIndicator = reactionCount > 0 ? ` (${reactionCount} reactions)` : '';
-    
+    const reactionIndicator = reactionCount > 0 ? ` (${reactionCount} reactions)` : "";
+
     return `${entry.author.username}: ${truncatedContent}${reactionIndicator}`;
   }
-  
+
   // Fallback title for messages without content (e.g., media only)
-  const reactionIndicator = reactionCount > 0 ? ` with ${reactionCount} reactions` : '';
+  const reactionIndicator = reactionCount > 0 ? ` with ${reactionCount} reactions` : "";
   return `${entry.author.username} in #${entry.channelName}${reactionIndicator}`;
 }
 
@@ -85,22 +86,22 @@ function createDiscordMessageTitle(entry: any): string {
 async function fetchFromExaAPI(
   query: string,
   numResults: number,
-  includeDomains?: string[]
+  includeDomains?: string[],
 ): Promise<any> {
   const apiKey = process.env.EXA_API_KEY;
   if (!apiKey) {
-    throw new Error('EXA API key not configured');
+    throw new Error("EXA API key not configured");
   }
 
-  const response = await fetch('https://api.exa.ai/search', {
-    method: 'POST',
+  const response = await fetch("https://api.exa.ai/search", {
+    method: "POST",
     headers: {
-      'x-api-key': apiKey,
-      'Content-Type': 'application/json',
+      "x-api-key": apiKey,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       query,
-      category: 'news',
+      category: "news",
       numResults,
       includeDomains,
       contents: {
@@ -133,7 +134,7 @@ export const get = action({
     // Check cache first
     const now = Date.now();
     const cached = await ctx.runQuery(api.newsFeed.getCached, { cacheKey });
-    
+
     if (cached && cached.expiresAt > now) {
       return cached.articles;
     }
@@ -141,16 +142,20 @@ export const get = action({
     // Get user's custom sources or use defaults
     let sources = DEFAULT_SOURCES;
     let discordEnabled = false;
-    
+
     // Check if user has Discord enabled in their preferences
     if (userId) {
       try {
-        const isDiscordEnabledResult = await ctx.runQuery(api.newsFeedSources.isDiscordEnabled, { userId });
+        const isDiscordEnabledResult = await ctx.runQuery(api.newsFeedSources.isDiscordEnabled, {
+          userId,
+        });
         discordEnabled = isDiscordEnabledResult;
-        
+
         // If Discord is enabled, get the Discord source configuration
         if (discordEnabled) {
-          const discordSource = await ctx.runQuery(api.newsFeedSources.getDiscordSourceConfig, { userId });
+          const discordSource = await ctx.runQuery(api.newsFeedSources.getDiscordSourceConfig, {
+            userId,
+          });
           if (discordSource) {
             sources = [...sources, discordSource];
           }
@@ -168,9 +173,9 @@ export const get = action({
     try {
       const generalNews = await fetchFromExaAPI(
         "latest AI developments machine learning artificial intelligence",
-        15
+        15,
       );
-      
+
       for (const item of generalNews.results || []) {
         const summary = item.summary || summarizeText(item.text || item.title);
         allArticles.push({
@@ -187,9 +192,9 @@ export const get = action({
     }
 
     // Then fetch from custom sources (up to 2 non-Discord sources + Discord if enabled)
-    const nonDiscordSources = sources.filter(s => s.type !== "discord");
-    const discordSources = sources.filter(s => s.type === "discord");
-    
+    const nonDiscordSources = sources.filter((s) => s.type !== "discord");
+    const discordSources = sources.filter((s) => s.type === "discord");
+
     // Process non-Discord sources (limit to 2)
     for (const source of nonDiscordSources.slice(0, 2)) {
       try {
@@ -209,9 +214,9 @@ export const get = action({
         const sourceNews = await fetchFromExaAPI(
           `${source.name} latest updates`,
           MAX_ITEMS_PER_SOURCE,
-          includeDomains
+          includeDomains,
         );
-        
+
         for (const item of sourceNews.results || []) {
           const summary = item.summary || summarizeText(item.text || item.title);
           allArticles.push({
@@ -230,7 +235,7 @@ export const get = action({
 
     // Process Discord sources separately using Discord API
     // Requirements: 3.1, 3.4 - Discord integration with existing patterns
-    for (const discordSource of discordSources) {
+    for (const _discordSource of discordSources) {
       try {
         // Calculate yesterday's timestamp for Discord messages
         const yesterday = new Date();
@@ -250,12 +255,15 @@ export const get = action({
             url: `https://discord.com/channels/${process.env.DISCORD_GUILD_ID || "1355280592962453585"}/${entry.channelId}/${entry.messageId}`,
             publishedDate: new Date(entry.timestamp).toISOString(),
             author: entry.author.username,
-            summary: entry.summary || (entry.content.length > 150 ? `${entry.content.substring(0, 150)}...` : entry.content),
+            summary:
+              entry.summary ||
+              (entry.content.length > 150
+                ? `${entry.content.substring(0, 150)}...`
+                : entry.content),
             source: "Discord",
           };
           allArticles.push(discordItem);
         }
-        
       } catch (error) {
         console.error(`Failed to fetch Discord messages: ${error}`);
         // Requirements: 6.1 - Graceful degradation when Discord API fails
@@ -296,7 +304,7 @@ export const getCached = query({
       .withIndex("by_cacheKey", (q) => q.eq("cacheKey", args.cacheKey))
       .order("desc")
       .first();
-    
+
     return result;
   },
 });
@@ -305,38 +313,42 @@ export const cache = mutation({
   args: {
     cacheKey: v.string(),
     userId: v.optional(v.id("members")),
-    articles: v.array(v.object({
-      title: v.string(),
-      url: v.string(),
-      publishedDate: v.optional(v.string()),
-      author: v.optional(v.string()),
-      summary: v.optional(v.string()),
-      source: v.string(),
-    })),
-    sources: v.array(v.object({
-      type: v.string(),
-      url: v.string(),
-      name: v.string(),
-      guildId: v.optional(v.string()),
-      channels: v.optional(v.array(v.string())),
-    })),
+    articles: v.array(
+      v.object({
+        title: v.string(),
+        url: v.string(),
+        publishedDate: v.optional(v.string()),
+        author: v.optional(v.string()),
+        summary: v.optional(v.string()),
+        source: v.string(),
+      }),
+    ),
+    sources: v.array(
+      v.object({
+        type: v.string(),
+        url: v.string(),
+        name: v.string(),
+        guildId: v.optional(v.string()),
+        channels: v.optional(v.array(v.string())),
+      }),
+    ),
     expiresAt: v.number(),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
-    
+
     // First, try to find and delete any existing cache entries for this cacheKey
     // Using a more selective query to reduce data read
     const existingEntries = await ctx.db
       .query("newsFeedCache")
       .withIndex("by_cacheKey", (q) => q.eq("cacheKey", args.cacheKey))
       .collect();
-    
+
     // Delete old entries
     for (const entry of existingEntries) {
       await ctx.db.delete(entry._id);
     }
-    
+
     // Insert the new cache entry
     await ctx.db.insert("newsFeedCache", {
       userId: args.userId,

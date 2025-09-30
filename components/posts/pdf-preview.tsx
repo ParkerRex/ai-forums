@@ -1,10 +1,10 @@
 "use client";
 
+import { FileText } from "lucide-react";
 import { useState } from "react";
 import { Document, Page, pdfjs } from "react-pdf";
-import { MediaItem } from "@/types";
-import { FileText } from "lucide-react";
 import { formatBytes } from "@/lib/utils";
+import type { MediaItem } from "@/types";
 import "react-pdf/dist/esm/Page/AnnotationLayer.css";
 import "react-pdf/dist/esm/Page/TextLayer.css";
 
@@ -34,9 +34,7 @@ export function PDFPreview({ media }: PDFPreviewProps) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-muted p-4">
         <FileText className="h-12 w-12 text-muted-foreground mb-2" />
-        <p className="text-sm text-muted-foreground text-center">
-          {error}
-        </p>
+        <p className="text-sm text-muted-foreground text-center">{error}</p>
       </div>
     );
   }
@@ -68,7 +66,7 @@ export function PDFPreview({ media }: PDFPreviewProps) {
       {numPages && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2">
           <div className="text-primary-foreground text-xs space-y-1">
-            <p className="font-medium truncate">{media.url.split('/').pop()}</p>
+            <p className="font-medium truncate">{media.url.split("/").pop()}</p>
             <div className="flex items-center justify-between">
               <span>{numPages} pages</span>
               {media.fileSize && <span>{formatBytes(media.fileSize)}</span>}

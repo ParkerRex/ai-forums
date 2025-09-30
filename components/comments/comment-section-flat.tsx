@@ -1,30 +1,28 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Authenticated, Unauthenticated } from "convex/react";
 import { SignInButton } from "@clerk/nextjs";
-import { useMutationError } from "@/hooks/use-mutation-error";
+import { Authenticated, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
+import { motion } from "framer-motion";
+import { Link as LinkLucide } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { LinkIcon } from "@/components/icons/link";
 import { VoteButton } from "@/components/icons/vote-button";
-import { Link as LinkLucide } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-import { memberProfileUrl } from "@/lib/utils";
-import { GitHubCommentInput } from "./github-comment-input";
-import { MarkdownRenderer } from "../posts/markdown-renderer";
-import { motion } from "framer-motion";
-import CommentActionsMenu from "./comment-actions-menu";
-import { useParams } from "next/navigation";
-import { toast } from "sonner";
 import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
-import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useMutationError } from "@/hooks/use-mutation-error";
 import { useUserVotes } from "@/hooks/use-user-votes";
+import { cn, memberProfileUrl } from "@/lib/utils";
+import { MarkdownRenderer } from "../posts/markdown-renderer";
+import CommentActionsMenu from "./comment-actions-menu";
+import { GitHubCommentInput } from "./github-comment-input";
 
 type AttachmentType = {
   id: string;
@@ -114,12 +112,8 @@ function CommentItemFlat({
   userVote,
 }: CommentItemFlatProps) {
   const [isVoting, setIsVoting] = useState(false);
-  const [optimisticNetVotes, setOptimisticNetVotes] = useState(
-    comment.netVotes,
-  );
-  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
-    null,
-  );
+  const [optimisticNetVotes, setOptimisticNetVotes] = useState(comment.netVotes);
+  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
   const isHighlighted = targetCommentId === comment._id;
@@ -128,8 +122,7 @@ function CommentItemFlat({
   const editComment = useMutation(api.comments.editComment);
   const { handleMutationError, handleMutationSuccess } = useMutationError();
 
-  const currentUserVote =
-    optimisticUserVote !== null ? optimisticUserVote : userVote;
+  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote;
 
   const handleUpvote = async () => {
     if (isVoting) return;
@@ -322,9 +315,7 @@ function CommentItemFlat({
             Object.entries(comment.linkPreviews).map(([url, preview]) => (
               <div key={url} className="bg-muted/50 mt-3 rounded p-3">
                 <div className="text-sm font-medium">{preview.title}</div>
-                <div className="text-muted-foreground text-xs">
-                  {preview.description}
-                </div>
+                <div className="text-muted-foreground text-xs">{preview.description}</div>
                 <a
                   href={url}
                   target="_blank"
@@ -354,9 +345,7 @@ function CommentItemFlat({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() =>
-                    onReply(comment._id, comment.member?.username || "someone")
-                  }
+                  onClick={() => onReply(comment._id, comment.member?.username || "someone")}
                   className="h-auto px-3 py-1 text-sm"
                 >
                   Reply
@@ -388,18 +377,13 @@ function CommentItemFlat({
   );
 }
 
-export default function CommentSectionFlat({
-  postId,
-  targetCommentId,
-}: CommentSectionFlatProps) {
+export default function CommentSectionFlat({ postId, targetCommentId }: CommentSectionFlatProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{
     commentId: Id<"comments">;
     username: string;
   } | null>(null);
-  const [newlyCreatedCommentIds, setNewlyCreatedCommentIds] = useState<
-    Set<string>
-  >(new Set());
+  const [newlyCreatedCommentIds, setNewlyCreatedCommentIds] = useState<Set<string>>(new Set());
 
   const params = useParams();
   const comments = useQuery(api.comments.getCommentsByPostFlat, { postId });
@@ -488,9 +472,7 @@ export default function CommentSectionFlat({
         <Authenticated>
           <div className="mb-6">
             <GitHubCommentInput
-              placeholder={
-                replyingTo ? `Reply to @${replyingTo.username}...` : undefined
-              }
+              placeholder={replyingTo ? `Reply to @${replyingTo.username}...` : undefined}
               onSubmit={handleSubmitComment}
               isSubmitting={isSubmitting}
               replyingTo={replyingTo}
@@ -553,10 +535,7 @@ export default function CommentSectionFlat({
               {comments?.map((comment: FlatComment, index) => (
                 <div
                   key={comment._id}
-                  className={cn(
-                    "relative",
-                    index === comments.length - 1 && "pb-0",
-                  )}
+                  className={cn("relative", index === comments.length - 1 && "pb-0")}
                 >
                   <CommentItemFlat
                     comment={comment}

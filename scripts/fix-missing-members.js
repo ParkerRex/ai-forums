@@ -1,9 +1,9 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require("node:fs");
+const path = require("node:path");
 
 // Read the user mapping data
-const userMappingPath = path.join(__dirname, '../migration-data/user-mapping.json');
-const userMapping = JSON.parse(fs.readFileSync(userMappingPath, 'utf8'));
+const userMappingPath = path.join(__dirname, "../migration-data/user-mapping.json");
+const userMapping = JSON.parse(fs.readFileSync(userMappingPath, "utf8"));
 
 // Convert array to map for easier lookup
 const userMap = new Map(userMapping);
@@ -45,12 +45,12 @@ const missingMemberIds = [
   "j978egp860ewep24p1vb2r4rd97jnmr3",
   "j976sescs7cqact7f8ftcttx517jmv6c",
   "j97c0gqp17bhy34x26z0bj1tqd7jn2j0",
-  "j97371h20wj37txj3321hdjkz97jm9j0"
+  "j97371h20wj37txj3321hdjkz97jm9j0",
 ];
 
 // Find user data for missing members
 const missingMembersData = [];
-const notFoundInMapping = [];
+const _notFoundInMapping = [];
 
 // First, let's check what Skool IDs these Convex IDs might correspond to
 console.log("Analyzing missing member IDs...\n");
@@ -62,19 +62,19 @@ for (const [skoolId, userData] of userMap) {
   for (const missingId of missingMemberIds) {
     // Since we don't have a direct mapping, we'll need to find these users by other means
     // For now, let's collect all users with @imported.com emails as they're likely the missing ones
-    if (userData.email && userData.email.includes('@imported.com')) {
+    if (userData.email?.includes("@imported.com")) {
       const memberData = {
         skoolId: skoolId,
         convexId: missingId, // This is a guess - we'll need to verify
         email: userData.email,
-        firstName: userData.firstName || userData.name.split('-')[0],
-        lastName: userData.lastName || '',
+        firstName: userData.firstName || userData.name.split("-")[0],
+        lastName: userData.lastName || "",
         name: userData.name,
-        needsRealEmail: true
+        needsRealEmail: true,
       };
-      
+
       // Check if we already have this user
-      if (!missingMembersData.find(m => m.email === userData.email)) {
+      if (!missingMembersData.find((m) => m.email === userData.email)) {
         missingMembersData.push(memberData);
       }
     }
@@ -83,20 +83,20 @@ for (const [skoolId, userData] of userMap) {
 
 console.log(`Found ${missingMembersData.length} users with @imported.com emails in the mapping`);
 console.log("\nSample of missing members to be created:");
-missingMembersData.slice(0, 10).forEach(member => {
+missingMembersData.slice(0, 10).forEach((member) => {
   console.log(`- ${member.firstName} ${member.lastName} (${member.email})`);
 });
 
 // Generate the import data for creating missing members
-const membersToCreate = missingMembersData.map(member => ({
+const membersToCreate = missingMembersData.map((member) => ({
   email: member.email,
   firstName: member.firstName,
   lastName: member.lastName,
-  joinedDate: Date.now() - (30 * 24 * 60 * 60 * 1000), // 30 days ago as default
+  joinedDate: Date.now() - 30 * 24 * 60 * 60 * 1000, // 30 days ago as default
 }));
 
 // Write the data to a file for import
-const outputPath = path.join(__dirname, '../migration-data/missing-members-to-create.json');
+const outputPath = path.join(__dirname, "../migration-data/missing-members-to-create.json");
 fs.writeFileSync(outputPath, JSON.stringify(membersToCreate, null, 2));
 
 console.log(`\nCreated ${outputPath} with ${membersToCreate.length} members to import`);
@@ -107,7 +107,7 @@ console.log("3. Update the posts and comments to use the new member IDs");
 console.log("4. Contact members to update their email addresses");
 
 // Also create a report of what we found
-const reportPath = path.join(__dirname, '../migration-data/missing-members-analysis.json');
+const reportPath = path.join(__dirname, "../migration-data/missing-members-analysis.json");
 const report = {
   totalMissingIds: missingMemberIds.length,
   foundInMapping: missingMembersData.length,
@@ -116,9 +116,13 @@ const report = {
   sampleMembersToCreate: membersToCreate.slice(0, 10),
   stats: {
     totalUsersInMapping: userMap.size,
-    usersWithImportedEmail: Array.from(userMap.values()).filter(u => u.email?.includes('@imported.com')).length,
-    usersWithValidEmail: Array.from(userMap.values()).filter(u => u.email && !u.email.includes('@imported.com')).length,
-  }
+    usersWithImportedEmail: Array.from(userMap.values()).filter((u) =>
+      u.email?.includes("@imported.com"),
+    ).length,
+    usersWithValidEmail: Array.from(userMap.values()).filter(
+      (u) => u.email && !u.email.includes("@imported.com"),
+    ).length,
+  },
 };
 
 fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));

@@ -1,6 +1,5 @@
-import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 import { getAuthenticatedMember } from "./auth";
 
 export const getEventsByMonth = query({
@@ -11,16 +10,16 @@ export const getEventsByMonth = query({
   handler: async (ctx, { year, month }) => {
     const startOfMonth = new Date(year, month, 1).getTime();
     const endOfMonth = new Date(year, month + 1, 0, 23, 59, 59, 999).getTime();
-    
+
     const events = await ctx.db
       .query("events")
       .withIndex("by_startTime")
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.gte(q.field("startTime"), startOfMonth),
           q.lte(q.field("startTime"), endOfMonth),
-          q.neq(q.field("status"), "cancelled")
-        )
+          q.neq(q.field("status"), "cancelled"),
+        ),
       )
       .collect();
 
@@ -29,14 +28,16 @@ export const getEventsByMonth = query({
         const creator = await ctx.db.get(event.createdBy);
         return {
           ...event,
-          creator: creator ? {
-            _id: creator._id,
-            firstName: creator.firstName,
-            lastName: creator.lastName,
-            slug: creator.slug,
-          } : null,
+          creator: creator
+            ? {
+                _id: creator._id,
+                firstName: creator.firstName,
+                lastName: creator.lastName,
+                slug: creator.slug,
+              }
+            : null,
         };
-      })
+      }),
     );
 
     return enrichedEvents;
@@ -52,12 +53,14 @@ export const getEventById = query({
     const creator = await ctx.db.get(event.createdBy);
     return {
       ...event,
-      creator: creator ? {
-        _id: creator._id,
-        firstName: creator.firstName,
-        lastName: creator.lastName,
-        slug: creator.slug,
-      } : null,
+      creator: creator
+        ? {
+            _id: creator._id,
+            firstName: creator.firstName,
+            lastName: creator.lastName,
+            slug: creator.slug,
+          }
+        : null,
     };
   },
 });
@@ -74,25 +77,26 @@ export const createEvent = mutation({
       v.literal("watch_party"),
       v.literal("workshop"),
       v.literal("meetup"),
-      v.literal("other")
+      v.literal("other"),
     ),
     location: v.object({
       type: v.union(v.literal("virtual"), v.literal("physical")),
       details: v.string(),
-      platform: v.optional(v.union(
-        v.literal("zoom"),
-        v.literal("discord"),
-        v.literal("youtube"),
-        v.literal("other")
-      )),
+      platform: v.optional(
+        v.union(v.literal("zoom"), v.literal("discord"), v.literal("youtube"), v.literal("other")),
+      ),
     }),
     maxAttendees: v.optional(v.number()),
     requiresRSVP: v.boolean(),
     streamUrl: v.optional(v.string()),
-    resources: v.optional(v.array(v.object({
-      title: v.string(),
-      url: v.string(),
-    }))),
+    resources: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          url: v.string(),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     const member = await getAuthenticatedMember(ctx);
@@ -121,41 +125,53 @@ export const updateEvent = mutation({
     startTime: v.optional(v.number()),
     endTime: v.optional(v.number()),
     timezone: v.optional(v.string()),
-    type: v.optional(v.union(
-      v.literal("community_call"),
-      v.literal("watch_party"),
-      v.literal("workshop"),
-      v.literal("meetup"),
-      v.literal("other")
-    )),
-    location: v.optional(v.object({
-      type: v.union(v.literal("virtual"), v.literal("physical")),
-      details: v.string(),
-      platform: v.optional(v.union(
-        v.literal("zoom"),
-        v.literal("discord"),
-        v.literal("youtube"),
-        v.literal("other")
-      )),
-    })),
+    type: v.optional(
+      v.union(
+        v.literal("community_call"),
+        v.literal("watch_party"),
+        v.literal("workshop"),
+        v.literal("meetup"),
+        v.literal("other"),
+      ),
+    ),
+    location: v.optional(
+      v.object({
+        type: v.union(v.literal("virtual"), v.literal("physical")),
+        details: v.string(),
+        platform: v.optional(
+          v.union(
+            v.literal("zoom"),
+            v.literal("discord"),
+            v.literal("youtube"),
+            v.literal("other"),
+          ),
+        ),
+      }),
+    ),
     maxAttendees: v.optional(v.number()),
     requiresRSVP: v.optional(v.boolean()),
     streamUrl: v.optional(v.string()),
-    status: v.optional(v.union(
-      v.literal("upcoming"),
-      v.literal("live"),
-      v.literal("completed"),
-      v.literal("cancelled")
-    )),
-    resources: v.optional(v.array(v.object({
-      title: v.string(),
-      url: v.string(),
-    }))),
+    status: v.optional(
+      v.union(
+        v.literal("upcoming"),
+        v.literal("live"),
+        v.literal("completed"),
+        v.literal("cancelled"),
+      ),
+    ),
+    resources: v.optional(
+      v.array(
+        v.object({
+          title: v.string(),
+          url: v.string(),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, { eventId, ...updates }) => {
     const member = await getAuthenticatedMember(ctx);
     const event = await ctx.db.get(eventId);
-    
+
     if (!event) {
       throw new Error("Event not found");
     }
@@ -178,7 +194,7 @@ export const deleteEvent = mutation({
   handler: async (ctx, { eventId }) => {
     const member = await getAuthenticatedMember(ctx);
     const event = await ctx.db.get(eventId);
-    
+
     if (!event) {
       throw new Error("Event not found");
     }
@@ -197,14 +213,14 @@ export const deleteEvent = mutation({
 });
 
 export const rsvpToEvent = mutation({
-  args: { 
+  args: {
     eventId: v.id("events"),
-    action: v.union(v.literal("attend"), v.literal("cancel"))
+    action: v.union(v.literal("attend"), v.literal("cancel")),
   },
   handler: async (ctx, { eventId, action }) => {
     const member = await getAuthenticatedMember(ctx);
     const event = await ctx.db.get(eventId);
-    
+
     if (!event) {
       throw new Error("Event not found");
     }
@@ -215,10 +231,10 @@ export const rsvpToEvent = mutation({
 
     const currentAttendees = event.attendees || [];
     const currentWaitlist = event.waitlist || [];
-    
+
     if (action === "attend") {
-      const newWaitlist = currentWaitlist.filter(id => id !== member._id);
-      
+      const newWaitlist = currentWaitlist.filter((id) => id !== member._id);
+
       if (!currentAttendees.includes(member._id)) {
         if (!event.maxAttendees || currentAttendees.length < event.maxAttendees) {
           await ctx.db.patch(eventId, {
@@ -234,9 +250,9 @@ export const rsvpToEvent = mutation({
         }
       }
     } else {
-      const newAttendees = currentAttendees.filter(id => id !== member._id);
-      const newWaitlist = currentWaitlist.filter(id => id !== member._id);
-      
+      const newAttendees = currentAttendees.filter((id) => id !== member._id);
+      const newWaitlist = currentWaitlist.filter((id) => id !== member._id);
+
       await ctx.db.patch(eventId, {
         attendees: newAttendees,
         waitlist: newWaitlist,

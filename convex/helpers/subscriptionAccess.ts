@@ -14,8 +14,8 @@
  * - All other statuses require upgrade
  */
 
-import { Doc } from "../_generated/dataModel";
-import { DatabaseReader } from "../_generated/server";
+import type { Doc } from "../_generated/dataModel";
+import type { DatabaseReader } from "../_generated/server";
 
 /**
  * Check if member can view full content.
@@ -25,8 +25,7 @@ import { DatabaseReader } from "../_generated/server";
 export function canViewFullContent(member: Doc<"members"> | null | undefined): boolean {
   // Early return for unauthenticated users
   if (!member) return false;
-  
-  
+
   // Check subscription status first - active subscriptions get priority evaluation
   if (member.subscriptionStatus !== "active") {
     // Handle grace period for cancelled subscriptions
@@ -39,7 +38,7 @@ export function canViewFullContent(member: Doc<"members"> | null | undefined): b
     // All other non-active statuses (past_due, expired, null) deny access
     return false;
   }
-  
+
   // For active subscriptions, verify the tier grants full access
   // Note: scholarships now handled via Stripe coupons, not tier-based
   const fullAccessTiers = ["founding_member", "early_bird", "member"];
@@ -56,16 +55,16 @@ export function canViewFullContent(member: Doc<"members"> | null | undefined): b
 export function needsSubscriptionUpgrade(member: Doc<"members"> | null | undefined): boolean {
   // Unauthenticated users always need to sign up/upgrade
   if (!member) return true;
-  
+
   // No free tier - all members should have paid tiers or scholarships
   // if (member.tier === "free") return true;
-  
+
   // Check if member has a valid tier
   const fullAccessTiers = ["founding_member", "early_bird", "member"];
   if (!member.tier || !fullAccessTiers.includes(member.tier)) {
     return true; // No valid tier means upgrade needed
   }
-  
+
   // Check if subscription is active - non-active means upgrade needed
   if (member.subscriptionStatus !== "active") {
     // Special handling for cancelled subscriptions with grace period
@@ -77,7 +76,7 @@ export function needsSubscriptionUpgrade(member: Doc<"members"> | null | undefin
     // All other non-active statuses require upgrade
     return true;
   }
-  
+
   // Active subscription with paid tier doesn't need upgrade
   return false;
 }
@@ -92,17 +91,19 @@ export function getSubscriptionStatusMessage(member: Doc<"members">): string {
   if (!member.subscriptionStatus || member.subscriptionStatus === "none") {
     return "No subscription - Upgrade to access full content";
   }
-  
+
   // Active subscriptions - show tier information
   if (member.subscriptionStatus === "active") {
     // Format tier name for display (convert snake_case to Title Case)
     return `Active ${member.tier?.replace(/_/g, " ")} subscription`;
   }
-  
+
   // Cancelled subscriptions - show grace period or expiration
   if (member.subscriptionStatus === "cancelled" && member.subscriptionEndDate) {
     // Calculate days remaining in grace period
-    const daysRemaining = Math.ceil((member.subscriptionEndDate - Date.now()) / (1000 * 60 * 60 * 24));
+    const daysRemaining = Math.ceil(
+      (member.subscriptionEndDate - Date.now()) / (1000 * 60 * 60 * 24),
+    );
     if (daysRemaining > 0) {
       // Show countdown for active grace period
       return `Subscription ends in ${daysRemaining} day${daysRemaining === 1 ? "" : "s"}`;
@@ -110,12 +111,12 @@ export function getSubscriptionStatusMessage(member: Doc<"members">): string {
     // Grace period has expired
     return "Subscription expired - Renew to continue access";
   }
-  
+
   // Past due - payment issue that needs resolution
   if (member.subscriptionStatus === "past_due") {
     return "Payment past due - Update payment method to continue access";
   }
-  
+
   // Default message for any other expired/invalid states
   return "Subscription expired - Renew to continue access";
 }
@@ -132,14 +133,14 @@ export function canViewPreview(): boolean {
  */
 export function canViewPost(
   member: Doc<"members"> | null | undefined,
-  post: { isFree?: boolean } | null | undefined
+  post: { isFree?: boolean } | null | undefined,
 ): boolean {
   // If post doesn't exist, deny access
   if (!post) return false;
-  
+
   // If post is marked as free, everyone can view it
   if (post.isFree === true) return true;
-  
+
   // Otherwise, use standard content access rules
   return canViewFullContent(member);
 }
@@ -149,14 +150,14 @@ export function canViewPost(
  */
 export function canViewResource(
   member: Doc<"members"> | null | undefined,
-  resource: { isFree?: boolean } | null | undefined
+  resource: { isFree?: boolean } | null | undefined,
 ): boolean {
   // If resource doesn't exist, deny access
   if (!resource) return false;
-  
+
   // If resource is marked as free, everyone can view it
   if (resource.isFree === true) return true;
-  
+
   // Otherwise, use standard content access rules
   return canViewFullContent(member);
 }
@@ -171,26 +172,21 @@ export type MemberLookupContext = {
  */
 export async function findMemberByEmail(
   ctx: MemberLookupContext,
-  email: string
+  email: string,
 ): Promise<Doc<"members"> | null> {
   // Look for member with this email
   // Only include active members
   const members = await ctx.db
     .query("members")
-    .filter((q) => 
-      q.and(
-        q.eq(q.field("email"), email),
-        q.eq(q.field("status"), "active")
-      )
-    )
+    .filter((q) => q.and(q.eq(q.field("email"), email), q.eq(q.field("status"), "active")))
     .collect();
-  
+
   if (members.length === 0) return null;
-  
+
   // If multiple members found, prioritize authenticated over guest
-  const authenticatedMember = members.find(m => m.externalId !== undefined);
+  const authenticatedMember = members.find((m) => m.externalId !== undefined);
   if (authenticatedMember) return authenticatedMember;
-  
+
   // Return the first guest member found
   return members[0];
 }
@@ -200,10 +196,9 @@ export async function findMemberByEmail(
  */
 export function isGuestMember(member: Doc<"members"> | null | undefined): boolean {
   if (!member) return false;
-  
+
   // Guest members have no externalId but have email and subscription data
-  return !member.externalId && 
-         !!member.email && 
-         !!member.stripeCustomerId &&
-         member.status === "active";
+  return (
+    !member.externalId && !!member.email && !!member.stripeCustomerId && member.status === "active"
+  );
 }

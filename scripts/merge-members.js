@@ -1,6 +1,6 @@
-import { api } from "../convex/_generated/api.js";
 import { ConvexClient } from "convex/browser";
 import * as dotenv from "dotenv";
+import { api } from "../convex/_generated/api.js";
 
 dotenv.config({ path: ".env.local" });
 
@@ -28,7 +28,7 @@ async function mergeMembers() {
   console.log(`  Email: ${hiramClark.email}`);
   console.log(`  Joined: ${hiramClark.joinedDateFormatted}`);
   console.log(`  Last Online: ${hiramClark.lastOnlineFormatted}`);
-  
+
   console.log("\nHappy Ducky:");
   console.log(`  Email: ${happyDucky.email}`);
   console.log(`  Joined: ${happyDucky.joinedDateFormatted}`);
@@ -42,11 +42,11 @@ async function mergeMembers() {
   const mergedData = {
     // Keep Happy Ducky's real email
     email: happyDucky.email,
-    
+
     // Use Hiram Clark's name since it's the real name
     firstName: "Hiram",
     lastName: "Clark",
-    
+
     // Use non-empty values, preferring Happy Ducky's data if both exist
     bio: happyDucky.bio || hiramClark.bio || "",
     location: happyDucky.location || hiramClark.location || "",
@@ -55,7 +55,7 @@ async function mergeMembers() {
     linkYouTube: happyDucky.linkYouTube || hiramClark.linkYouTube,
     websiteUrl: happyDucky.websiteUrl || hiramClark.websiteUrl,
     avatarUrl: happyDucky.avatarUrl || hiramClark.avatarUrl,
-    
+
     // Use most recent dates
     joinedDate: Math.min(happyDucky.joinedDate, hiramClark.joinedDate), // Earlier join date
     lastOnline: Math.max(happyDucky.lastOnline, hiramClark.lastOnline), // Most recent activity
@@ -89,13 +89,13 @@ async function mergeMembers() {
 
   // Get all posts and comments by Hiram Clark
   const [posts, comments] = await Promise.all([
-    convex.query(api.members.getMemberPosts, { 
+    convex.query(api.members.getMemberPosts, {
       memberId: hiramClarkId,
-      paginationOpts: { numItems: 1000, cursor: null }
+      paginationOpts: { numItems: 1000, cursor: null },
     }),
-    convex.query(api.members.getMemberComments, { 
+    convex.query(api.members.getMemberComments, {
       memberId: hiramClarkId,
-      paginationOpts: { numItems: 1000, cursor: null }
+      paginationOpts: { numItems: 1000, cursor: null },
     }),
   ]);
 

@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useAction, useConvex } from "convex/react";
+import { FileIcon, FileText, Loader2, X } from "lucide-react";
+import Image from "next/image";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useAction } from "convex/react";
-import { useConvex } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { toast } from "sonner";
+import { LinkIcon } from "@/components/icons/link";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,9 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -23,16 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { X, Loader2, FileText, FileIcon } from "lucide-react";
-import { LinkIcon } from "@/components/icons/link";
-import { toast } from "sonner";
-import Image from "next/image";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
 import { getBrowserInfo } from "@/lib/browser-detection";
 import {
-  validateMediaFile,
   getFilePreviewUrl,
   revokeFilePreviewUrl,
   uploadMedia,
+  validateMediaFile,
 } from "@/lib/upload-media";
 
 interface BugReportModalProps {
@@ -152,12 +151,9 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               onProgress: (progress) => {
                 // Show progress toast for the current file
                 if (progress.percentage < 100) {
-                  toast.loading(
-                    `Uploading ${file.name}: ${progress.percentage}%`,
-                    {
-                      id: fileKey,
-                    },
-                  );
+                  toast.loading(`Uploading ${file.name}: ${progress.percentage}%`, {
+                    id: fileKey,
+                  });
                 } else {
                   toast.success(`${file.name} uploaded successfully`, {
                     id: fileKey,
@@ -168,10 +164,9 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
             attachmentUrls.push(uploadResult.url);
           } catch (uploadError) {
             console.error("Failed to upload attachment:", uploadError);
-            toast.error(
-              `Failed to upload ${file.name}. Continuing without this attachment.`,
-              { id: fileKey },
-            );
+            toast.error(`Failed to upload ${file.name}. Continuing without this attachment.`, {
+              id: fileKey,
+            });
           }
         }
       }
@@ -190,12 +185,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
       toast.success(
         <div>
           Bug report submitted successfully!{" "}
-          <a
-            href={result.issueUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
+          <a href={result.issueUrl} target="_blank" rel="noopener noreferrer" className="underline">
             View issue #{result.issueNumber}
           </a>
         </div>,
@@ -209,9 +199,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
     } catch (error) {
       console.error("Failed to submit bug report:", error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to submit bug report. Please try again.";
+        error instanceof Error ? error.message : "Failed to submit bug report. Please try again.";
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
@@ -252,11 +240,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                 },
               })}
             />
-            {errors.title && (
-              <span className="text-sm text-red-600">
-                {errors.title.message}
-              </span>
-            )}
+            {errors.title && <span className="text-sm text-red-600">{errors.title.message}</span>}
           </div>
 
           <div className="space-y-2">
@@ -274,9 +258,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               })}
             />
             {errors.stepsToReproduce && (
-              <span className="text-sm text-red-600">
-                {errors.stepsToReproduce.message}
-              </span>
+              <span className="text-sm text-red-600">{errors.stepsToReproduce.message}</span>
             )}
           </div>
 
@@ -295,9 +277,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               })}
             />
             {errors.expectedBehavior && (
-              <span className="text-sm text-red-600">
-                {errors.expectedBehavior.message}
-              </span>
+              <span className="text-sm text-red-600">{errors.expectedBehavior.message}</span>
             )}
           </div>
 
@@ -316,9 +296,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               })}
             />
             {errors.actualBehavior && (
-              <span className="text-sm text-red-600">
-                {errors.actualBehavior.message}
-              </span>
+              <span className="text-sm text-red-600">{errors.actualBehavior.message}</span>
             )}
           </div>
 
@@ -327,10 +305,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
             <Select
               value={severity}
               onValueChange={(value) =>
-                setValue(
-                  "severity",
-                  value as "Low" | "Medium" | "High" | "Critical",
-                )
+                setValue("severity", value as "Low" | "Medium" | "High" | "Critical")
               }
             >
               <SelectTrigger>
@@ -394,13 +369,8 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                           ) : (
                             <FileIcon className="text-muted-foreground mb-1 h-8 w-8" />
                           )}
-                          <span
-                            className="w-full truncate text-center text-xs"
-                            title={file.name}
-                          >
-                            {file.name.length > 10
-                              ? file.name.substring(0, 7) + "..."
-                              : file.name}
+                          <span className="w-full truncate text-center text-xs" title={file.name}>
+                            {file.name.length > 10 ? `${file.name.substring(0, 7)}...` : file.name}
                           </span>
                           <span className="text-muted-foreground text-xs">
                             {(file.size / 1024).toFixed(0)}KB
@@ -424,9 +394,7 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="additionalContext">
-              Additional Context (Optional)
-            </Label>
+            <Label htmlFor="additionalContext">Additional Context (Optional)</Label>
             <Textarea
               id="additionalContext"
               placeholder="Any additional information that might be helpful..."
@@ -434,25 +402,17 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
               {...register("additionalContext", {
                 maxLength: {
                   value: 500,
-                  message:
-                    "Additional context must be less than 500 characters",
+                  message: "Additional context must be less than 500 characters",
                 },
               })}
             />
             {errors.additionalContext && (
-              <span className="text-sm text-red-600">
-                {errors.additionalContext.message}
-              </span>
+              <span className="text-sm text-red-600">{errors.additionalContext.message}</span>
             )}
           </div>
 
           <div className="flex justify-end space-x-3 border-t pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>

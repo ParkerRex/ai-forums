@@ -40,7 +40,12 @@
       "mcp__convex__tables",
       "WebFetch(domain:neil.computer)",
       "Bash(unzip:*)",
-      "WebFetch(domain:www.npmjs.com)"
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:help.skool.com)",
+      "WebSearch",
+      "Bash(bun install:*)",
+      "Bash(bun run lint:*)",
+      "Bash(bun run lint:fix:*)"
     ],
     "deny": []
   }

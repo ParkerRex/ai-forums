@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
 import { useAction } from "convex/react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "@/convex/_generated/api";
 import { useCurrentMember } from "@/hooks/use-current-member";
 
@@ -28,52 +28,55 @@ export function useNewsFeed() {
   const { member } = useCurrentMember();
   const getNews = useAction(api.newsFeed.get);
 
-  const loadNews = useCallback(async (skipCache = false) => {
-    // Try to load from localStorage cache first
-    if (!skipCache) {
-      try {
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const { data, timestamp }: CachedData = JSON.parse(cached);
-          if (Date.now() - timestamp < CACHE_DURATION) {
-            setNews(data);
-            setLoading(false);
-            return;
+  const loadNews = useCallback(
+    async (skipCache = false) => {
+      // Try to load from localStorage cache first
+      if (!skipCache) {
+        try {
+          const cached = localStorage.getItem(CACHE_KEY);
+          if (cached) {
+            const { data, timestamp }: CachedData = JSON.parse(cached);
+            if (Date.now() - timestamp < CACHE_DURATION) {
+              setNews(data);
+              setLoading(false);
+              return;
+            }
           }
+        } catch (error) {
+          console.error("Failed to load from cache:", error);
+        }
+      }
+
+      try {
+        setLoading(true);
+
+        // Fetch news from Convex action
+        const articles = await getNews({
+          userId: member?._id,
+        });
+
+        setNews(articles);
+
+        // Cache the results in localStorage
+        try {
+          localStorage.setItem(
+            CACHE_KEY,
+            JSON.stringify({
+              data: articles,
+              timestamp: Date.now(),
+            }),
+          );
+        } catch (error) {
+          console.error("Failed to cache news:", error);
         }
       } catch (error) {
-        console.error("Failed to load from cache:", error);
+        console.error("Failed to load news:", error);
+      } finally {
+        setLoading(false);
       }
-    }
-
-    try {
-      setLoading(true);
-      
-      // Fetch news from Convex action
-      const articles = await getNews({
-        userId: member?._id,
-      });
-
-      setNews(articles);
-
-      // Cache the results in localStorage
-      try {
-        localStorage.setItem(
-          CACHE_KEY,
-          JSON.stringify({
-            data: articles,
-            timestamp: Date.now(),
-          })
-        );
-      } catch (error) {
-        console.error("Failed to cache news:", error);
-      }
-    } catch (error) {
-      console.error("Failed to load news:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [getNews, member?._id]);
+    },
+    [getNews, member?._id],
+  );
 
   const refresh = useCallback(async () => {
     await loadNews(true);

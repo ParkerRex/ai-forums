@@ -1,7 +1,7 @@
-import { action } from "./_generated/server";
-import { v } from "convex/values";
-import { S3Client, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { v } from "convex/values";
+import { action } from "./_generated/server";
 
 // This file handles Cloudflare R2 storage integration
 // Note: You'll need to set up the following environment variables:
@@ -18,7 +18,9 @@ function createR2Client() {
   const secretKey = process.env.R2_SECRET_KEY;
 
   if (!accountId || !accessKey || !secretKey) {
-    throw new Error("Missing R2 environment variables. Please set R2_ACCOUNT_ID, R2_ACCESS_KEY, and R2_SECRET_KEY");
+    throw new Error(
+      "Missing R2 environment variables. Please set R2_ACCOUNT_ID, R2_ACCESS_KEY, and R2_SECRET_KEY",
+    );
   }
 
   return new S3Client({
@@ -87,7 +89,7 @@ export const generateUploadUrl = action({
     contentType: v.string(),
     fileName: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     // DEBUG: Log request details to investigate blocked uploads
     console.log("[generateUploadUrl] Incoming request", {
       contentType: args.contentType,
@@ -99,25 +101,27 @@ export const generateUploadUrl = action({
     }
 
     // Validate content type
-    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const validImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!validImageTypes.includes(args.contentType.toLowerCase())) {
-      throw new Error(`Invalid image type. Supported types: ${validImageTypes.join(', ')}`);
+      throw new Error(`Invalid image type. Supported types: ${validImageTypes.join(", ")}`);
     }
 
     // Validate file extension
-    const fileExtension = args.fileName.split('.').pop()?.toLowerCase();
-    const validExtensions = ['jpg', 'jpeg', 'png', 'webp'];
+    const fileExtension = args.fileName.split(".").pop()?.toLowerCase();
+    const validExtensions = ["jpg", "jpeg", "png", "webp"];
     if (!fileExtension || !validExtensions.includes(fileExtension)) {
-      throw new Error(`Invalid file extension. Supported extensions: ${validExtensions.join(', ')}`);
+      throw new Error(
+        `Invalid file extension. Supported extensions: ${validExtensions.join(", ")}`,
+      );
     }
 
     try {
       const s3Client = createR2Client();
-      
+
       // Generate a unique object key with sanitized filename
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(2, 15);
-      const sanitizedExtension = fileExtension.replace(/[^a-z0-9]/gi, '');
+      const sanitizedExtension = fileExtension.replace(/[^a-z0-9]/gi, "");
       const objectKey = `uploads/${timestamp}-${randomId}.${sanitizedExtension}`;
 
       // Create the presigned URL for PUT operation
@@ -125,15 +129,15 @@ export const generateUploadUrl = action({
         Bucket: bucket,
         Key: objectKey,
         ContentType: args.contentType,
-        CacheControl: 'public, max-age=31536000, immutable', // 1 year cache
+        CacheControl: "public, max-age=31536000, immutable", // 1 year cache
         Metadata: {
-          'upload-timestamp': timestamp.toString(),
-          'original-filename': args.fileName
-        }
+          "upload-timestamp": timestamp.toString(),
+          "original-filename": args.fileName,
+        },
       });
 
-      const uploadUrl = await getSignedUrl(s3Client, command, { 
-        expiresIn: 900 // 15 minutes
+      const uploadUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: 900, // 15 minutes
       });
 
       // Replace previous inline logic with helper to avoid duplication/bugs.
@@ -146,7 +150,9 @@ export const generateUploadUrl = action({
       };
     } catch (error) {
       console.error("Failed to generate upload URL:", error);
-      throw new Error(`Failed to generate upload URL: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to generate upload URL: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   },
 });
@@ -158,7 +164,7 @@ export const uploadFile = action({
     contentType: v.string(),
     fileName: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     // DEBUG: Log request details to investigate blocked uploads
     console.log("[uploadFile] Incoming request", {
       contentType: args.contentType,
@@ -171,22 +177,22 @@ export const uploadFile = action({
     }
 
     // Validate content type
-    const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    const validImageTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!validImageTypes.includes(args.contentType.toLowerCase())) {
       throw new Error("Invalid image type");
     }
 
     try {
       const s3Client = createR2Client();
-      
+
       // Generate a unique object key
       const timestamp = Date.now();
       const randomId = Math.random().toString(36).substring(2, 15);
-      const fileExtension = args.fileName.split('.').pop();
+      const fileExtension = args.fileName.split(".").pop();
       const objectKey = `uploads/${timestamp}-${randomId}.${fileExtension}`;
 
       // Convert base64 to buffer
-      const fileBuffer = Buffer.from(args.fileData, 'base64');
+      const fileBuffer = Buffer.from(args.fileData, "base64");
 
       // Upload directly to R2
       const command = new PutObjectCommand({
@@ -201,14 +207,15 @@ export const uploadFile = action({
       // Use the same helper here too.
       const publicUrl = `${getPublicBase(bucket)}/${objectKey}`;
 
-
       return {
         objectKey,
         publicUrl,
       };
     } catch (error) {
       console.error("Failed to upload file:", error);
-      throw new Error(`Failed to upload file: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to upload file: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     }
   },
 });
@@ -217,7 +224,7 @@ export const deleteObject = action({
   args: {
     objectKey: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     const bucket = process.env.R2_BUCKET;
     if (!bucket) {
       console.error("R2_BUCKET environment variable is not set - skipping deletion");
@@ -225,41 +232,41 @@ export const deleteObject = action({
     }
 
     // Validate object key format
-    if (!args.objectKey || !args.objectKey.startsWith('uploads/')) {
+    if (!args.objectKey || !args.objectKey.startsWith("uploads/")) {
       console.error(`Invalid object key format: ${args.objectKey}`);
       return { success: false, error: "Invalid object key" };
     }
 
     try {
       const s3Client = createR2Client();
-      
+
       const command = new DeleteObjectCommand({
         Bucket: bucket,
         Key: args.objectKey,
       });
 
       await s3Client.send(command);
-      
+
       console.log(`Successfully deleted object: ${args.objectKey}`);
       return { success: true };
     } catch (error) {
       // Log error but don't throw - deletion failures shouldn't break the app
       console.error("Failed to delete object:", error);
-      
+
       // Check for specific error types
       if (error instanceof Error) {
-        if (error.name === 'NoSuchKey' || error.message.includes('404')) {
+        if (error.name === "NoSuchKey" || error.message.includes("404")) {
           // Object already deleted or doesn't exist
           return { success: true, note: "Object already deleted" };
         }
-        if (error.message.includes('credentials') || error.message.includes('auth')) {
+        if (error.message.includes("credentials") || error.message.includes("auth")) {
           // Configuration error - log but continue
           console.error("Storage credentials error - check R2 configuration");
           return { success: false, error: "Storage configuration error" };
         }
       }
-      
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   },
 });
@@ -270,7 +277,7 @@ export const testR2Connection = action({
   handler: async () => {
     try {
       const s3Client = createR2Client();
-      
+
       // Test by generating a simple presigned URL
       const testKey = `test-${Date.now()}.txt`;
       const command = new PutObjectCommand({
@@ -280,7 +287,7 @@ export const testR2Connection = action({
       });
 
       const url = await getSignedUrl(s3Client, command, { expiresIn: 60 });
-      
+
       return {
         success: true,
         message: "R2 connection successful",
@@ -292,8 +299,8 @@ export const testR2Connection = action({
       console.error("R2 connection test failed:", error);
       return {
         success: false,
-        message: `R2 connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        message: `R2 connection failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       };
     }
   },
-}); 
+});

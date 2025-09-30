@@ -19,18 +19,20 @@ export function generateMemberSlug(fullName: string): string {
  * @returns SEO-friendly slug
  */
 export function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .trim()
-    // Replace spaces and special characters with hyphens
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    // Remove leading/trailing hyphens
-    .replace(/^-+|-+$/g, '')
-    // Limit length to reasonable URL size
-    .substring(0, 60)
-    // Remove trailing hyphen if truncation created one
-    .replace(/-+$/, '');
+  return (
+    title
+      .toLowerCase()
+      .trim()
+      // Replace spaces and special characters with hyphens
+      .replace(/[^\w\s-]/g, "")
+      .replace(/[\s_-]+/g, "-")
+      // Remove leading/trailing hyphens
+      .replace(/^-+|-+$/g, "")
+      // Limit length to reasonable URL size
+      .substring(0, 60)
+      // Remove trailing hyphen if truncation created one
+      .replace(/-+$/, "")
+  );
 }
 
 /**
@@ -42,12 +44,12 @@ export function generateSlug(title: string): string {
 export function ensureUniqueSlug(baseSlug: string, existingSlugs: string[]): string {
   let slug = baseSlug;
   let counter = 1;
-  
+
   while (existingSlugs.includes(slug)) {
     slug = `${baseSlug}-${counter}`;
     counter++;
   }
-  
+
   return slug;
 }
 
@@ -70,4 +72,4 @@ export function isValidSlug(slug: string): boolean {
  */
 export function memberProfileUrl(member: { slug: string; _id: Id<"members"> }): string {
   return `/members/${member.slug}`;
-} 
+}

@@ -1,28 +1,14 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
 import CodeBlock from "@tiptap/extension-code-block";
-import {
-  LinkBadge,
-  Mention,
-  createMentionSuggestion,
-} from "./rich-text/extensions";
-import { Markdown } from "tiptap-markdown";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import { useAction, useConvex } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { Bold, Code, Code2, Italic, List, ListOrdered, Quote, Redo, Undo } from "lucide-react";
+import { Markdown } from "tiptap-markdown";
 import { Button } from "@/components/ui/button";
-import {
-  Bold,
-  Italic,
-  List,
-  ListOrdered,
-  Quote,
-  Code,
-  Code2,
-  Undo,
-  Redo,
-} from "lucide-react";
+import { api } from "@/convex/_generated/api";
+import { createMentionSuggestion, LinkBadge, Mention } from "./rich-text/extensions";
 
 interface FullRichTextEditorProps {
   content?: string;
@@ -109,8 +95,7 @@ export function FullRichTextEditor({
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
       try {
-        const markdown =
-          editor.storage.markdown?.getMarkdown?.() || editor.getHTML();
+        const markdown = editor.storage.markdown?.getMarkdown?.() || editor.getHTML();
         onChange?.(markdown);
       } catch {
         // Fallback to HTML if markdown extension isn't ready
@@ -132,9 +117,7 @@ export function FullRichTextEditor({
         <div className="bg-muted rounded-t-lg border border-b p-2">
           <div className="flex items-center justify-center">
             <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
-            <span className="text-muted-foreground text-sm">
-              Loading editor...
-            </span>
+            <span className="text-muted-foreground text-sm">Loading editor...</span>
           </div>
         </div>
         <div className="min-h-[200px] p-4">
@@ -256,10 +239,7 @@ export function FullRichTextEditor({
 
       {/* Editor Content */}
       <div className="relative">
-        <EditorContent
-          editor={editor}
-          className="min-h-[200px] focus-within:outline-none"
-        />
+        <EditorContent editor={editor} className="min-h-[200px] focus-within:outline-none" />
         {!content && (
           <div className="text-muted-foreground pointer-events-none absolute left-4 top-4 opacity-70">
             {placeholder}

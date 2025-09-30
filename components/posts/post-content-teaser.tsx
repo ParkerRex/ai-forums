@@ -26,16 +26,16 @@ export function PostContentTeaser({ content, className }: PostContentTeaserProps
         that are pushing the boundaries of what's possible with AI...
       `;
     }
-    
+
     // Get first 500 characters or up to 3 paragraphs
-    const paragraphs = content.split('\n\n').slice(0, 3);
-    const teaser = paragraphs.join('\n\n');
-    
+    const paragraphs = content.split("\n\n").slice(0, 3);
+    const teaser = paragraphs.join("\n\n");
+
     if (teaser.length > 500) {
-      return teaser.substring(0, 500) + '...';
+      return `${teaser.substring(0, 500)}...`;
     }
-    
-    return teaser + '...';
+
+    return `${teaser}...`;
   };
 
   return (
@@ -50,27 +50,31 @@ export function PostContentTeaser({ content, className }: PostContentTeaserProps
         {/* Content with progressive blur */}
         <div className="relative">
           <div className="prose prose-lg dark:prose-invert max-w-none post-content">
-            {getTeaserContent().split('\n').map((paragraph, index) => (
-              <p
-                key={index}
-                className={cn(
-                  "mb-4 transition-all duration-500",
-                  index === 0 && "blur-[0.5px]",
-                  index === 1 && "blur-[1px]",
-                  index === 2 && "blur-[2px]"
-                )}
-                style={{
-                  maskImage: index === 2 
-                    ? 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)'
-                    : undefined,
-                  WebkitMaskImage: index === 2
-                    ? 'linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)'
-                    : undefined,
-                }}
-              >
-                {paragraph}
-              </p>
-            ))}
+            {getTeaserContent()
+              .split("\n")
+              .map((paragraph, index) => (
+                <p
+                  key={index}
+                  className={cn(
+                    "mb-4 transition-all duration-500",
+                    index === 0 && "blur-[0.5px]",
+                    index === 1 && "blur-[1px]",
+                    index === 2 && "blur-[2px]",
+                  )}
+                  style={{
+                    maskImage:
+                      index === 2
+                        ? "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)"
+                        : undefined,
+                    WebkitMaskImage:
+                      index === 2
+                        ? "linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, rgba(0,0,0,0) 100%)"
+                        : undefined,
+                  }}
+                >
+                  {paragraph}
+                </p>
+              ))}
           </div>
 
           {/* Animated highlight effect */}

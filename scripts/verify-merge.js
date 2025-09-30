@@ -1,6 +1,6 @@
-import { api } from "../convex/_generated/api.js";
 import { ConvexClient } from "convex/browser";
 import * as dotenv from "dotenv";
+import { api } from "../convex/_generated/api.js";
 
 dotenv.config({ path: ".env.local" });
 
@@ -30,13 +30,13 @@ async function verifyMerge() {
 
   // Check posts and comments
   const [posts, comments] = await Promise.all([
-    convex.query(api.members.getMemberPosts, { 
+    convex.query(api.members.getMemberPosts, {
       memberId: happyDuckyId,
-      paginationOpts: { numItems: 100, cursor: null }
+      paginationOpts: { numItems: 100, cursor: null },
     }),
-    convex.query(api.members.getMemberComments, { 
+    convex.query(api.members.getMemberComments, {
       memberId: happyDuckyId,
-      paginationOpts: { numItems: 100, cursor: null }
+      paginationOpts: { numItems: 100, cursor: null },
     }),
   ]);
 
@@ -46,15 +46,15 @@ async function verifyMerge() {
 
   // Verify old member is deleted
   try {
-    const oldMember = await convex.query(api.members.getMemberById, { 
-      id: "j97a1f6tpmehxcx8hcwc7qatdd7ma7be" 
+    const oldMember = await convex.query(api.members.getMemberById, {
+      id: "j97a1f6tpmehxcx8hcwc7qatdd7ma7be",
     });
     if (oldMember) {
       console.log("\n❌ Old member (Hiram Clark) still exists!");
     } else {
       console.log("\n✅ Old member (Hiram Clark) successfully deleted");
     }
-  } catch (error) {
+  } catch (_error) {
     console.log("\n✅ Old member (Hiram Clark) successfully deleted");
   }
 

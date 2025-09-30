@@ -1,13 +1,13 @@
 "use client";
-import { useState, useRef, useCallback, useEffect } from "react";
 import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Loader2, Upload, Trash2, User } from "lucide-react";
-import { toast } from "sonner";
+import { Loader2, Trash2, Upload, User } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { api } from "@/convex/_generated/api";
 import "react-image-crop/dist/ReactCrop.css";
 
 interface AvatarUploadProps {
@@ -16,15 +16,11 @@ interface AvatarUploadProps {
   onRemove?: () => void;
 }
 
-function centerAspectCrop(
-  mediaWidth: number,
-  mediaHeight: number,
-  aspect: number,
-) {
+function centerAspectCrop(mediaWidth: number, mediaHeight: number, aspect: number) {
   return centerCrop(
     makeAspectCrop(
       {
-        unit: '%',
+        unit: "%",
         width: 90,
       },
       aspect,
@@ -46,7 +42,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
   const [completedCrop, setCompletedCrop] = useState<Crop>();
   const imgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const generateUploadUrl = useAction(api.storage.generateUploadUrl);
 
   useEffect(() => {
@@ -88,15 +84,15 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
   const optimizeImage = async (blob: Blob): Promise<Blob> => {
     return new Promise((resolve, reject) => {
       const img = new window.Image();
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+
       img.onload = () => {
         // Set max dimensions (512x512 for avatars)
         const MAX_SIZE = 512;
         let width = img.width;
         let height = img.height;
-        
+
         if (width > height) {
           if (width > MAX_SIZE) {
             height = Math.round((height * MAX_SIZE) / width);
@@ -108,38 +104,38 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
             height = MAX_SIZE;
           }
         }
-        
+
         canvas.width = width;
         canvas.height = height;
-        
+
         if (!ctx) {
-          reject(new Error('Failed to get canvas context'));
+          reject(new Error("Failed to get canvas context"));
           return;
         }
-        
+
         // Enable image smoothing for better quality
         ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
+        ctx.imageSmoothingQuality = "high";
         ctx.drawImage(img, 0, 0, width, height);
-        
+
         // Convert to JPEG for better compression (unless original is PNG with transparency)
-        const outputType = selectedFile?.type === 'image/png' ? 'image/png' : 'image/jpeg';
-        const quality = outputType === 'image/jpeg' ? 0.85 : 0.95;
-        
+        const outputType = selectedFile?.type === "image/png" ? "image/png" : "image/jpeg";
+        const quality = outputType === "image/jpeg" ? 0.85 : 0.95;
+
         canvas.toBlob(
           (optimizedBlob) => {
             if (optimizedBlob) {
               resolve(optimizedBlob);
             } else {
-              reject(new Error('Failed to optimize image'));
+              reject(new Error("Failed to optimize image"));
             }
           },
           outputType,
-          quality
+          quality,
         );
       };
-      
-      img.onerror = () => reject(new Error('Failed to load image'));
+
+      img.onerror = () => reject(new Error("Failed to load image"));
       img.src = URL.createObjectURL(blob);
     });
   };
@@ -153,10 +149,10 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
     const canvas = document.createElement("canvas");
     const scaleX = image.naturalWidth / image.width;
     const scaleY = image.naturalHeight / image.height;
-    
+
     canvas.width = completedCrop.width * scaleX;
     canvas.height = completedCrop.height * scaleY;
-    
+
     const ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("No 2d context");
 
@@ -169,7 +165,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
       0,
       0,
       canvas.width,
-      canvas.height
+      canvas.height,
     );
 
     return new Promise((resolve, reject) => {
@@ -179,7 +175,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
           else reject(new Error("Canvas is empty"));
         },
         selectedFile.type,
-        0.95
+        0.95,
       );
     });
   };
@@ -188,26 +184,33 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
     try {
       setIsUploading(true);
       setIsCropping(false);
-      
+
       const croppedBlob = await getCroppedImg();
-      
+
       // Optimize the cropped image
       const optimizedBlob = await optimizeImage(croppedBlob);
-      
+
       // Use optimized type (JPEG for photos, PNG for graphics)
-      const outputType = selectedFile!.type === 'image/png' ? 'image/png' : 'image/jpeg';
-      const fileName = selectedFile!.name.replace(/\.[^.]+$/, outputType === 'image/jpeg' ? '.jpg' : '.png');
-      
+      const outputType = selectedFile!.type === "image/png" ? "image/png" : "image/jpeg";
+      const fileName = selectedFile!.name.replace(
+        /\.[^.]+$/,
+        outputType === "image/jpeg" ? ".jpg" : ".png",
+      );
+
       const optimizedFile = new File([optimizedBlob], fileName, {
         type: outputType,
       });
 
       // Validate final file size after optimization
       if (optimizedFile.size > 5 * 1024 * 1024) {
-        throw new Error("Image is still too large after optimization. Please select a smaller area.");
+        throw new Error(
+          "Image is still too large after optimization. Please select a smaller area.",
+        );
       }
-      
-      console.log(`Image optimized: ${(croppedBlob.size / 1024).toFixed(1)}KB → ${(optimizedFile.size / 1024).toFixed(1)}KB`);
+
+      console.log(
+        `Image optimized: ${(croppedBlob.size / 1024).toFixed(1)}KB → ${(optimizedFile.size / 1024).toFixed(1)}KB`,
+      );
 
       // Generate upload URL with retry
       let uploadData;
@@ -223,7 +226,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
           retries--;
           if (retries === 0) throw error;
           console.warn(`Failed to generate upload URL, retrying... (${retries} attempts left)`);
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise((resolve) => setTimeout(resolve, 1000));
         }
       }
 
@@ -236,7 +239,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
       // Upload the file with retry logic
       retries = 3;
       let uploadSuccess = false;
-      
+
       while (retries > 0 && !uploadSuccess) {
         try {
           const response = await fetch(uploadUrl, {
@@ -251,24 +254,26 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
           if (!response.ok) {
             throw new Error(`Upload failed: ${response.status} ${response.statusText}`);
           }
-          
+
           uploadSuccess = true;
         } catch (error) {
           retries--;
           if (retries === 0) throw error;
           console.warn(`Upload attempt failed, retrying... (${retries} attempts left)`);
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise((resolve) => setTimeout(resolve, 2000));
         }
       }
 
       // Verify the image is accessible
       try {
-        const verifyResponse = await fetch(publicUrl, { method: 'HEAD' });
+        const verifyResponse = await fetch(publicUrl, { method: "HEAD" });
         if (!verifyResponse.ok) {
-          console.warn('Avatar uploaded but not immediately accessible, this is normal for CDN propagation');
+          console.warn(
+            "Avatar uploaded but not immediately accessible, this is normal for CDN propagation",
+          );
         }
       } catch (error) {
-        console.warn('Could not verify avatar accessibility:', error);
+        console.warn("Could not verify avatar accessibility:", error);
       }
 
       // Update state and notify parent
@@ -277,14 +282,14 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
       toast.success("Avatar uploaded successfully");
     } catch (error) {
       console.error("Upload error:", error);
-      
+
       // Provide specific error messages
       if (error instanceof Error) {
-        if (error.message.includes('type')) {
+        if (error.message.includes("type")) {
           toast.error("Invalid file type. Please use JPEG, PNG, or WebP.");
-        } else if (error.message.includes('size')) {
+        } else if (error.message.includes("size")) {
           toast.error(error.message);
-        } else if (error.message.includes('network')) {
+        } else if (error.message.includes("network")) {
           toast.error("Network error. Please check your connection and try again.");
         } else {
           toast.error(error.message || "Failed to upload avatar");
@@ -317,7 +322,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
             <User className="h-12 w-12 text-muted-foreground" />
           </AvatarFallback>
         </Avatar>
-        
+
         <div className="space-y-2">
           <input
             ref={fileInputRef}
@@ -327,7 +332,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
             className="hidden"
             disabled={isUploading}
           />
-          
+
           <Button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -347,7 +352,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
               </>
             )}
           </Button>
-          
+
           {url && (
             <Button
               type="button"
@@ -368,7 +373,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
           <DialogHeader>
             <DialogTitle>Crop Image</DialogTitle>
           </DialogHeader>
-          
+
           {previewUrl && (
             <div className="space-y-4">
               <ReactCrop
@@ -386,7 +391,7 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
                   className="max-w-full"
                 />
               </ReactCrop>
-              
+
               <div className="flex justify-end gap-2">
                 <Button
                   type="button"

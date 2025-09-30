@@ -1,10 +1,10 @@
 /**
  * @fileoverview Client component for individual topic pages with resource management
- * 
+ *
  * This component displays all learning resources for a specific topic, providing
  * comprehensive filtering, sorting, and interaction capabilities. It serves as
  * the main interface for users to discover and engage with educational content.
- * 
+ *
  * Key features:
  * - Resource display with voting and bookmarking
  * - Advanced filtering by type, difficulty, and payment status
@@ -13,18 +13,20 @@
  * - View tracking for resource analytics
  * - Authentication-gated interactions (voting, bookmarking)
  * - Responsive design with loading states
- * 
+ *
  * @author VAI Community
  * @version 1.0.0
  */
 
 "use client";
-import React, { useState, use, useEffect } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { Authenticated, useMutation, useQuery } from "convex/react";
+import { ArrowUpIcon, BookOpen, Plus, Search } from "lucide-react";
+import Link from "next/link";
+import type React from "react";
+import { use, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -32,19 +34,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import Link from "next/link";
-import { 
-  Search, 
-  Plus, 
-  ArrowUpIcon, 
-  BookOpen
-} from "lucide-react";
-import { Authenticated } from "convex/react";
-import { Id } from "@/convex/_generated/dataModel";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 /**
  * Props interface for the TopicPageClient component
- * 
+ *
  * @interface TopicPageClientProps
  * @property {Promise<{topic: string}>} params - Dynamic route parameters from Next.js
  */
@@ -56,7 +51,7 @@ interface TopicPageClientProps {
 
 /**
  * Represents a learning resource with all its metadata and engagement data
- * 
+ *
  * @interface Resource
  * @property {Id<"resources">} _id - Unique identifier for the resource
  * @property {string} title - Resource title for display
@@ -95,15 +90,15 @@ interface Resource {
 
 /**
  * Resource card component that displays a single learning resource with interactions
- * 
+ *
  * This component handles the presentation and interaction logic for individual
  * resources including voting, view tracking, and external link navigation.
  * It implements optimistic updates for better user experience during voting.
- * 
+ *
  * @param {Object} props - Component properties
  * @param {Resource} props.resource - The resource data to display
  * @returns {JSX.Element} Rendered resource card component
- * 
+ *
  * @example
  * ```tsx
  * <ResourceCard resource={{
@@ -125,18 +120,18 @@ function ResourceCard({ resource }: { resource: Resource }) {
   // Mutations for resource interactions
   const voteOnResource = useMutation(api.votes.voteOnResource);
   const trackResourceView = useMutation(api.resources.trackResourceView);
-  
+
   // Query current user's vote status for this resource
   const userVote = useQuery(api.votes.getUserVote, {
     targetId: resource._id,
     targetType: "resource",
   });
-  
+
   // Query if user can access this resource
   const canViewResource = useQuery(api.resources.canUserViewResource, {
     resourceId: resource._id,
   });
-  
+
   // Local state for voting interactions and optimistic updates
   const [isVoting, setIsVoting] = useState(false);
   const [optimisticNetVotes, setOptimisticNetVotes] = useState(resource.netVotes);
@@ -147,11 +142,11 @@ function ResourceCard({ resource }: { resource: Resource }) {
 
   /**
    * Handles upvote button clicks with optimistic updates
-   * 
+   *
    * Implements optimistic UI updates for immediate feedback, then syncs with
    * server state. If the vote fails, it reverts to the previous state.
    * Prevents event bubbling to avoid triggering card click handlers.
-   * 
+   *
    * @param {React.MouseEvent} e - Mouse event from button click
    */
   const handleUpvote = async (e: React.MouseEvent) => {
@@ -201,7 +196,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
 
   /**
    * Handles resource link clicks with view tracking
-   * 
+   *
    * Tracks when users click to view a resource for analytics purposes,
    * then opens the resource in a new tab with security attributes.
    * View tracking failures are logged but don't prevent navigation.
@@ -214,7 +209,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
       console.log("Access denied: Premium resource");
       return;
     }
-    
+
     try {
       // Track view for analytics (fire-and-forget)
       await trackResourceView({ resourceId: resource._id });
@@ -222,29 +217,34 @@ function ResourceCard({ resource }: { resource: Resource }) {
       console.error("Failed to track resource view:", error);
     }
     // Open resource in new tab with security attributes
-    window.open(resource.url, '_blank', 'noopener,noreferrer');
+    window.open(resource.url, "_blank", "noopener,noreferrer");
   };
 
   /**
    * Returns appropriate emoji icon for resource type
-   * 
+   *
    * @param {string} type - Resource type identifier
    * @returns {string} Emoji icon representing the resource type
    */
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case "video": return "🎥";
-      case "course": return "🎓";
-      case "book": return "📚";
-      case "tool": return "🔧";
-      case "documentation": return "📖";
-      default: return "📄";
+      case "video":
+        return "🎥";
+      case "course":
+        return "🎓";
+      case "book":
+        return "📚";
+      case "tool":
+        return "🔧";
+      case "documentation":
+        return "📖";
+      default:
+        return "📄";
     }
   };
 
-
   return (
-    <Card 
+    <Card
       className="hover:border-primary transition-colors cursor-pointer"
       onClick={handleResourceClick}
     >
@@ -271,16 +271,12 @@ function ResourceCard({ resource }: { resource: Resource }) {
                 <ArrowUpIcon size={16} />
               </Button>
             </Authenticated>
-            <span className="text-sm font-medium text-muted-foreground">
-              {optimisticNetVotes}
-            </span>
+            <span className="text-sm font-medium text-muted-foreground">{optimisticNetVotes}</span>
           </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground line-clamp-2">
-          {resource.description}
-        </p>
+        <p className="text-sm text-muted-foreground line-clamp-2">{resource.description}</p>
       </CardContent>
     </Card>
   );
@@ -288,13 +284,13 @@ function ResourceCard({ resource }: { resource: Resource }) {
 
 /**
  * Loading skeleton component for resource cards
- * 
+ *
  * Displays animated placeholder content while resource data is being fetched.
  * Maintains the same layout structure as ResourceCard to prevent layout shifts
  * during loading transitions. Shows placeholders for all interactive elements.
- * 
+ *
  * @returns {JSX.Element} Rendered skeleton loading component
- * 
+ *
  * @example
  * ```tsx
  * {isLoading && (
@@ -355,22 +351,22 @@ function ResourceCardSkeleton() {
 
 /**
  * Main client component for displaying resources within a specific topic
- * 
+ *
  * This component handles the complete user experience for browsing learning
  * resources within a topic, including filtering, sorting, searching, and
  * interacting with individual resources. It manages complex state for all
  * filter combinations and provides real-time search capabilities.
- * 
+ *
  * State management includes:
  * - Search functionality across resource titles and descriptions
  * - Filtering by resource type, difficulty level, and payment status
  * - Sorting by creation date (newest) or popularity (votes)
  * - Authentication-based UI variations
  * - Loading and error states
- * 
+ *
  * @param {TopicPageClientProps} props - Component props
  * @returns {JSX.Element} Complete topic page with resources
- * 
+ *
  * @example
  * ```tsx
  * // Used via Next.js routing: /educate/react
@@ -380,39 +376,43 @@ function ResourceCardSkeleton() {
 export default function TopicPageClient({ params }: TopicPageClientProps) {
   // Extract topic name from URL parameters
   const { topic: topicName } = use(params);
-  
+
   // Local state for filtering and search functionality
   const [searchTerm, setSearchTerm] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "popular">("newest");
-  
+
   // Track if this is the initial load to prevent skeleton flash
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [previousResources, setPreviousResources] = useState<Resource[] | null>(null);
 
   // Fetch topic data by name from URL
   const topic = useQuery(api.topics.getTopicByName, { name: topicName });
-  
+
   // Fetch filtered and sorted resources for this topic
   const resources = useQuery(
     api.resources.getResourcesByTopic,
-    topic?._id ? {
-      topicId: topic._id,
-      sortBy
-    } : "skip"
+    topic?._id
+      ? {
+          topicId: topic._id,
+          sortBy,
+        }
+      : "skip",
   );
 
   // Fetch search results when user searches within this topic
   const searchResults = useQuery(
     api.resources.searchResources,
-    searchTerm.trim() && topic?._id ? {
-      searchTerm: searchTerm.trim(),
-      topicId: topic._id,
-    } : "skip"
+    searchTerm.trim() && topic?._id
+      ? {
+          searchTerm: searchTerm.trim(),
+          topicId: topic._id,
+        }
+      : "skip",
   );
 
   // Determine which resources to display based on search state
   const displayResources = searchTerm.trim() ? searchResults : resources;
-  
+
   // Track when we receive resources to manage loading states
   useEffect(() => {
     if (displayResources !== undefined) {
@@ -447,7 +447,7 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             {/* Search input skeleton */}
             <div className="flex-1 h-10 bg-muted rounded animate-pulse" />
-            
+
             {/* Filter controls skeleton */}
             <div className="flex items-center space-x-2">
               <div className="w-32 h-10 bg-muted rounded animate-pulse" />
@@ -460,7 +460,9 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
 
         {/* Resources grid skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }, (_, i) => <ResourceCardSkeleton key={i} />)}
+          {Array.from({ length: 6 }, (_, i) => (
+            <ResourceCardSkeleton key={i} />
+          ))}
         </div>
       </div>
     );
@@ -493,9 +495,7 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
             {topic.icon && <span>{topic.icon}</span>}
             {topic.displayName}
           </h1>
-          <p className="text-sm text-muted-foreground">
-            {topic.resourceCount} resources
-          </p>
+          <p className="text-sm text-muted-foreground">{topic.resourceCount} resources</p>
         </div>
 
         {/* Search and filter controls */}
@@ -510,7 +510,7 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
               className="pl-10"
             />
           </div>
-          
+
           {/* Single filter control */}
           <Select value={sortBy} onValueChange={(value: "newest" | "popular") => setSortBy(value)}>
             <SelectTrigger className="w-32">

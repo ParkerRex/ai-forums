@@ -1,24 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useMutation, useConvex } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { useConvex, useMutation } from "convex/react";
+import { AlertCircle, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { PostFormFields, ExtendedPostFormData } from "./post-form-fields";
-import { PostFormData, validatePostForm } from "@/lib/form-validation";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { type PostFormData, validatePostForm } from "@/lib/form-validation";
 import { uploadMedia } from "@/lib/upload-media";
-import { AlertCircle, Loader2 } from "lucide-react";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { type ExtendedPostFormData, PostFormFields } from "./post-form-fields";
 
 interface Post {
   _id: Id<"posts">;
@@ -45,12 +45,7 @@ interface PostEditModalProps {
   onSuccess?: () => void;
 }
 
-export function PostEditModal({
-  post,
-  isOpen,
-  onClose,
-  onSuccess,
-}: PostEditModalProps) {
+export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModalProps) {
   const convex = useConvex();
   const router = useRouter();
 
@@ -69,9 +64,7 @@ export function PostEditModal({
   });
 
   // Track which fields have been touched by the user
-  const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(
-    new Set(),
-  );
+  const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
@@ -82,9 +75,7 @@ export function PostEditModal({
   // Additional validation for media/link posts
   const isPostTypeValid = () => {
     if (formData.type === "image" || formData.type === "video") {
-      return (
-        formData.mediaFile !== undefined || formData.mediaUrl !== undefined
-      );
+      return formData.mediaFile !== undefined || formData.mediaUrl !== undefined;
     }
     if (formData.type === "link") {
       return formData.linkUrl !== undefined && formData.linkUrl.trim() !== "";
@@ -116,20 +107,14 @@ export function PostEditModal({
   }, [post]);
 
   // Form handlers
-  const handleFormDataChange = useCallback(
-    (data: Partial<ExtendedPostFormData>) => {
-      setFormData((prev) => ({ ...prev, ...data }));
-      setSubmitError(null);
-    },
-    [],
-  );
+  const handleFormDataChange = useCallback((data: Partial<ExtendedPostFormData>) => {
+    setFormData((prev) => ({ ...prev, ...data }));
+    setSubmitError(null);
+  }, []);
 
-  const handleTouchedFieldsChange = useCallback(
-    (fields: Set<keyof PostFormData>) => {
-      setTouchedFields(fields);
-    },
-    [],
-  );
+  const handleTouchedFieldsChange = useCallback((fields: Set<keyof PostFormData>) => {
+    setTouchedFields(fields);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -148,10 +133,7 @@ export function PostEditModal({
       let thumbnailUrl = formData.thumbnailUrl;
 
       // Upload media if a new file was selected
-      if (
-        formData.mediaFile &&
-        (formData.type === "image" || formData.type === "video")
-      ) {
+      if (formData.mediaFile && (formData.type === "image" || formData.type === "video")) {
         try {
           const uploadResult = await uploadMedia(convex, formData.mediaFile, {
             onProgress: (progress) => {
@@ -170,7 +152,10 @@ export function PostEditModal({
         postId: post._id,
         title: formData.title.trim(),
         content: formData.content.trim(),
-        type: formData.type === "poll" ? undefined : formData.type as "text" | "image" | "video" | "link",
+        type:
+          formData.type === "poll"
+            ? undefined
+            : (formData.type as "text" | "image" | "video" | "link"),
         mediaUrl,
         thumbnailUrl,
         categoryId: formData.categoryId as Id<"categories">,
@@ -192,8 +177,7 @@ export function PostEditModal({
       const updatedCategoryName = result.categoryName;
       const originalCategoryName = post.category?.name;
       const categoryChanged =
-        updatedCategoryName !== undefined &&
-        updatedCategoryName !== originalCategoryName;
+        updatedCategoryName !== undefined && updatedCategoryName !== originalCategoryName;
 
       if (slugChanged || categoryChanged) {
         // Prefer the updated category name when constructing the new URL
@@ -214,9 +198,7 @@ export function PostEditModal({
     } catch (error) {
       console.error("Failed to update post:", error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to update post. Please try again.";
+        error instanceof Error ? error.message : "Failed to update post. Please try again.";
       setSubmitError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -252,9 +234,7 @@ export function PostEditModal({
           {uploadProgress !== null && (
             <Alert>
               <Loader2 className="h-4 w-4 animate-spin" />
-              <AlertDescription>
-                Uploading media... {uploadProgress}%
-              </AlertDescription>
+              <AlertDescription>Uploading media... {uploadProgress}%</AlertDescription>
             </Alert>
           )}
 
@@ -269,12 +249,7 @@ export function PostEditModal({
           />
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button

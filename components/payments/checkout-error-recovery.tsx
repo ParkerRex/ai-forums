@@ -1,17 +1,24 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { AlertCircle, AlertTriangle, CreditCard, HelpCircle, Info, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, AlertTriangle, Info, RefreshCw, CreditCard, HelpCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { 
-  getPaymentError, 
-  formatErrorDisplay, 
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  formatErrorDisplay,
+  getPaymentError,
   getRecoverySuggestions,
+  isPaymentMethodError,
   isTemporaryError,
-  isPaymentMethodError
 } from "@/lib/payment-error-utils";
 import { cn } from "@/lib/utils";
 
@@ -35,12 +42,12 @@ export function CheckoutErrorRecovery({
   const router = useRouter();
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [retryCountdown, setRetryCountdown] = useState<number | null>(null);
-  
+
   // Parse the error
   const paymentError = getPaymentError(error);
   const errorDisplay = formatErrorDisplay(paymentError);
   const suggestions = getRecoverySuggestions(paymentError);
-  
+
   // Auto-retry for temporary errors
   useEffect(() => {
     if (isTemporaryError(paymentError) && !isRetrying) {
@@ -48,11 +55,11 @@ export function CheckoutErrorRecovery({
       setRetryCountdown(5);
     }
   }, [paymentError, isRetrying]);
-  
+
   // Countdown timer
   useEffect(() => {
     if (retryCountdown === null || retryCountdown <= 0) return;
-    
+
     const timer = setTimeout(() => {
       if (retryCountdown === 1) {
         onRetry();
@@ -61,7 +68,7 @@ export function CheckoutErrorRecovery({
         setRetryCountdown(retryCountdown - 1);
       }
     }, 1000);
-    
+
     return () => clearTimeout(timer);
   }, [retryCountdown, onRetry]);
 
@@ -83,7 +90,7 @@ export function CheckoutErrorRecovery({
       // Default: open email with pre-filled error details
       const subject = encodeURIComponent("Payment Error - Need Help");
       const body = encodeURIComponent(
-        `Hi VAI Support,\n\nI encountered an error during checkout:\n\nError: ${paymentError.message}\nError Code: ${paymentError.code}\nTime: ${new Date().toISOString()}\n\nCan you help me resolve this?\n\nThanks!`
+        `Hi VAI Support,\n\nI encountered an error during checkout:\n\nError: ${paymentError.message}\nError Code: ${paymentError.code}\nTime: ${new Date().toISOString()}\n\nCan you help me resolve this?\n\nThanks!`,
       );
       window.location.href = `mailto:support@vai.dev?subject=${subject}&body=${body}`;
     }
@@ -100,13 +107,13 @@ export function CheckoutErrorRecovery({
           Don&apos;t worry, this happens sometimes. Let&apos;s get it sorted.
         </CardDescription>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         <Alert>
           <AlertTitle>{errorDisplay.title}</AlertTitle>
           <AlertDescription>{errorDisplay.description}</AlertDescription>
         </Alert>
-        
+
         {/* Recovery suggestions */}
         <div className="space-y-2">
           <Button
@@ -118,7 +125,7 @@ export function CheckoutErrorRecovery({
             <HelpCircle className="h-4 w-4 mr-2" />
             {showSuggestions ? "Hide" : "Show"} other options
           </Button>
-          
+
           {showSuggestions && (
             <div className="mt-2 space-y-1 text-sm text-muted-foreground">
               {suggestions.map((suggestion, index) => (
@@ -131,24 +138,16 @@ export function CheckoutErrorRecovery({
           )}
         </div>
       </CardContent>
-      
+
       <CardFooter className="flex flex-col gap-2">
         {/* Primary action */}
         {isPaymentMethodError(paymentError) && onChangePaymentMethod ? (
-          <Button 
-            className="w-full" 
-            onClick={onChangePaymentMethod}
-            disabled={isRetrying}
-          >
+          <Button className="w-full" onClick={onChangePaymentMethod} disabled={isRetrying}>
             <CreditCard className="h-4 w-4 mr-2" />
             Try a different card
           </Button>
         ) : (
-          <Button 
-            className="w-full" 
-            onClick={onRetry}
-            disabled={isRetrying}
-          >
+          <Button className="w-full" onClick={onRetry} disabled={isRetrying}>
             {isRetrying ? (
               <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -167,25 +166,17 @@ export function CheckoutErrorRecovery({
             )}
           </Button>
         )}
-        
+
         {/* Secondary actions */}
         <div className="flex gap-2 w-full">
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={() => router.back()}
-          >
+          <Button variant="outline" className="flex-1" onClick={() => router.back()}>
             Go back
           </Button>
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={handleContactSupport}
-          >
+          <Button variant="outline" className="flex-1" onClick={handleContactSupport}>
             Get help
           </Button>
         </div>
-        
+
         {/* Trust message */}
         <p className="text-xs text-center text-muted-foreground mt-2">
           Your card hasn&apos;t been charged. We&apos;re here to help.
@@ -204,13 +195,9 @@ interface InlineErrorRecoveryProps {
   className?: string;
 }
 
-export function InlineErrorRecovery({ 
-  error, 
-  onDismiss,
-  className 
-}: InlineErrorRecoveryProps) {
+export function InlineErrorRecovery({ error, onDismiss, className }: InlineErrorRecoveryProps) {
   const paymentError = getPaymentError(error);
-  
+
   return (
     <Alert variant="destructive" className={cn("mt-4", className)}>
       <AlertCircle className="h-4 w-4" />
@@ -218,12 +205,7 @@ export function InlineErrorRecovery({
       <AlertDescription className="mt-2 space-y-2">
         <p>{paymentError.message}</p>
         <p className="text-sm">{paymentError.suggestion}</p>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={onDismiss}
-          className="mt-2"
-        >
+        <Button variant="outline" size="sm" onClick={onDismiss} className="mt-2">
           Got it
         </Button>
       </AlertDescription>

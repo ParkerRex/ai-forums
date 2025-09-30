@@ -32,4 +32,4 @@ export default function PostSidebarSkeleton() {
       </div>
     </div>
   );
-} 
+}

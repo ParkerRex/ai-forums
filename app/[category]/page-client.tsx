@@ -1,14 +1,13 @@
 "use client";
 
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { notFound } from "next/navigation";
+import { use, useState } from "react";
 import PostHeader from "@/components/posts/post-header";
 import PostList from "@/components/posts/post-list";
 import PostSidebar from "@/components/posts/post-sidebar";
-import { notFound } from "next/navigation";
-import { useState } from "react";
-import { use } from "react";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
+import { api } from "@/convex/_generated/api";
 
 interface CategoryPageClientProps {
   /** Promise containing the dynamic route parameters */
@@ -31,9 +30,7 @@ interface CategoryPageClientProps {
  * // Used by server component:
  * <CategoryPageClient params={Promise.resolve({ category: "workflows" })} />
  */
-export default function CategoryPageClient({
-  params,
-}: CategoryPageClientProps) {
+export default function CategoryPageClient({ params }: CategoryPageClientProps) {
   // Unwrap the params promise using React's use() hook (Next.js 15 behavior)
   // This allows the component to work with streaming and concurrent features
   const resolvedParams = use(params);
@@ -47,9 +44,7 @@ export default function CategoryPageClient({
   );
 
   // State for post sorting - controls how posts are ordered in the list
-  const [sortBy, setSortBy] = useState<"newest" | "popular" | "trending">(
-    "newest",
-  );
+  const [sortBy, setSortBy] = useState<"newest" | "popular" | "trending">("newest");
 
   // Show loading skeleton while fetching category data
   // In Convex, undefined means loading, null means not found
@@ -87,7 +82,7 @@ export default function CategoryPageClient({
     <div className="mx-auto max-w-7xl px-4 py-6">
       <div className="mb-6">
         <div className="text-muted-foreground mt-2 flex items-center gap-4 text-sm">
-         <Badge>{category.postCount} posts</Badge>
+          <Badge>{category.postCount} posts</Badge>
         </div>
       </div>
 

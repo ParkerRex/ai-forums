@@ -1,33 +1,21 @@
 "use client";
 
+import { useAuth } from "@clerk/nextjs";
+import { useAction, useQuery } from "convex/react";
+import { ArrowRight, Check, Code, Shield, Users, Zap } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Check,
-  Zap,
-  Shield,
-  Users,
-  Code,
-  ArrowRight,
-} from "lucide-react";
-import { useState } from "react";
-import { useQuery } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
-import { useAuth } from "@clerk/nextjs";
-import { useAction } from "convex/react";
 
 export default function PricingPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { isSignedIn } = useAuth();
-  const createDirectCheckout = useAction(
-    api.stripe.directCheckout.createDirectCheckout,
-  );
-  const subscriptionInfo = useQuery(
-    api.stripe.getSubscriptionInfo.getSubscriptionInfo,
-  );
+  const createDirectCheckout = useAction(api.stripe.directCheckout.createDirectCheckout);
+  const subscriptionInfo = useQuery(api.stripe.getSubscriptionInfo.getSubscriptionInfo);
 
   const handleCheckout = async () => {
     // Check if already subscribed (no free tier - all subscriptions are paid)
@@ -62,9 +50,8 @@ export default function PricingPage() {
           </h1>
 
           <p className="text-muted-foreground mx-auto mb-8 max-w-2xl text-xl">
-            Join the private community where engineers from OpenAI, Anthropic,
-            Google, and Meta share their AI workflows and implementation
-            details.
+            Join the private community where engineers from OpenAI, Anthropic, Google, and Meta
+            share their AI workflows and implementation details.
           </p>
 
           <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
@@ -77,9 +64,7 @@ export default function PricingPage() {
               {isLoading ? "Loading..." : "Get Access Now"}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <p className="text-muted-foreground text-sm">
-              Cancel anytime. No BS.
-            </p>
+            <p className="text-muted-foreground text-sm">Cancel anytime. No BS.</p>
           </div>
         </div>
 
@@ -88,14 +73,11 @@ export default function PricingPage() {
           <Card className="border-muted">
             <CardHeader className="pb-3">
               <Code className="text-primary mb-2 h-8 w-8" />
-              <CardTitle className="text-lg">
-                Real Implementation Details
-              </CardTitle>
+              <CardTitle className="text-lg">Real Implementation Details</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm">
-                Production code, architectures, and prompts from engineers
-                building at scale.
+                Production code, architectures, and prompts from engineers building at scale.
               </p>
             </CardContent>
           </Card>
@@ -107,8 +89,7 @@ export default function PricingPage() {
             </CardHeader>
             <CardContent>
               <p className="text-muted-foreground text-sm">
-                Share freely without corporate PR. What works, what
-                doesn&apos;t, and why.
+                Share freely without corporate PR. What works, what doesn&apos;t, and why.
               </p>
             </CardContent>
           </Card>
@@ -163,15 +144,12 @@ export default function PricingPage() {
             <div>
               <h3 className="mb-2 font-semibold">Why $99/month?</h3>
               <p className="text-muted-foreground">
-                It keeps the community small and signal high. We&apos;re not
-                trying to be Reddit.
+                It keeps the community small and signal high. We&apos;re not trying to be Reddit.
               </p>
             </div>
 
             <div>
-              <h3 className="mb-2 font-semibold">
-                Who&apos;s actually in here?
-              </h3>
+              <h3 className="mb-2 font-semibold">Who&apos;s actually in here?</h3>
               <p className="text-muted-foreground">
                 Engineers from Google, Microsoft, and high growth startups.
               </p>
@@ -180,17 +158,16 @@ export default function PricingPage() {
             <div>
               <h3 className="mb-2 font-semibold">Can I expense this?</h3>
               <p className="text-muted-foreground">
-                Yes. We provide invoices with all the right tax info. Most
-                engineers expense it as &quot;professional development&quot; or
-                &quot;technical resources&quot;.
+                Yes. We provide invoices with all the right tax info. Most engineers expense it as
+                &quot;professional development&quot; or &quot;technical resources&quot;.
               </p>
             </div>
 
             <div>
               <h3 className="mb-2 font-semibold">What if it sucks?</h3>
               <p className="text-muted-foreground">
-                Cancel anytime from your account. No calls, no retention BS. If
-                you cancel in the first week, we&apos;ll refund you.
+                Cancel anytime from your account. No calls, no retention BS. If you cancel in the
+                first week, we&apos;ll refund you.
               </p>
             </div>
           </div>

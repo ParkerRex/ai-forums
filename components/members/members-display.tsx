@@ -1,7 +1,12 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { ChevronUp, ChevronDown } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useMemo, useState } from "react";
+import { TierBadge } from "@/components/icons/tier-badge";
+import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Table,
   TableBody,
@@ -10,13 +15,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { TierBadge } from "@/components/icons/tier-badge";
-import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import type { Id } from "@/convex/_generated/dataModel";
 import { memberProfileUrl } from "@/lib/utils";
-import { Id } from "@/convex/_generated/dataModel";
 
 type SortField = "name" | "joinedDate" | "posts" | "tier";
 type SortDirection = "asc" | "desc";
@@ -86,10 +86,7 @@ function TableSkeleton() {
   );
 }
 
-export default function MembersDisplay({
-  members,
-  isLoading,
-}: MembersDisplayProps) {
+export default function MembersDisplay({ members, isLoading }: MembersDisplayProps) {
   const [sortField, setSortField] = useState<SortField>("name");
   const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
   const router = useRouter();
@@ -114,7 +111,7 @@ export default function MembersDisplay({
           aValue = a.postCount || 0;
           bValue = b.postCount || 0;
           break;
-        case "tier":
+        case "tier": {
           const tierOrder = {
             founding_member: 0,
             early_bird: 1,
@@ -125,6 +122,7 @@ export default function MembersDisplay({
           aValue = tierOrder[a.tier || "free"];
           bValue = tierOrder[b.tier || "free"];
           break;
+        }
       }
 
       if (aValue < bValue) return sortDirection === "asc" ? -1 : 1;
@@ -196,8 +194,7 @@ export default function MembersDisplay({
             </TableHeader>
             <TableBody>
               {sortedMembers.map((member) => {
-                const initials =
-                  `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
+                const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
                 const memberUrl = memberProfileUrl({
                   slug: member.slug!,
                   _id: member.id as Id<"members">,
@@ -228,9 +225,7 @@ export default function MembersDisplay({
                         >
                           <Avatar className="ring-border/50 h-9 w-9 cursor-pointer ring-1">
                             <AvatarImage src={member.avatarUrl || ""} />
-                            <AvatarFallback className="bg-muted text-xs">
-                              {initials}
-                            </AvatarFallback>
+                            <AvatarFallback className="bg-muted text-xs">{initials}</AvatarFallback>
                           </Avatar>
                         </MemberHoverCardWrapper>
                         <div>
@@ -251,22 +246,13 @@ export default function MembersDisplay({
                     </TableCell>
                     <TableCell className="py-3">
                       {member.tier &&
-                      ["founding_member", "early_bird", "member"].includes(
-                        member.tier,
-                      ) ? (
+                      ["founding_member", "early_bird", "member"].includes(member.tier) ? (
                         <TierBadge
-                          tier={
-                            member.tier as
-                              | "founding_member"
-                              | "early_bird"
-                              | "member"
-                          }
+                          tier={member.tier as "founding_member" | "early_bird" | "member"}
                           size="sm"
                         />
                       ) : (
-                        <span className="text-muted-foreground text-xs">
-                          No Tier
-                        </span>
+                        <span className="text-muted-foreground text-xs">No Tier</span>
                       )}
                     </TableCell>
                     <TableCell className="py-3">

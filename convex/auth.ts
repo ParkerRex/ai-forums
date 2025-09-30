@@ -1,10 +1,10 @@
 /**
  * @fileoverview Authentication Module - Unified user authentication and member management
- * 
+ *
  * This module provides the core authentication system that bridges Clerk authentication
  * with the internal member management system. It handles both legacy email-based
  * authentication and modern Clerk-based authentication with automatic migration.
- * 
+ *
  * Key features:
  * - Unified authentication flow supporting multiple auth providers
  * - Automatic member creation and profile updates
@@ -13,16 +13,16 @@
  * - Context-aware behavior (query vs mutation operations)
  * - Unique slug generation for member profiles
  * - Error handling and authentication validation
- * 
+ *
  * The system is designed to be flexible and maintainable while providing
  * a consistent authentication experience across the entire application.
- * 
+ *
  * @author VAI Development Team
  * @version 1.0.0
  */
 
-import { query, internalMutation, QueryCtx, MutationCtx } from "./_generated/server";
-import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
+import { ensureUniqueSlug, generateSlug } from "../lib/slug-utils";
+import { internalMutation, type MutationCtx, type QueryCtx, query } from "./_generated/server";
 
 /**
  * Helper function to get the authenticated member from the current context.
@@ -31,7 +31,7 @@ import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
  * 2. Looks up member by externalId (preferred) or email (legacy)
  * 3. In mutation context: Creates new member if not found and updates lastOnline
  * 4. In query context: Only performs lookups, no mutations
- * 
+ *
  * @param ctx - The Convex context with auth and database access
  * @returns The authenticated member document
  * @throws Error if no identity is found or member not found in query context
@@ -52,7 +52,7 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
   }
 
   // Check if we're in a mutation context (has patch/insert methods)
-  const isMutationContext = 'patch' in ctx.db;
+  const isMutationContext = "patch" in ctx.db;
 
   // First try to find by externalId (preferred for new auth system)
   let member = await ctx.db
@@ -69,12 +69,12 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
         lastOnline: now,
         updatedAt: now,
       };
-      
+
       // Update avatarUrl if available from Clerk
       if (identity.pictureUrl && member.avatarUrl !== identity.pictureUrl) {
         updates.avatarUrl = identity.pictureUrl;
       }
-      
+
       await mutationCtx.db.patch(member._id, updates);
       const updatedMember = await ctx.db.get(member._id);
       return updatedMember!;
@@ -99,12 +99,12 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
         lastOnline: now,
         updatedAt: now,
       };
-      
+
       // Update avatarUrl if available from Clerk
       if (identity.pictureUrl && member.avatarUrl !== identity.pictureUrl) {
         updates.avatarUrl = identity.pictureUrl;
       }
-      
+
       await mutationCtx.db.patch(member._id, updates);
       const updatedMember = await ctx.db.get(member._id);
       return updatedMember!;
@@ -124,23 +124,31 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
   const mutationCtx = ctx as MutationCtx;
   const guestMember = await ctx.db
     .query("members")
-    .filter((q) => 
+    .filter((q) =>
       q.and(
         q.eq(q.field("email"), email),
         q.eq(q.field("externalId"), undefined),
-        q.eq(q.field("status"), "active")
-      )
+        q.eq(q.field("status"), "active"),
+      ),
     )
     .first();
 
   if (guestMember) {
     // Link guest account to authenticated user
     console.log(`Linking guest member ${guestMember._id} to authenticated user ${externalId}`);
-    
+
     // Get names from identity
-    const firstName = (identity.given_name as string) || identity.name?.split(" ")[0] || guestMember.firstName || "User";
-    const lastName = (identity.family_name as string) || identity.name?.split(" ").slice(1).join(" ") || guestMember.lastName || "";
-    
+    const firstName =
+      (identity.given_name as string) ||
+      identity.name?.split(" ")[0] ||
+      guestMember.firstName ||
+      "User";
+    const lastName =
+      (identity.family_name as string) ||
+      identity.name?.split(" ").slice(1).join(" ") ||
+      guestMember.lastName ||
+      "";
+
     // Update guest member with authentication info
     const guestUpdates: any = {
       externalId,
@@ -150,29 +158,28 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
       updatedAt: now,
       // Keep existing subscription data
     };
-    
+
     // Update avatarUrl if available from Clerk
     if (identity.pictureUrl) {
       guestUpdates.avatarUrl = identity.pictureUrl;
     }
-    
+
     await mutationCtx.db.patch(guestMember._id, guestUpdates);
-    
+
     const updatedMember = await ctx.db.get(guestMember._id);
     return updatedMember!;
   }
 
   // Create new member (only in mutation context)
   const firstName = (identity.given_name as string) || identity.name?.split(" ")[0] || "User";
-  const lastName = (identity.family_name as string) || identity.name?.split(" ").slice(1).join(" ") || "";
+  const lastName =
+    (identity.family_name as string) || identity.name?.split(" ").slice(1).join(" ") || "";
 
   // Generate unique slug from name or email
   const fullName = `${firstName} ${lastName}`.trim();
-  const baseSlug = fullName && fullName !== "User" ? generateSlug(fullName) : generateSlug(email.split("@")[0]);
-  const existingMembers = await ctx.db
-    .query("members")
-    .withIndex("by_slug")
-    .collect();
+  const baseSlug =
+    fullName && fullName !== "User" ? generateSlug(fullName) : generateSlug(email.split("@")[0]);
+  const existingMembers = await ctx.db.query("members").withIndex("by_slug").collect();
   const existingSlugs = existingMembers
     .map((m) => m.slug)
     .filter((slug): slug is string => slug !== undefined);
@@ -192,14 +199,14 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     // Payment fields - new members start without a tier
     tier: undefined,
     subscriptionStatus: "none" as const,
-    stripeCustomerId: `cus_temp_${email.replace(/[^a-zA-Z0-9]/g, '_')}_${Date.now()}`, // TODO: Replace with Stripe API call
+    stripeCustomerId: `cus_temp_${email.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`, // TODO: Replace with Stripe API call
   };
-  
+
   // Add avatarUrl if available from Clerk
   if (identity.pictureUrl) {
     newMemberData.avatarUrl = identity.pictureUrl;
   }
-  
+
   const memberId = await mutationCtx.db.insert("members", newMemberData);
 
   // Return the newly created member
@@ -239,7 +246,7 @@ export const current = query({
  * Helper function to get the authenticated member or null from the current context.
  * Unlike getAuthenticatedMember, this function returns null instead of throwing
  * when no identity is found. Useful for optional authentication scenarios.
- * 
+ *
  * @param ctx - The Convex context with auth and database access
  * @returns The authenticated member document or null if not authenticated
  */
@@ -249,4 +256,4 @@ export async function getAuthenticatedMemberOrNull(ctx: QueryCtx | MutationCtx) 
   } catch {
     return null;
   }
-} 
+}

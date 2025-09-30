@@ -1,6 +1,6 @@
 "use client";
 
-
+import { Clock, FileText, Star } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { FileText, Clock, Star } from "lucide-react";
 
 interface DraftsModalProps {
   children: React.ReactNode;
@@ -18,18 +17,14 @@ interface DraftsModalProps {
 export function DraftsModal({ children }: DraftsModalProps) {
   return (
     <Dialog>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <FileText className="w-5 h-5" />
             <span>Drafts</span>
           </DialogTitle>
-          <DialogDescription>
-            Save and manage your draft posts
-          </DialogDescription>
+          <DialogDescription>Save and manage your draft posts</DialogDescription>
         </DialogHeader>
 
         <div className="py-8 text-center">
@@ -37,12 +32,11 @@ export function DraftsModal({ children }: DraftsModalProps) {
             <Clock className="w-8 h-8 text-green-600" />
           </div>
 
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            Drafts Coming Soon
-          </h3>
+          <h3 className="text-lg font-semibold text-foreground mb-2">Drafts Coming Soon</h3>
 
           <p className="text-muted-foreground mb-6 max-w-sm mx-auto">
-            We&apos;re working on a draft system that will let you save your work and come back to it later.
+            We&apos;re working on a draft system that will let you save your work and come back to
+            it later.
           </p>
 
           <div className="space-y-3 text-sm text-muted-foreground">
@@ -71,4 +65,4 @@ export function DraftsModal({ children }: DraftsModalProps) {
   );
 }
 
-export default DraftsModal; 
+export default DraftsModal;

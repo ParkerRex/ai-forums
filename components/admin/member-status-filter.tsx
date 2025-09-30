@@ -1,6 +1,6 @@
 "use client";
 
-import { Filter, X, Search } from "lucide-react";
+import { Filter, Search, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -46,8 +46,7 @@ export function MemberStatusFilter({
   showTierFilter = true,
   className = "",
 }: MemberStatusFilterProps) {
-  const hasActiveFilters =
-    statusFilter !== "all" || tierFilter !== "all" || search;
+  const hasActiveFilters = statusFilter !== "all" || tierFilter !== "all" || search;
 
   const clearAllFilters = () => {
     onSearchChange("");
@@ -56,9 +55,7 @@ export function MemberStatusFilter({
   };
 
   return (
-    <div
-      className={`rounded-none border border-gray-200 bg-white p-4 ${className}`}
-    >
+    <div className={`rounded-none border border-gray-200 bg-white p-4 ${className}`}>
       <div className="flex flex-col gap-4 lg:flex-row">
         {/* Search */}
         {showSearch && (
@@ -81,9 +78,7 @@ export function MemberStatusFilter({
           {/* Status Filter */}
           <Select
             value={statusFilter}
-            onValueChange={(value) =>
-              onStatusFilterChange(value as StatusFilter)
-            }
+            onValueChange={(value) => onStatusFilterChange(value as StatusFilter)}
           >
             <SelectTrigger className="w-[140px]">
               <Filter className="mr-2 h-4 w-4" />
@@ -189,9 +184,7 @@ export function StatusFilterBadges({
       {filters.map((filter) => {
         const isActive = statusFilter === filter;
         const count =
-          filter === "all"
-            ? counts?.total
-            : counts?.[filter as keyof Omit<typeof counts, "total">];
+          filter === "all" ? counts?.total : counts?.[filter as keyof Omit<typeof counts, "total">];
 
         return (
           <Badge

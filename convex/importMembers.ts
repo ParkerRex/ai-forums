@@ -1,7 +1,7 @@
-import { mutation } from "./_generated/server";
 import { v } from "convex/values";
+import { ensureUniqueSlug, generateSlug } from "../lib/slug-utils";
 import type { Doc } from "./_generated/dataModel";
-import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
+import { mutation } from "./_generated/server";
 
 export const upsertMember = mutation({
   args: {
@@ -37,9 +37,7 @@ export const upsertMember = mutation({
 
     // Generate slug ensuring uniqueness
     const baseSlug = generateSlug(`${firstName} ${lastName}`);
-    const existingSlugs = (
-      await ctx.db.query("members").withIndex("by_slug").collect()
-    )
+    const existingSlugs = (await ctx.db.query("members").withIndex("by_slug").collect())
       .map((m) => m.slug)
       .filter((s): s is string => s !== undefined);
     const slug = ensureUniqueSlug(baseSlug, existingSlugs);
@@ -57,4 +55,4 @@ export const upsertMember = mutation({
 
     return memberId;
   },
-}); 
+});

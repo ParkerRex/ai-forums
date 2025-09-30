@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import { cn } from "@/lib/utils";
 
 interface MemberProfileFieldIndicatorProps {
@@ -9,13 +8,17 @@ interface MemberProfileFieldIndicatorProps {
   className?: string;
 }
 
-export function MemberProfileFieldIndicator({ label, onClick, className }: MemberProfileFieldIndicatorProps) {
+export function MemberProfileFieldIndicator({
+  label,
+  onClick,
+  className,
+}: MemberProfileFieldIndicatorProps) {
   return (
     <button
       onClick={onClick}
       className={cn(
         "inline-flex items-center px-3 py-1.5 text-sm bg-muted hover:bg-muted/80 text-muted-foreground hover:text-foreground rounded-md transition-colors relative",
-        className
+        className,
       )}
       title={`Add ${label}`}
     >

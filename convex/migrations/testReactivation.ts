@@ -1,5 +1,5 @@
-import { mutation } from "../_generated/server";
 import { v } from "convex/values";
+import { mutation } from "../_generated/server";
 
 /**
  * Test function to simulate post-migration state for reactivation testing
@@ -8,11 +8,9 @@ import { v } from "convex/values";
 export const simulatePostMigrationState = mutation({
   args: {
     email: v.string(),
-    tier: v.optional(v.union(
-      v.literal("founding_member"),
-      v.literal("early_bird"), 
-      v.literal("member")
-    )),
+    tier: v.optional(
+      v.union(v.literal("founding_member"), v.literal("early_bird"), v.literal("member")),
+    ),
   },
   handler: async (ctx, args) => {
     // Find member by email
@@ -20,22 +18,22 @@ export const simulatePostMigrationState = mutation({
       .query("members")
       .filter((q) => q.eq(q.field("email"), args.email))
       .first();
-    
+
     if (!member) {
       throw new Error(`Member with email ${args.email} not found`);
     }
-    
+
     // Set to post-migration state: expired subscription, keep original tier
     const updates = {
       subscriptionStatus: "expired" as const,
       subscriptionEndDate: undefined,
       stripeSubscriptionId: undefined,
-      tier: args.tier || member.tier || "early_bird" as const,
+      tier: args.tier || member.tier || ("early_bird" as const),
       updatedAt: Date.now(),
     };
-    
+
     await ctx.db.patch(member._id, updates);
-    
+
     return {
       success: true,
       memberId: member._id,
@@ -96,8 +94,8 @@ export const migrateAllMembers = mutation({
     const allMembers = await ctx.db.query("members").collect();
     const updates = [];
 
-    const initialScholarshipCount = allMembers.filter(m => m.amountCents === 0 && m.tier).length;
-    const initialFreeCount = allMembers.filter(m => !m.tier).length;
+    const initialScholarshipCount = allMembers.filter((m) => m.amountCents === 0 && m.tier).length;
+    const initialFreeCount = allMembers.filter((m) => !m.tier).length;
 
     for (const member of allMembers) {
       let newTier = member.tier;

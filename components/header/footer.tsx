@@ -1,8 +1,7 @@
-import React from 'react'
-import { DiscordStatus } from './discord-status'
-import { LastPushTag } from '../footer/last-push-tag'
-import { WeeklyCountdown } from '../footer/weekly-countdown'
-import { ThemeToggleSwitch } from '@/components/theme-toggle-switch'
+import { ThemeToggleSwitch } from "@/components/theme-toggle-switch";
+import { LastPushTag } from "../footer/last-push-tag";
+import { WeeklyCountdown } from "../footer/weekly-countdown";
+import { DiscordStatus } from "./discord-status";
 
 export function Footer() {
   return (
@@ -12,5 +11,5 @@ export function Footer() {
       <ThemeToggleSwitch className="h-[18px] scale-75" />
       <DiscordStatus />
     </footer>
-  )
+  );
 }

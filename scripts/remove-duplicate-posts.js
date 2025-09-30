@@ -1,7 +1,7 @@
-import { api } from "../convex/_generated/api.js";
+import fs from "node:fs";
 import { ConvexClient } from "convex/browser";
 import * as dotenv from "dotenv";
-import fs from "fs";
+import { api } from "../convex/_generated/api.js";
 
 dotenv.config({ path: ".env.local" });
 
@@ -30,12 +30,12 @@ async function removeDuplicatePosts() {
     console.log(`\n📁 Processing Group ${index + 1}/${report.groups.length}`);
     console.log(`   Title: "${group.title}"`);
     console.log(`   Keep: ${group.keepId}`);
-    
+
     // Get IDs to remove (all except the one to keep)
     const toRemove = group.instances
-      .filter(instance => instance.id !== group.keepId)
-      .map(instance => instance.id);
-    
+      .filter((instance) => instance.id !== group.keepId)
+      .map((instance) => instance.id);
+
     console.log(`   Remove: ${toRemove.length} duplicates`);
 
     // Remove each duplicate
@@ -65,7 +65,7 @@ async function removeDuplicatePosts() {
   }
 
   // Summary
-  console.log("\n" + "=".repeat(60));
+  console.log(`\n${"=".repeat(60)}`);
   console.log("📊 DUPLICATE REMOVAL SUMMARY");
   console.log("=".repeat(60));
   console.log(`✅ Successfully removed: ${removedCount} posts`);
@@ -81,10 +81,7 @@ async function removeDuplicatePosts() {
     removalLog,
   };
 
-  fs.writeFileSync(
-    "migration-data/duplicate-removal-log.json",
-    JSON.stringify(logData, null, 2)
-  );
+  fs.writeFileSync("migration-data/duplicate-removal-log.json", JSON.stringify(logData, null, 2));
 
   console.log("\n📄 Removal log saved to: migration-data/duplicate-removal-log.json");
 

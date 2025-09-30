@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Check, Copy } from "lucide-react";
+import React, { useState } from "react";
 import { toast } from "sonner";
-import { Copy, Check } from "lucide-react";
-import React from "react";
 
 interface CodeBlockProps {
   children: React.ReactNode;

@@ -1,16 +1,12 @@
 "use client";
 
-import React from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Id } from "@/convex/_generated/dataModel";
 import Link from "next/link";
+import type React from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { memberProfileUrl } from "@/lib/utils";
 
 interface VoteHoverCardProps {
@@ -27,22 +23,20 @@ interface VoteHoverCardProps {
 //   slug: string;
 // };
 
-export const VoteHoverCard: React.FC<VoteHoverCardProps> = ({
-  postId,
-  voteCount,
-  children,
-}) => {
-  const voters = useQuery(api.votes.getPostVoters, { postId }) as {
-    voters: Array<{
-      _id: Id<"members">;
-      firstName: string;
-      lastName: string;
-      avatarUrl?: string;
-      slug: string;
-    }>;
-    hasMore: boolean;
-    total: number;
-  } | undefined;
+export const VoteHoverCard: React.FC<VoteHoverCardProps> = ({ postId, voteCount, children }) => {
+  const voters = useQuery(api.votes.getPostVoters, { postId }) as
+    | {
+        voters: Array<{
+          _id: Id<"members">;
+          firstName: string;
+          lastName: string;
+          avatarUrl?: string;
+          slug: string;
+        }>;
+        hasMore: boolean;
+        total: number;
+      }
+    | undefined;
 
   if (voteCount === 0) {
     return <>{children}</>;

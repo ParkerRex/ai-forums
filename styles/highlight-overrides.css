@@ -6,18 +6,17 @@ pre {
   overflow-wrap: break-word;
   white-space: pre-wrap;
   border-radius: 0.5rem;
-  background-color: rgb(248 250 252) !important;
+  background-color: rgb(248 250 252);
   border: 1px solid rgb(226 232 240);
   padding: 1rem;
   margin: 1rem 0;
   position: relative;
   font-family:
-    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
-    monospace;
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
 }
 
 .dark pre {
-  background-color: rgb(30 30 30) !important;
+  background-color: rgb(30 30 30);
   border-color: rgb(68 68 68);
 }
 
@@ -104,8 +103,7 @@ code[data-line-numbers-max-digits="4"] > [data-line]::before {
   border-top-left-radius: 0.5rem;
   border-top-right-radius: 0.5rem;
   font-family:
-    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New",
-    monospace;
+    "SF Mono", Monaco, "Cascadia Code", "Roboto Mono", Consolas, "Courier New", monospace;
   margin: 1rem 0 0 0;
   display: block;
 }

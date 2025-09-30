@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { MediaItem } from "@/types";
 import { Play, Youtube } from "lucide-react";
 import Image from "next/image";
+import { useState } from "react";
 import { formatYouTubeDuration } from "@/lib/youtube-utils";
+import type { MediaItem } from "@/types";
 
 interface YouTubePreviewProps {
   media: MediaItem;
@@ -40,14 +40,10 @@ export function YouTubePreview({ media }: YouTubePreviewProps) {
       {/* Video Info Overlay */}
       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-2">
         <div className="text-primary-foreground text-xs space-y-1">
-          {media.title && (
-            <p className="font-medium line-clamp-1">{media.title}</p>
-          )}
+          {media.title && <p className="font-medium line-clamp-1">{media.title}</p>}
           <div className="flex items-center justify-between text-primary-foreground/80">
             {media.channelName && <span>{media.channelName}</span>}
-            {media.duration && (
-              <span>{formatYouTubeDuration(media.duration)}</span>
-            )}
+            {media.duration && <span>{formatYouTubeDuration(media.duration)}</span>}
           </div>
         </div>
       </div>

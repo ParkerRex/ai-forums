@@ -1,7 +1,7 @@
 import { v } from "convex/values";
-import { internalAction, internalMutation } from "../_generated/server";
-import { internal } from "../_generated/api";
 import Stripe from "stripe";
+import { internal } from "../_generated/api";
+import { internalAction, internalMutation } from "../_generated/server";
 
 /**
  * Manual webhook processing for debugging payment flow issues
@@ -26,7 +26,7 @@ export const manuallyProcessCheckoutSession = internalAction({
     try {
       // Fetch the checkout session from Stripe
       const session = await stripe.checkout.sessions.retrieve(args.checkoutSessionId, {
-        expand: ['customer', 'subscription', 'line_items'],
+        expand: ["customer", "subscription", "line_items"],
       });
 
       console.log(`[MANUAL WEBHOOK] Processing checkout session: ${session.id}`);
@@ -34,7 +34,7 @@ export const manuallyProcessCheckoutSession = internalAction({
       console.log(`[MANUAL WEBHOOK] Customer: ${session.customer}`);
       console.log(`[MANUAL WEBHOOK] Subscription: ${session.subscription}`);
 
-      if (session.payment_status !== 'paid') {
+      if (session.payment_status !== "paid") {
         throw new Error(`Checkout session payment status is ${session.payment_status}, not paid`);
       }
 
@@ -42,10 +42,13 @@ export const manuallyProcessCheckoutSession = internalAction({
       const syntheticEventId = `manual_${session.id}_${Date.now()}`;
 
       // Process the checkout session completion
-      await ctx.runMutation(internal.admin.manualWebhookProcessing.processCheckoutSessionCompleted, {
-        stripeEventId: syntheticEventId,
-        sessionData: session,
-      });
+      await ctx.runMutation(
+        internal.admin.manualWebhookProcessing.processCheckoutSessionCompleted,
+        {
+          stripeEventId: syntheticEventId,
+          sessionData: session,
+        },
+      );
 
       return {
         success: true,
@@ -124,10 +127,7 @@ export const processCheckoutSessionCompleted = internalMutation({
 /**
  * Handle checkout session completion (copied from webhooks.ts)
  */
-async function handleCheckoutSessionCompleted(
-  ctx: any,
-  session: Stripe.Checkout.Session
-) {
+async function handleCheckoutSessionCompleted(ctx: any, session: Stripe.Checkout.Session) {
   if (!session.subscription || !session.customer) {
     console.error("Missing subscription or customer in checkout session");
     return;
@@ -153,7 +153,7 @@ async function handleCheckoutSessionCompleted(
       const lastName = nameParts.slice(1).join(" ") || "";
 
       // Check if member already exists with this email
-      let member = await ctx.db
+      const member = await ctx.db
         .query("members")
         .filter((q: any) => q.eq(q.field("email"), email))
         .first();
@@ -171,8 +171,8 @@ async function handleCheckoutSessionCompleted(
           lastPaymentDate: Date.now(),
           updatedAt: Date.now(),
           // Update names if they were empty and we got them from Stripe
-          ...((!member.firstName && firstName) ? { firstName } : {}),
-          ...((!member.lastName && lastName) ? { lastName } : {}),
+          ...(!member.firstName && firstName ? { firstName } : {}),
+          ...(!member.lastName && lastName ? { lastName } : {}),
         });
 
         // Schedule Clerk account creation if they don't have one
@@ -184,7 +184,11 @@ async function handleCheckoutSessionCompleted(
             firstName: firstName || member.firstName,
             lastName: lastName || member.lastName,
           };
-          await ctx.scheduler.runAfter(0, internal.auth.clerkAccounts.createClerkAccount, clerkAccountArgs);
+          await ctx.scheduler.runAfter(
+            0,
+            internal.auth.clerkAccounts.createClerkAccount,
+            clerkAccountArgs,
+          );
         } else {
           // They already have a Clerk account, just generate a sign-in token
           console.log(`[MANUAL WEBHOOK] Member already has Clerk account: ${member.externalId}`);
@@ -198,7 +202,7 @@ async function handleCheckoutSessionCompleted(
           email,
           firstName,
           lastName,
-          slug: email.split("@")[0] + "-" + Math.random().toString(36).substring(7),
+          slug: `${email.split("@")[0]}-${Math.random().toString(36).substring(7)}`,
           stripeCustomerId: session.customer as string,
           stripeSubscriptionId: session.subscription as string,
           tier: "early_bird",
@@ -209,8 +213,12 @@ async function handleCheckoutSessionCompleted(
           lastOnline: now,
           status: "active",
           // Store location info if available
-          ...(session.customer_details?.address?.country ? { country: session.customer_details.address.country } : {}),
-          ...(session.customer_details?.address?.city ? { location: session.customer_details.address.city } : {}),
+          ...(session.customer_details?.address?.country
+            ? { country: session.customer_details.address.country }
+            : {}),
+          ...(session.customer_details?.address?.city
+            ? { location: session.customer_details.address.city }
+            : {}),
         });
 
         // Schedule Clerk account creation

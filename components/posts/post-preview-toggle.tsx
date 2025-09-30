@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useRef } from "react";
+import { useRef } from "react";
+import { PenToolIcon, type PenToolIconHandle } from "@/components/icons/pen-tool";
+import { TelescopeIcon, type TelescopeIconHandle } from "@/components/icons/telescope";
 import { Toggle } from "@/components/ui/toggle";
-import { PenToolIcon, PenToolIconHandle } from "@/components/icons/pen-tool";
-import { TelescopeIcon, TelescopeIconHandle } from "@/components/icons/telescope";
 import { cn } from "@/lib/utils";
 
 /**
@@ -23,11 +23,7 @@ interface PostPreviewToggleProps {
   className?: string;
 }
 
-export function PostPreviewToggle({
-  value,
-  onValueChange,
-  className,
-}: PostPreviewToggleProps) {
+export function PostPreviewToggle({ value, onValueChange, className }: PostPreviewToggleProps) {
   // Refs for controlling icon animations
   const penToolRef = useRef<PenToolIconHandle>(null);
   const telescopeRef = useRef<TelescopeIconHandle>(null);
@@ -51,12 +47,7 @@ export function PostPreviewToggle({
   };
 
   return (
-    <div
-      className={cn(
-        "inline-flex rounded-md border border-input bg-background",
-        className,
-      )}
-    >
+    <div className={cn("inline-flex rounded-md border border-input bg-background", className)}>
       {/* Edit Tab */}
       <Toggle
         pressed={value === "edit"}

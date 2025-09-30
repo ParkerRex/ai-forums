@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import type { Transition, Variants } from 'motion/react';
-import { motion, useAnimation } from 'motion/react';
-import type { HTMLAttributes } from 'react';
-import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
-import { cn } from '@/lib/utils';
+import type { Transition, Variants } from "motion/react";
+import { motion, useAnimation } from "motion/react";
+import type { HTMLAttributes } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { cn } from "@/lib/utils";
 
 export interface MoonIconHandle {
   startAnimation: () => void;
@@ -26,7 +26,7 @@ const svgVariants: Variants = {
 
 const svgTransition: Transition = {
   duration: 1.2,
-  ease: 'easeInOut',
+  ease: "easeInOut",
 };
 
 const MoonIcon = forwardRef<MoonIconHandle, MoonIconProps>(
@@ -38,31 +38,31 @@ const MoonIcon = forwardRef<MoonIconHandle, MoonIconProps>(
       isControlledRef.current = true;
 
       return {
-        startAnimation: () => controls.start('animate'),
-        stopAnimation: () => controls.start('normal'),
+        startAnimation: () => controls.start("animate"),
+        stopAnimation: () => controls.start("normal"),
       };
     });
 
     const handleMouseEnter = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
         if (!isControlledRef.current) {
-          controls.start('animate');
+          controls.start("animate");
         } else {
           onMouseEnter?.(e);
         }
       },
-      [controls, onMouseEnter]
+      [controls, onMouseEnter],
     );
 
     const handleMouseLeave = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
         if (!isControlledRef.current) {
-          controls.start('normal');
+          controls.start("normal");
         } else {
           onMouseLeave?.(e);
         }
       },
-      [controls, onMouseLeave]
+      [controls, onMouseLeave],
     );
     return (
       <div
@@ -89,9 +89,9 @@ const MoonIcon = forwardRef<MoonIconHandle, MoonIconProps>(
         </motion.svg>
       </div>
     );
-  }
+  },
 );
 
-MoonIcon.displayName = 'MoonIcon';
+MoonIcon.displayName = "MoonIcon";
 
 export { MoonIcon };

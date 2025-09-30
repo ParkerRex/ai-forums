@@ -1,23 +1,17 @@
 #!/usr/bin/env node
 // Import posts and comments using Convex internal mutations
 
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const { execSync } = require("node:child_process");
 
 async function main() {
   // Read the prepared data
   const posts = JSON.parse(
-    fs.readFileSync(
-      path.join(__dirname, "../migration-data/posts-import-fixed.json"),
-      "utf8",
-    ),
+    fs.readFileSync(path.join(__dirname, "../migration-data/posts-import-fixed.json"), "utf8"),
   );
   const comments = JSON.parse(
-    fs.readFileSync(
-      path.join(__dirname, "../migration-data/comments-import-fixed.json"),
-      "utf8",
-    ),
+    fs.readFileSync(path.join(__dirname, "../migration-data/comments-import-fixed.json"), "utf8"),
   );
 
   // Get unique authors to check for missing members
@@ -26,9 +20,7 @@ async function main() {
   comments.forEach((comment) => uniqueAuthors.add(comment.authorEmail));
 
   console.log(`Found ${uniqueAuthors.size} unique authors`);
-  console.log(
-    `Preparing to import ${posts.length} posts and ${comments.length} comments`,
-  );
+  console.log(`Preparing to import ${posts.length} posts and ${comments.length} comments`);
 
   // Group posts by category (we'll use the skool category ID)
   const postsByCategory = {};
@@ -59,15 +51,10 @@ async function main() {
         lastName: lastName.charAt(0).toUpperCase() + lastName.slice(1),
       };
 
-      console.log(
-        `Creating member: ${args.firstName} ${args.lastName} (${email})`,
-      );
+      console.log(`Creating member: ${args.firstName} ${args.lastName} (${email})`);
 
       try {
-        const result = runConvexFunction(
-          "importPostsComments:createMissingMember",
-          args,
-        );
+        const result = runConvexFunction("importPostsComments:createMissingMember", args);
         console.log(`Created member with ID: ${result}`);
       } catch (error) {
         console.error(`Failed to create member ${email}:`, error.message);
@@ -80,7 +67,7 @@ async function main() {
   const BATCH_SIZE = 50;
   const categoryId = "jh789zhr5zyev7h79b6kjxzv3n7mbv3f"; // The skool category ID we created
 
-  let allPostIdMaps = {};
+  const allPostIdMaps = {};
 
   // Process posts in batches
   for (let i = 0; i < posts.length; i += BATCH_SIZE) {
@@ -111,11 +98,9 @@ async function main() {
       });
 
       // Merge the post ID mappings
-      if (result && result.postIdMap) {
+      if (result?.postIdMap) {
         Object.assign(allPostIdMaps, result.postIdMap);
-        console.log(
-          `Imported ${result.importedCount} of ${result.totalCount} posts`,
-        );
+        console.log(`Imported ${result.importedCount} of ${result.totalCount} posts`);
       }
     } catch (error) {
       console.error(`Failed to import posts batch:`, error.message);
@@ -147,13 +132,10 @@ async function main() {
       );
 
       try {
-        const result = runConvexFunction(
-          "importPostsComments:importCommentsBatch",
-          {
-            comments: batch,
-            postIdMap: allPostIdMaps,
-          },
-        );
+        const result = runConvexFunction("importPostsComments:importCommentsBatch", {
+          comments: batch,
+          postIdMap: allPostIdMaps,
+        });
 
         if (result && result.importedCount !== undefined) {
           console.log(`Imported ${result.importedCount} comments`);
@@ -210,7 +192,7 @@ function runConvexFunction(functionName, args) {
       return parsed;
     } catch (parseError) {
       console.log("Failed to parse output:", parseError.message);
-      console.log("Raw output was:", output.substring(0, 200) + "...");
+      console.log("Raw output was:", `${output.substring(0, 200)}...`);
       // If we can't parse the result, just return success
       return true;
     }

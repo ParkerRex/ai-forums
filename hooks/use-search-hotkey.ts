@@ -11,7 +11,7 @@ function isInputFree(e: KeyboardEvent): boolean {
   const tagName = target.tagName.toLowerCase();
 
   // Don't trigger if user is typing in an input field
-  if (tagName === 'input' || tagName === 'textarea' || target.contentEditable === 'true') {
+  if (tagName === "input" || tagName === "textarea" || target.contentEditable === "true") {
     return false;
   }
 
@@ -24,21 +24,21 @@ export function useSearchHotkey() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Handle '/' key for search
-      if (e.key === '/' && isInputFree(e)) {
+      if (e.key === "/" && isInputFree(e)) {
         e.preventDefault();
         setIsOpen(true);
         return;
       }
-      
+
       // Handle Cmd/Ctrl + K for search
-      if ((e.metaKey || e.ctrlKey) && e.key && e.key.toLowerCase() === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key && e.key.toLowerCase() === "k") {
         e.preventDefault();
-        setIsOpen(prev => !prev);
+        setIsOpen((prev) => !prev);
         return;
       }
-      
+
       // Handle Escape to close
-      if (e.key === 'Escape') {
+      if (e.key === "Escape") {
         setIsOpen(false);
         return;
       }
@@ -57,4 +57,4 @@ export function useSearchHotkey() {
     closeSearch,
     setIsOpen,
   };
-} 
+}

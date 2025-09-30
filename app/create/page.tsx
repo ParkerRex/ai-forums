@@ -21,25 +21,22 @@
 
 "use client";
 
-// React and Next.js imports for client-side rendering and hooks
-import { Suspense } from "react";
+// Clerk authentication components for sign-in modals
+// These provide pre-built UI for user authentication flows
+import { SignInButton } from "@clerk/nextjs";
 
 // Convex authentication components for managing user auth state
 // These components automatically handle authentication state and render children conditionally
 import { Authenticated, Unauthenticated } from "convex/react";
-
+// React and Next.js imports for client-side rendering and hooks
+import { Suspense } from "react";
 // Custom post creation form component that handles all content creation logic
 // This is the main component that users interact with to create posts
 import { PostCreationForm } from "@/components/posts/post-creation-form";
-
+import { Button } from "@/components/ui/button";
 // Shadcn/ui components for consistent styling and layout
 // Card components provide structured container layouts with proper spacing
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-// Clerk authentication components for sign-in modals
-// These provide pre-built UI for user authentication flows
-import { SignInButton } from "@clerk/nextjs";
-import { Button } from "@/components/ui/button";
 
 /**
  * CreatePostSkeleton component renders a loading placeholder during form initialization.
@@ -169,16 +166,13 @@ export default function CreatePostPage() {
             {/* Card component with consistent styling and subtle elevation */}
             <div className="bg-card border-border rounded-none border p-8 text-center shadow-sm">
               {/* Primary heading with emphasis on members-only access */}
-              <h1 className="text-foreground mb-4 text-2xl font-bold">
-                Members Only
-              </h1>
+              <h1 className="text-foreground mb-4 text-2xl font-bold">Members Only</h1>
 
               {/* Value proposition text that explains membership requirement */}
               {/* Emphasizes the exclusive nature of the community */}
               <p className="text-muted-foreground mb-6">
-                VAI Community is an exclusive platform for engineers from top
-                companies to share AI workflows, prompts, and insights.
-                Membership is required to create content.
+                VAI Community is an exclusive platform for engineers from top companies to share AI
+                workflows, prompts, and insights. Membership is required to create content.
               </p>
 
               {/* Primary call-to-action buttons */}

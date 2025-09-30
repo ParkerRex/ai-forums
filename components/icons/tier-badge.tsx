@@ -1,10 +1,9 @@
 "use client";
 
-import React from "react";
-import { Badge } from "@/components/ui/badge";
 import { Star } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { formatTierName } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 interface TierBadgeProps {
   tier: "founding_member" | "early_bird" | "member";
@@ -36,23 +35,13 @@ const iconSizes = {
   lg: 16,
 };
 
-export function TierBadge({
-  tier,
-  size = "md",
-  className,
-  showIcon = true,
-}: TierBadgeProps) {
+export function TierBadge({ tier, size = "md", className, showIcon = true }: TierBadgeProps) {
   const isFoundingMember = tier === "founding_member";
 
   return (
     <Badge
       variant="outline"
-      className={cn(
-        tierVariants[tier],
-        sizeClasses[size],
-        "font-medium",
-        className,
-      )}
+      className={cn(tierVariants[tier], sizeClasses[size], "font-medium", className)}
     >
       {isFoundingMember && showIcon && (
         <Star className="mr-1 fill-current" size={iconSizes[size]} />

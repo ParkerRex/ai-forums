@@ -1,18 +1,18 @@
 #!/usr/bin/env npx tsx
 /**
  * Batch script to generate previews for all existing posts
- * 
+ *
  * This script:
  * 1. Fetches all posts without previews
  * 2. Generates concise 2-3 line previews using OpenAI
  * 3. Updates the posts with the generated previews
- * 
+ *
  * Usage: npx tsx scripts/generate-post-previews.ts
  */
 
 import { ConvexHttpClient } from "convex/browser";
-import { api } from "../convex/_generated/api";
 import OpenAI from "openai";
+import { api } from "../convex/_generated/api";
 
 // Initialize Convex client
 const convexUrl = process.env.CONVEX_URL;
@@ -40,12 +40,13 @@ async function generatePreview(title: string, content: string): Promise<string> 
       messages: [
         {
           role: "system",
-          content: "You are a technical writer creating concise, compelling preview text for AI engineering blog posts. Create a 2-3 line preview that captures the essence of the post and entices readers to learn more. The preview should be informative and engaging, suitable for showing to free users as a teaser."
+          content:
+            "You are a technical writer creating concise, compelling preview text for AI engineering blog posts. Create a 2-3 line preview that captures the essence of the post and entices readers to learn more. The preview should be informative and engaging, suitable for showing to free users as a teaser.",
         },
         {
           role: "user",
-          content: `Generate a 2-3 line preview for this post:\n\nTitle: ${title}\n\nContent: ${content.substring(0, 1000)}...`
-        }
+          content: `Generate a 2-3 line preview for this post:\n\nTitle: ${title}\n\nContent: ${content.substring(0, 1000)}...`,
+        },
       ],
       temperature: 0.7,
       max_tokens: 150,
@@ -60,7 +61,7 @@ async function generatePreview(title: string, content: string): Promise<string> 
   } catch (error) {
     console.error(`Failed to generate preview for "${title}":`, error);
     // Fallback to simple truncation
-    const cleanContent = content.replace(/\n+/g, ' ').trim();
+    const cleanContent = content.replace(/\n+/g, " ").trim();
     const truncated = cleanContent.substring(0, 150);
     return truncated + (cleanContent.length > 150 ? "..." : "");
   }
@@ -74,13 +75,13 @@ async function main() {
 
   // Get all posts
   const posts = await client.query(api.posts.getAllPostsForMigration);
-  
+
   if (!posts) {
     console.error("Failed to fetch posts");
     return;
   }
 
-  const postsNeedingPreviews = posts.filter(post => !post.preview || post.preview === "");
+  const postsNeedingPreviews = posts.filter((post) => !post.preview || post.preview === "");
   console.log(`Found ${postsNeedingPreviews.length} posts needing previews`);
 
   let successCount = 0;
@@ -90,30 +91,30 @@ async function main() {
   const batchSize = 5;
   for (let i = 0; i < postsNeedingPreviews.length; i += batchSize) {
     const batch = postsNeedingPreviews.slice(i, i + batchSize);
-    
+
     await Promise.all(
       batch.map(async (post) => {
         try {
           console.log(`Generating preview for: ${post.title}`);
           const preview = await generatePreview(post.title, post.content);
-          
+
           await client.mutation(api.posts.updatePostPreview, {
             postId: post._id,
             preview,
           });
-          
+
           successCount++;
           console.log(`✓ Generated preview for: ${post.title}`);
         } catch (error) {
           errorCount++;
           console.error(`✗ Failed to process post "${post.title}":`, error);
         }
-      })
+      }),
     );
 
     // Rate limit: wait 1 second between batches
     if (i + batchSize < postsNeedingPreviews.length) {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
   }
 

@@ -1,20 +1,15 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import Link from "next/link";
-import { memberProfileUrl } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { memberProfileUrl } from "@/lib/utils";
 
 interface PollVotersModalProps {
   isOpen: boolean;
@@ -27,12 +22,7 @@ interface PollVotersModalProps {
   }>;
 }
 
-export function PollVotersModal({
-  isOpen,
-  onClose,
-  pollId,
-  pollOptions,
-}: PollVotersModalProps) {
+export function PollVotersModal({ isOpen, onClose, pollId, pollOptions }: PollVotersModalProps) {
   const [activeTab, setActiveTab] = useState(pollOptions[0]?.id || "");
 
   // Get poll votes
@@ -65,11 +55,7 @@ export function PollVotersModal({
         </DialogHeader>
 
         {pollVotes ? (
-          <Tabs
-            value={activeTab}
-            onValueChange={setActiveTab}
-            className="w-full"
-          >
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList
               className="grid w-full"
               style={{
@@ -77,11 +63,7 @@ export function PollVotersModal({
               }}
             >
               {pollOptions.map((option) => (
-                <TabsTrigger
-                  key={option.id}
-                  value={option.id}
-                  className="text-xs"
-                >
+                <TabsTrigger key={option.id} value={option.id} className="text-xs">
                   {option.text} ({option.voteCount})
                 </TabsTrigger>
               ))}

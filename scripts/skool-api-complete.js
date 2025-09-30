@@ -4,8 +4,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
-const fs = require("fs").promises;
-const path = require("path");
+const fs = require("node:fs").promises;
+const path = require("node:path");
 
 /**
  * SKOOL COMPLETE API EXTRACTOR
@@ -60,8 +60,7 @@ function getHeaders(isApi = false) {
       "content-type": "application/json",
       origin: "https://www.skool.com",
       referer: "https://www.skool.com/",
-      "sec-ch-ua":
-        '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
+      "sec-ch-ua": '"Google Chrome";v="137", "Chromium";v="137", "Not/A)Brand";v="24"',
       "sec-ch-ua-mobile": "?0",
       "sec-ch-ua-platform": '"macOS"',
       "sec-fetch-dest": "empty",
@@ -175,7 +174,7 @@ function processPost(post) {
     try {
       const contributors = JSON.parse(post.metadata.contributors);
       contributors.forEach((user) => data.users.set(user.id, user));
-    } catch (e) {}
+    } catch (_e) {}
   }
 }
 
@@ -197,7 +196,7 @@ async function getCommentsForPost(postId, postName, commentCount) {
       });
 
       // Handle the nested structure from the API
-      if (response.post_tree && response.post_tree.children) {
+      if (response.post_tree?.children) {
         const comments = response.post_tree.children
           .filter((item) => item.post && item.post.post_type === "comment")
           .map((item) => item.post);
@@ -257,11 +256,7 @@ async function getAllComments() {
       `[${i + 1}/${postsWithComments.length}] ${postTitle.substring(0, 40)}... (${post.metadata.comments} expected)`,
     );
 
-    const comments = await getCommentsForPost(
-      post.id,
-      post.name,
-      post.metadata.comments,
-    );
+    const comments = await getCommentsForPost(post.id, post.name, post.metadata.comments);
 
     if (comments.length > 0) {
       data.comments.set(post.id, comments);
@@ -302,10 +297,7 @@ async function exportData() {
         expectedComments: data.stats.expectedComments,
         completeness:
           data.stats.expectedComments > 0
-            ? (
-                (allComments.length / data.stats.expectedComments) *
-                100
-              ).toFixed(1) + "%"
+            ? `${((allComments.length / data.stats.expectedComments) * 100).toFixed(1)}%`
             : "N/A",
         users: data.users.size,
       },

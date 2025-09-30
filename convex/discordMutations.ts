@@ -1,5 +1,5 @@
-import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
+import { internalMutation, internalQuery } from "./_generated/server";
 
 // Internal mutation to store Discord messages in the database
 export const storeDiscordMessage = internalMutation({
@@ -12,10 +12,12 @@ export const storeDiscordMessage = internalMutation({
       avatar: v.optional(v.string()),
     }),
     timestamp: v.number(),
-    reactions: v.array(v.object({
-      emoji: v.string(),
-      count: v.number(),
-    })),
+    reactions: v.array(
+      v.object({
+        emoji: v.string(),
+        count: v.number(),
+      }),
+    ),
     channelId: v.string(),
     channelName: v.string(),
     reactionScore: v.number(),
@@ -47,7 +49,7 @@ export const storeDiscordMessage = internalMutation({
 function getYesterdayDateString(): string {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday.toISOString().split('T')[0];
+  return yesterday.toISOString().split("T")[0];
 }
 
 // Internal query to get Discord digest data (for actions to call)
@@ -64,16 +66,13 @@ export const getDiscordDigestQuery = internalQuery({
       // Fetch from database archive, sorted by reaction score
       const digestEntries = await ctx.db
         .query("discordDigest")
-        .withIndex("by_reaction_score", (q) =>
-          q.eq("digestDate", targetDate)
-        )
+        .withIndex("by_reaction_score", (q) => q.eq("digestDate", targetDate))
         .order("desc")
         .take(args.limit || 50);
 
       return digestEntries;
-
     } catch (error) {
-      console.error('Failed to fetch Discord digest:', error);
+      console.error("Failed to fetch Discord digest:", error);
       return []; // Always return empty array, never throw
     }
   },

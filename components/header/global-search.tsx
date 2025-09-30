@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useCallback, useMemo, useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useSearchHotkey } from "@/hooks/use-search-hotkey";
+import { ExternalLink, FileText, Lock, MessageSquare, Search } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import {
   CommandDialog,
   CommandEmpty,
@@ -14,18 +16,10 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  Search,
-  FileText,
-  MessageSquare,
-  ExternalLink,
-  Lock,
-} from "lucide-react";
-import Link from "next/link";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useSearchHotkey } from "@/hooks/use-search-hotkey";
 import { memberProfileUrl } from "@/lib/utils";
-import { Id } from "@/convex/_generated/dataModel";
 
 interface SearchResult {
   _id: string;
@@ -66,10 +60,7 @@ function useDebounce<T>(value: T, delay: number): T {
 function highlightMatch(text: string, searchTerm: string): React.ReactNode {
   if (!searchTerm.trim()) return text;
 
-  const regex = new RegExp(
-    `(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`,
-    "gi",
-  );
+  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
   const parts = text.split(regex);
 
   return parts.map((part, index) =>
@@ -133,20 +124,15 @@ function SearchResultItem({
     if (result.type === "post") {
       return (
         <div className="flex-1">
-          <div className="font-medium">
-            {highlightMatch(result.title || "", searchTerm)}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            /{result.categoryName}
-          </div>
+          <div className="font-medium">{highlightMatch(result.title || "", searchTerm)}</div>
+          <div className="text-sm text-muted-foreground">/{result.categoryName}</div>
         </div>
       );
     }
 
     if (result.type === "comment") {
       const preview =
-        result.content?.slice(0, 80) +
-        (result.content && result.content.length > 80 ? "..." : "");
+        result.content?.slice(0, 80) + (result.content && result.content.length > 80 ? "..." : "");
       return (
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
@@ -173,9 +159,7 @@ function SearchResultItem({
               <span className="text-sm font-medium">Unknown</span>
             )}
           </div>
-          <div className="text-sm">
-            {highlightMatch(preview || "", searchTerm)}
-          </div>
+          <div className="text-sm">{highlightMatch(preview || "", searchTerm)}</div>
         </div>
       );
     }
@@ -184,9 +168,7 @@ function SearchResultItem({
       return (
         <div className="flex-1">
           <div className="font-medium">{result.domain}</div>
-          <div className="text-sm text-muted-foreground truncate">
-            {result.link}
-          </div>
+          <div className="text-sm text-muted-foreground truncate">{result.link}</div>
         </div>
       );
     }
@@ -214,9 +196,7 @@ function SearchResultItem({
       {renderContent()}
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        {result.restricted && (
-          <Lock className="w-4 h-4 text-muted-foreground" />
-        )}
+        {result.restricted && <Lock className="w-4 h-4 text-muted-foreground" />}
         <Badge variant={getBadgeVariant(result.type)}>
           {result.restricted && result.type !== "link"
             ? "Private"
@@ -277,14 +257,8 @@ export function GlobalSearch() {
 
       if (result.type === "post" && result.slug && result.categoryName) {
         router.push(`/${result.categoryName}/${result.slug}`);
-      } else if (
-        result.type === "comment" &&
-        result.slug &&
-        result.categoryName
-      ) {
-        router.push(
-          `/${result.categoryName}/${result.slug}?commentId=${result._id}`,
-        );
+      } else if (result.type === "comment" && result.slug && result.categoryName) {
+        router.push(`/${result.categoryName}/${result.slug}?commentId=${result._id}`);
       } else if (result.type === "link" && result.link) {
         window.open(result.link, "_blank");
       }

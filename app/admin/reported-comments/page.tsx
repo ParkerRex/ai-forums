@@ -23,12 +23,21 @@
 
 "use client";
 
+import { useMutation, useQuery } from "convex/react";
+import { formatDistanceToNow } from "date-fns";
+import { ExternalLink, Trash2, X } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { Button } from "@/components/ui/button";
+import { PageErrorBoundary } from "@/components/error-boundary";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -37,18 +46,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { formatDistanceToNow } from "date-fns";
-import { ExternalLink, Trash2, X } from "lucide-react";
-import { PageErrorBoundary } from "@/components/error-boundary";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { useMutationError } from "@/hooks/use-mutation-error";
-import Link from "next/link";
 
 /**
  * Represents the possible states of a comment report
@@ -144,12 +144,8 @@ function ReportedCommentsContent() {
     return (
       <div className="container mx-auto max-w-4xl p-6">
         <div className="py-12 text-center">
-          <h1 className="text-foreground mb-4 text-2xl font-bold">
-            Access Denied
-          </h1>
-          <p className="text-muted-foreground">
-            You need admin privileges to access this page.
-          </p>
+          <h1 className="text-foreground mb-4 text-2xl font-bold">Access Denied</h1>
+          <p className="text-muted-foreground">You need admin privileges to access this page.</p>
         </div>
       </div>
     );
@@ -175,10 +171,7 @@ function ReportedCommentsContent() {
    * // Resolve report and delete the comment
    * handleResolve("report123", true)
    */
-  const handleResolve = async (
-    reportId: string,
-    deleteComment: boolean = false,
-  ) => {
+  const handleResolve = async (reportId: string, deleteComment: boolean = false) => {
     try {
       // Call the Convex mutation to resolve the report
       // The reportId is cast to the correct Convex ID type for type safety
@@ -191,9 +184,7 @@ function ReportedCommentsContent() {
       // Show success message based on whether comment was deleted
       // This provides clear feedback to the admin about what action was taken
       handleMutationSuccess(
-        deleteComment
-          ? "Report resolved and comment deleted"
-          : "Report resolved",
+        deleteComment ? "Report resolved and comment deleted" : "Report resolved",
       );
     } catch (error) {
       // Handle errors with retry functionality
@@ -305,9 +296,7 @@ function ReportedCommentsContent() {
     };
 
     return (
-      <Badge className={colors[reason as keyof typeof colors] || colors.other}>
-        {reason}
-      </Badge>
+      <Badge className={colors[reason as keyof typeof colors] || colors.other}>{reason}</Badge>
     );
   };
 
@@ -315,9 +304,7 @@ function ReportedCommentsContent() {
     <div className="container mx-auto max-w-7xl p-6">
       {/* Page header with title and description */}
       <div className="mb-6">
-        <h1 className="text-foreground mb-2 text-3xl font-bold">
-          Reported Comments
-        </h1>
+        <h1 className="text-foreground mb-2 text-3xl font-bold">Reported Comments</h1>
         <p className="text-muted-foreground">
           Review and manage reported comments from the community.
         </p>
@@ -331,9 +318,7 @@ function ReportedCommentsContent() {
           onValueChange={(value) =>
             // Convert "all" back to undefined for the API query
             // This allows showing all reports when no specific status is selected
-            setStatusFilter(
-              value === "all" ? undefined : (value as ReportStatus),
-            )
+            setStatusFilter(value === "all" ? undefined : (value as ReportStatus))
           }
         >
           <SelectTrigger className="w-48">
@@ -372,9 +357,7 @@ function ReportedCommentsContent() {
         /* Shows different messages based on whether a filter is applied */
         <div className="py-12 text-center">
           <p className="text-muted-foreground">
-            {statusFilter
-              ? `No ${statusFilter} reports found.`
-              : "No reports found."}
+            {statusFilter ? `No ${statusFilter} reports found.` : "No reports found."}
           </p>
         </div>
       ) : (
@@ -385,10 +368,8 @@ function ReportedCommentsContent() {
             <TableHeader>
               <TableRow>
                 {/* Column headers organized by importance for admin review */}
-                <TableHead>Reported</TableHead>{" "}
-                {/* When the report was created */}
-                <TableHead>Comment</TableHead>{" "}
-                {/* The actual reported content */}
+                <TableHead>Reported</TableHead> {/* When the report was created */}
+                <TableHead>Comment</TableHead> {/* The actual reported content */}
                 <TableHead>Author</TableHead> {/* Who wrote the comment */}
                 <TableHead>Reporter</TableHead> {/* Who reported it */}
                 <TableHead>Reason</TableHead> {/* Why it was reported */}
@@ -411,9 +392,7 @@ function ReportedCommentsContent() {
                     {report.comment ? (
                       <div className="space-y-1">
                         {/* Truncated comment content for table display */}
-                        <p className="truncate text-sm">
-                          {report.comment.content}
-                        </p>
+                        <p className="truncate text-sm">{report.comment.content}</p>
                         {/* Link to view comment in original context */}
                         {/* Uses URL fragments to jump directly to the comment */}
                         {report.post && (
@@ -427,23 +406,18 @@ function ReportedCommentsContent() {
                       </div>
                     ) : (
                       /* Show when comment has been deleted */
-                      <span className="text-muted-foreground text-sm">
-                        Comment deleted
-                      </span>
+                      <span className="text-muted-foreground text-sm">Comment deleted</span>
                     )}
                   </TableCell>
                   {/* Comment author column - shows who wrote the reported comment */}
                   <TableCell>
                     {report.comment?.author ? (
                       <span className="text-sm">
-                        {report.comment.author.firstName}{" "}
-                        {report.comment.author.lastName}
+                        {report.comment.author.firstName} {report.comment.author.lastName}
                       </span>
                     ) : (
                       /* Show when author information is not available */
-                      <span className="text-muted-foreground text-sm">
-                        Unknown
-                      </span>
+                      <span className="text-muted-foreground text-sm">Unknown</span>
                     )}
                   </TableCell>
 
@@ -455,9 +429,7 @@ function ReportedCommentsContent() {
                       </span>
                     ) : (
                       /* Show when reporter information is not available */
-                      <span className="text-muted-foreground text-sm">
-                        Unknown
-                      </span>
+                      <span className="text-muted-foreground text-sm">Unknown</span>
                     )}
                   </TableCell>
 
@@ -467,9 +439,7 @@ function ReportedCommentsContent() {
                     {getReasonBadge(report.reason)}
                     {/* Additional text explanation if provided by reporter */}
                     {report.reasonText && (
-                      <p className="text-muted-foreground mt-1 text-xs">
-                        {report.reasonText}
-                      </p>
+                      <p className="text-muted-foreground mt-1 text-xs">{report.reasonText}</p>
                     )}
                   </TableCell>
 

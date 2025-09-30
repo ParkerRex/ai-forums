@@ -1,16 +1,9 @@
 "use client";
 
-import {
-  useState,
-  useCallback,
-  useRef,
-  useEffect,
-  lazy,
-  Suspense,
-} from "react";
+import { Wand2 } from "lucide-react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Wand2 } from "lucide-react";
 
 // Lazy load the full rich text editor
 const FullRichTextEditor = lazy(() => import("./rich-text-editor-full"));
@@ -29,9 +22,7 @@ function RichEditorSkeleton() {
       <div className="bg-muted rounded-t-lg border border-b p-2">
         <div className="flex items-center justify-center">
           <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-green-700 border-t-transparent" />
-          <span className="text-muted-foreground text-sm">
-            Loading rich editor...
-          </span>
+          <span className="text-muted-foreground text-sm">Loading rich editor...</span>
         </div>
       </div>
       <div className="min-h-[200px] p-4">
@@ -71,7 +62,7 @@ export function RichTextEditor({
     if (textareaRef.current && !useRichEditor) {
       const textarea = textareaRef.current;
       textarea.style.height = "auto";
-      textarea.style.height = Math.max(200, textarea.scrollHeight) + "px";
+      textarea.style.height = `${Math.max(200, textarea.scrollHeight)}px`;
     }
   }, [content, useRichEditor]);
 
@@ -97,9 +88,7 @@ export function RichTextEditor({
       {/* Simple toolbar */}
       <div className="bg-muted rounded-t-lg border border-b p-2">
         <div className="flex items-center justify-between">
-          <div className="text-muted-foreground text-sm">
-            Markdown supported
-          </div>
+          <div className="text-muted-foreground text-sm">Markdown supported</div>
           <Button
             type="button"
             variant="ghost"

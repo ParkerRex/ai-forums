@@ -1,8 +1,8 @@
 // Transforms raw Skool JSON data into structured posts and
 // comments matching your Convex schema.
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 // Read the large JSON file
 const dataPath = path.join(
@@ -13,9 +13,7 @@ const data = JSON.parse(fs.readFileSync(dataPath, "utf8"));
 
 // Set cutoff date - only import content created after June 22, 2025
 const CUTOFF_DATE = new Date("2025-06-22T23:59:59Z").getTime();
-console.log(
-  `Filtering for content created after: ${new Date(CUTOFF_DATE).toISOString()}`,
-);
+console.log(`Filtering for content created after: ${new Date(CUTOFF_DATE).toISOString()}`);
 
 // Helper function to convert Skool timestamp to Unix timestamp
 function convertSkoolTimestamp(timestamp) {
@@ -32,7 +30,7 @@ function convertSkoolTimestamp(timestamp) {
 }
 
 // Helper function to parse status from metadata
-function getPostStatus(metadata) {
+function getPostStatus(_metadata) {
   // Default to active unless explicitly marked otherwise
   return "active";
 }
@@ -47,7 +45,7 @@ function parseContributors(contributorsStr) {
       firstName: c.first_name || c.firstName,
       lastName: c.last_name || c.lastName,
     }));
-  } catch (e) {
+  } catch (_e) {
     return [];
   }
 }
@@ -76,10 +74,7 @@ if (data.posts) {
     if (post.user) {
       userIdMap.set(post.user.id, {
         email: post.user.email || `${post.user.name}@imported.com`,
-        firstName:
-          post.user.firstName ||
-          post.user.first_name ||
-          post.user.name.split("-")[0],
+        firstName: post.user.firstName || post.user.first_name || post.user.name.split("-")[0],
         lastName: post.user.lastName || post.user.last_name || "",
         name: post.user.name,
       });
@@ -107,9 +102,7 @@ if (data.posts) {
         createdAt: createdAt,
         updatedAt: convertSkoolTimestamp(post.updatedAt),
         authorEmail:
-          post.user?.email ||
-          userIdMap.get(post.userId)?.email ||
-          `unknown@imported.com`,
+          post.user?.email || userIdMap.get(post.userId)?.email || `unknown@imported.com`,
         categoryId: null, // Will need to be mapped to actual category IDs
         status: getPostStatus(post.metadata),
         upvotes: post.metadata.upvotes || 0,
@@ -139,9 +132,7 @@ const importedPostIds = new Set(posts.map((p) => p.skoolId));
 
 if (data.comments) {
   data.comments.forEach((comment) => {
-    const createdAt = convertSkoolTimestamp(
-      comment.created_at || comment.createdAt,
-    );
+    const createdAt = convertSkoolTimestamp(comment.created_at || comment.createdAt);
 
     // Skip comments created on or before the cutoff date
     if (createdAt <= CUTOFF_DATE) {
@@ -208,16 +199,10 @@ comments.forEach((comment) => {
 const outputDir = path.join(__dirname, "../migration-data");
 
 // Save posts
-fs.writeFileSync(
-  path.join(outputDir, "posts-import.json"),
-  JSON.stringify(posts, null, 2),
-);
+fs.writeFileSync(path.join(outputDir, "posts-import.json"), JSON.stringify(posts, null, 2));
 
 // Save comments
-fs.writeFileSync(
-  path.join(outputDir, "comments-import.json"),
-  JSON.stringify(comments, null, 2),
-);
+fs.writeFileSync(path.join(outputDir, "comments-import.json"), JSON.stringify(comments, null, 2));
 
 // Save user mapping for reference
 fs.writeFileSync(

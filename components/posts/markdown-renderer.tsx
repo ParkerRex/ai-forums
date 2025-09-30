@@ -1,14 +1,14 @@
 "use client";
 
-import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
-import { unified } from "unified";
+import type { Options } from "rehype-pretty-code";
+import rehypePrettyCode from "rehype-pretty-code";
+import rehypeStringify from "rehype-stringify";
 import remarkParse from "remark-parse";
 import remarkRehype from "remark-rehype";
-import rehypeStringify from "rehype-stringify";
-import rehypePrettyCode from "rehype-pretty-code";
-import type { Options } from "rehype-pretty-code";
 import { toast } from "sonner";
+import { unified } from "unified";
+import { cn } from "@/lib/utils";
 
 interface MarkdownRendererProps {
   content: string;
@@ -36,10 +36,7 @@ const prettycodeOptions: Options = {
   ],
 };
 
-export function MarkdownRenderer({
-  content,
-  className,
-}: MarkdownRendererProps) {
+export function MarkdownRenderer({ content, className }: MarkdownRendererProps) {
   const [processedContent, setProcessedContent] = useState<string>("");
   const [isProcessing, setIsProcessing] = useState(true);
 
@@ -118,10 +115,7 @@ export function MarkdownRenderer({
 
   return (
     <div
-      className={cn(
-        "markdown-content prose prose-sm dark:prose-invert max-w-none",
-        className,
-      )}
+      className={cn("markdown-content prose prose-sm dark:prose-invert max-w-none", className)}
       dangerouslySetInnerHTML={{ __html: processedContent }}
     />
   );

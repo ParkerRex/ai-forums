@@ -1,9 +1,6 @@
-import { NewsSource, RawItem } from "./types";
+import type { NewsSource, RawItem } from "./types";
 
-export async function fetchFromExa(
-  source: NewsSource,
-  numResults: number = 5
-): Promise<RawItem[]> {
+export async function fetchFromExa(source: NewsSource, numResults: number = 5): Promise<RawItem[]> {
   const requestBody: {
     query: string;
     numResults: number;

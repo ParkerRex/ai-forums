@@ -9,4 +9,4 @@ import { api } from "../convex/_generated/api";
 export function useCurrentMember() {
   const member = useQuery(api.auth.current);
   return { member, isLoading: member === undefined };
-}   
+}

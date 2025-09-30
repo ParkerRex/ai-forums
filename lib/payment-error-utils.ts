@@ -1,6 +1,6 @@
 /**
  * Payment Error Utilities
- * 
+ *
  * User-friendly error messages and recovery suggestions for payment failures.
  * Maps technical Stripe errors to human-readable messages with actionable next steps.
  */
@@ -59,7 +59,7 @@ const stripeErrorMap: Record<string, PaymentError> = {
     suggestion: "Double-check your card number for any typos.",
     recoverable: true,
   },
-  
+
   // Authentication errors
   authentication_required: {
     code: "authentication_required",
@@ -67,7 +67,7 @@ const stripeErrorMap: Record<string, PaymentError> = {
     suggestion: "You'll be redirected to complete the verification.",
     recoverable: true,
   },
-  
+
   // Rate limiting
   rate_limit: {
     code: "rate_limit",
@@ -75,7 +75,7 @@ const stripeErrorMap: Record<string, PaymentError> = {
     suggestion: "Take a breather and try again in a few minutes.",
     recoverable: true,
   },
-  
+
   // Network/API errors
   api_connection_error: {
     code: "api_connection_error",
@@ -89,7 +89,7 @@ const stripeErrorMap: Record<string, PaymentError> = {
     suggestion: "Try again in a moment. If it persists, we've been notified.",
     recoverable: true,
   },
-  
+
   // Invalid request errors
   invalid_request_error: {
     code: "invalid_request_error",
@@ -104,21 +104,20 @@ const stripeErrorMap: Record<string, PaymentError> = {
  */
 export function getPaymentError(stripeError: unknown): PaymentError {
   // Type guard for error object
-  const error = stripeError as {
-    code?: string;
-    decline_code?: string;
-    error?: { code?: string };
-    type?: string;
-    message?: string;
-  } | null | undefined;
-  
+  const error = stripeError as
+    | {
+        code?: string;
+        decline_code?: string;
+        error?: { code?: string };
+        type?: string;
+        message?: string;
+      }
+    | null
+    | undefined;
+
   // Extract error code from various Stripe error formats
-  const errorCode = 
-    error?.code || 
-    error?.decline_code || 
-    error?.error?.code ||
-    error?.type ||
-    "unknown_error";
+  const errorCode =
+    error?.code || error?.decline_code || error?.error?.code || error?.type || "unknown_error";
 
   // Check if we have a specific mapping
   if (stripeErrorMap[errorCode]) {
@@ -209,13 +208,8 @@ export function isPaymentMethodError(error: PaymentError): boolean {
  * Check if error is temporary and likely to succeed on retry
  */
 export function isTemporaryError(error: PaymentError): boolean {
-  const temporaryErrors = [
-    "processing_error",
-    "api_connection_error",
-    "api_error",
-    "rate_limit",
-  ];
-  
+  const temporaryErrors = ["processing_error", "api_connection_error", "api_error", "rate_limit"];
+
   return temporaryErrors.includes(error.code);
 }
 
@@ -223,14 +217,14 @@ export function isTemporaryError(error: PaymentError): boolean {
  * Get estimated wait time for rate limit errors
  */
 export function getRateLimitWaitTime(error: unknown): number {
-  const errorWithHeaders = error as { headers?: { ["retry-after"]?: string } };
-  
+  const errorWithHeaders = error as { headers?: { "retry-after"?: string } };
+
   // Check if Stripe provided a retry-after header
   const retryAfter = errorWithHeaders?.headers?.["retry-after"];
   if (retryAfter) {
-    return parseInt(retryAfter) * 1000; // Convert to milliseconds
+    return parseInt(retryAfter, 10) * 1000; // Convert to milliseconds
   }
-  
+
   // Default to 60 seconds
   return 60000;
 }
@@ -238,12 +232,15 @@ export function getRateLimitWaitTime(error: unknown): number {
 /**
  * Track error for analytics and monitoring
  */
-export function trackPaymentError(error: PaymentError, context: {
-  userId?: string;
-  amount?: number;
-  currency?: string;
-  paymentMethod?: string;
-}) {
+export function trackPaymentError(
+  error: PaymentError,
+  context: {
+    userId?: string;
+    amount?: number;
+    currency?: string;
+    paymentMethod?: string;
+  },
+) {
   // Log error for monitoring
   console.error("[Payment Error]", {
     error,

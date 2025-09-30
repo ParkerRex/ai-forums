@@ -22,7 +22,7 @@ export const MediaUploadIcon = React.forwardRef<SVGSVGElement, MediaUploadIconPr
         />
       </svg>
     );
-  }
+  },
 );
 
 MediaUploadIcon.displayName = "MediaUploadIcon";

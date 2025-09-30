@@ -6,7 +6,7 @@ export default function MemberHeaderSkeleton() {
       <div className="flex flex-col md:flex-row items-start">
         {/* Avatar skeleton */}
         <Skeleton className="h-24 w-24 rounded-full mr-6 mb-4 md:mb-0 flex-shrink-0" />
-        
+
         <div className="flex-1 w-full">
           {/* Name and badges skeleton */}
           <div className="flex items-center justify-between mb-2">
@@ -16,7 +16,7 @@ export default function MemberHeaderSkeleton() {
               <Skeleton className="h-8 w-24" />
             </div>
           </div>
-          
+
           {/* Bio skeleton */}
           <div className="space-y-2 mb-6">
             <Skeleton className="h-4 w-full" />
@@ -54,4 +54,4 @@ export default function MemberHeaderSkeleton() {
       </div>
     </div>
   );
-} 
+}

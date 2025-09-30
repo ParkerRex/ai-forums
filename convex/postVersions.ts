@@ -24,14 +24,16 @@ export const getPostHistory = query({
         const editor = await ctx.db.get(version.editorId);
         return {
           ...version,
-          editor: editor ? {
-            _id: editor._id,
-            firstName: editor.firstName,
-            lastName: editor.lastName,
-            avatarUrl: editor.avatarUrl,
-          } : null,
+          editor: editor
+            ? {
+                _id: editor._id,
+                firstName: editor.firstName,
+                lastName: editor.lastName,
+                avatarUrl: editor.avatarUrl,
+              }
+            : null,
         };
-      })
+      }),
     );
 
     return versionsWithEditors;
@@ -50,4 +52,4 @@ export const getNextVersionNumber = query({
 
     return (versions?.version ?? 0) + 1;
   },
-}); 
+});

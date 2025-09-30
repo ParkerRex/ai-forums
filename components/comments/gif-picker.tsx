@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Search } from "lucide-react";
-import Image from "next/image";
 import { GiphyFetch } from "@giphy/js-fetch-api";
 import type { IGif } from "@giphy/js-types";
+import { Search } from "lucide-react";
+import Image from "next/image";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 const gf = new GiphyFetch(process.env.NEXT_PUBLIC_GIPHY_API_KEY || "");
 
@@ -71,9 +71,7 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
 
       <div className="grid h-80 grid-cols-2 gap-2 overflow-y-auto">
         {loading ? (
-          <div className="col-span-2 flex items-center justify-center">
-            Loading...
-          </div>
+          <div className="col-span-2 flex items-center justify-center">Loading...</div>
         ) : (
           gifs.map((gif) => (
             <Image

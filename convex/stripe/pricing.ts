@@ -41,7 +41,9 @@ export function getStripePrice(tier: Tier, billingInterval: BillingInterval): st
   const priceId = STRIPE_PRICES[tier]?.[billingInterval];
 
   if (!priceId) {
-    throw new Error(`Stripe price ID not configured for tier: ${tier}, billing: ${billingInterval}`);
+    throw new Error(
+      `Stripe price ID not configured for tier: ${tier}, billing: ${billingInterval}`,
+    );
   }
 
   return priceId;
@@ -53,18 +55,18 @@ export function getStripePrice(tier: Tier, billingInterval: BillingInterval): st
  */
 export function validateStripeConfiguration(): void {
   const requiredPrices = [
-    'STRIPE_FOUNDING_MONTHLY_PRICE_ID',
-    'STRIPE_FOUNDING_YEARLY_PRICE_ID',
-    'STRIPE_EARLY_BIRD_MONTHLY_PRICE_ID',
-    'STRIPE_EARLY_BIRD_YEARLY_PRICE_ID',
-    'STRIPE_MEMBER_MONTHLY_PRICE_ID',
-    'STRIPE_MEMBER_YEARLY_PRICE_ID',
+    "STRIPE_FOUNDING_MONTHLY_PRICE_ID",
+    "STRIPE_FOUNDING_YEARLY_PRICE_ID",
+    "STRIPE_EARLY_BIRD_MONTHLY_PRICE_ID",
+    "STRIPE_EARLY_BIRD_YEARLY_PRICE_ID",
+    "STRIPE_MEMBER_MONTHLY_PRICE_ID",
+    "STRIPE_MEMBER_YEARLY_PRICE_ID",
   ];
 
-  const missing = requiredPrices.filter(key => !process.env[key]);
+  const missing = requiredPrices.filter((key) => !process.env[key]);
 
   if (missing.length > 0) {
-    throw new Error(`Missing required Stripe price environment variables: ${missing.join(', ')}`);
+    throw new Error(`Missing required Stripe price environment variables: ${missing.join(", ")}`);
   }
 }
 
@@ -72,7 +74,10 @@ export function validateStripeConfiguration(): void {
  * Get pricing information for display purposes
  * This returns the actual pricing amounts, not the Stripe price IDs
  */
-export const PRICING_INFO: Record<Tier, { name: string; monthly: number; yearly: number; badge?: string }> = {
+export const PRICING_INFO: Record<
+  Tier,
+  { name: string; monthly: number; yearly: number; badge?: string }
+> = {
   founding_member: {
     name: "Founding Member",
     monthly: 39,

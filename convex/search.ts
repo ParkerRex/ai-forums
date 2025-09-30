@@ -1,7 +1,7 @@
-import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { api } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
+import type { Id } from "./_generated/dataModel";
+import { query } from "./_generated/server";
 import { getAuthenticatedMember } from "./auth";
 import { canViewPost } from "./helpers/subscriptionAccess";
 
@@ -13,9 +13,9 @@ type SearchResult = {
 };
 
 export const globalSearch = query({
-  args: { 
-    searchTerm: v.string(), 
-    limit: v.optional(v.number()) 
+  args: {
+    searchTerm: v.string(),
+    limit: v.optional(v.number()),
   },
   handler: async (ctx, { searchTerm, limit = 30 }): Promise<SearchResult[]> => {
     if (!searchTerm.trim()) {
@@ -34,15 +34,21 @@ export const globalSearch = query({
       ctx.runQuery(api.posts.searchPosts, { searchTerm, limit, includeContent: true }),
       ctx.db
         .query("comments")
-        .withSearchIndex("search_comments", (q) => q.search("content", searchTerm).eq("status", "active"))
+        .withSearchIndex("search_comments", (q) =>
+          q.search("content", searchTerm).eq("status", "active"),
+        )
         .take(limit),
       ctx.db
         .query("topics")
-        .withSearchIndex("search_topics", (q) => q.search("displayName", searchTerm).eq("status", "active"))
+        .withSearchIndex("search_topics", (q) =>
+          q.search("displayName", searchTerm).eq("status", "active"),
+        )
         .take(limit),
       ctx.db
         .query("resources")
-        .withSearchIndex("search_resources", (q) => q.search("title", searchTerm).eq("status", "active"))
+        .withSearchIndex("search_resources", (q) =>
+          q.search("title", searchTerm).eq("status", "active"),
+        )
         .take(limit),
     ]);
 
@@ -52,20 +58,23 @@ export const globalSearch = query({
         const member = await ctx.db.get(comment.memberId);
         return {
           ...comment,
-          member: member && 'firstName' in member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            email: member.email,
-            username: member.email.split('@')[0],
-            slug: member.slug,
-          } : null,
+          member:
+            member && "firstName" in member
+              ? {
+                  _id: member._id,
+                  firstName: member.firstName,
+                  lastName: member.lastName,
+                  email: member.email,
+                  username: member.email.split("@")[0],
+                  slug: member.slug,
+                }
+              : null,
         };
-      })
+      }),
     );
 
     // Build a complete post lookup map for comments
-    const postsById = new Map<Id<"posts">, typeof posts[0]>();
+    const postsById = new Map<Id<"posts">, (typeof posts)[0]>();
     posts.forEach((p) => postsById.set(p._id, p));
 
     // Find missing parent posts for comments
@@ -78,30 +87,34 @@ export const globalSearch = query({
       missingPostIds.map(async (postId) => {
         const post = await ctx.db.get(postId);
         if (!post) return null;
-        
+
         const [category, member] = await Promise.all([
           post.categoryId ? ctx.db.get(post.categoryId) : null,
           ctx.db.get(post.memberId),
         ]);
-        
+
         return {
           ...post,
-          member: member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            username: member.email.split('@')[0],
-            slug: member.slug || "",
-            avatarUrl: member.avatarUrl || null,
-          } : null,
-          category: category ? {
-            _id: category._id,
-            name: category.name,
-            displayName: category.displayName,
-            icon: category.icon,
-          } : null,
+          member: member
+            ? {
+                _id: member._id,
+                firstName: member.firstName,
+                lastName: member.lastName,
+                username: member.email.split("@")[0],
+                slug: member.slug || "",
+                avatarUrl: member.avatarUrl || null,
+              }
+            : null,
+          category: category
+            ? {
+                _id: category._id,
+                name: category.name,
+                displayName: category.displayName,
+                icon: category.icon,
+              }
+            : null,
         };
-      })
+      }),
     );
 
     // Add missing posts to the lookup map
@@ -113,21 +126,23 @@ export const globalSearch = query({
     const linkRegex = /(https?:\/\/\S+)/gi;
     const linkResults = enrichedComments.flatMap((c) => {
       const links = c.content.match(linkRegex) ?? [];
-      return links.map((link: string) => {
-        try {
-          const url = new URL(link);
-          return { 
-            _id: `${c._id}:${link}`, 
-            type: "link" as const, 
-            link, 
-            postId: c.postId,
-            domain: url.hostname.replace('www.', '')
-          };
-        } catch {
-          // Skip malformed URLs
-          return null;
-        }
-      }).filter(Boolean); // Remove null entries
+      return links
+        .map((link: string) => {
+          try {
+            const url = new URL(link);
+            return {
+              _id: `${c._id}:${link}`,
+              type: "link" as const,
+              link,
+              postId: c.postId,
+              domain: url.hostname.replace("www.", ""),
+            };
+          } catch {
+            // Skip malformed URLs
+            return null;
+          }
+        })
+        .filter(Boolean); // Remove null entries
     });
 
     // Mark visibility for private-category content and paywalled posts
@@ -135,14 +150,14 @@ export const globalSearch = query({
       const isPrivate = false; // Category status not included in search results
       const isPaywalled = !canViewPost(viewer, p);
       const restricted = isPrivate || isPaywalled;
-      return { 
-        _id: p._id, 
-        type: "post" as const, 
-        title: restricted ? "Hidden content – join to view" : p.title, 
-        highlight: restricted ? "Hidden content – join to view" : p.title, 
+      return {
+        _id: p._id,
+        type: "post" as const,
+        title: restricted ? "Hidden content – join to view" : p.title,
+        highlight: restricted ? "Hidden content – join to view" : p.title,
         restricted,
         slug: p.slug,
-        categoryName: p.category?.name
+        categoryName: p.category?.name,
       };
     });
 
@@ -151,22 +166,22 @@ export const globalSearch = query({
       const isPrivate = false; // Category status not included in search results
       const isPaywalled = parentPost && !canViewPost(viewer, parentPost);
       const restricted = isPrivate || isPaywalled;
-      return { 
-        _id: c._id, 
-        type: "comment" as const, 
-        content: restricted ? "Hidden content – join to view" : c.content, 
+      return {
+        _id: c._id,
+        type: "comment" as const,
+        content: restricted ? "Hidden content – join to view" : c.content,
         memberId: c.memberId,
         member: c.member,
-        postId: c.postId, 
+        postId: c.postId,
         restricted,
         slug: parentPost?.slug,
-        categoryName: parentPost?.category?.name
+        categoryName: parentPost?.category?.name,
       };
     });
 
     // Dedupe identical links
-    const uniqueLinks = linkResults.filter((link, index, arr) => 
-      link && arr.findIndex((l) => l && l.link === link.link) === index
+    const uniqueLinks = linkResults.filter(
+      (link, index, arr) => link && arr.findIndex((l) => l && l.link === link.link) === index,
     );
 
     const mappedTopics = topics.map((t) => ({
@@ -192,25 +207,33 @@ export const globalSearch = query({
           difficulty: r.difficulty,
           isPaid: r.isPaid,
           netVotes: r.netVotes,
-          member: member && 'firstName' in member ? {
-            firstName: member.firstName,
-            lastName: member.lastName,
-            username: member.email.split('@')[0],
-          } : null,
-          topic: topic && 'name' in topic ? {
-            name: topic.name,
-            displayName: topic.displayName,
-          } : null,
+          member:
+            member && "firstName" in member
+              ? {
+                  firstName: member.firstName,
+                  lastName: member.lastName,
+                  username: member.email.split("@")[0],
+                }
+              : null,
+          topic:
+            topic && "name" in topic
+              ? {
+                  name: topic.name,
+                  displayName: topic.displayName,
+                }
+              : null,
         };
-      })
+      }),
     );
 
-    return ([
-      ...mappedPosts,
-      ...mappedComments,
-      ...mappedTopics,
-      ...enrichedResources,
-      ...uniqueLinks,
-    ].filter(Boolean) as SearchResult[]).slice(0, limit);
+    return (
+      [
+        ...mappedPosts,
+        ...mappedComments,
+        ...mappedTopics,
+        ...enrichedResources,
+        ...uniqueLinks,
+      ].filter(Boolean) as SearchResult[]
+    ).slice(0, limit);
   },
-});        
+});

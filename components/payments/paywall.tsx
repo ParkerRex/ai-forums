@@ -10,16 +10,15 @@
 
 "use client";
 
+import { SignIn, useAuth } from "@clerk/nextjs";
+import { Lock } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Lock } from "lucide-react";
-import { useState, useEffect } from "react";
-import { MembershipCTAModal } from "../members/membership-cta-modal";
-import { useAuth } from "@clerk/nextjs";
-import { SignIn } from "@clerk/nextjs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { paywallAnalytics } from "@/lib/analytics";
+import { MembershipCTAModal } from "../members/membership-cta-modal";
 
 /**
  * Props for the Paywall component
@@ -111,9 +110,7 @@ export function Paywall({
           {previewContent && (
             <div className="bg-muted/50 rounded-none p-4">
               {/* line-clamp-3 limits preview to 3 lines for consistent height */}
-              <p className="text-muted-foreground line-clamp-3 text-sm">
-                {previewContent}
-              </p>
+              <p className="text-muted-foreground line-clamp-3 text-sm">{previewContent}</p>
               {/* Gradient overlay creates a "fade out" effect to indicate more content exists */}
               <div className="to-muted/50 relative -mx-4 -mb-4 mt-2 h-8 bg-gradient-to-b from-transparent">
                 {/* Additional subtle gradient for smooth visual transition */}

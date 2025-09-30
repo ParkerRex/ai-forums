@@ -1,27 +1,20 @@
 "use client";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Bookmark, BookOpen } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { UsersIcon, UsersIconHandle } from "@/components/ui/users";
-import {
-  CalendarDaysIcon,
-  CalendarDaysIconHandle,
-} from "@/components/icons/calendar-days";
-import { AuthButton } from "@/components/auth/auth-button";
-import { NotificationDropdown } from "@/components/header/notification-dropdown";
 import { Authenticated, Unauthenticated } from "convex/react";
+import { Bookmark, BookOpen } from "lucide-react";
+import Link from "next/link";
 import React from "react";
-import { SearchIcon, SearchIconHandle } from "@/components/icons/search";
-import { MemberDropdown } from "@/components/header/member-dropdown";
-import { HeaderProvider } from "@/components/header/header-provider";
+import { AuthButton } from "@/components/auth/auth-button";
 import { HeaderIconLink } from "@/components/header/header-icon-link";
 import { HeaderLogo } from "@/components/header/header-logo";
+import { HeaderProvider } from "@/components/header/header-provider";
+import { MemberDropdown } from "@/components/header/member-dropdown";
+import { NotificationDropdown } from "@/components/header/notification-dropdown";
+import { CalendarDaysIcon, type CalendarDaysIconHandle } from "@/components/icons/calendar-days";
+import { SearchIcon, type SearchIconHandle } from "@/components/icons/search";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { UsersIcon, type UsersIconHandle } from "@/components/ui/users";
 // We intentionally do NOT import useSearchHotkey here because we
 // only need to *trigger* the global search dialog. The actual
 // open/close state is maintained inside the GlobalSearch

@@ -1,10 +1,10 @@
 /**
  * @fileoverview Client component for resource submission form
- * 
+ *
  * This component provides a comprehensive form interface for users to submit
  * learning resources to specific topics. It includes form validation, URL
  * preview functionality, and integrates with the community's resource database.
- * 
+ *
  * Key features:
  * - Multi-field resource submission form with validation
  * - URL preview functionality (placeholder implementation)
@@ -12,7 +12,7 @@
  * - Form state management with real-time validation
  * - Integration with toast notifications for user feedback
  * - Navigation controls and error handling
- * 
+ *
  * Form fields include:
  * - URL (required): External link to the resource
  * - Title (required): Resource name
@@ -20,28 +20,28 @@
  * - Type (required): Category of resource (article, video, course, etc.)
  * - Difficulty (optional): Skill level required
  * - Payment status: Whether resource requires payment
- * 
+ *
  * @author VAI Community
  * @version 1.0.0
  */
 
 "use client";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
 
 /**
  * Props interface for the ResourceSubmissionPageClient component
- * 
+ *
  * @interface ResourceSubmissionPageClientProps
  * @property {Promise<{topic: string}>} params - Dynamic route parameters from Next.js
  */
@@ -53,21 +53,21 @@ interface ResourceSubmissionPageClientProps {
 
 /**
  * Main resource submission form component
- * 
+ *
  * This component manages the complete resource submission workflow including
  * form state, validation, URL preview, and API integration. It provides a
  * user-friendly interface for community members to contribute learning materials.
- * 
+ *
  * The component handles:
  * - Form state management for all resource fields
  * - Real-time URL validation and preview generation
  * - Topic verification and loading states
  * - Form submission with error handling
  * - Navigation and user feedback via toasts
- * 
+ *
  * @param {ResourceSubmissionPageClientProps} props - Component props
  * @returns {JSX.Element} Complete resource submission form interface
- * 
+ *
  * @example
  * ```tsx
  * // Used via Next.js routing: /educate/react/submit
@@ -79,14 +79,14 @@ export default function ResourceSubmissionPageClient({
 }: ResourceSubmissionPageClientProps) {
   // Local state for topic name extracted from URL params
   const [topicName, setTopicName] = useState<string>("");
-  
+
   // Form data state with default values
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     url: "",
   });
-  
+
   // UI state for form submission and loading states
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -100,18 +100,14 @@ export default function ResourceSubmissionPageClient({
   }, [params]);
 
   // Query topic data to verify it exists and get metadata
-  const topic = useQuery(
-    api.topics.getTopicByName,
-    topicName ? { name: topicName } : "skip",
-  );
-  
+  const topic = useQuery(api.topics.getTopicByName, topicName ? { name: topicName } : "skip");
+
   // Mutation for creating new resources
   const createResource = useMutation(api.resources.createResource);
 
-
   /**
    * Validates if a string is a properly formatted URL
-   * 
+   *
    * @param {string} string - The string to validate as a URL
    * @returns {boolean} True if the string is a valid URL, false otherwise
    */
@@ -126,17 +122,17 @@ export default function ResourceSubmissionPageClient({
 
   /**
    * Handles form submission with validation and error handling
-   * 
+   *
    * This function performs comprehensive validation of all form fields,
    * submits the resource to the database, and handles success/error states.
    * On successful submission, the user is redirected back to the topic page.
-   * 
+   *
    * Validation includes:
    * - Topic existence verification
    * - Required field presence (title, description, URL)
    * - URL format validation
    * - Data sanitization (trimming whitespace)
-   * 
+   *
    * @param {React.FormEvent} e - Form submission event
    */
   const handleSubmit = async (e: React.FormEvent) => {
@@ -149,11 +145,7 @@ export default function ResourceSubmissionPageClient({
     }
 
     // Validate required fields are present
-    if (
-      !formData.title.trim() ||
-      !formData.description.trim() ||
-      !formData.url.trim()
-    ) {
+    if (!formData.title.trim() || !formData.description.trim() || !formData.url.trim()) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -226,9 +218,7 @@ export default function ResourceSubmissionPageClient({
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">
-          Add {topic.displayName} Resource
-        </h1>
+        <h1 className="text-2xl font-bold">Add {topic.displayName} Resource</h1>
       </div>
 
       <Card>
@@ -245,7 +235,7 @@ export default function ResourceSubmissionPageClient({
                 type="url"
                 placeholder="https://example.com/resource"
                 value={formData.url}
-                onChange={(e) => setFormData(prev => ({ ...prev, url: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, url: e.target.value }))}
                 required
               />
             </div>
@@ -257,9 +247,7 @@ export default function ResourceSubmissionPageClient({
                 id="title"
                 placeholder="Resource title"
                 value={formData.title}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, title: e.target.value }))
-                }
+                onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
                 required
               />
             </div>

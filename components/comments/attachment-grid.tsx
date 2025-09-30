@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
-import { MediaItem } from "@/types";
-import { PDFPreview } from "@/components/posts/pdf-preview";
-import { YouTubePreview } from "@/components/posts/youtube-preview";
-import { VideoPreview } from "@/components/posts/video-preview";
-import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import { useMemo } from "react";
+import { PDFPreview } from "@/components/posts/pdf-preview";
+import { VideoPreview } from "@/components/posts/video-preview";
+import { YouTubePreview } from "@/components/posts/youtube-preview";
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import type { MediaItem } from "@/types";
 
 interface AttachmentGridProps {
   attachments: Array<{
@@ -36,11 +36,7 @@ interface AttachmentGridProps {
   className?: string;
 }
 
-function AttachmentItem({
-  attachment,
-}: {
-  attachment: AttachmentGridProps["attachments"][0];
-}) {
+function AttachmentItem({ attachment }: { attachment: AttachmentGridProps["attachments"][0] }) {
   const renderPreview = () => {
     // Convert attachment to MediaItem format for preview components
     const mediaItem: MediaItem = {
@@ -52,13 +48,7 @@ function AttachmentItem({
     switch (attachment.type) {
       case "image":
         return (
-          <Image
-            src={attachment.url}
-            alt="Attachment"
-            fill
-            className="object-cover"
-            unoptimized
-          />
+          <Image src={attachment.url} alt="Attachment" fill className="object-cover" unoptimized />
         );
       case "video":
         return <VideoPreview media={mediaItem} />;
@@ -84,9 +74,7 @@ function AttachmentItem({
         {/* Hover overlay with view action */}
         <div className="absolute inset-0 flex items-center justify-center bg-black/0 transition-colors group-hover:bg-black/40">
           <div className="opacity-0 transition-opacity group-hover:opacity-100">
-            <span className="text-primary-foreground text-sm font-medium">
-              View
-            </span>
+            <span className="text-primary-foreground text-sm font-medium">View</span>
           </div>
         </div>
       </div>
@@ -101,10 +89,7 @@ function AttachmentItem({
   );
 }
 
-export function AttachmentGrid({
-  attachments,
-  className,
-}: AttachmentGridProps) {
+export function AttachmentGrid({ attachments, className }: AttachmentGridProps) {
   const sortedAttachments = useMemo(
     () => [...attachments].sort((a, b) => a.order - b.order),
     [attachments],

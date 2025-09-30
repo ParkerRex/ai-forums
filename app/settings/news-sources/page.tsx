@@ -1,19 +1,13 @@
 "use client";
 
-import { useCurrentMember } from "@/hooks/use-current-member";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { DiscordSettings } from "@/components/news/discord-settings";
 import { Rss, Settings } from "lucide-react";
+import { DiscordSettings } from "@/components/news/discord-settings";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCurrentMember } from "@/hooks/use-current-member";
 
 /**
  * News Sources Settings Page
- * 
+ *
  * Allows users to manage their news feed sources and preferences.
  * Currently focuses on Discord integration with room for future expansion.
  */
@@ -68,8 +62,8 @@ export default function NewsSourcesPage() {
             <CardTitle>Discord Daily Digest</CardTitle>
           </div>
           <CardDescription>
-            Get the most popular Discord messages from yesterday in your news feed.
-            Messages are ranked by reaction count to surface the most engaging community discussions.
+            Get the most popular Discord messages from yesterday in your news feed. Messages are
+            ranked by reaction count to surface the most engaging community discussions.
           </CardDescription>
         </CardHeader>
         <CardContent>

@@ -21,9 +21,9 @@
  * @version 1.0.0
  */
 
-import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import type { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 import { getAuthenticatedMember } from "./auth";
 
 /**
@@ -35,7 +35,7 @@ import { getAuthenticatedMember } from "./auth";
  *
  * @deprecated Use getUserVotesBatch for better performance when checking multiple votes.
  * This function makes individual queries which can lead to N+1 query problems.
- * 
+ *
  * @param targetId - ID of the content being checked
  * @param targetType - Type of content (post, comment, or resource)
  * @returns Vote type ("upvote") or null if not voted
@@ -58,7 +58,7 @@ export const getUserVote = query({
     // Log deprecation warning in development
     if (process.env.NODE_ENV !== "production") {
       console.warn(
-        "⚠️ getUserVote is deprecated. Use getUserVotesBatch for better performance when checking multiple votes."
+        "⚠️ getUserVote is deprecated. Use getUserVotesBatch for better performance when checking multiple votes.",
       );
     }
 
@@ -73,9 +73,7 @@ export const getUserVote = query({
     const vote = await ctx.db
       .query("votes")
       .withIndex("by_user_and_target", (q) =>
-        q.eq("userId", member._id)
-          .eq("targetId", targetId)
-          .eq("targetType", targetType)
+        q.eq("userId", member._id).eq("targetId", targetId).eq("targetType", targetType),
       )
       .first();
 
@@ -85,14 +83,14 @@ export const getUserVote = query({
 
 /**
  * Batch retrieves the current user's votes on multiple pieces of content.
- * 
+ *
  * Optimized for performance by fetching all votes in a single query rather than
  * N individual queries. Returns a map of targetId to vote type for efficient lookups.
- * 
+ *
  * @param targetIds - Array of content IDs to check
  * @param targetType - Type of all content (must be homogeneous - all posts or all comments)
  * @returns Map of targetId to vote type ("upvote") or empty object if not authenticated
- * 
+ *
  * @example
  * ```typescript
  * const userVotes = await getUserVotesBatch({
@@ -130,7 +128,7 @@ export const getUserVotesBatch = query({
 
     // Filter for the requested targets and build the result map
     const voteMap: Record<string, "upvote"> = {};
-    
+
     for (const vote of userVotes) {
       if (vote.targetType === targetType && targetIds.includes(vote.targetId)) {
         if (vote.voteType === "upvote") {
@@ -153,11 +151,11 @@ export const getVoteCounts = query({
     const votes = await ctx.db
       .query("votes")
       .withIndex("by_target_and_type", (q) =>
-        q.eq("targetId", targetId).eq("targetType", targetType)
+        q.eq("targetId", targetId).eq("targetType", targetType),
       )
       .collect();
 
-    const upvotes = votes.filter(vote => vote.voteType === "upvote").length;
+    const upvotes = votes.filter((vote) => vote.voteType === "upvote").length;
 
     return {
       upvotes,
@@ -168,15 +166,15 @@ export const getVoteCounts = query({
 
 /**
  * Casts or removes a vote on a post with real-time score updates.
- * 
+ *
  * Handles upvoting and vote removal with automatic score recalculation.
  * Prevents duplicate votes and manages vote switching. Updates both the
  * votes table and the post's cached vote counts for performance.
- * 
+ *
  * @param postId - ID of the post to vote on
  * @param voteType - "upvote" to vote positively, "remove" to remove vote
  * @returns Success status and updated vote counts
- * 
+ *
  * @example
  * ```typescript
  * await voteOnPost({
@@ -207,9 +205,7 @@ export const voteOnPost = mutation({
     const existingVote = await ctx.db
       .query("votes")
       .withIndex("by_user_and_target", (q) =>
-        q.eq("userId", member._id)
-          .eq("targetId", targetId)
-          .eq("targetType", "post")
+        q.eq("userId", member._id).eq("targetId", targetId).eq("targetType", "post"),
       )
       .first();
 
@@ -291,9 +287,7 @@ export const voteOnComment = mutation({
     const existingVote = await ctx.db
       .query("votes")
       .withIndex("by_user_and_target", (q) =>
-        q.eq("userId", member._id)
-          .eq("targetId", targetId)
-          .eq("targetType", "comment")
+        q.eq("userId", member._id).eq("targetId", targetId).eq("targetType", "comment"),
       )
       .first();
 
@@ -373,27 +367,31 @@ export const getUserVotingActivity = query({
           const post = await ctx.db.get(vote.targetId as Id<"posts">);
           return {
             ...vote,
-            target: post ? {
-              _id: post._id,
-              title: post.title,
-              type: "post" as const,
-            } : null,
+            target: post
+              ? {
+                  _id: post._id,
+                  title: post.title,
+                  type: "post" as const,
+                }
+              : null,
           };
         } else {
           const comment = await ctx.db.get(vote.targetId as Id<"comments">);
           return {
             ...vote,
-            target: comment ? {
-              _id: comment._id,
-              content: comment.content.substring(0, 100) + "...",
-              type: "comment" as const,
-            } : null,
+            target: comment
+              ? {
+                  _id: comment._id,
+                  content: `${comment.content.substring(0, 100)}...`,
+                  type: "comment" as const,
+                }
+              : null,
           };
         }
-      })
+      }),
     );
 
-    return enrichedVotes.filter(vote => vote.target !== null);
+    return enrichedVotes.filter((vote) => vote.target !== null);
   },
 });
 
@@ -403,13 +401,15 @@ export const getPostVoters = query({
     limit: v.optional(v.number()),
   },
   returns: v.object({
-    voters: v.array(v.object({
-      _id: v.id("members"),
-      firstName: v.string(),
-      lastName: v.string(),
-      avatarUrl: v.optional(v.string()),
-      slug: v.string(),
-    })),
+    voters: v.array(
+      v.object({
+        _id: v.id("members"),
+        firstName: v.string(),
+        lastName: v.string(),
+        avatarUrl: v.optional(v.string()),
+        slug: v.string(),
+      }),
+    ),
     hasMore: v.boolean(),
     total: v.number(),
   }),
@@ -419,32 +419,34 @@ export const getPostVoters = query({
 
     const votes = await ctx.db
       .query("votes")
-      .withIndex("by_target_and_type", (q) =>
-        q.eq("targetId", postId).eq("targetType", "post")
-      )
+      .withIndex("by_target_and_type", (q) => q.eq("targetId", postId).eq("targetType", "post"))
       .filter((q) => q.eq(q.field("voteType"), "upvote"))
       .order("desc")
       .take(limit + 1);
-    
+
     const hasMore = votes.length > limit;
     const voters = await Promise.all(
       votes.slice(0, limit).map(async (vote) => {
         const member = await ctx.db.get(vote.userId);
-        return member ? {
-          _id: member._id,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          avatarUrl: member.avatarUrl,
-          slug: member.slug,
-        } : null;
-      })
+        return member
+          ? {
+              _id: member._id,
+              firstName: member.firstName,
+              lastName: member.lastName,
+              avatarUrl: member.avatarUrl,
+              slug: member.slug,
+            }
+          : null;
+      }),
     );
-    
-    const validVoters = voters.filter((voter): voter is NonNullable<typeof voter> => voter !== null);
-    
+
+    const validVoters = voters.filter(
+      (voter): voter is NonNullable<typeof voter> => voter !== null,
+    );
+
     // Use the post's upvotes field as the total count if available, otherwise fall back to the fetched length.
     const totalUpvotes = post?.upvotes ?? votes.length;
-    
+
     return {
       voters: validVoters,
       hasMore,
@@ -477,9 +479,7 @@ export const voteOnResource = mutation({
     const existingVote = await ctx.db
       .query("votes")
       .withIndex("by_user_and_target", (q) =>
-        q.eq("userId", member._id)
-          .eq("targetId", targetId)
-          .eq("targetType", "resource")
+        q.eq("userId", member._id).eq("targetId", targetId).eq("targetType", "resource"),
       )
       .first();
 
@@ -531,4 +531,4 @@ export const voteOnResource = mutation({
       netVotes: Math.max(0, (resource.upvotes || 0) + upvoteDelta),
     };
   },
-});   
+});

@@ -1,6 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import { useMutation } from "convex/react";
+import { Globe, Loader2, Save, X } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { AvatarUpload } from "@/components/members/avatar-upload";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,18 +13,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, X, Globe } from "lucide-react";
-import { useMutation } from "convex/react";
+import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { useForm } from "react-hook-form";
+import type { Id } from "@/convex/_generated/dataModel";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useNetworkStatus } from "@/hooks/use-network-status";
-import { AvatarUpload } from "@/components/members/avatar-upload";
 
 interface MemberProfileFieldModalProps {
   memberId: Id<"members">;
@@ -37,7 +37,7 @@ const fieldConfig = {
     prefix: undefined,
   },
   location: {
-    title: "Add Location", 
+    title: "Add Location",
     description: "Add your location to help members find others nearby.",
     placeholder: "City, Country",
     prefix: undefined,
@@ -78,9 +78,9 @@ const fieldConfig = {
 const extractHandle = (url: string, platform: string): string => {
   if (!url) return "";
   const patterns = {
-    github: /(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/\?#]+)/,
-    x: /(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/([^\/\?#]+)/,
-    youtube: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/@([^\/\?#]+)/,
+    github: /(?:https?:\/\/)?(?:www\.)?github\.com\/([^/?#]+)/,
+    x: /(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/([^/?#]+)/,
+    youtube: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/@([^/?#]+)/,
   };
   const pattern = patterns[platform as keyof typeof patterns];
   if (!pattern) return url;
@@ -118,12 +118,18 @@ export function MemberProfileFieldModal({
   const { isOnline } = useNetworkStatus();
 
   const config = fieldConfig[field];
-  
-  const { register, handleSubmit, formState: { errors }, watch } = useForm({
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    watch,
+  } = useForm({
     defaultValues: {
-      value: field === "github" || field === "x" || field === "youtube"
-        ? extractHandle(currentValue || "", field)
-        : currentValue || "",
+      value:
+        field === "github" || field === "x" || field === "youtube"
+          ? extractHandle(currentValue || "", field)
+          : currentValue || "",
     },
   });
 
@@ -145,7 +151,7 @@ export function MemberProfileFieldModal({
         websiteUrl?: string;
         avatarUrl?: string;
       } = { id: memberId };
-      
+
       if (field === "bio") {
         updateData.bio = data.value.trim() || undefined;
       } else if (field === "location") {
@@ -183,10 +189,13 @@ export function MemberProfileFieldModal({
             <DialogTitle>{config.title}</DialogTitle>
             <DialogDescription>{config.description}</DialogDescription>
           </DialogHeader>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            onSubmit({ value: avatarUrl });
-          }} className="space-y-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              onSubmit({ value: avatarUrl });
+            }}
+            className="space-y-6"
+          >
             <div className="space-y-2">
               <Label>Profile Photo</Label>
               <AvatarUpload
@@ -225,12 +234,15 @@ export function MemberProfileFieldModal({
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div className="space-y-2">
             <Label htmlFor="field-input">
-              {field === "bio" ? "Bio" : 
-               field === "location" ? "Location" :
-               field === "website" ? "Website URL" :
-               field.charAt(0).toUpperCase() + field.slice(1)}
+              {field === "bio"
+                ? "Bio"
+                : field === "location"
+                  ? "Location"
+                  : field === "website"
+                    ? "Website URL"
+                    : field.charAt(0).toUpperCase() + field.slice(1)}
             </Label>
-            
+
             {field === "bio" ? (
               <>
                 <Textarea
@@ -247,9 +259,7 @@ export function MemberProfileFieldModal({
                 />
                 <div className="flex justify-between text-sm">
                   <div>
-                    {errors.value && (
-                      <span className="text-red-600">{errors.value.message}</span>
-                    )}
+                    {errors.value && <span className="text-red-600">{errors.value.message}</span>}
                   </div>
                   <span className={`${bioLength > 450 ? "text-red-600" : "text-muted-foreground"}`}>
                     {bioLength}/500
@@ -277,7 +287,7 @@ export function MemberProfileFieldModal({
                     }),
                     ...(field === "website" && {
                       pattern: {
-                        value: /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/,
+                        value: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
                         message: "Please enter a valid URL",
                       },
                       maxLength: {

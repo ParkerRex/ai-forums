@@ -1,16 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { Check, X, Sparkles, Zap, Crown, Star } from "lucide-react";
+import { Check, Crown, Sparkles, Star, X, Zap } from "lucide-react";
 import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 /**
  * JoinVaiProModal component displays a comprehensive modal for upgrading to VAI Pro subscription.
@@ -168,23 +163,17 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
             </div>
 
             {/* Modal title with clean typography */}
-            <DialogTitle className="text-2xl font-bold">
-              Upgrade to VAI Pro
-            </DialogTitle>
+            <DialogTitle className="text-2xl font-bold">Upgrade to VAI Pro</DialogTitle>
 
             {/* Premium badge with monochromatic styling */}
-            <Badge
-              variant="secondary"
-              className="bg-foreground text-background"
-            >
+            <Badge variant="secondary" className="bg-foreground text-background">
               PRO
             </Badge>
           </div>
 
           {/* Subtitle explaining the value proposition */}
           <p className="text-muted-foreground mt-2">
-            Unlock the full power of AI with unlimited access and premium
-            features
+            Unlock the full power of AI with unlimited access and premium features
           </p>
         </DialogHeader>
 
@@ -194,9 +183,7 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
           <div className="space-y-8 p-6">
             {/* Premium features section highlighting key benefits */}
             <div className="space-y-4">
-              <h3 className="text-foreground text-lg font-semibold">
-                What you get with VAI Pro
-              </h3>
+              <h3 className="text-foreground text-lg font-semibold">What you get with VAI Pro</h3>
 
               {/* Grid layout for feature cards on larger screens */}
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -206,18 +193,12 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
                     className="bg-card hover:bg-accent/50 flex items-start gap-3 rounded-none border p-4 transition-colors"
                   >
                     {/* Feature icon with monochromatic styling */}
-                    <div className="bg-accent flex-shrink-0 rounded-none p-2">
-                      {feature.icon}
-                    </div>
+                    <div className="bg-accent flex-shrink-0 rounded-none p-2">{feature.icon}</div>
 
                     {/* Feature content with title and description */}
                     <div className="space-y-1">
-                      <h4 className="text-foreground font-medium">
-                        {feature.title}
-                      </h4>
-                      <p className="text-muted-foreground text-sm">
-                        {feature.description}
-                      </p>
+                      <h4 className="text-foreground font-medium">{feature.title}</h4>
+                      <p className="text-muted-foreground text-sm">{feature.description}</p>
                     </div>
                   </div>
                 ))}
@@ -226,18 +207,14 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
 
             {/* Feature comparison table showing Free vs Pro differences */}
             <div className="space-y-4">
-              <h3 className="text-foreground text-lg font-semibold">
-                Free vs Pro Comparison
-              </h3>
+              <h3 className="text-foreground text-lg font-semibold">Free vs Pro Comparison</h3>
 
               {/* Comparison table with responsive design */}
               <div className="overflow-hidden rounded-none border">
                 {/* Table header with tier labels */}
                 <div className="bg-muted/50 grid grid-cols-3">
                   <div className="p-3 text-sm font-medium">Feature</div>
-                  <div className="border-l p-3 text-center text-sm font-medium">
-                    Free
-                  </div>
+                  <div className="border-l p-3 text-center text-sm font-medium">Free</div>
                   <div className="bg-muted border-l p-3 text-center text-sm font-medium">
                     VAI Pro
                   </div>
@@ -247,21 +224,15 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
                 {featureComparison.map((item, index) => (
                   <div
                     key={index}
-                    className={`grid grid-cols-3 border-t ${
-                      item.highlight ? "bg-muted/30" : ""
-                    }`}
+                    className={`grid grid-cols-3 border-t ${item.highlight ? "bg-muted/30" : ""}`}
                   >
                     {/* Feature name column */}
-                    <div className="p-3 text-sm font-medium">
-                      {item.feature}
-                    </div>
+                    <div className="p-3 text-sm font-medium">{item.feature}</div>
 
                     {/* Free tier value with X icon for limitations */}
                     <div className="text-muted-foreground border-l p-3 text-center text-sm">
                       <div className="flex items-center justify-center gap-1">
-                        {item.highlight && (
-                          <X className="text-muted-foreground h-3 w-3" />
-                        )}
+                        {item.highlight && <X className="text-muted-foreground h-3 w-3" />}
                         {item.free}
                       </div>
                     </div>
@@ -280,9 +251,7 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
 
             {/* Pricing section with clear cost and billing information */}
             <div className="space-y-4">
-              <h3 className="text-foreground text-lg font-semibold">
-                Simple, Transparent Pricing
-              </h3>
+              <h3 className="text-foreground text-lg font-semibold">Simple, Transparent Pricing</h3>
 
               {/* Pricing card with clean monochromatic styling */}
               <div className="border-border bg-muted/30 rounded-none border-2 p-6">
@@ -290,15 +259,12 @@ export function JoinVaiProModal({ isOpen, onClose }: JoinVaiProModalProps) {
                   {/* Price display with large, prominent styling */}
                   <div className="text-3xl font-bold">
                     $99
-                    <span className="text-muted-foreground text-lg font-normal">
-                      /month
-                    </span>
+                    <span className="text-muted-foreground text-lg font-normal">/month</span>
                   </div>
 
                   {/* Billing information and money-back guarantee */}
                   <p className="text-muted-foreground text-sm">
-                    Billed monthly • Cancel anytime • 30-day money-back
-                    guarantee
+                    Billed monthly • Cancel anytime • 30-day money-back guarantee
                   </p>
                 </div>
               </div>

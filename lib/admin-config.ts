@@ -1,19 +1,11 @@
 /**
  * Admin Configuration
- * 
+ *
  * Centralized configuration for admin components to ensure
  * consistency and avoid duplication
  */
 
-import {
-  CheckCircle,
-  Clock,
-  XCircle,
-  RefreshCw,
-  User,
-  Calendar,
-  UserX,
-} from "lucide-react";
+import { Calendar, CheckCircle, Clock, RefreshCw, User, UserX, XCircle } from "lucide-react";
 
 /**
  * Tier configuration with display names, colors, and pricing

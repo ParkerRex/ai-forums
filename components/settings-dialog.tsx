@@ -1,16 +1,11 @@
 "use client";
 
-import * as React from "react";
-import { Bell, CreditCard, User, ExternalLink } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { subscriptionAnalytics } from "@/lib/analytics";
-import { formatTierName } from "@/lib/format";
-
+import { Bell, CreditCard, ExternalLink, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import * as React from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -19,12 +14,8 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import {
   Sidebar,
   SidebarContent,
@@ -35,6 +26,9 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
+import { api } from "@/convex/_generated/api";
+import { subscriptionAnalytics } from "@/lib/analytics";
+import { formatTierName } from "@/lib/format";
 
 const settingsNav = [
   { name: "Notifications", icon: Bell },
@@ -49,8 +43,7 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [activeSection, setActiveSection] = React.useState("Notifications");
-  const [isSubscriptionLoading, setIsSubscriptionLoading] =
-    React.useState(false);
+  const [isSubscriptionLoading, setIsSubscriptionLoading] = React.useState(false);
   const router = useRouter();
   const { user } = useUser();
   const member = useQuery(api.members.getMemberByEmail, {
@@ -127,16 +120,12 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                     <h3 className="mb-2 text-lg font-medium">Subscription</h3>
                     <p className="text-muted-foreground mb-4 text-sm">
                       You are currently on the{" "}
-                      <span className="font-medium">
-                        {formatTierName(member.tier || "member")}
-                      </span>{" "}
+                      <span className="font-medium">{formatTierName(member.tier || "member")}</span>{" "}
                       plan.
                     </p>
                     <Button
                       onClick={() => {
-                        subscriptionAnalytics.manageClicked(
-                          member.tier || "free",
-                        );
+                        subscriptionAnalytics.manageClicked(member.tier || "free");
                         setIsSubscriptionLoading(true);
                         onOpenChange(false);
                         router.push("/settings/billing");
@@ -167,8 +156,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
                       <h3 className="text-lg font-medium">{activeSection}</h3>
                       {activeSection === "Billing" && !member?.tier ? (
                         <p className="text-muted-foreground max-w-sm text-sm">
-                          No subscription tier assigned. Contact support for
-                          assistance.
+                          No subscription tier assigned. Contact support for assistance.
                         </p>
                       ) : (
                         <>

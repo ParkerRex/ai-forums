@@ -1,33 +1,33 @@
 /**
  * @fileoverview Main education hub page component that displays learning topics and resources
- * 
+ *
  * This page serves as the central hub for the educational content platform, displaying
  * all available learning topics in a searchable grid layout. Users can browse topics,
  * search for specific technologies, and access statistics about the learning content.
- * 
+ *
  * Features:
  * - Grid display of all available learning topics
  * - Real-time search functionality across topics
  * - Authentication-based resource addition
  * - Community statistics and engagement metrics
  * - Responsive design for all device sizes
- * 
+ *
  * @author VAI Community
  * @version 1.0.0
  */
 
 "use client";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { BookOpen, Search } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import Link from "next/link";
-import { BookOpen, Search } from "lucide-react";
-import { useState } from "react";
+import { api } from "@/convex/_generated/api";
 
 /**
  * Represents a learning topic with its metadata and resource count
- * 
+ *
  * @interface Topic
  * @property {string} _id - Unique identifier for the topic
  * @property {string} name - URL-friendly name used in routing
@@ -53,15 +53,15 @@ interface Topic {
 
 /**
  * Individual topic card component that displays a single learning topic
- * 
+ *
  * Renders a clickable card that shows topic information including name, icon,
  * description, and resource count. The card has hover effects and links to
  * the topic's dedicated page where users can browse all resources.
- * 
+ *
  * @param {Object} props - Component properties
  * @param {Topic} props.topic - The topic data to display
  * @returns {JSX.Element} Rendered topic card component
- * 
+ *
  * @example
  * ```tsx
  * <TopicCard topic={{
@@ -88,9 +88,7 @@ function TopicCard({ topic }: { topic: Topic }) {
           </CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
-          <p className="text-sm text-muted-foreground">
-            {topic.resourceCount} resources
-          </p>
+          <p className="text-sm text-muted-foreground">{topic.resourceCount} resources</p>
         </CardContent>
       </Card>
     </Link>
@@ -99,13 +97,13 @@ function TopicCard({ topic }: { topic: Topic }) {
 
 /**
  * Loading skeleton component for topic cards
- * 
+ *
  * Displays animated placeholder content while topic data is being fetched
  * from the server. Maintains the same layout as TopicCard to prevent
  * layout shifts during loading states.
- * 
+ *
  * @returns {JSX.Element} Rendered skeleton loading component
- * 
+ *
  * @example
  * ```tsx
  * {isLoading && (
@@ -145,12 +143,12 @@ function TopicCardSkeleton() {
 
 /**
  * Main education page component that serves as the learning hub
- * 
+ *
  * This is the primary entry point for the education platform, providing users
  * with access to all learning topics, search functionality, and community
  * statistics. It handles both authenticated and unauthenticated states,
  * showing appropriate UI elements based on user login status.
- * 
+ *
  * Key features:
  * - Displays all available learning topics in a responsive grid
  * - Real-time search across topic names and descriptions
@@ -158,9 +156,9 @@ function TopicCardSkeleton() {
  * - Community statistics showing total resources and topics
  * - Loading states with skeleton components
  * - Empty states for no topics or search results
- * 
+ *
  * @returns {JSX.Element} The complete education hub page
- * 
+ *
  * @example
  * ```tsx
  * // This component is used as a Next.js page
@@ -173,14 +171,14 @@ function TopicCardSkeleton() {
 export default function EducatePage() {
   // Local state for managing search functionality
   const [searchTerm, setSearchTerm] = useState("");
-  
+
   // Fetch all topics from the database
   const topics = useQuery(api.topics.getTopics, {});
-  
+
   // Conditionally fetch search results when user enters search term
   const searchResults = useQuery(
     api.topics.searchTopics,
-    searchTerm.trim() ? { searchTerm: searchTerm.trim() } : "skip"
+    searchTerm.trim() ? { searchTerm: searchTerm.trim() } : "skip",
   );
 
   // Determine which topics to display based on search state
@@ -199,7 +197,7 @@ export default function EducatePage() {
             </div>
             <div className="w-32 h-10 bg-muted rounded animate-pulse" />
           </div>
-          
+
           {/* Search input skeleton */}
           <div className="max-w-md">
             <div className="h-10 bg-muted rounded animate-pulse" />
@@ -208,7 +206,9 @@ export default function EducatePage() {
 
         {/* Topics grid skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }, (_, i) => <TopicCardSkeleton key={i} />)}
+          {Array.from({ length: 6 }, (_, i) => (
+            <TopicCardSkeleton key={i} />
+          ))}
         </div>
 
         {/* Statistics section skeleton */}
@@ -272,7 +272,6 @@ export default function EducatePage() {
           displayTopics.map((topic: Topic) => <TopicCard key={topic._id} topic={topic} />)
         )}
       </div>
-
     </div>
   );
 }

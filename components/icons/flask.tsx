@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { motion, useAnimation } from 'motion/react';
-import type { HTMLAttributes } from 'react';
-import { forwardRef, useCallback, useImperativeHandle, useRef } from 'react';
-import { cn } from '@/lib/utils';
+import { motion, useAnimation } from "motion/react";
+import type { HTMLAttributes } from "react";
+import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
+import { cn } from "@/lib/utils";
 
 export interface FlaskIconHandle {
   startAnimation: () => void;
@@ -23,31 +23,31 @@ const FlaskIcon = forwardRef<FlaskIconHandle, FlaskIconProps>(
       isControlledRef.current = true;
 
       return {
-        startAnimation: () => controls.start('animate'),
-        stopAnimation: () => controls.start('normal'),
+        startAnimation: () => controls.start("animate"),
+        stopAnimation: () => controls.start("normal"),
       };
     });
 
     const handleMouseEnter = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
         if (!isControlledRef.current) {
-          controls.start('animate');
+          controls.start("animate");
         } else {
           onMouseEnter?.(e);
         }
       },
-      [controls, onMouseEnter]
+      [controls, onMouseEnter],
     );
 
     const handleMouseLeave = useCallback(
       (e: React.MouseEvent<HTMLDivElement>) => {
         if (!isControlledRef.current) {
-          controls.start('normal');
+          controls.start("normal");
         } else {
           onMouseLeave?.(e);
         }
       },
-      [controls, onMouseLeave]
+      [controls, onMouseLeave],
     );
 
     return (
@@ -74,7 +74,7 @@ const FlaskIcon = forwardRef<FlaskIconHandle, FlaskIconProps>(
                 translateY: -12,
                 rotate: [0, 5, -5, 3, -3, 0],
                 transition: {
-                  ease: 'linear',
+                  ease: "linear",
                   rotate: { duration: 0.8 },
                 },
               },
@@ -98,7 +98,7 @@ const FlaskIcon = forwardRef<FlaskIconHandle, FlaskIconProps>(
                   duration: 0.8,
                   scale: {
                     duration: 0.3,
-                    type: 'spring',
+                    type: "spring",
                     bounce: 0.4,
                     stiffness: 150,
                     damping: 10,
@@ -111,9 +111,9 @@ const FlaskIcon = forwardRef<FlaskIconHandle, FlaskIconProps>(
         </svg>
       </div>
     );
-  }
+  },
 );
 
-FlaskIcon.displayName = 'FlaskIcon';
+FlaskIcon.displayName = "FlaskIcon";
 
 export { FlaskIcon };

@@ -1,20 +1,26 @@
 "use client";
 
+import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter,
-  DialogDescription
-} from "@/components/ui/dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export interface PollOption {
   id: string;
@@ -35,7 +41,7 @@ interface PollCreationModalProps {
 export function PollCreationModal({ isOpen, onClose, onConfirm }: PollCreationModalProps) {
   const [options, setOptions] = useState<PollOption[]>([
     { id: crypto.randomUUID(), text: "" },
-    { id: crypto.randomUUID(), text: "" }
+    { id: crypto.randomUUID(), text: "" },
   ]);
   const [duration, setDuration] = useState<PollData["duration"]>("7d");
   const [error, setError] = useState<string>("");
@@ -54,21 +60,19 @@ export function PollCreationModal({ isOpen, onClose, onConfirm }: PollCreationMo
       setError("Minimum 2 options required");
       return;
     }
-    setOptions(options.filter(opt => opt.id !== id));
+    setOptions(options.filter((opt) => opt.id !== id));
     setError("");
   };
 
   const handleOptionChange = (id: string, text: string) => {
-    setOptions(options.map(opt => 
-      opt.id === id ? { ...opt, text } : opt
-    ));
+    setOptions(options.map((opt) => (opt.id === id ? { ...opt, text } : opt)));
     setError("");
   };
 
   const handleConfirm = () => {
     // Validate options
-    const nonEmptyOptions = options.filter(opt => opt.text.trim());
-    
+    const nonEmptyOptions = options.filter((opt) => opt.text.trim());
+
     if (nonEmptyOptions.length < 2) {
       setError("Please provide at least 2 options");
       return;
@@ -83,13 +87,13 @@ export function PollCreationModal({ isOpen, onClose, onConfirm }: PollCreationMo
 
     onConfirm({
       options: nonEmptyOptions,
-      duration
+      duration,
     });
 
     // Reset state
     setOptions([
       { id: crypto.randomUUID(), text: "" },
-      { id: crypto.randomUUID(), text: "" }
+      { id: crypto.randomUUID(), text: "" },
     ]);
     setDuration("7d");
     setError("");
@@ -99,7 +103,7 @@ export function PollCreationModal({ isOpen, onClose, onConfirm }: PollCreationMo
     // Reset state
     setOptions([
       { id: crypto.randomUUID(), text: "" },
-      { id: crypto.randomUUID(), text: "" }
+      { id: crypto.randomUUID(), text: "" },
     ]);
     setDuration("7d");
     setError("");
@@ -139,7 +143,7 @@ export function PollCreationModal({ isOpen, onClose, onConfirm }: PollCreationMo
                 )}
               </div>
             ))}
-            
+
             {options.length < 6 && (
               <Button
                 type="button"
@@ -156,7 +160,10 @@ export function PollCreationModal({ isOpen, onClose, onConfirm }: PollCreationMo
 
           <div className="space-y-2">
             <Label htmlFor="duration">Poll Duration</Label>
-            <Select value={duration} onValueChange={(value) => setDuration(value as PollData["duration"])}>
+            <Select
+              value={duration}
+              onValueChange={(value) => setDuration(value as PollData["duration"])}
+            >
               <SelectTrigger id="duration">
                 <SelectValue />
               </SelectTrigger>

@@ -1,18 +1,18 @@
 "use client";
 
-import { useForm } from "react-hook-form";
 import { useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { Globe, Loader2, Save, X } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { AvatarUpload } from "@/components/members/avatar-upload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Loader2, Save, X, Globe } from "lucide-react";
-import { useState } from "react";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useNetworkStatus } from "@/hooks/use-network-status";
-import { AvatarUpload } from "@/components/members/avatar-upload";
 
 interface Member {
   _id: Id<"members">;
@@ -48,9 +48,9 @@ const extractHandle = (url: string, platform: string): string => {
   if (!url) return "";
 
   const patterns = {
-    github: /(?:https?:\/\/)?(?:www\.)?github\.com\/([^\/\?#]+)/,
-    x: /(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/([^\/\?#]+)/,
-    youtube: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/@([^\/\?#]+)/,
+    github: /(?:https?:\/\/)?(?:www\.)?github\.com\/([^/?#]+)/,
+    x: /(?:https?:\/\/)?(?:www\.)?(?:twitter\.com|x\.com)\/([^/?#]+)/,
+    youtube: /(?:https?:\/\/)?(?:www\.)?youtube\.com\/@([^/?#]+)/,
   };
 
   const pattern = patterns[platform as keyof typeof patterns];
@@ -79,11 +79,7 @@ const validateHandle = (handle: string): boolean => {
   return /^[a-zA-Z0-9._-]+$/.test(handle) && handle.length <= 50;
 };
 
-export default function MemberEditForm({
-  member,
-  onSuccess,
-  onCancel,
-}: MemberEditFormProps) {
+export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEditFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(member.avatarUrl || "");
   const updateMemberProfile = useMutation(api.members.updateMemberProfile);
@@ -108,7 +104,7 @@ export default function MemberEditForm({
 
   const bioValue = watch("bio");
   const bioLength = bioValue?.length || 0;
-  
+
   // Check if avatar has changed
   const isAvatarChanged = avatarUrl !== (member.avatarUrl || "");
   const isFormDirty = isDirty || isAvatarChanged;
@@ -176,14 +172,8 @@ export default function MemberEditForm({
           })}
         />
         <div className="flex justify-between text-sm">
-          <div>
-            {errors.bio && (
-              <span className="text-red-600">{errors.bio.message}</span>
-            )}
-          </div>
-          <span
-            className={`${bioLength > 450 ? "text-red-600" : "text-muted-foreground"}`}
-          >
+          <div>{errors.bio && <span className="text-red-600">{errors.bio.message}</span>}</div>
+          <span className={`${bioLength > 450 ? "text-red-600" : "text-muted-foreground"}`}>
             {bioLength}/500
           </span>
         </div>
@@ -202,11 +192,7 @@ export default function MemberEditForm({
             },
           })}
         />
-        {errors.location && (
-          <span className="text-sm text-red-600">
-            {errors.location.message}
-          </span>
-        )}
+        {errors.location && <span className="text-sm text-red-600">{errors.location.message}</span>}
       </div>
 
       {/* Social Links */}
@@ -232,9 +218,7 @@ export default function MemberEditForm({
             />
           </div>
           {errors.githubHandle && (
-            <span className="text-sm text-red-600">
-              {errors.githubHandle.message}
-            </span>
+            <span className="text-sm text-red-600">{errors.githubHandle.message}</span>
           )}
         </div>
 
@@ -256,11 +240,7 @@ export default function MemberEditForm({
               })}
             />
           </div>
-          {errors.xHandle && (
-            <span className="text-sm text-red-600">
-              {errors.xHandle.message}
-            </span>
-          )}
+          {errors.xHandle && <span className="text-sm text-red-600">{errors.xHandle.message}</span>}
         </div>
 
         {/* YouTube */}
@@ -282,9 +262,7 @@ export default function MemberEditForm({
             />
           </div>
           {errors.youtubeHandle && (
-            <span className="text-sm text-red-600">
-              {errors.youtubeHandle.message}
-            </span>
+            <span className="text-sm text-red-600">{errors.youtubeHandle.message}</span>
           )}
         </div>
 
@@ -301,32 +279,25 @@ export default function MemberEditForm({
               className="rounded-l-none"
               {...register("websiteUrl", {
                 pattern: {
-                  value: /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/,
-                  message: "Please enter a valid URL"
+                  value: /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/,
+                  message: "Please enter a valid URL",
                 },
                 maxLength: {
                   value: 500,
-                  message: "Website URL must be less than 500 characters"
-                }
+                  message: "Website URL must be less than 500 characters",
+                },
               })}
             />
           </div>
           {errors.websiteUrl && (
-            <span className="text-sm text-red-600">
-              {errors.websiteUrl.message}
-            </span>
+            <span className="text-sm text-red-600">{errors.websiteUrl.message}</span>
           )}
         </div>
       </div>
 
       {/* Form Actions */}
       <div className="flex justify-end space-x-3 pt-4 border-t">
-        <Button
-          type="button"
-          variant="ghost"
-          onClick={onCancel}
-          disabled={isSubmitting}
-        >
+        <Button type="button" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
           <X className="w-4 h-4 mr-2" />
           Cancel
         </Button>
@@ -334,11 +305,7 @@ export default function MemberEditForm({
           type="submit"
           variant="default"
           disabled={isSubmitting || !isFormDirty || !isOnline}
-          title={
-            !isOnline
-              ? "You're offline. Please check your connection."
-              : undefined
-          }
+          title={!isOnline ? "You're offline. Please check your connection." : undefined}
         >
           {isSubmitting ? (
             <Loader2 className="w-4 h-4 mr-2 animate-spin" />

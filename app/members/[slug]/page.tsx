@@ -2,18 +2,18 @@
 
 /**
  * @fileoverview Individual Member Profile Page
- * 
+ *
  * This page displays detailed information about a specific member, including:
  * - Complete member profile with avatar, bio, and social links
  * - Member's posts with full PostCard components
  * - Recent activity (comments) with links to original posts
  * - Personal bookmarks (only visible to the member themselves)
  * - Progressive loading for each section independently
- * 
+ *
  * The page uses dynamic routing with member slugs for SEO-friendly URLs.
  * It implements comprehensive error handling and loading states for each
  * data section to provide optimal user experience.
- * 
+ *
  * Features:
  * - Dynamic slug-based routing (/members/[slug])
  * - Progressive loading with independent sections
@@ -21,38 +21,34 @@
  * - Error boundaries for resilient UI
  * - Back navigation with animated icon
  * - Responsive design for all screen sizes
- * 
+ *
  * @author VAI Development Team
  * @version 1.0.0
  */
 
-import { notFound, useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "convex/react";
 import { ArrowLeft, Bookmark } from "lucide-react";
-import React from "react";
-import MemberProfile from "@/components/members/member-profile";
-import PostCard from "@/components/posts/post-card";
+import { notFound, useRouter } from "next/navigation";
+import React, { use } from "react";
+import { PageErrorBoundary, QueryErrorBoundary } from "@/components/error-boundary";
 import MemberActivityCard from "@/components/members/member-activity-card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import MemberProfile from "@/components/members/member-profile";
 import {
+  ActivitySkeletonList,
   MemberProfileSkeleton,
   PostSkeletonList,
-  ActivitySkeletonList,
 } from "@/components/members/member-skeleton";
-import { useQuery } from "convex/react";
+import PostCard from "@/components/posts/post-card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { api } from "@/convex/_generated/api";
-import { use } from "react";
-import {
-  PageErrorBoundary,
-  QueryErrorBoundary,
-} from "@/components/error-boundary";
 
 /**
  * Props interface for the MemberDetailPage component.
- * 
+ *
  * Uses Next.js 13+ dynamic routing where params are passed as a Promise.
  * The slug parameter is extracted from the URL path.
- * 
+ *
  * @interface PageProps
  * @property {Promise<{ slug: string }>} params - Promise containing route parameters
  */
@@ -62,16 +58,16 @@ interface PageProps {
 
 /**
  * Main content component for individual member profile pages.
- * 
+ *
  * Handles fetching and displaying member data, posts, activity, and bookmarks.
  * Implements progressive loading where each section loads independently to
  * provide better user experience and avoid blocking the entire page.
- * 
+ *
  * @component
  * @param {object} props - Component props
  * @param {string} props.slug - Member's URL slug for data fetching
  * @returns {JSX.Element} The complete member profile page content
- * 
+ *
  * @example
  * ```tsx
  * <MemberDetailContent slug="john-doe" />
@@ -80,7 +76,9 @@ interface PageProps {
 function MemberDetailContent({ slug }: { slug: string }) {
   const router = useRouter();
   const [postsCursor, setPostsCursor] = React.useState<string | null>(null);
-  const [allPosts, setAllPosts] = React.useState<Array<NonNullable<typeof memberPostsData>["page"][number]>>([]);
+  const [allPosts, setAllPosts] = React.useState<
+    Array<NonNullable<typeof memberPostsData>["page"][number]>
+  >([]);
 
   // Fetch member data from Convex using slug - primary data source
   const memberData = useQuery(api.members.getMemberBySlug, { slug });
@@ -115,9 +113,11 @@ function MemberDetailContent({ slug }: { slug: string }) {
   const isOwnProfile = currentMember && memberData && currentMember._id === memberData._id;
   const memberBookmarksData = useQuery(
     api.bookmarks.getUserBookmarks,
-    isOwnProfile ? {
-      paginationOpts: { numItems: 10, cursor: null } // Get more bookmarks for tab view
-    } : "skip", // Skip for privacy if not own profile
+    isOwnProfile
+      ? {
+          paginationOpts: { numItems: 10, cursor: null }, // Get more bookmarks for tab view
+        }
+      : "skip", // Skip for privacy if not own profile
   );
 
   // Member not found (only check this after data has loaded)
@@ -181,7 +181,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
         setAllPosts(memberPostsData.page);
       } else {
         // Subsequent pages, append to existing posts
-        setAllPosts(prev => [...prev, ...memberPostsData.page]);
+        setAllPosts((prev) => [...prev, ...memberPostsData.page]);
       }
     }
   }, [memberPostsData, postsCursor]);
@@ -217,11 +217,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
         {/* Twitter-style sticky header */}
         <header className="flex items-center justify-between p-2 px-4 border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-10">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.back()}
-            >
+            <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="w-5 h-5" />
             </Button>
             <div>
@@ -277,9 +273,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
                     )}
                   </>
                 ) : (
-                  <div className="p-4 text-center text-muted-foreground">
-                    No posts yet.
-                  </div>
+                  <div className="p-4 text-center text-muted-foreground">No posts yet.</div>
                 )}
               </QueryErrorBoundary>
             </TabsContent>
@@ -290,19 +284,15 @@ function MemberDetailContent({ slug }: { slug: string }) {
                 {isActivityLoading ? (
                   <ActivitySkeletonList count={4} />
                 ) : memberActivity.length > 0 ? (
-                  <>
-                    <div className="divide-y divide-border">
-                      {memberActivity.map((activity) => (
-                        <div key={activity.id} className="p-4">
-                          <MemberActivityCard activity={activity} size="medium" />
-                        </div>
-                      ))}
-                    </div>
-                  </>
-                ) : (
-                  <div className="p-4 text-center text-muted-foreground">
-                    No recent activity.
+                  <div className="divide-y divide-border">
+                    {memberActivity.map((activity) => (
+                      <div key={activity.id} className="p-4">
+                        <MemberActivityCard activity={activity} size="medium" />
+                      </div>
+                    ))}
                   </div>
+                ) : (
+                  <div className="p-4 text-center text-muted-foreground">No recent activity.</div>
                 )}
               </QueryErrorBoundary>
             </TabsContent>
@@ -350,15 +340,15 @@ function MemberDetailContent({ slug }: { slug: string }) {
 
 /**
  * Main Member Detail Page component with error boundary protection.
- * 
+ *
  * This is the default export for the dynamic route `/members/[slug]`.
  * It handles the Next.js 13+ Promise-based params and provides error
  * boundary protection for the entire page.
- * 
+ *
  * @component
  * @param {PageProps} props - Page props containing route parameters
  * @returns {JSX.Element} The complete member detail page with error handling
- * 
+ *
  * @example
  * ```tsx
  * // Used in Next.js routing

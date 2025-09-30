@@ -44,7 +44,7 @@
 //         }
 
 //         const clerkUser = await response.json();
-        
+
 //         // Check if Clerk has an avatar URL
 //         if (clerkUser.image_url && clerkUser.image_url !== member.avatarUrl) {
 //           // Update member with new avatar URL
@@ -52,7 +52,7 @@
 //             memberId: member._id,
 //             avatarUrl: clerkUser.image_url,
 //           });
-          
+
 //           console.log(`Updated avatar for ${member.firstName} ${member.lastName}`);
 //           updated++;
 //         }
@@ -63,7 +63,7 @@
 //     }
 
 //     console.log(`Avatar sync complete: ${updated} updated, ${errors} errors`);
-    
+
 //     return {
 //       total: members.length,
 //       updated,
@@ -82,7 +82,7 @@
 //       .query("members")
 //       .filter((q) => q.neq(q.field("externalId"), undefined))
 //       .collect();
-    
+
 //     return members.map(m => ({
 //       _id: m._id,
 //       externalId: m.externalId || '',
@@ -103,7 +103,7 @@
 //   handler: async (ctx, args) => {
 //     const member = await ctx.db.get(args.memberId);
 //     if (!member) return null;
-    
+
 //     return {
 //       _id: member._id,
 //       externalId: member.externalId,
@@ -168,16 +168,16 @@
 //     }
 
 //     const clerkUser = await response.json();
-    
+
 //     // Update member with avatar URL from Clerk
 //     if (clerkUser.image_url) {
 //       await ctx.runMutation(internal.migrations.sync_clerk_avatars.updateMemberAvatar, {
 //         memberId: member._id,
 //         avatarUrl: clerkUser.image_url,
 //       });
-      
+
 //       console.log(`Updated avatar for ${member.firstName} ${member.lastName}: ${clerkUser.image_url}`);
-      
+
 //       return {
 //         memberId: member._id,
 //         previousAvatar: member.avatarUrl,

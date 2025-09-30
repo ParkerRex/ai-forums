@@ -1,10 +1,10 @@
 /**
  * @fileoverview Notifications Module - Real-time user engagement and alert system
- * 
+ *
  * This module manages the notification system that keeps users engaged and informed
  * about community activity. It handles mentions, replies, votes, reports, and other
  * social interactions with intelligent deduplication and delivery optimization.
- * 
+ *
  * Key features:
  * - Real-time notification delivery
  * - Intelligent deduplication to prevent spam
@@ -14,27 +14,27 @@
  * - Self-notification suppression
  * - Notification cleanup and archival
  * - Integration with all social features
- * 
+ *
  * The system is designed for high throughput and provides the foundation
  * for building notification centers and real-time engagement features.
- * 
+ *
  * @author VAI Development Team
  * @version 1.0.0
  */
 
-import { query, mutation, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
-import { getAuthenticatedMember } from "./auth";
+import type { Id } from "./_generated/dataModel";
 import type { MutationCtx } from "./_generated/server";
+import { internalMutation, mutation, query } from "./_generated/server";
+import { getAuthenticatedMember } from "./auth";
 
 /**
  * Creates a new notification with intelligent deduplication and validation.
- * 
+ *
  * This internal helper is called by other modules (posts, comments, votes) to
  * create notifications. It handles deduplication to prevent spam, suppresses
  * self-notifications, and manages the notification lifecycle.
- * 
+ *
  * @param ctx - Mutation context for database operations
  * @param args - Notification parameters
  * @param args.recipientId - Member receiving the notification
@@ -44,7 +44,7 @@ import type { MutationCtx } from "./_generated/server";
  * @param args.actorId - Member who triggered the notification
  * @param args.message - Human-readable notification message
  * @returns Notification ID if created, null if suppressed
- * 
+ *
  * @example
  * ```typescript
  * const notificationId = await insertNotification(ctx, {
@@ -66,7 +66,7 @@ export async function insertNotification(
     entityId: string;
     actorId: Id<"members">;
     message: string;
-  }
+  },
 ): Promise<Id<"notifications"> | null> {
   // Suppress self-notifications
   if (args.recipientId === args.actorId) {
@@ -82,8 +82,8 @@ export async function insertNotification(
         q.eq(q.field("type"), args.type),
         q.eq(q.field("entityType"), args.entityType),
         q.eq(q.field("entityId"), args.entityId),
-        q.eq(q.field("actorId"), args.actorId)
-      )
+        q.eq(q.field("actorId"), args.actorId),
+      ),
     )
     .first();
 
@@ -112,14 +112,14 @@ export async function insertNotification(
 
 /**
  * Retrieves paginated notifications for the current authenticated user.
- * 
+ *
  * Returns notifications sorted by creation time (newest first) with complete
  * context including actor information and related content references.
  * Used for building notification centers and activity feeds.
- * 
+ *
  * @param limit - Maximum number of notifications to return (default: 50)
  * @returns Array of enriched notification objects with actor details
- * 
+ *
  * @example
  * ```typescript
  * const notifications = await getNotifications({ limit: 20 });
@@ -130,40 +130,41 @@ export const getNotifications = query({
   args: {
     limit: v.optional(v.number()),
   },
-  returns: v.array(v.object({
-    _id: v.id("notifications"),
-    _creationTime: v.number(),
-    recipientId: v.id("members"),
-    type: v.union(
-      v.literal("mention"),
-      v.literal("reply"),
-      v.literal("upvote"),
-      v.literal("follow"),
-      v.literal("comment_report"),
-      v.literal("payment_reminder")
-    ),
-    entityType: v.union(
-      v.literal("post"),
-      v.literal("comment"),
-      v.literal("payment")
-    ),
-    entityId: v.string(),
-    actorId: v.id("members"),
-    message: v.string(),
-    read: v.boolean(),
-    createdAt: v.number(),
-    actor: v.union(v.object({
-      _id: v.id("members"),
-      firstName: v.string(),
-      lastName: v.string(),
-      slug: v.string(),
-      avatarUrl: v.optional(v.string()),
-    }), v.null()),
-    timeAgo: v.string(),
-    // Additional fields for link construction
-    postId: v.union(v.id("posts"), v.null()),
-    postSlug: v.union(v.string(), v.null()),
-  })),
+  returns: v.array(
+    v.object({
+      _id: v.id("notifications"),
+      _creationTime: v.number(),
+      recipientId: v.id("members"),
+      type: v.union(
+        v.literal("mention"),
+        v.literal("reply"),
+        v.literal("upvote"),
+        v.literal("follow"),
+        v.literal("comment_report"),
+        v.literal("payment_reminder"),
+      ),
+      entityType: v.union(v.literal("post"), v.literal("comment"), v.literal("payment")),
+      entityId: v.string(),
+      actorId: v.id("members"),
+      message: v.string(),
+      read: v.boolean(),
+      createdAt: v.number(),
+      actor: v.union(
+        v.object({
+          _id: v.id("members"),
+          firstName: v.string(),
+          lastName: v.string(),
+          slug: v.string(),
+          avatarUrl: v.optional(v.string()),
+        }),
+        v.null(),
+      ),
+      timeAgo: v.string(),
+      // Additional fields for link construction
+      postId: v.union(v.id("posts"), v.null()),
+      postSlug: v.union(v.string(), v.null()),
+    }),
+  ),
   handler: async (ctx, args) => {
     const member = await getAuthenticatedMember(ctx);
     if (!member) {
@@ -171,7 +172,7 @@ export const getNotifications = query({
     }
 
     const limit = args.limit || 20;
-    
+
     const notifications = await ctx.db
       .query("notifications")
       .withIndex("by_recipient", (q) => q.eq("recipientId", member._id))
@@ -204,18 +205,20 @@ export const getNotifications = query({
 
         return {
           ...notification,
-          actor: actor ? {
-            _id: actor._id,
-            firstName: actor.firstName,
-            lastName: actor.lastName,
-            slug: actor.slug,
-            avatarUrl: actor.avatarUrl,
-          } : null,
+          actor: actor
+            ? {
+                _id: actor._id,
+                firstName: actor.firstName,
+                lastName: actor.lastName,
+                slug: actor.slug,
+                avatarUrl: actor.avatarUrl,
+              }
+            : null,
           timeAgo,
           postId,
           postSlug,
         };
-      })
+      }),
     );
 
     return enrichedNotifications;
@@ -225,7 +228,7 @@ export const getNotifications = query({
 export const getUnreadNotificationCount = query({
   args: {},
   returns: v.number(),
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     const member = await getAuthenticatedMember(ctx);
     if (!member) {
       return 0;
@@ -233,9 +236,7 @@ export const getUnreadNotificationCount = query({
 
     const unreadNotifications = await ctx.db
       .query("notifications")
-      .withIndex("by_recipient_and_read", (q) => 
-        q.eq("recipientId", member._id).eq("read", false)
-      )
+      .withIndex("by_recipient_and_read", (q) => q.eq("recipientId", member._id).eq("read", false))
       .collect();
 
     return unreadNotifications.length;
@@ -251,13 +252,9 @@ export const createNotification = mutation({
       v.literal("upvote"),
       v.literal("follow"),
       v.literal("comment_report"),
-      v.literal("payment_reminder")
+      v.literal("payment_reminder"),
     ),
-    entityType: v.union(
-      v.literal("post"),
-      v.literal("comment"),
-      v.literal("payment")
-    ),
+    entityType: v.union(v.literal("post"), v.literal("comment"), v.literal("payment")),
     entityId: v.string(),
     actorId: v.id("members"),
     message: v.string(),
@@ -271,13 +268,13 @@ export const createNotification = mutation({
     const existingNotification = await ctx.db
       .query("notifications")
       .withIndex("by_recipient", (q) => q.eq("recipientId", args.recipientId))
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.eq(q.field("type"), args.type),
           q.eq(q.field("entityType"), args.entityType),
           q.eq(q.field("entityId"), args.entityId),
-          q.eq(q.field("actorId"), args.actorId)
-        )
+          q.eq(q.field("actorId"), args.actorId),
+        ),
       )
       .first();
 
@@ -319,7 +316,7 @@ export const markNotificationAsRead = mutation({
 export const markAllNotificationsAsRead = mutation({
   args: {},
   returns: v.null(),
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     const member = await getAuthenticatedMember(ctx);
     if (!member) {
       throw new Error("Not authenticated");
@@ -327,15 +324,11 @@ export const markAllNotificationsAsRead = mutation({
 
     const unreadNotifications = await ctx.db
       .query("notifications")
-      .withIndex("by_recipient_and_read", (q) => 
-        q.eq("recipientId", member._id).eq("read", false)
-      )
+      .withIndex("by_recipient_and_read", (q) => q.eq("recipientId", member._id).eq("read", false))
       .collect();
 
     await Promise.all(
-      unreadNotifications.map((notification) =>
-        ctx.db.patch(notification._id, { read: true })
-      )
+      unreadNotifications.map((notification) => ctx.db.patch(notification._id, { read: true })),
     );
 
     return null;
@@ -360,8 +353,8 @@ export const sendRenewalReminder = internalMutation({
         q.and(
           q.eq(q.field("type"), "payment_reminder"),
           q.eq(q.field("entityType"), "payment"),
-          q.gte(q.field("createdAt"), Date.now() - 24 * 60 * 60 * 1000) // Within last 24 hours
-        )
+          q.gte(q.field("createdAt"), Date.now() - 24 * 60 * 60 * 1000), // Within last 24 hours
+        ),
       )
       .first();
 
@@ -369,10 +362,10 @@ export const sendRenewalReminder = internalMutation({
       return; // Don't send duplicate reminders
     }
 
-    const formattedDate = new Date(args.subscriptionEndDate).toLocaleDateString('en-US', {
-      month: 'long',
-      day: 'numeric',
-      year: 'numeric'
+    const formattedDate = new Date(args.subscriptionEndDate).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
     });
 
     let message: string;

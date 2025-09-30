@@ -1,6 +1,6 @@
-import { api } from "../convex/_generated/api.js";
 import { ConvexClient } from "convex/browser";
 import * as dotenv from "dotenv";
+import { api } from "../convex/_generated/api.js";
 
 dotenv.config({ path: ".env.local" });
 
@@ -23,7 +23,7 @@ async function findHappyDucky() {
     console.log(`  Email: ${member.email}`);
     console.log(`  Joined: ${new Date(member.joinedDate).toLocaleDateString()}`);
     console.log(`  Status: ${member.status}`);
-    
+
     // Get additional details
     console.log("\nAdditional details:");
     console.log(`  Bio: ${member.bio || "(empty)"}`);

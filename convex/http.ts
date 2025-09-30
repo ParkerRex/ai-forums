@@ -1,6 +1,6 @@
 import { httpRouter } from "convex/server";
-import { httpAction } from "./_generated/server";
 import { internal } from "./_generated/api";
+import { httpAction } from "./_generated/server";
 
 const http = httpRouter();
 
@@ -9,19 +9,19 @@ const importData = httpAction(async (ctx, request) => {
   // Add authentication check
   const authHeader = request.headers.get("Authorization");
   const expectedToken = process.env.IMPORT_SECRET_TOKEN;
-  
+
   if (!expectedToken || authHeader !== `Bearer ${expectedToken}`) {
     return new Response("Unauthorized", { status: 401 });
   }
 
   try {
     const { type, data } = await request.json();
-    
+
     if (type === "posts") {
       const result = await ctx.runMutation(internal.importPostsComments.importPostsBatch, {
         posts: data.posts,
       });
-      
+
       return new Response(JSON.stringify(result), {
         status: 200,
         headers: {
@@ -33,7 +33,7 @@ const importData = httpAction(async (ctx, request) => {
         comments: data.comments,
         postIdMap: data.postIdMap,
       });
-      
+
       return new Response(JSON.stringify(result), {
         status: 200,
         headers: {
@@ -47,7 +47,7 @@ const importData = httpAction(async (ctx, request) => {
         lastName: data.lastName,
         joinedDate: data.joinedDate,
       });
-      
+
       return new Response(JSON.stringify({ memberId: result }), {
         status: 200,
         headers: {
@@ -55,16 +55,19 @@ const importData = httpAction(async (ctx, request) => {
         },
       });
     }
-    
+
     return new Response("Invalid import type", { status: 400 });
   } catch (error) {
     console.error("Import error:", error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }), {
-      status: 500,
-      headers: {
-        "Content-Type": "application/json",
+    return new Response(
+      JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
+      {
+        status: 500,
+        headers: {
+          "Content-Type": "application/json",
+        },
       },
-    });
+    );
   }
 });
 

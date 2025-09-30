@@ -1,15 +1,29 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  ArrowDownRight,
+  ArrowUpRight,
+  DollarSign,
+  TrendingDown,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Cell,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -17,33 +31,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  AreaChart,
-  Area,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-} from "recharts";
-import {
-  DollarSign,
-  Users,
-  TrendingUp,
-  TrendingDown,
-  ArrowUpRight,
-  ArrowDownRight,
-} from "lucide-react";
+import { api } from "@/convex/_generated/api";
 
 export default function AnalyticsPage() {
-  const [timeRange, setTimeRange] = useState<
-    "7d" | "30d" | "90d" | "1y" | "all"
-  >("30d");
+  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y" | "all">("30d");
 
   const metrics = useQuery(api.admin.metrics.getPaymentMetrics, { timeRange });
   const mrrHistory = useQuery(api.admin.metrics.getMRRHistory, { months: 12 });
@@ -78,8 +70,7 @@ export default function AnalyticsPage() {
 
   const currentMRR = mrrHistory[mrrHistory.length - 1]?.mrr || 0;
   const previousMRR = mrrHistory[mrrHistory.length - 2]?.mrr || 0;
-  const mrrGrowth =
-    previousMRR > 0 ? ((currentMRR - previousMRR) / previousMRR) * 100 : 0;
+  const mrrGrowth = previousMRR > 0 ? ((currentMRR - previousMRR) / previousMRR) * 100 : 0;
 
   return (
     <div className="space-y-6 p-6">
@@ -87,15 +78,11 @@ export default function AnalyticsPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
-          <p className="text-muted-foreground">
-            Revenue, membership, and growth metrics
-          </p>
+          <p className="text-muted-foreground">Revenue, membership, and growth metrics</p>
         </div>
         <Select
           value={timeRange}
-          onValueChange={(value) =>
-            setTimeRange(value as "7d" | "30d" | "90d" | "1y" | "all")
-          }
+          onValueChange={(value) => setTimeRange(value as "7d" | "30d" | "90d" | "1y" | "all")}
         >
           <SelectTrigger className="w-40">
             <SelectValue />
@@ -114,29 +101,21 @@ export default function AnalyticsPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Monthly Recurring Revenue
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Monthly Recurring Revenue</CardTitle>
             <DollarSign className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(currentMRR)}
-            </div>
+            <div className="text-2xl font-bold">{formatCurrency(currentMRR)}</div>
             <p className="text-muted-foreground mt-1 flex items-center text-xs">
               {mrrGrowth >= 0 ? (
                 <>
                   <ArrowUpRight className="text-chart-2 mr-1 h-3 w-3" />
-                  <span className="text-chart-2">
-                    {formatPercent(Math.abs(mrrGrowth))}
-                  </span>
+                  <span className="text-chart-2">{formatPercent(Math.abs(mrrGrowth))}</span>
                 </>
               ) : (
                 <>
                   <ArrowDownRight className="text-destructive mr-1 h-3 w-3" />
-                  <span className="text-destructive">
-                    {formatPercent(Math.abs(mrrGrowth))}
-                  </span>
+                  <span className="text-destructive">{formatPercent(Math.abs(mrrGrowth))}</span>
                 </>
               )}
               <span className="ml-1">from last month</span>
@@ -150,9 +129,7 @@ export default function AnalyticsPage() {
             <TrendingUp className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(metrics.revenue.net)}
-            </div>
+            <div className="text-2xl font-bold">{formatCurrency(metrics.revenue.net)}</div>
             <p className="text-muted-foreground text-xs">
               {formatCurrency(metrics.revenue.gross)} gross
             </p>
@@ -161,16 +138,12 @@ export default function AnalyticsPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              Active Members
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">Active Members</CardTitle>
             <Users className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{metrics.members.paid}</div>
-            <p className="text-muted-foreground text-xs">
-              +{metrics.members.new} new this period
-            </p>
+            <p className="text-muted-foreground text-xs">+{metrics.members.new} new this period</p>
           </CardContent>
         </Card>
 
@@ -204,9 +177,7 @@ export default function AnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Monthly Recurring Revenue</CardTitle>
-              <CardDescription>
-                MRR growth over the last 12 months
-              </CardDescription>
+              <CardDescription>MRR growth over the last 12 months</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="h-[300px]">
@@ -215,9 +186,7 @@ export default function AnalyticsPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="month" />
                     <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                    <Tooltip
-                      formatter={(value) => formatCurrency(value as number)}
-                    />
+                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
                     <Area
                       type="monotone"
                       dataKey="mrr"
@@ -236,9 +205,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Revenue by Tier</CardTitle>
-                <CardDescription>
-                  Revenue contribution by membership tier
-                </CardDescription>
+                <CardDescription>Revenue contribution by membership tier</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -267,9 +234,7 @@ export default function AnalyticsPage() {
                             }}
                           />
                         </div>
-                        <span className="text-muted-foreground text-xs">
-                          {data.count} members
-                        </span>
+                        <span className="text-muted-foreground text-xs">{data.count} members</span>
                       </div>
                     </div>
                   ))}
@@ -280,9 +245,7 @@ export default function AnalyticsPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Billing Intervals</CardTitle>
-                <CardDescription>
-                  Monthly vs Yearly subscription split
-                </CardDescription>
+                <CardDescription>Monthly vs Yearly subscription split</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="h-[200px]">
@@ -325,24 +288,18 @@ export default function AnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Member Distribution</CardTitle>
-              <CardDescription>
-                Breakdown of member types and tiers
-              </CardDescription>
+              <CardDescription>Breakdown of member types and tiers</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Total Members</p>
-                    <p className="text-2xl font-bold">
-                      {metrics.members.total}
-                    </p>
+                    <p className="text-2xl font-bold">{metrics.members.total}</p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-medium">Paid Members</p>
-                    <p className="text-chart-2 text-2xl font-bold">
-                      {metrics.members.paid}
-                    </p>
+                    <p className="text-chart-2 text-2xl font-bold">{metrics.members.paid}</p>
                   </div>
                   {/* Note: No free tier - platform operates with zero free users */}
                   {/* Scholarships handled via Stripe coupons with early_bird tier */}
@@ -356,25 +313,19 @@ export default function AnalyticsPage() {
           <Card>
             <CardHeader>
               <CardTitle>Churn Analysis</CardTitle>
-              <CardDescription>
-                Member retention and churn metrics
-              </CardDescription>
+              <CardDescription>Member retention and churn metrics</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-4">
                   <div>
-                    <p className="text-sm font-medium">
-                      Monthly Retention Rate
-                    </p>
+                    <p className="text-sm font-medium">Monthly Retention Rate</p>
                     <p className="text-chart-2 text-2xl font-bold">
                       {formatPercent(churnAnalysis.retentionRate)}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm font-medium">
-                      Average Member Lifetime
-                    </p>
+                    <p className="text-sm font-medium">Average Member Lifetime</p>
                     <p className="text-2xl font-bold">
                       {churnAnalysis.recentChurns.avgLifetimeMonths} months
                     </p>
@@ -382,21 +333,12 @@ export default function AnalyticsPage() {
                 </div>
                 <div className="space-y-2">
                   <p className="mb-2 text-sm font-medium">Churn by Tier</p>
-                  {Object.entries(churnAnalysis.churnByTier).map(
-                    ([tier, data]) => (
-                      <div
-                        key={tier}
-                        className="flex items-center justify-between"
-                      >
-                        <span className="text-sm capitalize">
-                          {tier.replace(/_/g, " ")}
-                        </span>
-                        <Badge variant="secondary">
-                          {data.count as number}
-                        </Badge>
-                      </div>
-                    ),
-                  )}
+                  {Object.entries(churnAnalysis.churnByTier).map(([tier, data]) => (
+                    <div key={tier} className="flex items-center justify-between">
+                      <span className="text-sm capitalize">{tier.replace(/_/g, " ")}</span>
+                      <Badge variant="secondary">{data.count as number}</Badge>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>
@@ -412,20 +354,13 @@ export default function AnalyticsPage() {
             <CardContent>
               <div className="space-y-2">
                 {Object.entries(metrics.paymentMethods).map(([brand, data]) => (
-                  <div
-                    key={brand}
-                    className="flex items-center justify-between"
-                  >
-                    <span className="text-sm font-medium capitalize">
-                      {brand}
-                    </span>
+                  <div key={brand} className="flex items-center justify-between">
+                    <span className="text-sm font-medium capitalize">{brand}</span>
                     <div className="flex items-center gap-4">
                       <span className="text-muted-foreground text-sm">
                         {data.count as number} payments
                       </span>
-                      <span className="text-sm font-medium">
-                        {formatCurrency(data.revenue)}
-                      </span>
+                      <span className="text-sm font-medium">{formatCurrency(data.revenue)}</span>
                     </div>
                   </div>
                 ))}

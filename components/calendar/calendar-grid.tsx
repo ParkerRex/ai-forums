@@ -30,14 +30,14 @@
 
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Doc } from "@/convex/_generated/dataModel";
-import { EventCard } from "./event-card";
-import { Button } from "@/components/ui/button";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import type { Doc } from "@/convex/_generated/dataModel";
+import { EventCard } from "./event-card";
 
 /**
  * Props interface for the CalendarGrid component
@@ -75,11 +75,7 @@ interface CalendarGridProps {
  * />
  * ```
  */
-export function CalendarGrid({
-  selectedDate,
-  onDateSelect,
-  onEventSelect,
-}: CalendarGridProps) {
+export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: CalendarGridProps) {
   // State for tracking the currently displayed month
   // Independent of selectedDate to allow navigation without changing selection
   const [currentMonth, setCurrentMonth] = useState(new Date());
@@ -162,11 +158,7 @@ export function CalendarGrid({
       {/* Month navigation header */}
       <div className="flex items-center justify-between">
         {/* Previous month button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigateMonth("prev")}
-        >
+        <Button variant="outline" size="sm" onClick={() => navigateMonth("prev")}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
 
@@ -182,11 +174,7 @@ export function CalendarGrid({
         </motion.h2>
 
         {/* Next month button */}
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => navigateMonth("next")}
-        >
+        <Button variant="outline" size="sm" onClick={() => navigateMonth("next")}>
           <ChevronRight className="h-4 w-4" />
         </Button>
       </div>
@@ -195,10 +183,7 @@ export function CalendarGrid({
       <div className="bg-muted/30 grid grid-cols-7 gap-1 rounded-none p-4">
         {/* Day headers (Sun, Mon, Tue, etc.) */}
         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
-          <div
-            key={day}
-            className="text-muted-foreground p-2 text-center text-sm font-medium"
-          >
+          <div key={day} className="text-muted-foreground p-2 text-center text-sm font-medium">
             {day}
           </div>
         ))}
@@ -208,22 +193,15 @@ export function CalendarGrid({
         {Array.from({ length: 42 }, (_, i) => {
           // Calculate the date for this cell
           // Start from the first day of the month
-          const firstDay = new Date(
-            currentMonth.getFullYear(),
-            currentMonth.getMonth(),
-            1,
-          );
+          const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
           const startDate = new Date(firstDay);
           // Adjust to show previous month's trailing days
           startDate.setDate(startDate.getDate() - firstDay.getDay() + i);
 
           // Calculate display states for this date
-          const isCurrentMonth =
-            startDate.getMonth() === currentMonth.getMonth();
-          const isToday =
-            startDate.toDateString() === new Date().toDateString();
-          const isSelected =
-            startDate.toDateString() === selectedDate.toDateString();
+          const isCurrentMonth = startDate.getMonth() === currentMonth.getMonth();
+          const isToday = startDate.toDateString() === new Date().toDateString();
+          const isSelected = startDate.toDateString() === selectedDate.toDateString();
           const dayEvents = getEventsForDate(startDate);
 
           return (
@@ -235,38 +213,32 @@ export function CalendarGrid({
               whileTap={{ scale: 0.98 }}
             >
               {/* Date number */}
-              <div className="mb-1 text-sm font-medium">
-                {startDate.getDate()}
-              </div>
+              <div className="mb-1 text-sm font-medium">{startDate.getDate()}</div>
 
               {/* Events for this date */}
               <div className="space-y-1">
                 <AnimatePresence>
                   {/* Show up to 3 events with staggered animation */}
-                  {dayEvents
-                    .slice(0, 3)
-                    .map((event: Doc<"events">, index: number) => (
-                      <motion.div
-                        key={event._id}
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        transition={{ delay: index * 0.1 }}
-                      >
-                        <EventCard
-                          event={event}
-                          size="small"
-                          onClick={() => onEventSelect(event._id)}
-                        />
-                      </motion.div>
-                    ))}
+                  {dayEvents.slice(0, 3).map((event: Doc<"events">, index: number) => (
+                    <motion.div
+                      key={event._id}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.8 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <EventCard
+                        event={event}
+                        size="small"
+                        onClick={() => onEventSelect(event._id)}
+                      />
+                    </motion.div>
+                  ))}
                 </AnimatePresence>
 
                 {/* Show overflow indicator if more than 3 events */}
                 {dayEvents.length > 3 && (
-                  <div className="text-muted-foreground text-xs">
-                    +{dayEvents.length - 3} more
-                  </div>
+                  <div className="text-muted-foreground text-xs">+{dayEvents.length - 3} more</div>
                 )}
               </div>
             </motion.div>

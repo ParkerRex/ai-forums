@@ -1,6 +1,6 @@
 import { v } from "convex/values";
-import { mutation } from "./_generated/server";
 import { detectCountryFromLocation } from "../lib/country-utils";
+import { mutation } from "./_generated/server";
 
 /**
  * Update member's country based on their location
@@ -13,13 +13,13 @@ export const updateMemberCountry = mutation({
   },
   handler: async (ctx, args) => {
     const detectedCountry = detectCountryFromLocation(args.location);
-    
+
     if (detectedCountry) {
       await ctx.db.patch(args.memberId, {
         country: detectedCountry,
       });
     }
-    
+
     return detectedCountry;
   },
 });

@@ -1,8 +1,8 @@
-import fs from 'fs';
-import path from 'path';
-import matter from 'gray-matter';
+import fs from "node:fs";
+import path from "node:path";
+import matter from "gray-matter";
 
-const contentDirectory = path.join(process.cwd(), 'content/blog');
+const contentDirectory = path.join(process.cwd(), "content/blog");
 
 export interface BlogPost {
   slug: string;
@@ -14,15 +14,15 @@ export interface BlogPost {
 
 export function getAllPosts(): BlogPost[] {
   const fileNames = fs.readdirSync(contentDirectory);
-  
+
   const posts = fileNames
-    .filter((fileName) => fileName.endsWith('.mdx'))
+    .filter((fileName) => fileName.endsWith(".mdx"))
     .map((fileName) => {
-      const slug = fileName.replace(/\.mdx$/, '');
+      const slug = fileName.replace(/\.mdx$/, "");
       const fullPath = path.join(contentDirectory, fileName);
-      const fileContents = fs.readFileSync(fullPath, 'utf8');
+      const fileContents = fs.readFileSync(fullPath, "utf8");
       const { data, content } = matter(fileContents);
-      
+
       return {
         slug,
         title: data.title,
@@ -31,17 +31,17 @@ export function getAllPosts(): BlogPost[] {
         content,
       };
     })
-    .sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime()));
-    
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
   return posts;
 }
 
 export function getPostBySlug(slug: string): BlogPost | null {
   try {
     const fullPath = path.join(contentDirectory, `${slug}.mdx`);
-    const fileContents = fs.readFileSync(fullPath, 'utf8');
+    const fileContents = fs.readFileSync(fullPath, "utf8");
     const { data, content } = matter(fileContents);
-    
+
     return {
       slug,
       title: data.title,
@@ -56,8 +56,8 @@ export function getPostBySlug(slug: string): BlogPost | null {
 
 export function getAllPostSlugs(): string[] {
   const fileNames = fs.readdirSync(contentDirectory);
-  
+
   return fileNames
-    .filter((fileName) => fileName.endsWith('.mdx'))
-    .map((fileName) => fileName.replace(/\.mdx$/, ''));
+    .filter((fileName) => fileName.endsWith(".mdx"))
+    .map((fileName) => fileName.replace(/\.mdx$/, ""));
 }

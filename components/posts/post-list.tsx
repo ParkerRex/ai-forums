@@ -1,12 +1,12 @@
 "use client";
 import { usePaginatedQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import PostCard from "@/components/posts/post-card";
-import { useUserVotes } from "@/hooks/use-user-votes";
-import { useMemo } from "react";
-import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { useMemo } from "react";
+import PostCard from "@/components/posts/post-card";
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { useUserVotes } from "@/hooks/use-user-votes";
 
 interface PostListProps {
   categoryId?: Id<"categories">;
@@ -113,10 +113,7 @@ export default function PostList({
     | null;
 
   // Extract post IDs for batch vote fetching
-  const postIds = useMemo(
-    () => allPosts?.map((post) => post._id) ?? [],
-    [allPosts],
-  );
+  const postIds = useMemo(() => allPosts?.map((post) => post._id) ?? [], [allPosts]);
 
   // Batch fetch all votes at once
   const { votes } = useUserVotes(postIds, "post");
@@ -163,9 +160,7 @@ export default function PostList({
     return (
       <div className="space-y-2">
         <div className="bg-card border-border/50 rounded-none border p-6 text-center">
-          <p className="text-muted-foreground">
-            No posts found. Be the first to create one!
-          </p>
+          <p className="text-muted-foreground">No posts found. Be the first to create one!</p>
         </div>
       </div>
     );
@@ -195,12 +190,7 @@ export default function PostList({
       {/* Load More Button */}
       {status === "CanLoadMore" && (
         <div className="flex justify-center pt-4">
-          <Button
-            onClick={handleLoadMore}
-            variant="outline"
-            size="sm"
-            className="min-w-[120px]"
-          >
+          <Button onClick={handleLoadMore} variant="outline" size="sm" className="min-w-[120px]">
             Load More
           </Button>
         </div>
@@ -209,12 +199,7 @@ export default function PostList({
       {/* Loading More Indicator */}
       {status === "LoadingMore" && (
         <div className="flex justify-center pt-4">
-          <Button
-            disabled
-            variant="outline"
-            size="sm"
-            className="min-w-[120px]"
-          >
+          <Button disabled variant="outline" size="sm" className="min-w-[120px]">
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Loading...
           </Button>
@@ -224,9 +209,7 @@ export default function PostList({
       {/* End of Posts Indicator */}
       {status === "Exhausted" && allPosts && allPosts.length > 0 && (
         <div className="py-4 text-center">
-          <p className="text-muted-foreground text-sm">
-            You&apos;ve reached the end
-          </p>
+          <p className="text-muted-foreground text-sm">You&apos;ve reached the end</p>
         </div>
       )}
     </div>

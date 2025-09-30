@@ -7,8 +7,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import type { Id } from "@/convex/_generated/dataModel";
 import MemberEditForm from "./member-edit-form";
-import { Id } from "@/convex/_generated/dataModel";
 
 interface Member {
   _id: Id<"members">;
@@ -30,11 +30,7 @@ interface MemberEditModalProps {
   onClose: () => void;
 }
 
-export default function MemberEditModal({
-  member,
-  isOpen,
-  onClose,
-}: MemberEditModalProps) {
+export default function MemberEditModal({ member, isOpen, onClose }: MemberEditModalProps) {
   const handleSuccess = () => {
     // Close modal after successful update
     // The form already shows success toast via useMutationError hook
@@ -51,12 +47,8 @@ export default function MemberEditModal({
           </DialogDescription>
         </DialogHeader>
 
-        <MemberEditForm
-          member={member}
-          onSuccess={handleSuccess}
-          onCancel={onClose}
-        />
+        <MemberEditForm member={member} onSuccess={handleSuccess} onCancel={onClose} />
       </DialogContent>
     </Dialog>
   );
-} 
+}

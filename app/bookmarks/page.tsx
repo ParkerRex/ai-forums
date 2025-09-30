@@ -4,47 +4,44 @@
  * @fileoverview Bookmarks page component that displays a user's saved posts and resources.
  * This page provides a centralized location for users to view and manage their bookmarked content,
  * with filtering capabilities to view all items, posts only, or resources only.
- * 
+ *
  * Features:
  * - Tab-based filtering (All, Posts, Resources)
  * - Paginated display of bookmarked content
  * - Empty state with call-to-action
  * - Responsive design with skeleton loading states
  * - Error handling with retry mechanisms
- * 
+ *
  * @author VAI Team
  * @since 1.0.0
  */
 
-import React, { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import PostCard from "@/components/posts/post-card";
+import { useState } from "react";
 import { PageErrorBoundary, QueryErrorBoundary } from "@/components/error-boundary";
 import { PostSkeletonList } from "@/components/members/member-skeleton";
+import PostCard from "@/components/posts/post-card";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { api } from "@/convex/_generated/api";
 
 /**
  * Main content component for the bookmarks page.
  * Handles the display logic, tab management, and data fetching for user bookmarks.
- * 
+ *
  * @returns {JSX.Element} The rendered bookmarks content with tabs and filtered results
  */
 function BookmarksContent() {
   // State to track which tab is currently active for filtering bookmarks
   const [activeTab, setActiveTab] = useState<"all" | "posts" | "resources">("all");
-  
+
   // Fetch user's bookmarks with optional filtering by target type
   // targetType is mapped from tab selection: "all" -> undefined, "posts" -> "post", "resources" -> "resource"
-  const bookmarksData = useQuery(
-    api.bookmarks.getUserBookmarks,
-    {
-      targetType: activeTab === "all" ? undefined : activeTab === "posts" ? "post" : "resource",
-      paginationOpts: { numItems: 20, cursor: null } // Load 20 items per page
-    }
-  );
+  const bookmarksData = useQuery(api.bookmarks.getUserBookmarks, {
+    targetType: activeTab === "all" ? undefined : activeTab === "posts" ? "post" : "resource",
+    paginationOpts: { numItems: 20, cursor: null }, // Load 20 items per page
+  });
 
   // Loading state - Convex queries return undefined while loading
   const isLoading = bookmarksData === undefined;
@@ -57,13 +54,15 @@ function BookmarksContent() {
         {/* Page header with title and description */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">My Bookmarks</h1>
-          <p className="text-muted-foreground">
-            Your saved posts and resources for easy access
-          </p>
+          <p className="text-muted-foreground">Your saved posts and resources for easy access</p>
         </div>
 
         {/* Tab navigation for filtering bookmarks by type */}
-        <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "all" | "posts" | "resources")} className="mb-8">
+        <Tabs
+          value={activeTab}
+          onValueChange={(value) => setActiveTab(value as "all" | "posts" | "resources")}
+          className="mb-8"
+        >
           <TabsList>
             <TabsTrigger value="all">All</TabsTrigger>
             <TabsTrigger value="posts">Posts</TabsTrigger>
@@ -93,9 +92,7 @@ function BookmarksContent() {
               ) : (
                 // Empty state when no bookmarks exist for the current filter
                 <div className="text-center py-12">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">
-                    No bookmarks yet
-                  </h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No bookmarks yet</h3>
                   <p className="text-muted-foreground mb-4">
                     Start bookmarking posts and resources to see them here
                   </p>
@@ -117,9 +114,9 @@ function BookmarksContent() {
  * Bookmarks page component with page-level error boundary.
  * This is the main exported component that wraps the bookmark content
  * with error handling for robust user experience.
- * 
+ *
  * @returns {JSX.Element} The complete bookmarks page with error boundary
- * 
+ *
  * @example
  * ```tsx
  * // This component is automatically rendered when user navigates to /bookmarks

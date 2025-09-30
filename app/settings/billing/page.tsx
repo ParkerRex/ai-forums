@@ -1,20 +1,23 @@
 "use client";
 
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { CreditCard, ExternalLink, Receipt, AlertCircle, Calendar, DollarSign, Zap, Shield } from "lucide-react";
-import { toast } from "sonner";
+  AlertCircle,
+  Calendar,
+  CreditCard,
+  DollarSign,
+  ExternalLink,
+  Receipt,
+  Shield,
+  Zap,
+} from "lucide-react";
 import { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import { api } from "@/convex/_generated/api";
 
 /**
  * BillingPage Component
@@ -51,16 +54,12 @@ export default function BillingPage() {
   // Query to fetch comprehensive subscription information from Convex
   // This includes tier, status, billing details, and payment history
   // Returns null during loading, which we handle with a loading state
-  const subscriptionInfo = useQuery(
-    api.stripe.getSubscriptionInfo.getSubscriptionInfo,
-  );
+  const subscriptionInfo = useQuery(api.stripe.getSubscriptionInfo.getSubscriptionInfo);
 
   // Mutation to create a Stripe customer portal session
   // This allows users to manage their subscription, update payment methods,
   // download invoices, and cancel their subscription through Stripe's UI
-  const createPortalSession = useMutation(
-    api.stripe.portal.createPortalSession,
-  );
+  const createPortalSession = useMutation(api.stripe.portal.createPortalSession);
 
   /**
    * Handle Subscription Management Portal Access
@@ -174,9 +173,7 @@ export default function BillingPage() {
       {/* Provides clear context about what this page contains and its purpose */}
       <div className="space-y-1">
         <h1 className="text-3xl font-bold tracking-tight">Billing & Subscription</h1>
-        <p className="text-muted-foreground">
-          Manage your subscription and payment settings
-        </p>
+        <p className="text-muted-foreground">Manage your subscription and payment settings</p>
       </div>
 
       {/* Current Plan Card */}
@@ -191,9 +188,7 @@ export default function BillingPage() {
               <CardTitle>Current Plan</CardTitle>
             </div>
             {/* Tier badge with dynamic colors based on subscription level */}
-            <Badge
-              className={getTierBadgeColor(subscriptionInfo.tier || "free")}
-            >
+            <Badge className={getTierBadgeColor(subscriptionInfo.tier || "free")}>
               {subscriptionInfo.tierDisplay}
             </Badge>
           </div>
@@ -207,37 +202,25 @@ export default function BillingPage() {
               <div className="flex items-center gap-2">
                 {/* Active status badge - green to indicate positive state */}
                 {subscriptionInfo.isActive && (
-                  <Badge
-                    variant="outline"
-                    className="border-green-500 text-green-600"
-                  >
+                  <Badge variant="outline" className="border-green-500 text-green-600">
                     Active
                   </Badge>
                 )}
                 {/* Past due status badge - yellow to indicate warning state */}
                 {subscriptionInfo.isPastDue && (
-                  <Badge
-                    variant="outline"
-                    className="border-yellow-500 text-yellow-600"
-                  >
+                  <Badge variant="outline" className="border-yellow-500 text-yellow-600">
                     Past Due
                   </Badge>
                 )}
                 {/* Cancelled status badge - orange to indicate caution state */}
                 {subscriptionInfo.isCancelled && (
-                  <Badge
-                    variant="outline"
-                    className="border-orange-500 text-orange-600"
-                  >
+                  <Badge variant="outline" className="border-orange-500 text-orange-600">
                     Cancelled
                   </Badge>
                 )}
                 {/* Expired status badge - red to indicate critical state */}
                 {subscriptionInfo.isExpired && (
-                  <Badge
-                    variant="outline"
-                    className="border-red-500 text-red-600"
-                  >
+                  <Badge variant="outline" className="border-red-500 text-red-600">
                     Expired
                   </Badge>
                 )}
@@ -292,9 +275,7 @@ export default function BillingPage() {
                           <Calendar className="h-4 w-4 text-primary" />
                         </div>
                         <div className="space-y-1">
-                          <p className="text-sm font-medium">
-                            Next Billing Date
-                          </p>
+                          <p className="text-sm font-medium">Next Billing Date</p>
                           {/* Shows next billing date with descriptive renewal text */}
                           <p className="font-semibold">
                             {subscriptionInfo.renewalInfo.nextBillingDate}
@@ -324,7 +305,9 @@ export default function BillingPage() {
                         {/* Clear information about when the subscription will end */}
                         <p className="text-sm text-yellow-700 dark:text-yellow-300">
                           Your subscription will end on{" "}
-                          <span className="font-medium">{subscriptionInfo.renewalInfo?.nextBillingDate}</span>
+                          <span className="font-medium">
+                            {subscriptionInfo.renewalInfo?.nextBillingDate}
+                          </span>
                         </p>
                       </div>
                     </div>
@@ -351,8 +334,7 @@ export default function BillingPage() {
               <div>
                 <CardTitle>Subscription Management</CardTitle>
                 <CardDescription>
-                  Update your payment method, download invoices, or cancel your
-                  subscription
+                  Update your payment method, download invoices, or cancel your subscription
                 </CardDescription>
               </div>
             </div>
@@ -376,8 +358,7 @@ export default function BillingPage() {
               {/* Informational text about the redirect to build user trust */}
               <p className="text-muted-foreground text-sm flex items-center gap-2">
                 <Shield className="h-4 w-4" />
-                You&apos;ll be redirected to our secure billing portal powered by
-                Stripe
+                You&apos;ll be redirected to our secure billing portal powered by Stripe
               </p>
             </div>
           </CardContent>
@@ -387,67 +368,58 @@ export default function BillingPage() {
       {/* Recent Payments History Card */}
       {/* Only shown if user has payment history to display */}
       {/* Provides transparency about billing and payment status */}
-      {subscriptionInfo.recentPayments &&
-        subscriptionInfo.recentPayments.length > 0 && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-2">
-                <Receipt className="h-5 w-5 text-primary" />
-                <CardTitle>Recent Payments</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {/* Map through recent payments to display each transaction */}
-                {subscriptionInfo.recentPayments.map(
-                  (payment: {
-                    id: string;
-                    date: string;
-                    amount: string;
-                    status: string;
-                    description: string;
-                  }) => (
-                    <div
-                      key={payment.id}
-                      className="flex items-center justify-between py-3 px-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
-                    >
-                      {/* Left side: Payment details with icon */}
-                      <div className="flex items-center gap-3">
-                        {/* Dollar icon for visual consistency */}
-                        <div className="p-2 bg-background rounded-full">
-                          <DollarSign className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                        <div className="space-y-1">
-                          {/* Payment amount in bold for emphasis */}
-                          <p className="font-semibold">{payment.amount}</p>
-                          {/* Payment date in muted color for hierarchy */}
-                          <p className="text-muted-foreground text-sm">
-                            {payment.date}
-                          </p>
-                        </div>
+      {subscriptionInfo.recentPayments && subscriptionInfo.recentPayments.length > 0 && (
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Receipt className="h-5 w-5 text-primary" />
+              <CardTitle>Recent Payments</CardTitle>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {/* Map through recent payments to display each transaction */}
+              {subscriptionInfo.recentPayments.map(
+                (payment: {
+                  id: string;
+                  date: string;
+                  amount: string;
+                  status: string;
+                  description: string;
+                }) => (
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between py-3 px-4 rounded-lg bg-muted/50 hover:bg-muted/70 transition-colors"
+                  >
+                    {/* Left side: Payment details with icon */}
+                    <div className="flex items-center gap-3">
+                      {/* Dollar icon for visual consistency */}
+                      <div className="p-2 bg-background rounded-full">
+                        <DollarSign className="h-4 w-4 text-muted-foreground" />
                       </div>
-                      {/* Right side: Payment status badge with conditional styling */}
-                      <Badge
-                        variant={
-                          payment.status === "succeeded"
-                            ? "outline"
-                            : "destructive"
-                        }
-                        className={
-                          payment.status === "succeeded"
-                            ? "border-green-500 text-green-600"
-                            : ""
-                        }
-                      >
-                        {payment.status === "succeeded" ? "Paid" : payment.status}
-                      </Badge>
+                      <div className="space-y-1">
+                        {/* Payment amount in bold for emphasis */}
+                        <p className="font-semibold">{payment.amount}</p>
+                        {/* Payment date in muted color for hierarchy */}
+                        <p className="text-muted-foreground text-sm">{payment.date}</p>
+                      </div>
                     </div>
-                  ),
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                    {/* Right side: Payment status badge with conditional styling */}
+                    <Badge
+                      variant={payment.status === "succeeded" ? "outline" : "destructive"}
+                      className={
+                        payment.status === "succeeded" ? "border-green-500 text-green-600" : ""
+                      }
+                    >
+                      {payment.status === "succeeded" ? "Paid" : payment.status}
+                    </Badge>
+                  </div>
+                ),
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

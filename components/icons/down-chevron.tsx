@@ -1,6 +1,6 @@
 "use client";
 
-import * as React from "react";
+import type * as React from "react";
 
 /**
  * Props interface for the DownChevronIcon component
@@ -25,11 +25,7 @@ interface DownChevronIconProps extends React.SVGProps<SVGSVGElement> {
  * @param props - Any additional SVG props to pass through
  * @returns A React SVG element representing a downward-pointing chevron
  */
-export function DownChevronIcon({
-  size = 24,
-  className,
-  ...props
-}: DownChevronIconProps) {
+export function DownChevronIcon({ size = 24, className, ...props }: DownChevronIconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -59,12 +55,7 @@ export function DownChevronIcon({
           This creates the effect of the chevron drawing itself in over 0.3 seconds
           The animation freezes at the end state to maintain the fully drawn chevron
         */}
-        <animate
-          fill="freeze"
-          attributeName="stroke-dashoffset"
-          dur="0.3s"
-          values="10;0"
-        />
+        <animate fill="freeze" attributeName="stroke-dashoffset" dur="0.3s" values="10;0" />
       </path>
     </svg>
   );

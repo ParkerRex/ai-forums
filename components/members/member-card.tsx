@@ -1,23 +1,23 @@
 "use client";
 
+import {
+  CalendarDays,
+  FileText,
+  Github,
+  Globe,
+  Linkedin,
+  MapPin,
+  MessageCircle,
+  ThumbsUp,
+  Twitter,
+  Youtube,
+} from "lucide-react";
 import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import {
-  Github,
-  Twitter,
-  Youtube,
-  MapPin,
-  CalendarDays,
-  Globe,
-  Linkedin,
-  FileText,
-  MessageCircle,
-  ThumbsUp,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { memberProfileUrl } from "@/lib/slug-utils";
 import type { Id } from "@/convex/_generated/dataModel";
+import { memberProfileUrl } from "@/lib/slug-utils";
 
 interface Member {
   id: string;
@@ -48,8 +48,7 @@ interface MemberCardProps {
 
 // Updated status colors with dark mode support
 const statusVariants = {
-  active:
-    "bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary",
+  active: "bg-primary/10 text-primary border-primary/20 dark:bg-primary/20 dark:text-primary",
   inactive: "bg-muted text-muted-foreground border-border",
   pending:
     "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/20 dark:text-yellow-400 dark:border-yellow-800",
@@ -132,31 +131,19 @@ export default function MemberCard({ member }: MemberCardProps) {
           </div>
         </div>
 
-        <p className="text-muted-foreground mb-3 line-clamp-2 flex-grow text-sm">
-          {member.bio}
-        </p>
+        <p className="text-muted-foreground mb-3 line-clamp-2 flex-grow text-sm">{member.bio}</p>
 
         {/* Contribution Stats */}
         {stats && (
           <div className="mb-3 flex flex-wrap gap-2 text-[10px]">
-            <Stat
-              icon={FileText}
-              value={stats.postCount}
-              label="Posts"
-              testId="post-count"
-            />
+            <Stat icon={FileText} value={stats.postCount} label="Posts" testId="post-count" />
             <Stat
               icon={MessageCircle}
               value={stats.commentCount}
               label="Comments"
               testId="comment-count"
             />
-            <Stat
-              icon={ThumbsUp}
-              value={stats.netVoteCount}
-              label="Votes"
-              testId="vote-count"
-            />
+            <Stat icon={ThumbsUp} value={stats.netVoteCount} label="Votes" testId="vote-count" />
           </div>
         )}
 
@@ -179,47 +166,27 @@ export default function MemberCard({ member }: MemberCardProps) {
 
         <div className="border-border/50 mt-auto flex space-x-2 border-t pt-3">
           {member.linkGithub && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-primary"
-            >
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
               <Github className="h-4 w-4" />
             </Button>
           )}
           {member.linkX && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-primary"
-            >
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
               <Twitter className="h-4 w-4" />
             </Button>
           )}
           {member.linkYouTube && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-primary"
-            >
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
               <Youtube className="h-4 w-4" />
             </Button>
           )}
           {member.linkedinUrl && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-primary"
-            >
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
               <Linkedin className="h-4 w-4" />
             </Button>
           )}
           {member.websiteUrl && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-muted-foreground hover:text-primary"
-            >
+            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary">
               <Globe className="h-4 w-4" />
             </Button>
           )}

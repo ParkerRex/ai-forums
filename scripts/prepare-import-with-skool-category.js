@@ -1,20 +1,14 @@
 // This script prepares all posts to use a single "skool" category
 
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 
 // Read the cleaned import files
 const posts = JSON.parse(
-  fs.readFileSync(
-    path.join(__dirname, "../migration-data/posts-import-fixed.json"),
-    "utf8",
-  ),
+  fs.readFileSync(path.join(__dirname, "../migration-data/posts-import-fixed.json"), "utf8"),
 );
 const comments = JSON.parse(
-  fs.readFileSync(
-    path.join(__dirname, "../migration-data/comments-import-fixed.json"),
-    "utf8",
-  ),
+  fs.readFileSync(path.join(__dirname, "../migration-data/comments-import-fixed.json"), "utf8"),
 );
 
 console.log("=== SIMPLIFIED IMPORT WITH SKOOL CATEGORY ===\n");
@@ -83,12 +77,8 @@ fs.writeFileSync(
 );
 
 console.log("✅ Batch files created:");
-console.log(
-  `  - migration-data/post-batches-skool.json (${postBatches.length} batches)`,
-);
-console.log(
-  `  - migration-data/comment-batches.json (${commentBatches.length} batches)`,
-);
+console.log(`  - migration-data/post-batches-skool.json (${postBatches.length} batches)`);
+console.log(`  - migration-data/comment-batches.json (${commentBatches.length} batches)`);
 
 console.log("\n📋 Sample Import Command (after replacing SKOOL_CATEGORY_ID):");
 console.log("Function: importPostsComments:importPostsBatch");
@@ -102,12 +92,8 @@ console.log(JSON.stringify({ posts: sampleBatch }, null, 2));
 console.log("\n💡 Import Steps:");
 console.log('1. Create the "skool" category using the function above');
 console.log("2. Get the category ID");
-console.log(
-  '3. Find & Replace "SKOOL_CATEGORY_ID" with the actual ID in post-batches-skool.json',
-);
-console.log(
-  "4. Import each post batch using importPostsComments:importPostsBatch",
-);
+console.log('3. Find & Replace "SKOOL_CATEGORY_ID" with the actual ID in post-batches-skool.json');
+console.log("4. Import each post batch using importPostsComments:importPostsBatch");
 console.log("5. Import comments after all posts are done");
 
 // Create a simple find-replace script

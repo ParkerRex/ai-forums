@@ -1,10 +1,10 @@
 /**
  * @fileoverview Posts Module - Core content management system for community posts
- * 
+ *
  * This module handles all post-related operations including creation, editing, deletion,
  * and retrieval. It supports rich content types including text, images, videos, links,
  * and polls with comprehensive media attachment support.
- * 
+ *
  * Key features:
  * - Multi-media post creation with attachment support
  * - Post editing with version history tracking
@@ -14,24 +14,24 @@
  * - Search functionality across titles and content
  * - View tracking and analytics
  * - Mention notifications and social features
- * 
+ *
  * @author VAI Development Team
  * @version 1.0.0
  */
 
-import { query, mutation, internalQuery, internalMutation } from "./_generated/server";
-import { v } from "convex/values";
 import { paginationOptsValidator } from "convex/server";
-import { Id, Doc } from "./_generated/dataModel";
-import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
-import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
-import { insertNotification } from "./notifications";
-import { canViewFullContent, canViewPost } from "./helpers/subscriptionAccess";
+import { v } from "convex/values";
+import { ensureUniqueSlug, generateSlug } from "../lib/slug-utils";
 import { api } from "./_generated/api";
+import type { Doc, Id } from "./_generated/dataModel";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
+import { getAuthenticatedMember, getAuthenticatedMemberOrNull } from "./auth";
+import { canViewFullContent, canViewPost } from "./helpers/subscriptionAccess";
+import { insertNotification } from "./notifications";
 
 /**
  * Checks if a member is the author of a post for authorization purposes.
- * 
+ *
  * @param post - Post object containing memberId
  * @param memberId - Member ID to check against
  * @returns True if the member is the post author
@@ -42,19 +42,19 @@ function isPostAuthor(post: { memberId: Id<"members"> }, memberId: Id<"members">
 
 /**
  * Validates and sanitizes URLs found in post content for security.
- * 
+ *
  * Scans content for both bare URLs and markdown-formatted links, then validates
  * each URL against security policies. Blocks dangerous schemes, private/localhost
  * addresses, and malformed URLs to prevent XSS and SSRF attacks.
- * 
+ *
  * @param content - Post content to scan for URLs
  * @throws Error when dangerous or invalid URLs are detected
- * 
+ *
  * @example
  * ```typescript
  * validateContentUrls("Check out https://example.com and [GitHub](https://github.com)");
  * // No error - valid public URLs
- * 
+ *
  * validateContentUrls("Don't visit javascript:alert('xss')");
  * // Throws error - dangerous scheme blocked
  * ```
@@ -87,28 +87,28 @@ function validateContentUrls(content: string): void {
       const parsedUrl = new URL(url);
 
       // Only allow http and https
-      if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+      if (!["http:", "https:"].includes(parsedUrl.protocol)) {
         throw new Error(`Invalid protocol in URL: ${url}`);
       }
 
       // Block localhost and private IPs for security
       const hostname = parsedUrl.hostname.toLowerCase();
       if (
-        hostname === 'localhost' ||
-        hostname.startsWith('127.') ||
-        hostname.startsWith('192.168.') ||
-        hostname.startsWith('10.') ||
+        hostname === "localhost" ||
+        hostname.startsWith("127.") ||
+        hostname.startsWith("192.168.") ||
+        hostname.startsWith("10.") ||
         hostname.match(/^172\.(1[6-9]|2\d|3[01])\./)
       ) {
         throw new Error(`Private/localhost URLs not allowed: ${url}`);
       }
 
       // Block javascript: and data: schemes
-      if (url.toLowerCase().startsWith('javascript:') || url.toLowerCase().startsWith('data:')) {
+      if (url.toLowerCase().startsWith("javascript:") || url.toLowerCase().startsWith("data:")) {
         throw new Error(`Dangerous URL scheme not allowed: ${url}`);
       }
     } catch (error) {
-      if (error instanceof Error && error.message.includes('Invalid URL')) {
+      if (error instanceof Error && error.message.includes("Invalid URL")) {
         throw new Error(`Invalid URL format: ${url}`);
       }
       throw error;
@@ -118,21 +118,21 @@ function validateContentUrls(content: string): void {
 
 /**
  * Retrieves paginated posts with filtering and sorting options.
- * 
+ *
  * Supports filtering by category and sorting by newest, popular, or trending.
  * Returns enriched posts with member and category information for display.
  * Uses database indexes for efficient querying at scale.
- * 
+ *
  * @param categoryId - Optional category filter
  * @param limit - Maximum number of posts to return (default: 20)
  * @param sortBy - Sort order: "newest", "popular", or "trending" (default: "newest")
  * @returns Array of enriched post objects with member and category data
- * 
+ *
  * @example
  * ```typescript
  * // Get latest posts from all categories
  * const latestPosts = await getPosts({});
- * 
+ *
  * // Get popular posts from specific category
  * const popularInCategory = await getPosts({
  *   categoryId: "category123",
@@ -158,16 +158,13 @@ export const getPosts = query({
       pinnedPosts = await ctx.db
         .query("posts")
         .withIndex("by_pinned_and_category")
-        .filter(q =>
+        .filter((q) =>
           q.and(
             q.eq(q.field("isPinned"), true),
             q.eq(q.field("categoryId"), categoryId),
             q.eq(q.field("status"), "active"),
-            q.or(
-              q.eq(q.field("pinScope"), "category"),
-              q.eq(q.field("pinScope"), "both")
-            )
-          )
+            q.or(q.eq(q.field("pinScope"), "category"), q.eq(q.field("pinScope"), "both")),
+          ),
         )
         .order("desc")
         .collect();
@@ -176,15 +173,12 @@ export const getPosts = query({
       pinnedPosts = await ctx.db
         .query("posts")
         .withIndex("by_pinned_global")
-        .filter(q =>
+        .filter((q) =>
           q.and(
             q.eq(q.field("isPinned"), true),
             q.eq(q.field("status"), "active"),
-            q.or(
-              q.eq(q.field("pinScope"), "global"),
-              q.eq(q.field("pinScope"), "both")
-            )
-          )
+            q.or(q.eq(q.field("pinScope"), "global"), q.eq(q.field("pinScope"), "both")),
+          ),
         )
         .order("desc")
         .collect();
@@ -195,7 +189,7 @@ export const getPosts = query({
 
     // Apply free-only filter to pinned posts if requested
     if (freeOnly) {
-      pinnedPosts = pinnedPosts.filter(post => post.isFree === true);
+      pinnedPosts = pinnedPosts.filter((post) => post.isFree === true);
     }
 
     // Limit pinned posts to not exceed the total limit
@@ -211,13 +205,13 @@ export const getPosts = query({
       // Filter by category if specified and apply sorting
       if (categoryId) {
         if (sortBy === "popular" || sortBy === "trending") {
-          query = ctx.db.query("posts").withIndex("by_category_and_netVotes", (q) =>
-            q.eq("categoryId", categoryId)
-          );
+          query = ctx.db
+            .query("posts")
+            .withIndex("by_category_and_netVotes", (q) => q.eq("categoryId", categoryId));
         } else {
-          query = ctx.db.query("posts").withIndex("by_category_and_createdAt", (q) =>
-            q.eq("categoryId", categoryId)
-          );
+          query = ctx.db
+            .query("posts")
+            .withIndex("by_category_and_createdAt", (q) => q.eq("categoryId", categoryId));
         }
       } else {
         if (sortBy === "popular" || sortBy === "trending") {
@@ -228,16 +222,12 @@ export const getPosts = query({
       }
 
       // Filter active, non-pinned posts and apply ordering
-      let regularPostsQuery = query
-        .filter((q) =>
-          q.and(
-            q.eq(q.field("status"), "active"),
-            q.or(
-              q.eq(q.field("isPinned"), false),
-              q.eq(q.field("isPinned"), undefined)
-            )
-          )
-        );
+      let regularPostsQuery = query.filter((q) =>
+        q.and(
+          q.eq(q.field("status"), "active"),
+          q.or(q.eq(q.field("isPinned"), false), q.eq(q.field("isPinned"), undefined)),
+        ),
+      );
 
       // Apply free-only filter if requested
       if (freeOnly) {
@@ -253,21 +243,19 @@ export const getPosts = query({
     const allPosts = [...pinnedPosts, ...regularPosts];
 
     // Collect unique member and category IDs
-    const memberIds = Array.from(new Set(allPosts.map(post => post.memberId)));
-    const categoryIds = Array.from(new Set(allPosts.map(post => post.categoryId)));
+    const memberIds = Array.from(new Set(allPosts.map((post) => post.memberId)));
+    const categoryIds = Array.from(new Set(allPosts.map((post) => post.categoryId)));
 
     // Fetch all members and categories in parallel
     const [members, categories] = await Promise.all([
-      Promise.all(memberIds.map(id => ctx.db.get(id) as Promise<Doc<"members"> | null>)),
-      Promise.all(categoryIds.map(id => ctx.db.get(id) as Promise<Doc<"categories"> | null>))
+      Promise.all(memberIds.map((id) => ctx.db.get(id) as Promise<Doc<"members"> | null>)),
+      Promise.all(categoryIds.map((id) => ctx.db.get(id) as Promise<Doc<"categories"> | null>)),
     ]);
 
     // Create lookup maps for fast access
-    const memberMap = new Map(
-      members.map((member, index) => [memberIds[index], member])
-    );
+    const memberMap = new Map(members.map((member, index) => [memberIds[index], member]));
     const categoryMap = new Map(
-      categories.map((category, index) => [categoryIds[index], category])
+      categories.map((category, index) => [categoryIds[index], category]),
     );
 
     // Enrich posts with member and category data
@@ -277,21 +265,25 @@ export const getPosts = query({
 
       return {
         ...post,
-        member: member ? {
-          _id: member._id,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          email: member.email,
-          username: member.email.split('@')[0], // Derive username from email
-          slug: member.slug || "",
-          avatarUrl: member.avatarUrl || null,
-        } : null,
-        category: category ? {
-          _id: category._id,
-          name: category.name,
-          displayName: category.displayName,
-          icon: category.icon,
-        } : null,
+        member: member
+          ? {
+              _id: member._id,
+              firstName: member.firstName,
+              lastName: member.lastName,
+              email: member.email,
+              username: member.email.split("@")[0], // Derive username from email
+              slug: member.slug || "",
+              avatarUrl: member.avatarUrl || null,
+            }
+          : null,
+        category: category
+          ? {
+              _id: category._id,
+              name: category.name,
+              displayName: category.displayName,
+              icon: category.icon,
+            }
+          : null,
       };
     });
 
@@ -301,30 +293,30 @@ export const getPosts = query({
 
 /**
  * Retrieves posts with pagination support.
- * 
+ *
  * This query provides cursor-based pagination for efficiently loading large sets of posts.
  * It maintains the same filtering, sorting, and pinning logic as getPosts but returns
  * results in a paginated format compatible with Convex's usePaginatedQuery hook.
- * 
+ *
  * Features:
  * - Cursor-based pagination for efficient loading
  * - Category filtering with pinned posts support
  * - Sorting by newest, popular, or trending
  * - Free-only content filtering
  * - Pinned posts appear only on the first page
- * 
+ *
  * IMPORTANT IMPLEMENTATION NOTES:
  * - The first page may contain more items than requested when pinned posts exist
  * - This is intentional to maintain cursor integrity and prevent posts from being skipped
  * - Pinned posts are limited to 20 to prevent performance issues
  * - The cursor from the first page correctly continues to unpinned posts
- * 
+ *
  * @param paginationOpts - Pagination options (cursor, numItems)
  * @param categoryId - Optional category filter
  * @param sortBy - Sort order: "newest", "popular", or "trending"
  * @param freeOnly - If true, only returns free posts
  * @returns Paginated results with posts and continuation cursor
- * 
+ *
  * @example
  * ```typescript
  * const { results, status, loadMore } = usePaginatedQuery(
@@ -345,7 +337,7 @@ export const getPostsPaginated = query({
     // For the first page, we need to include pinned posts
     const isFirstPage = !paginationOpts.cursor;
     let pinnedPosts: Doc<"posts">[] = [];
-    
+
     if (isFirstPage) {
       // Get pinned posts logic (same as getPosts)
       if (categoryId) {
@@ -353,16 +345,13 @@ export const getPostsPaginated = query({
         pinnedPosts = await ctx.db
           .query("posts")
           .withIndex("by_pinned_and_category")
-          .filter(q =>
+          .filter((q) =>
             q.and(
               q.eq(q.field("isPinned"), true),
               q.eq(q.field("categoryId"), categoryId),
               q.eq(q.field("status"), "active"),
-              q.or(
-                q.eq(q.field("pinScope"), "category"),
-                q.eq(q.field("pinScope"), "both")
-              )
-            )
+              q.or(q.eq(q.field("pinScope"), "category"), q.eq(q.field("pinScope"), "both")),
+            ),
           )
           .order("desc")
           .collect();
@@ -371,15 +360,12 @@ export const getPostsPaginated = query({
         pinnedPosts = await ctx.db
           .query("posts")
           .withIndex("by_pinned_global")
-          .filter(q =>
+          .filter((q) =>
             q.and(
               q.eq(q.field("isPinned"), true),
               q.eq(q.field("status"), "active"),
-              q.or(
-                q.eq(q.field("pinScope"), "global"),
-                q.eq(q.field("pinScope"), "both")
-              )
-            )
+              q.or(q.eq(q.field("pinScope"), "global"), q.eq(q.field("pinScope"), "both")),
+            ),
           )
           .order("desc")
           .collect();
@@ -387,7 +373,7 @@ export const getPostsPaginated = query({
 
       // Sort pinned posts by pinnedAt timestamp (newest first)
       pinnedPosts.sort((a, b) => (b.pinnedAt || 0) - (a.pinnedAt || 0));
-      
+
       // Limit pinned posts to prevent performance issues
       // If there are more than 20 pinned posts, only show the 20 most recent
       if (pinnedPosts.length > 20) {
@@ -397,23 +383,23 @@ export const getPostsPaginated = query({
 
       // Apply free-only filter to pinned posts if requested
       if (freeOnly) {
-        pinnedPosts = pinnedPosts.filter(post => post.isFree === true);
+        pinnedPosts = pinnedPosts.filter((post) => post.isFree === true);
       }
     }
 
     // Build the query for regular posts
     let query;
-    
+
     // Filter by category if specified and apply sorting
     if (categoryId) {
       if (sortBy === "popular" || sortBy === "trending") {
-        query = ctx.db.query("posts").withIndex("by_category_and_netVotes", (q) =>
-          q.eq("categoryId", categoryId)
-        );
+        query = ctx.db
+          .query("posts")
+          .withIndex("by_category_and_netVotes", (q) => q.eq("categoryId", categoryId));
       } else {
-        query = ctx.db.query("posts").withIndex("by_category_and_createdAt", (q) =>
-          q.eq("categoryId", categoryId)
-        );
+        query = ctx.db
+          .query("posts")
+          .withIndex("by_category_and_createdAt", (q) => q.eq("categoryId", categoryId));
       }
     } else {
       if (sortBy === "popular" || sortBy === "trending") {
@@ -424,16 +410,12 @@ export const getPostsPaginated = query({
     }
 
     // Filter active, non-pinned posts
-    let regularPostsQuery = query
-      .filter((q) =>
-        q.and(
-          q.eq(q.field("status"), "active"),
-          q.or(
-            q.eq(q.field("isPinned"), false),
-            q.eq(q.field("isPinned"), undefined)
-          )
-        )
-      );
+    let regularPostsQuery = query.filter((q) =>
+      q.and(
+        q.eq(q.field("status"), "active"),
+        q.or(q.eq(q.field("isPinned"), false), q.eq(q.field("isPinned"), undefined)),
+      ),
+    );
 
     // Apply free-only filter if requested
     if (freeOnly) {
@@ -447,37 +429,37 @@ export const getPostsPaginated = query({
 
     // Combine pinned posts with paginated results for the first page
     let allPosts = paginatedResults.page;
-    let continueCursor = paginatedResults.continueCursor;
-    
+    const continueCursor = paginatedResults.continueCursor;
+
     if (isFirstPage && pinnedPosts.length > 0) {
       // For the first page, prepend pinned posts to the regular posts
       // We don't adjust the cursor or pagination - we simply add pinned posts on top
       // This means the first page might have more items than requested, but maintains cursor integrity
       allPosts = [...pinnedPosts, ...paginatedResults.page];
-      
+
       // Safety limit: If we have too many items (e.g., more than 100), warn in console
       // This prevents memory issues if someone pins hundreds of posts
       if (allPosts.length > 100) {
-        console.warn(`Warning: First page has ${allPosts.length} posts (${pinnedPosts.length} pinned). Consider limiting pinned posts.`);
+        console.warn(
+          `Warning: First page has ${allPosts.length} posts (${pinnedPosts.length} pinned). Consider limiting pinned posts.`,
+        );
       }
     }
 
     // Collect unique member and category IDs
-    const memberIds = Array.from(new Set(allPosts.map(post => post.memberId)));
-    const categoryIds = Array.from(new Set(allPosts.map(post => post.categoryId)));
+    const memberIds = Array.from(new Set(allPosts.map((post) => post.memberId)));
+    const categoryIds = Array.from(new Set(allPosts.map((post) => post.categoryId)));
 
     // Fetch all members and categories in parallel
     const [members, categories] = await Promise.all([
-      Promise.all(memberIds.map(id => ctx.db.get(id) as Promise<Doc<"members"> | null>)),
-      Promise.all(categoryIds.map(id => ctx.db.get(id) as Promise<Doc<"categories"> | null>))
+      Promise.all(memberIds.map((id) => ctx.db.get(id) as Promise<Doc<"members"> | null>)),
+      Promise.all(categoryIds.map((id) => ctx.db.get(id) as Promise<Doc<"categories"> | null>)),
     ]);
 
     // Create lookup maps for fast access
-    const memberMap = new Map(
-      members.map((member, index) => [memberIds[index], member])
-    );
+    const memberMap = new Map(members.map((member, index) => [memberIds[index], member]));
     const categoryMap = new Map(
-      categories.map((category, index) => [categoryIds[index], category])
+      categories.map((category, index) => [categoryIds[index], category]),
     );
 
     // Enrich posts with member and category data
@@ -487,49 +469,53 @@ export const getPostsPaginated = query({
 
       return {
         ...post,
-        member: member ? {
-          _id: member._id,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          email: member.email,
-          username: member.email.split('@')[0], // Derive username from email
-          slug: member.slug || "",
-          avatarUrl: member.avatarUrl || null,
-        } : null,
-        category: category ? {
-          _id: category._id,
-          name: category.name,
-          displayName: category.displayName,
-          icon: category.icon,
-        } : null,
+        member: member
+          ? {
+              _id: member._id,
+              firstName: member.firstName,
+              lastName: member.lastName,
+              email: member.email,
+              username: member.email.split("@")[0], // Derive username from email
+              slug: member.slug || "",
+              avatarUrl: member.avatarUrl || null,
+            }
+          : null,
+        category: category
+          ? {
+              _id: category._id,
+              name: category.name,
+              displayName: category.displayName,
+              icon: category.icon,
+            }
+          : null,
       };
     });
 
     return {
       ...paginatedResults,
       page: enrichedPosts,
-      continueCursor: continueCursor
+      continueCursor: continueCursor,
     };
   },
 });
 
 /**
  * Retrieves a single post by ID with complete details and related data.
- * 
+ *
  * Returns full post information including author profile, category details,
  * and all metadata. Used for post detail pages and editing interfaces.
  * Only returns active posts - deleted or hidden posts return null.
- * 
+ *
  * This function implements content access control based on user authentication:
  * - Authenticated users with active memberships see full content
  * - Unauthenticated or inactive users see truncated content (50 chars preview)
  * - The `isPaywalled` flag indicates whether content was truncated
  * - `fullContentRequiresTier` specifies the required membership level for full access
- * 
+ *
  * @param postId - Unique identifier of the post to retrieve
  * @returns Complete post object with member and category data, or null if not found/inactive
  *          Returns paywalled version with truncated content for users without access
- * 
+ *
  * @example
  * ```typescript
  * const post = await getPostById({ postId: "post123" });
@@ -572,32 +558,36 @@ export const getPostById = query({
 
       return {
         ...post,
-        content: needsEllipsis ? preview + "..." : preview,
+        content: needsEllipsis ? `${preview}...` : preview,
         // Flag to indicate the content has been truncated due to access restrictions
         isPaywalled: true,
         // Specify which membership tier is required for full content access
         fullContentRequiresTier: "member",
-        member: member ? {
-          _id: member._id,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          email: member.email,
-          username: member.email.split('@')[0],
-          bio: member.bio,
-          location: member.location,
-          linkGithub: member.linkGithub,
-          linkX: member.linkX,
-          linkYouTube: member.linkYouTube,
-          slug: member.slug || "",
-          avatarUrl: member.avatarUrl,
-        } : null,
-        category: category ? {
-          _id: category._id,
-          name: category.name,
-          displayName: category.displayName,
-          description: category.description,
-          icon: category.icon,
-        } : null,
+        member: member
+          ? {
+              _id: member._id,
+              firstName: member.firstName,
+              lastName: member.lastName,
+              email: member.email,
+              username: member.email.split("@")[0],
+              bio: member.bio,
+              location: member.location,
+              linkGithub: member.linkGithub,
+              linkX: member.linkX,
+              linkYouTube: member.linkYouTube,
+              slug: member.slug || "",
+              avatarUrl: member.avatarUrl,
+            }
+          : null,
+        category: category
+          ? {
+              _id: category._id,
+              name: category.name,
+              displayName: category.displayName,
+              description: category.description,
+              icon: category.icon,
+            }
+          : null,
       };
     }
 
@@ -606,48 +596,52 @@ export const getPostById = query({
       ...post,
       // No paywall - user has full access to content
       isPaywalled: false,
-      member: member ? {
-        _id: member._id,
-        firstName: member.firstName,
-        lastName: member.lastName,
-        email: member.email,
-        username: member.email.split('@')[0],
-        bio: member.bio,
-        location: member.location,
-        linkGithub: member.linkGithub,
-        linkX: member.linkX,
-        linkYouTube: member.linkYouTube,
-        slug: member.slug || "",
-        avatarUrl: member.avatarUrl,
-      } : null,
-      category: category ? {
-        _id: category._id,
-        name: category.name,
-        displayName: category.displayName,
-        description: category.description,
-        icon: category.icon,
-      } : null,
+      member: member
+        ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split("@")[0],
+            bio: member.bio,
+            location: member.location,
+            linkGithub: member.linkGithub,
+            linkX: member.linkX,
+            linkYouTube: member.linkYouTube,
+            slug: member.slug || "",
+            avatarUrl: member.avatarUrl,
+          }
+        : null,
+      category: category
+        ? {
+            _id: category._id,
+            name: category.name,
+            displayName: category.displayName,
+            description: category.description,
+            icon: category.icon,
+          }
+        : null,
     };
   },
 });
 
 /**
  * Retrieves a single post by its URL slug with complete details.
- * 
+ *
  * Used for SEO-friendly URLs and post routing. Returns the same detailed
  * information as getPostById but queries by slug instead of ID.
  * Essential for public post URLs and social sharing.
- * 
+ *
  * This function implements the same content access control as getPostById:
  * - Authenticated users with active memberships see full content
  * - Unauthenticated or inactive users see truncated content (50 chars preview)
  * - The `isPaywalled` flag indicates whether content was truncated
  * - `fullContentRequiresTier` specifies the required membership level for full access
- * 
+ *
  * @param slug - URL-friendly post identifier
  * @returns Complete post object with member and category data, or null if not found
  *          Returns paywalled version with truncated content for users without access
- * 
+ *
  * @example
  * ```typescript
  * const post = await getPostBySlug({ slug: "my-awesome-post" });
@@ -694,32 +688,36 @@ export const getPostBySlug = query({
 
       return {
         ...post,
-        content: needsEllipsis ? preview + "..." : preview,
+        content: needsEllipsis ? `${preview}...` : preview,
         // Flag to indicate the content has been truncated due to access restrictions
         isPaywalled: true,
         // Specify which membership tier is required for full content access
         fullContentRequiresTier: "member",
-        member: member ? {
-          _id: member._id,
-          firstName: member.firstName,
-          lastName: member.lastName,
-          email: member.email,
-          username: member.email.split('@')[0],
-          bio: member.bio,
-          location: member.location,
-          linkGithub: member.linkGithub,
-          linkX: member.linkX,
-          linkYouTube: member.linkYouTube,
-          slug: member.slug || "",
-          avatarUrl: member.avatarUrl,
-        } : null,
-        category: category ? {
-          _id: category._id,
-          name: category.name,
-          displayName: category.displayName,
-          description: category.description,
-          icon: category.icon,
-        } : null,
+        member: member
+          ? {
+              _id: member._id,
+              firstName: member.firstName,
+              lastName: member.lastName,
+              email: member.email,
+              username: member.email.split("@")[0],
+              bio: member.bio,
+              location: member.location,
+              linkGithub: member.linkGithub,
+              linkX: member.linkX,
+              linkYouTube: member.linkYouTube,
+              slug: member.slug || "",
+              avatarUrl: member.avatarUrl,
+            }
+          : null,
+        category: category
+          ? {
+              _id: category._id,
+              name: category.name,
+              displayName: category.displayName,
+              description: category.description,
+              icon: category.icon,
+            }
+          : null,
       };
     }
 
@@ -728,39 +726,43 @@ export const getPostBySlug = query({
       ...post,
       // No paywall - user has full access to content
       isPaywalled: false,
-      member: member ? {
-        _id: member._id,
-        firstName: member.firstName,
-        lastName: member.lastName,
-        email: member.email,
-        username: member.email.split('@')[0],
-        bio: member.bio,
-        location: member.location,
-        linkGithub: member.linkGithub,
-        linkX: member.linkX,
-        linkYouTube: member.linkYouTube,
-        slug: member.slug || "",
-        avatarUrl: member.avatarUrl,
-      } : null,
-      category: category ? {
-        _id: category._id,
-        name: category.name,
-        displayName: category.displayName,
-        description: category.description,
-        icon: category.icon,
-      } : null,
+      member: member
+        ? {
+            _id: member._id,
+            firstName: member.firstName,
+            lastName: member.lastName,
+            email: member.email,
+            username: member.email.split("@")[0],
+            bio: member.bio,
+            location: member.location,
+            linkGithub: member.linkGithub,
+            linkX: member.linkX,
+            linkYouTube: member.linkYouTube,
+            slug: member.slug || "",
+            avatarUrl: member.avatarUrl,
+          }
+        : null,
+      category: category
+        ? {
+            _id: category._id,
+            name: category.name,
+            displayName: category.displayName,
+            description: category.description,
+            icon: category.icon,
+          }
+        : null,
     };
   },
 });
 
 /**
  * Creates a new post with rich content support and validation.
- * 
+ *
  * Handles creation of posts with various content types including text, images,
  * videos, links, and multi-media attachments. Performs content validation,
  * URL safety checks, and generates unique slugs. Also handles mention
  * notifications and category post count updates.
- * 
+ *
  * @param title - Post title/headline
  * @param content - Post body content (markdown supported)
  * @param categoryId - Category to post in
@@ -777,7 +779,7 @@ export const getPostBySlug = query({
  * @param mentions - Array of mentioned member IDs
  * @param attachments - Array of multimedia attachments with metadata
  * @returns Object with created post ID and slug
- * 
+ *
  * @example
  * ```typescript
  * const result = await createPost({
@@ -796,7 +798,9 @@ export const createPost = mutation({
     title: v.string(),
     content: v.string(),
     categoryId: v.id("categories"),
-    type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
+    type: v.optional(
+      v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link")),
+    ),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
     aspectRatio: v.optional(v.number()),
@@ -809,29 +813,38 @@ export const createPost = mutation({
     mentions: v.optional(v.array(v.id("members"))),
     preview: v.optional(v.string()),
     // Multi-attachment support
-    attachments: v.optional(v.array(v.object({
-      id: v.string(),
-      type: v.union(v.literal("image"), v.literal("video"), v.literal("pdf"), v.literal("youtube")),
-      url: v.string(),
-      thumbnailUrl: v.optional(v.string()),
-      width: v.optional(v.number()),
-      height: v.optional(v.number()),
-      aspectRatio: v.optional(v.number()),
-      order: v.number(),
-      // PDF specific
-      pageCount: v.optional(v.number()),
-      fileSize: v.optional(v.number()),
-      // YouTube specific
-      videoId: v.optional(v.string()),
-      title: v.optional(v.string()),
-      duration: v.optional(v.string()),
-      channelName: v.optional(v.string()),
-      // Video specific
-      videoDuration: v.optional(v.string()),
-      format: v.optional(v.string()),
-      resolution: v.optional(v.string()),
-      codec: v.optional(v.string()),
-    }))),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          type: v.union(
+            v.literal("image"),
+            v.literal("video"),
+            v.literal("pdf"),
+            v.literal("youtube"),
+          ),
+          url: v.string(),
+          thumbnailUrl: v.optional(v.string()),
+          width: v.optional(v.number()),
+          height: v.optional(v.number()),
+          aspectRatio: v.optional(v.number()),
+          order: v.number(),
+          // PDF specific
+          pageCount: v.optional(v.number()),
+          fileSize: v.optional(v.number()),
+          // YouTube specific
+          videoId: v.optional(v.string()),
+          title: v.optional(v.string()),
+          duration: v.optional(v.string()),
+          channelName: v.optional(v.string()),
+          // Video specific
+          videoDuration: v.optional(v.string()),
+          format: v.optional(v.string()),
+          resolution: v.optional(v.string()),
+          codec: v.optional(v.string()),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     // Get authenticated member using unified helper
@@ -889,12 +902,9 @@ export const createPost = mutation({
 
     // Generate unique slug
     const baseSlug = generateSlug(args.title);
-    const posts = await ctx.db
-      .query("posts")
-      .withIndex("by_slug")
-      .collect();
+    const posts = await ctx.db.query("posts").withIndex("by_slug").collect();
     const existingSlugs = posts
-      .map(p => p.slug)
+      .map((p) => p.slug)
       .filter((slug): slug is string => slug !== undefined);
     const slug = ensureUniqueSlug(baseSlug, existingSlugs);
 
@@ -944,15 +954,11 @@ export const createPost = mutation({
 
     // Schedule preview generation if not provided
     if (!args.preview || args.preview.trim() === "") {
-      await ctx.scheduler.runAfter(
-        0,
-        api.previewGeneration.generateAndUpdatePostPreview,
-        {
-          postId,
-          title: args.title.trim(),
-          content: args.content.trim()
-        }
-      );
+      await ctx.scheduler.runAfter(0, api.previewGeneration.generateAndUpdatePostPreview, {
+        postId,
+        title: args.title.trim(),
+        content: args.content.trim(),
+      });
     }
 
     // Create mention notifications
@@ -992,7 +998,9 @@ export const updatePost = mutation({
     title: v.optional(v.string()),
     content: v.optional(v.string()),
     editReason: v.optional(v.string()),
-    type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
+    type: v.optional(
+      v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link")),
+    ),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
     aspectRatio: v.optional(v.number()),
@@ -1064,7 +1072,7 @@ export const updatePost = mutation({
         .filter((q) => q.neq(q.field("_id"), args.postId)) // Exclude current post
         .collect();
       const existingSlugs = posts
-        .map(p => p.slug)
+        .map((p) => p.slug)
         .filter((slug): slug is string => slug !== undefined);
       updates.slug = ensureUniqueSlug(baseSlug, existingSlugs);
     }
@@ -1121,7 +1129,9 @@ export const editPost = mutation({
     content: v.optional(v.string()),
     editReason: v.optional(v.string()),
     categoryId: v.optional(v.id("categories")),
-    type: v.optional(v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link"))),
+    type: v.optional(
+      v.union(v.literal("text"), v.literal("image"), v.literal("video"), v.literal("link")),
+    ),
     mediaUrl: v.optional(v.string()),
     thumbnailUrl: v.optional(v.string()),
     aspectRatio: v.optional(v.number()),
@@ -1132,29 +1142,38 @@ export const editPost = mutation({
     linkDescription: v.optional(v.string()),
     linkImage: v.optional(v.string()),
     // Multi-attachment support
-    attachments: v.optional(v.array(v.object({
-      id: v.string(),
-      type: v.union(v.literal("image"), v.literal("video"), v.literal("pdf"), v.literal("youtube")),
-      url: v.string(),
-      thumbnailUrl: v.optional(v.string()),
-      width: v.optional(v.number()),
-      height: v.optional(v.number()),
-      aspectRatio: v.optional(v.number()),
-      order: v.number(),
-      // PDF specific
-      pageCount: v.optional(v.number()),
-      fileSize: v.optional(v.number()),
-      // YouTube specific
-      videoId: v.optional(v.string()),
-      title: v.optional(v.string()),
-      duration: v.optional(v.string()),
-      channelName: v.optional(v.string()),
-      // Video specific
-      videoDuration: v.optional(v.string()),
-      format: v.optional(v.string()),
-      resolution: v.optional(v.string()),
-      codec: v.optional(v.string()),
-    }))),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          id: v.string(),
+          type: v.union(
+            v.literal("image"),
+            v.literal("video"),
+            v.literal("pdf"),
+            v.literal("youtube"),
+          ),
+          url: v.string(),
+          thumbnailUrl: v.optional(v.string()),
+          width: v.optional(v.number()),
+          height: v.optional(v.number()),
+          aspectRatio: v.optional(v.number()),
+          order: v.number(),
+          // PDF specific
+          pageCount: v.optional(v.number()),
+          fileSize: v.optional(v.number()),
+          // YouTube specific
+          videoId: v.optional(v.string()),
+          title: v.optional(v.string()),
+          duration: v.optional(v.string()),
+          channelName: v.optional(v.string()),
+          // Video specific
+          videoDuration: v.optional(v.string()),
+          format: v.optional(v.string()),
+          resolution: v.optional(v.string()),
+          codec: v.optional(v.string()),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     // Get authenticated member using unified helper
@@ -1194,10 +1213,13 @@ export const editPost = mutation({
 
       // Only override if not explicitly provided
       resolvedMediaUrl = args.mediaUrl !== undefined ? args.mediaUrl : firstAttachment.url;
-      resolvedThumbnailUrl = args.thumbnailUrl !== undefined ? args.thumbnailUrl : firstAttachment.thumbnailUrl;
-      resolvedAspectRatio = args.aspectRatio !== undefined ? args.aspectRatio : firstAttachment.aspectRatio;
+      resolvedThumbnailUrl =
+        args.thumbnailUrl !== undefined ? args.thumbnailUrl : firstAttachment.thumbnailUrl;
+      resolvedAspectRatio =
+        args.aspectRatio !== undefined ? args.aspectRatio : firstAttachment.aspectRatio;
       resolvedMediaWidth = args.mediaWidth !== undefined ? args.mediaWidth : firstAttachment.width;
-      resolvedMediaHeight = args.mediaHeight !== undefined ? args.mediaHeight : firstAttachment.height;
+      resolvedMediaHeight =
+        args.mediaHeight !== undefined ? args.mediaHeight : firstAttachment.height;
     }
 
     // Validate type-specific requirements
@@ -1300,7 +1322,7 @@ export const editPost = mutation({
         .filter((q) => q.neq(q.field("_id"), args.postId)) // Exclude current post
         .collect();
       const existingSlugs = posts
-        .map(p => p.slug)
+        .map((p) => p.slug)
         .filter((slug): slug is string => slug !== undefined);
       updates.slug = ensureUniqueSlug(baseSlug, existingSlugs);
     }
@@ -1382,16 +1404,15 @@ export const editPost = mutation({
     }
 
     // Schedule preview regeneration if title or content changed
-    if ((args.title !== undefined || args.content !== undefined) && (!updatedPost.preview || updatedPost.preview.trim() === "")) {
-      await ctx.scheduler.runAfter(
-        0,
-        api.previewGeneration.generateAndUpdatePostPreview,
-        {
-          postId: args.postId,
-          title: updatedPost.title,
-          content: updatedPost.content
-        }
-      );
+    if (
+      (args.title !== undefined || args.content !== undefined) &&
+      (!updatedPost.preview || updatedPost.preview.trim() === "")
+    ) {
+      await ctx.scheduler.runAfter(0, api.previewGeneration.generateAndUpdatePostPreview, {
+        postId: args.postId,
+        title: updatedPost.title,
+        content: updatedPost.content,
+      });
     }
 
     // Get the category for the URL (use updated category if changed)
@@ -1401,22 +1422,22 @@ export const editPost = mutation({
       _id: updatedPost._id,
       slug: updatedPost.slug,
       title: updatedPost.title,
-      categoryName: category?.name
+      categoryName: category?.name,
     };
   },
 });
 
 /**
  * Soft deletes a post by changing its status to "deleted".
- * 
+ *
  * Only the post author can delete their own posts. The post data is preserved
  * but hidden from public view. Updates the category post count and maintains
  * referential integrity for comments and other related data.
- * 
+ *
  * @param postId - ID of the post to delete
  * @returns The ID of the deleted post
  * @throws Error if user is not the post author or post not found
- * 
+ *
  * @example
  * ```typescript
  * await deletePost({ postId: "post123" });
@@ -1460,16 +1481,16 @@ export const deletePost = mutation({
 
 /**
  * Records a post view for analytics and engagement tracking.
- * 
+ *
  * Implements deduplication logic to prevent inflated view counts from the same
  * user within 24 hours. Supports both authenticated and anonymous users.
  * Used for trending algorithms and content performance metrics.
- * 
+ *
  * @param postId - ID of the post being viewed
  * @param ipAddress - IP address for anonymous user deduplication
  * @param userAgent - Browser user agent for analytics
  * @returns Object indicating whether a new view was recorded
- * 
+ *
  * @example
  * ```typescript
  * const result = await trackPostView({
@@ -1523,7 +1544,7 @@ export const trackPostView = mutation({
     }
 
     // Check if this user/IP has already viewed this post recently (within 24 hours)
-    const oneDayAgo = Date.now() - (24 * 60 * 60 * 1000);
+    const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
 
     let existingView;
     if (userId) {
@@ -1537,10 +1558,7 @@ export const trackPostView = mutation({
         .query("postViews")
         .withIndex("by_postId", (q) => q.eq("postId", postId))
         .filter((q) =>
-          q.and(
-            q.eq(q.field("ipAddress"), ipAddress),
-            q.gt(q.field("viewedAt"), oneDayAgo)
-          )
+          q.and(q.eq(q.field("ipAddress"), ipAddress), q.gt(q.field("viewedAt"), oneDayAgo)),
         )
         .first();
     }
@@ -1583,35 +1601,31 @@ export const searchPosts = query({
     }
 
     // Search titles
-    const titleQuery = ctx.db
-      .query("posts")
-      .withSearchIndex("search_posts", (q) => {
-        let query = q.search("title", searchTerm).eq("status", "active");
+    const titleQuery = ctx.db.query("posts").withSearchIndex("search_posts", (q) => {
+      let query = q.search("title", searchTerm).eq("status", "active");
+      if (categoryId) {
+        query = query.eq("categoryId", categoryId);
+      }
+      return query;
+    });
+
+    let posts = await titleQuery.take(limit);
+
+    // Also search content if requested
+    if (includeContent) {
+      const contentQuery = ctx.db.query("posts").withSearchIndex("search_posts_content", (q) => {
+        let query = q.search("content", searchTerm).eq("status", "active");
         if (categoryId) {
           query = query.eq("categoryId", categoryId);
         }
         return query;
       });
 
-    let posts = await titleQuery.take(limit);
-
-    // Also search content if requested
-    if (includeContent) {
-      const contentQuery = ctx.db
-        .query("posts")
-        .withSearchIndex("search_posts_content", (q) => {
-          let query = q.search("content", searchTerm).eq("status", "active");
-          if (categoryId) {
-            query = query.eq("categoryId", categoryId);
-          }
-          return query;
-        });
-
       const contentPosts = await contentQuery.take(limit);
 
       // Dedupe by ID, preferring title matches
-      const seenIds = new Set(posts.map(p => p._id));
-      const uniqueContentPosts = contentPosts.filter(p => !seenIds.has(p._id));
+      const seenIds = new Set(posts.map((p) => p._id));
+      const uniqueContentPosts = contentPosts.filter((p) => !seenIds.has(p._id));
       posts = [...posts, ...uniqueContentPosts].slice(0, limit);
     }
 
@@ -1625,22 +1639,26 @@ export const searchPosts = query({
 
         return {
           ...post,
-          member: member ? {
-            _id: member._id,
-            firstName: member.firstName,
-            lastName: member.lastName,
-            username: member.email.split('@')[0],
-            slug: member.slug || "",
-            avatarUrl: member.avatarUrl || null,
-          } : null,
-          category: category ? {
-            _id: category._id,
-            name: category.name,
-            displayName: category.displayName,
-            icon: category.icon,
-          } : null,
+          member: member
+            ? {
+                _id: member._id,
+                firstName: member.firstName,
+                lastName: member.lastName,
+                username: member.email.split("@")[0],
+                slug: member.slug || "",
+                avatarUrl: member.avatarUrl || null,
+              }
+            : null,
+          category: category
+            ? {
+                _id: category._id,
+                name: category.name,
+                displayName: category.displayName,
+                icon: category.icon,
+              }
+            : null,
         };
-      })
+      }),
     );
 
     return enrichedPosts;
@@ -1668,20 +1686,21 @@ export const getPostsByMember = query({
         const category = await ctx.db.get(post.categoryId);
         return {
           ...post,
-          category: category ? {
-            _id: category._id,
-            name: category.name,
-            displayName: category.displayName,
-            icon: category.icon,
-          } : null,
+          category: category
+            ? {
+                _id: category._id,
+                name: category.name,
+                displayName: category.displayName,
+                icon: category.icon,
+              }
+            : null,
         };
-      })
+      }),
     );
 
     return enrichedPosts;
   },
 });
-
 
 // Migration mutation to add slugs to existing posts
 export const addSlugsToExistingPosts = mutation({
@@ -1703,7 +1722,7 @@ export const addSlugsToExistingPosts = mutation({
       await Promise.all(
         batch.map(async (post) => {
           // Skip if post already has slug
-          if ('slug' in post && post.slug) {
+          if ("slug" in post && post.slug) {
             existingSlugs.add(post.slug as string);
             return;
           }
@@ -1712,11 +1731,11 @@ export const addSlugsToExistingPosts = mutation({
           const baseSlug = post.title
             .toLowerCase()
             .trim()
-            .replace(/[^\w\s-]/g, '')
-            .replace(/[\s_-]+/g, '-')
-            .replace(/^-+|-+$/g, '')
+            .replace(/[^\w\s-]/g, "")
+            .replace(/[\s_-]+/g, "-")
+            .replace(/^-+|-+$/g, "")
             .substring(0, 60)
-            .replace(/-+$/, '');
+            .replace(/-+$/, "");
 
           // Ensure uniqueness
           let slug = baseSlug;
@@ -1730,10 +1749,12 @@ export const addSlugsToExistingPosts = mutation({
 
           // Update the post with the generated slug
           await ctx.db.patch(post._id, { slug });
-        })
+        }),
       );
 
-      console.log(`Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(posts.length / batchSize)}`);
+      console.log(
+        `Processed batch ${Math.floor(i / batchSize) + 1}/${Math.ceil(posts.length / batchSize)}`,
+      );
     }
 
     console.log("Slug generation migration completed successfully!");
@@ -1743,21 +1764,21 @@ export const addSlugsToExistingPosts = mutation({
 
 /**
  * Pins a post to the top of its category or globally for admin visibility.
- * 
+ *
  * Only administrators can pin posts. Enforces limits of 3 pinned posts per
  * category and 3 globally pinned posts. Posts can be pinned in their category,
  * globally, or both simultaneously.
- * 
+ *
  * @param postId - ID of the post to pin
  * @param scope - Pin scope: "category", "global", or "both"
  * @returns Success indicator
  * @throws Error if user is not admin, limits exceeded, or post not found
- * 
+ *
  * @example
  * ```typescript
- * await pinPost({ 
- *   postId: "post123", 
- *   scope: "category" 
+ * await pinPost({
+ *   postId: "post123",
+ *   scope: "category"
  * });
  * // Post now appears at top of its category
  * ```
@@ -1765,7 +1786,7 @@ export const addSlugsToExistingPosts = mutation({
 export const pinPost = mutation({
   args: {
     postId: v.id("posts"),
-    scope: v.union(v.literal("category"), v.literal("global"), v.literal("both"))
+    scope: v.union(v.literal("category"), v.literal("global"), v.literal("both")),
   },
   handler: async (ctx, { postId, scope }) => {
     // Get authenticated member and verify admin
@@ -1784,18 +1805,18 @@ export const pinPost = mutation({
       const categoryPinnedPosts = await ctx.db
         .query("posts")
         .withIndex("by_pinned_and_category")
-        .filter(q =>
+        .filter((q) =>
           q.and(
             q.eq(q.field("isPinned"), true),
             q.eq(q.field("categoryId"), post.categoryId),
             q.eq(q.field("status"), "active"),
-            q.neq(q.field("_id"), postId) // Exclude current post if already pinned
-          )
+            q.neq(q.field("_id"), postId), // Exclude current post if already pinned
+          ),
         )
         .collect();
 
-      const categoryPinnedCount = categoryPinnedPosts.filter(p =>
-        p.pinScope === "category" || p.pinScope === "both"
+      const categoryPinnedCount = categoryPinnedPosts.filter(
+        (p) => p.pinScope === "category" || p.pinScope === "both",
       ).length;
 
       if (categoryPinnedCount >= 3) {
@@ -1807,17 +1828,17 @@ export const pinPost = mutation({
       const globalPinnedPosts = await ctx.db
         .query("posts")
         .withIndex("by_pinned_global")
-        .filter(q =>
+        .filter((q) =>
           q.and(
             q.eq(q.field("isPinned"), true),
             q.eq(q.field("status"), "active"),
-            q.neq(q.field("_id"), postId) // Exclude current post if already pinned
-          )
+            q.neq(q.field("_id"), postId), // Exclude current post if already pinned
+          ),
         )
         .collect();
 
-      const globalPinnedCount = globalPinnedPosts.filter(p =>
-        p.pinScope === "global" || p.pinScope === "both"
+      const globalPinnedCount = globalPinnedPosts.filter(
+        (p) => p.pinScope === "global" || p.pinScope === "both",
       ).length;
 
       if (globalPinnedCount >= 3) {
@@ -1831,23 +1852,23 @@ export const pinPost = mutation({
       pinScope: scope,
       pinnedAt: Date.now(),
       pinnedBy: member._id,
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     });
 
     return { success: true };
-  }
+  },
 });
 
 /**
  * Unpins a previously pinned post, removing it from top placement.
- * 
+ *
  * Only administrators can unpin posts. Removes all pin metadata and returns
  * the post to normal chronological or popularity-based sorting.
- * 
+ *
  * @param postId - ID of the post to unpin
  * @returns Success indicator
  * @throws Error if user is not admin or post not found
- * 
+ *
  * @example
  * ```typescript
  * await unpinPost({ postId: "post123" });
@@ -1874,11 +1895,11 @@ export const unpinPost = mutation({
       pinScope: undefined,
       pinnedAt: undefined,
       pinnedBy: undefined,
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
     });
 
     return { success: true };
-  }
+  },
 });
 
 /**
@@ -1937,11 +1958,11 @@ export const hardDeletePost = mutation({
       .query("comments")
       .withIndex("by_postId", (q) => q.eq("postId", args.postId))
       .collect();
-    
+
     for (const comment of comments) {
       await ctx.db.delete(comment._id);
     }
-    
+
     // Delete the post
     await ctx.db.delete(args.postId);
   },
@@ -1971,13 +1992,13 @@ export const updatePostPreview = internalMutation({
 
 /**
  * Get post routing information for navigation
- * 
+ *
  * Lightweight query that returns only the URL components needed for navigation.
  * Used by the success page to redirect back to the original post after purchase.
- * 
+ *
  * @param postId - ID of the post to get routing info for
  * @returns Object with category name and post slug, or null if post not found
- * 
+ *
  * @example
  * ```typescript
  * const routing = await getPostRouting({ postId: "post123" });

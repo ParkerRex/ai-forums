@@ -1,20 +1,16 @@
 "use client";
 
-import React from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import {
-  HoverCard,
-  HoverCardContent,
-  HoverCardTrigger,
-} from "@/components/ui/hover-card";
+import { format, formatDistanceToNow } from "date-fns";
+import { Calendar, Clock, FileText, User } from "lucide-react";
+import Link from "next/link";
+import type React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Clock, FileText, Calendar, User } from "lucide-react";
-import { Id } from "@/convex/_generated/dataModel";
-import { formatDistanceToNow, format } from "date-fns";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { getFlagEmoji } from "@/lib/country-utils";
-import Link from "next/link";
 
 interface MemberHoverCardProps {
   memberId: Id<"members">;

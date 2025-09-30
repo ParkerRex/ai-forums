@@ -1,12 +1,17 @@
 "use node";
 
-import { action, internalAction } from "./_generated/server";
 import { v } from "convex/values";
-import { internal } from "./_generated/api";
-import { createDiscordClient, DiscordMessage, handleDiscordError, RateLimiter } from "../lib/discord";
+import {
+  createDiscordClient,
+  type DiscordMessage,
+  handleDiscordError,
+  RateLimiter,
+} from "../lib/discord";
 import { summarize } from "../lib/exa-client";
-import type { ActionCtx } from "./_generated/server";
+import { internal } from "./_generated/api";
 import type { Doc } from "./_generated/dataModel";
+import type { ActionCtx } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 
 // Discord digest entry interface matching the database schema
 interface DiscordDigestEntry {
@@ -47,12 +52,12 @@ const rateLimiter = new RateLimiter(50, 60000); // 50 requests per minute
 function getYesterdayDateString(): string {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday.toISOString().split('T')[0];
+  return yesterday.toISOString().split("T")[0];
 }
 
 // Helper function to get date string from timestamp
-function getDateString(timestamp: number): string {
-  return new Date(timestamp).toISOString().split('T')[0];
+function _getDateString(timestamp: number): string {
+  return new Date(timestamp).toISOString().split("T")[0];
 }
 
 export const testDiscordConnection = action({
@@ -63,7 +68,7 @@ export const testDiscordConnection = action({
     if (!botToken) {
       return {
         success: false,
-        message: "Discord bot token not configured in environment variables"
+        message: "Discord bot token not configured in environment variables",
       };
     }
 
@@ -84,7 +89,7 @@ export const testDiscordConnection = action({
       return {
         success: isConnected,
         message: isConnected ? "Discord connection successful" : "Discord connection failed",
-        botUser
+        botUser,
       };
     } catch (error) {
       const discordError = handleDiscordError(error);
@@ -92,7 +97,7 @@ export const testDiscordConnection = action({
 
       return {
         success: false,
-        message: `Discord connection failed: ${discordError.message}`
+        message: `Discord connection failed: ${discordError.message}`,
       };
     }
   },
@@ -129,13 +134,11 @@ async function _fetchDiscordMessages(args: {
       const client = await createDiscordClient(botToken);
       const sinceDate = new Date(args.since);
 
-      console.log(`Fetching Discord messages from guild ${guildId} since ${sinceDate.toISOString()} (attempt ${attempt}/${maxRetries})`);
-
-      const messages = await client.fetchMessagesFromGuild(
-        guildId,
-        sinceDate,
-        args.channels
+      console.log(
+        `Fetching Discord messages from guild ${guildId} since ${sinceDate.toISOString()} (attempt ${attempt}/${maxRetries})`,
       );
+
+      const messages = await client.fetchMessagesFromGuild(guildId, sinceDate, args.channels);
 
       await client.disconnect();
 
@@ -159,7 +162,6 @@ async function _fetchDiscordMessages(args: {
 
       console.log(`Retrieved ${limitedMessages.length} Discord messages`);
       return limitedMessages;
-
     } catch (error) {
       const discordError = handleDiscordError(error);
       lastError = discordError;
@@ -173,17 +175,19 @@ async function _fetchDiscordMessages(args: {
 
       // Exponential backoff with jitter
       const baseDelay = 1000; // 1 second
-      const exponentialDelay = baseDelay * Math.pow(2, attempt - 1);
+      const exponentialDelay = baseDelay * 2 ** (attempt - 1);
       const jitter = Math.random() * 1000; // Add up to 1 second of jitter
       const totalDelay = exponentialDelay + jitter;
 
       console.log(`Retrying Discord fetch in ${Math.round(totalDelay)}ms...`);
-      await new Promise(resolve => setTimeout(resolve, totalDelay));
+      await new Promise((resolve) => setTimeout(resolve, totalDelay));
     }
   }
 
   // If we get here, all retries failed
-  throw new Error(`Discord fetch failed after ${maxRetries} attempts: ${lastError?.message || 'Unknown error'}`);
+  throw new Error(
+    `Discord fetch failed after ${maxRetries} attempts: ${lastError?.message || "Unknown error"}`,
+  );
 }
 
 export const fetchDiscordMessages = action({
@@ -200,7 +204,7 @@ export const fetchDiscordMessages = action({
 
 // Transform Discord message to NewsItem format with Exa summarization
 // Requirements: 2.5, 3.4 - Integration with existing Exa summarization system
-async function transformDiscordToNewsItem(message: DiscordMessage): Promise<NewsItem> {
+async function _transformDiscordToNewsItem(message: DiscordMessage): Promise<NewsItem> {
   const defaultGuildId = process.env.DISCORD_GUILD_ID;
 
   // Create meaningful title from the message
@@ -222,7 +226,9 @@ async function transformDiscordToNewsItem(message: DiscordMessage): Promise<News
     console.error("Failed to summarize Discord message:", error);
     // Fallback to truncated content if summarization fails
     summary = message.content
-      ? (message.content.length > 150 ? `${message.content.substring(0, 150)}...` : message.content)
+      ? message.content.length > 150
+        ? `${message.content.substring(0, 150)}...`
+        : message.content
       : `Message from ${message.author.username} in #${message.channelName}`;
   }
 
@@ -243,19 +249,20 @@ function createMessageTitle(message: DiscordMessage): string {
   const reactionCount = message.reactions.reduce((sum, r) => sum + r.count, 0);
 
   // If message has content, use it (truncated)
-  if (message.content && message.content.trim()) {
-    const truncatedContent = message.content.length > maxContentLength
-      ? `${message.content.substring(0, maxContentLength)}...`
-      : message.content;
+  if (message.content?.trim()) {
+    const truncatedContent =
+      message.content.length > maxContentLength
+        ? `${message.content.substring(0, maxContentLength)}...`
+        : message.content;
 
     // Add reaction indicator if there are reactions
-    const reactionIndicator = reactionCount > 0 ? ` (${reactionCount} reactions)` : '';
+    const reactionIndicator = reactionCount > 0 ? ` (${reactionCount} reactions)` : "";
 
     return `${message.author.username}: ${truncatedContent}${reactionIndicator}`;
   }
 
   // Fallback title for messages without content (e.g., media only)
-  const reactionIndicator = reactionCount > 0 ? ` with ${reactionCount} reactions` : '';
+  const reactionIndicator = reactionCount > 0 ? ` with ${reactionCount} reactions` : "";
   return `${message.author.username} in #${message.channelName}${reactionIndicator}`;
 }
 
@@ -270,10 +277,12 @@ export const processDiscordDigest = internalAction({
       console.log(`Processing Discord digest for ${args.targetDate}`);
 
       // Calculate timestamp range for the target date (in UTC)
-      const startOfDay = new Date(args.targetDate + 'T00:00:00.000Z');
-      const endOfDay = new Date(args.targetDate + 'T23:59:59.999Z');
+      const startOfDay = new Date(`${args.targetDate}T00:00:00.000Z`);
+      const endOfDay = new Date(`${args.targetDate}T23:59:59.999Z`);
 
-      console.log(`Fetching messages from ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`);
+      console.log(
+        `Fetching messages from ${startOfDay.toISOString()} to ${endOfDay.toISOString()}`,
+      );
 
       // Fetch messages from Discord API for the target date
       // Use a higher limit to ensure we get all messages for the day
@@ -285,25 +294,32 @@ export const processDiscordDigest = internalAction({
       console.log(`Fetched ${messages.length} total messages`);
 
       // Filter messages to only include those from the target date
-      const targetDateMessages = messages.filter(message => {
+      const targetDateMessages = messages.filter((message) => {
         // message.timestamp is already an ISO string, so we can extract the date directly
-        const messageDate = message.timestamp.split('T')[0];
-        console.log(`Message ${message.id}: date=${messageDate}, target=${args.targetDate}, match=${messageDate === args.targetDate}`);
+        const messageDate = message.timestamp.split("T")[0];
+        console.log(
+          `Message ${message.id}: date=${messageDate}, target=${args.targetDate}, match=${messageDate === args.targetDate}`,
+        );
         return messageDate === args.targetDate;
       });
 
       console.log(`Found ${targetDateMessages.length} messages for ${args.targetDate}`);
 
       // Process and store messages in database
-      const processedCount = await processAndStoreMessages(ctx, targetDateMessages, args.targetDate);
+      const processedCount = await processAndStoreMessages(
+        ctx,
+        targetDateMessages,
+        args.targetDate,
+      );
 
-      console.log(`Successfully processed ${processedCount} Discord messages for ${args.targetDate}`);
+      console.log(
+        `Successfully processed ${processedCount} Discord messages for ${args.targetDate}`,
+      );
       return { success: true, processedCount };
-
     } catch (error) {
       console.error(`Discord digest processing failed for ${args.targetDate}:`, error);
       // Don't throw - let other cron jobs continue
-      return { success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   },
 });
@@ -314,7 +330,7 @@ export const processDiscordDigest = internalAction({
 async function processAndStoreMessages(
   ctx: ActionCtx,
   messages: DiscordMessage[],
-  digestDate: string
+  digestDate: string,
 ): Promise<number> {
   let processedCount = 0;
   const processedAt = Date.now();
@@ -327,7 +343,7 @@ async function processAndStoreMessages(
       // Generate summary using Exa
       let summary: string | undefined;
       try {
-        if (message.content && message.content.trim()) {
+        if (message.content?.trim()) {
           const contentForSummary = `Discord message from ${message.author.username} in #${message.channelName}: ${message.content}`;
           summary = await summarize(contentForSummary);
         }
@@ -358,10 +374,9 @@ async function processAndStoreMessages(
       if (result.inserted) {
         processedCount++;
       }
-
     } catch (error) {
       console.error(`Failed to process message ${message.id}:`, error);
-      console.error('Message data:', JSON.stringify(message, null, 2));
+      console.error("Message data:", JSON.stringify(message, null, 2));
       // Continue with other messages
     }
   }
@@ -369,14 +384,15 @@ async function processAndStoreMessages(
   return processedCount;
 }
 
-
-
 // Manual trigger for Discord digest processing (for testing)
 export const manualProcessDiscordDigest = action({
   args: {
     targetDate: v.optional(v.string()), // Defaults to yesterday
   },
-  handler: async (ctx: ActionCtx, args): Promise<{
+  handler: async (
+    ctx: ActionCtx,
+    args,
+  ): Promise<{
     success: boolean;
     message: string;
     result?: any;
@@ -387,20 +403,20 @@ export const manualProcessDiscordDigest = action({
     try {
       // Call the internal action
       const result: any = await ctx.runAction(internal.discord.processDiscordDigest, {
-        targetDate
+        targetDate,
       });
 
       return {
         success: true,
         message: `Discord digest processing completed for ${targetDate}`,
-        result
+        result,
       };
     } catch (error) {
       console.error("Manual Discord digest processing failed:", error);
       return {
         success: false,
-        message: `Discord digest processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        targetDate
+        message: `Discord digest processing failed: ${error instanceof Error ? error.message : "Unknown error"}`,
+        targetDate,
       };
     }
   },
@@ -411,7 +427,10 @@ export const testBotPermissions = action({
   args: {
     guildId: v.optional(v.string()),
   },
-  handler: async (_ctx, args): Promise<{
+  handler: async (
+    _ctx,
+    args,
+  ): Promise<{
     success: boolean;
     message: string;
     permissions?: string[];
@@ -423,7 +442,7 @@ export const testBotPermissions = action({
     if (!botToken) {
       return {
         success: false,
-        message: "Discord bot token not configured"
+        message: "Discord bot token not configured",
       };
     }
 
@@ -431,7 +450,7 @@ export const testBotPermissions = action({
     if (!guildId) {
       return {
         success: false,
-        message: "Discord guild ID not provided"
+        message: "Discord guild ID not provided",
       };
     }
 
@@ -442,7 +461,11 @@ export const testBotPermissions = action({
 
       // Access the underlying Discord.js client for guild operations
       // Note: This requires proper typing but we'll use a type assertion for now
-      const discordClient = (client as unknown as { client: { guilds: { fetch: (id: string) => Promise<unknown> }; user: { id: string } } }).client;
+      const discordClient = (
+        client as unknown as {
+          client: { guilds: { fetch: (id: string) => Promise<unknown> }; user: { id: string } };
+        }
+      ).client;
 
       // Test guild access and permissions
       const guild = await discordClient.guilds.fetch(guildId);
@@ -450,7 +473,7 @@ export const testBotPermissions = action({
         await client.disconnect();
         return {
           success: false,
-          message: `Bot is not in guild ${guildId} or guild not found`
+          message: `Bot is not in guild ${guildId} or guild not found`,
         };
       }
 
@@ -462,16 +485,15 @@ export const testBotPermissions = action({
         success: true,
         message: "Bot permissions verified successfully",
         permissions: ["Basic guild access confirmed"],
-        channels: []
+        channels: [],
       };
-
     } catch (error) {
       const discordError = handleDiscordError(error);
       console.error("Bot permission test failed:", discordError);
 
       return {
         success: false,
-        message: `Permission test failed: ${discordError.message}`
+        message: `Permission test failed: ${discordError.message}`,
       };
     }
   },

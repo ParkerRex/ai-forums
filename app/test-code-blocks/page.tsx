@@ -1,16 +1,17 @@
-'use client';
+"use client";
 
-import { CodeBlock, InlineCode } from '@/components/mdx/code-block';
+import { CodeBlock, InlineCode } from "@/components/mdx/code-block";
 
 export default function TestCodeBlocks() {
   return (
     <div className="max-w-3xl mx-auto p-8 space-y-8">
       <h1 className="text-3xl font-bold mb-8">Code Block Test Page</h1>
-      
+
       <section>
         <h2 className="text-2xl font-semibold mb-4">Inline Code</h2>
         <p>
-          Use <InlineCode>npm install</InlineCode> to install dependencies or <InlineCode>const x = 42;</InlineCode> for JavaScript.
+          Use <InlineCode>npm install</InlineCode> to install dependencies or{" "}
+          <InlineCode>const x = 42;</InlineCode> for JavaScript.
         </p>
       </section>
 

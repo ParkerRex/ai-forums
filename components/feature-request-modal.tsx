@@ -1,10 +1,15 @@
 "use client";
 
-import React, { useState, useCallback, useRef } from "react";
+import { useAction, useConvex } from "convex/react";
+import { FileIcon, FileText, Loader2, X } from "lucide-react";
+import Image from "next/image";
+import type React from "react";
+import { useCallback, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useAction } from "convex/react";
-import { useConvex } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { toast } from "sonner";
+import { LinkIcon } from "@/components/icons/link";
+import { RichTextEditor } from "@/components/posts/rich-text-editor";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -12,19 +17,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { X, Loader2, FileText, FileIcon } from "lucide-react";
-import { LinkIcon } from "@/components/icons/link";
-import { toast } from "sonner";
-import Image from "next/image";
-import { RichTextEditor } from "@/components/posts/rich-text-editor";
+import { api } from "@/convex/_generated/api";
 import {
-  validateMediaFile,
   getFilePreviewUrl,
   revokeFilePreviewUrl,
   uploadMedia,
+  validateMediaFile,
 } from "@/lib/upload-media";
 
 interface FeatureRequestModalProps {
@@ -37,10 +37,7 @@ interface FeatureRequestFormData {
   description: string;
 }
 
-export function FeatureRequestModal({
-  isOpen,
-  onClose,
-}: FeatureRequestModalProps) {
+export function FeatureRequestModal({ isOpen, onClose }: FeatureRequestModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [attachmentPreviews, setAttachmentPreviews] = useState<string[]>([]);
@@ -131,12 +128,9 @@ export function FeatureRequestModal({
             const uploadResult = await uploadMedia(convex, file, {
               onProgress: (progress) => {
                 if (progress.percentage < 100) {
-                  toast.loading(
-                    `Uploading ${file.name}: ${progress.percentage}%`,
-                    {
-                      id: fileKey,
-                    },
-                  );
+                  toast.loading(`Uploading ${file.name}: ${progress.percentage}%`, {
+                    id: fileKey,
+                  });
                 } else {
                   toast.success(`${file.name} uploaded successfully`, {
                     id: fileKey,
@@ -147,10 +141,9 @@ export function FeatureRequestModal({
             screenshotUrls.push(uploadResult.url);
           } catch (uploadError) {
             console.error("Failed to upload screenshot:", uploadError);
-            toast.error(
-              `Failed to upload ${file.name}. Continuing without this screenshot.`,
-              { id: fileKey },
-            );
+            toast.error(`Failed to upload ${file.name}. Continuing without this screenshot.`, {
+              id: fileKey,
+            });
           }
         }
       }
@@ -164,12 +157,7 @@ export function FeatureRequestModal({
       toast.success(
         <div>
           Feature request submitted successfully!{" "}
-          <a
-            href={result.issueUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
+          <a href={result.issueUrl} target="_blank" rel="noopener noreferrer" className="underline">
             View issue #{result.issueNumber}
           </a>
         </div>,
@@ -209,9 +197,7 @@ export function FeatureRequestModal({
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Request a Feature</DialogTitle>
-          <DialogDescription>
-            Share your ideas to help us improve the platform.
-          </DialogDescription>
+          <DialogDescription>Share your ideas to help us improve the platform.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -228,11 +214,7 @@ export function FeatureRequestModal({
                 },
               })}
             />
-            {errors.title && (
-              <span className="text-sm text-red-600">
-                {errors.title.message}
-              </span>
-            )}
+            {errors.title && <span className="text-sm text-red-600">{errors.title.message}</span>}
           </div>
 
           <div className="space-y-2">
@@ -278,13 +260,8 @@ export function FeatureRequestModal({
                           ) : (
                             <FileIcon className="w-8 h-8 text-muted-foreground mb-1" />
                           )}
-                          <span
-                            className="text-xs text-center truncate w-full"
-                            title={file.name}
-                          >
-                            {file.name.length > 10
-                              ? file.name.substring(0, 7) + "..."
-                              : file.name}
+                          <span className="text-xs text-center truncate w-full" title={file.name}>
+                            {file.name.length > 10 ? `${file.name.substring(0, 7)}...` : file.name}
                           </span>
                           <span className="text-xs text-muted-foreground">
                             {(file.size / 1024).toFixed(0)}KB
@@ -308,12 +285,7 @@ export function FeatureRequestModal({
           </div>
 
           <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleClose}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
               Cancel
             </Button>
             <Button type="submit" disabled={isSubmitting}>

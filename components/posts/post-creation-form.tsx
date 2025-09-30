@@ -1,12 +1,25 @@
 "use client";
 
-import { useState, useCallback, lazy, Suspense, useEffect } from "react";
-import { useMutation, useQuery, useConvex, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useAction, useConvex, useMutation, useQuery } from "convex/react";
+import {
+  AlertCircle,
+  ArrowLeft,
+  BarChart3,
+  FileText,
+  Image as ImageIcon,
+  Link,
+  Loader2,
+  Send,
+} from "lucide-react";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
+import { CategoryToggleGroup } from "@/components/posts/category-toggle-group";
+import { DraftsModal } from "@/components/posts/drafts-modal";
+import { MediaUploadSection } from "@/components/posts/media-upload-section";
+import { PollCreationInline, type PollData } from "@/components/posts/poll-creation-inline";
+import { PostPreviewToggle } from "@/components/posts/post-preview-toggle";
 import { PreviewGenerationDialog } from "@/components/posts/preview-generation-dialog";
 // import {
 //   Select,
@@ -16,40 +29,18 @@ import { PreviewGenerationDialog } from "@/components/posts/preview-generation-d
 //   SelectValue,
 // } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { DraftsModal } from "@/components/posts/drafts-modal";
-import {
-  PollCreationInline,
-  PollData,
-} from "@/components/posts/poll-creation-inline";
-import { MediaUploadSection } from "@/components/posts/media-upload-section";
-import { CategoryToggleGroup } from "@/components/posts/category-toggle-group";
-import { PostPreviewToggle } from "@/components/posts/post-preview-toggle";
-import { MediaItem } from "@/types";
-import {
-  PostFormData,
-  validatePostForm,
-  getCharacterCountInfo,
-} from "@/lib/form-validation";
-import { uploadMedia, revokeFilePreviewUrl } from "@/lib/upload-media";
-import {
-  AlertCircle,
-  Loader2,
-  Send,
-  FileText,
-  Link,
-  BarChart3,
-  Image as ImageIcon,
-  ArrowLeft,
-} from "lucide-react";
-import Image from "next/image";
-import { useRouter } from "next/navigation";
-import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { getCharacterCountInfo, type PostFormData, validatePostForm } from "@/lib/form-validation";
+import { revokeFilePreviewUrl, uploadMedia } from "@/lib/upload-media";
 import { cn } from "@/lib/utils";
+import type { MediaItem } from "@/types";
 
 // Lazy load heavy components
-const RichTextEditor = lazy(
-  () => import("@/components/posts/rich-text-editor"),
-);
+const RichTextEditor = lazy(() => import("@/components/posts/rich-text-editor"));
 const PostPreview = lazy(() => import("@/components/posts/post-preview"));
 
 interface PostCreationFormProps {
@@ -115,17 +106,11 @@ function PublishButton({
 }) {
   return (
     <div className="flex justify-end pt-3">
-      <Button
-        type="submit"
-        disabled={!isFormComplete || isSubmitting}
-        size="sm"
-      >
+      <Button type="submit" disabled={!isFormComplete || isSubmitting} size="sm">
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {uploadProgress !== null
-              ? `Uploading... ${uploadProgress}%`
-              : "Publishing..."}
+            {uploadProgress !== null ? `Uploading... ${uploadProgress}%` : "Publishing..."}
           </>
         ) : (
           <>
@@ -138,10 +123,7 @@ function PublishButton({
   );
 }
 
-export function PostCreationForm({
-  onSuccess,
-  onCancel,
-}: PostCreationFormProps) {
+export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps) {
   const router = useRouter();
   const convex = useConvex();
 
@@ -188,9 +170,7 @@ export function PostCreationForm({
       return formData.linkUrl !== undefined && formData.linkUrl.trim() !== "";
     }
     if (formData.type === "poll") {
-      return (
-        formData.pollData !== undefined && formData.pollData.options.length >= 2
-      );
+      return formData.pollData !== undefined && formData.pollData.options.length >= 2;
     }
     return true;
   }, [
@@ -219,9 +199,7 @@ export function PostCreationForm({
   const createPollPost = useMutation(api.polls.createPollPost);
   const deletePost = useMutation(api.posts.deletePost);
   const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
-  const generatePostPreview = useAction(
-    api.previewGeneration.generatePostPreview,
-  );
+  const generatePostPreview = useAction(api.previewGeneration.generatePostPreview);
 
   // Character count helpers
   const titleInfo = getCharacterCountInfo(formData.title, 5, 200);
@@ -237,13 +215,10 @@ export function PostCreationForm({
   }, [mediaPreviewUrl]);
 
   // Form handlers
-  const handleTitleChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setFormData((prev) => ({ ...prev, title: e.target.value }));
-      setSubmitError(null);
-    },
-    [],
-  );
+  const handleTitleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData((prev) => ({ ...prev, title: e.target.value }));
+    setSubmitError(null);
+  }, []);
 
   const handleContentChange = useCallback((content: string) => {
     setFormData((prev) => ({ ...prev, content }));
@@ -290,7 +265,7 @@ export function PostCreationForm({
       setFormData((prev) => ({ ...prev, linkUrl: url }));
 
       // Fetch link preview if valid URL
-      if (url && url.match(/^https?:\/\/.+/)) {
+      if (url?.match(/^https?:\/\/.+/)) {
         try {
           const preview = await fetchLinkPreview({ url });
           if (preview) {
@@ -345,11 +320,7 @@ export function PostCreationForm({
         formData.type === "media" ? "image" : formData.type;
 
       // Handle new media items system
-      if (
-        formData.type === "media" &&
-        formData.mediaItems &&
-        formData.mediaItems.length > 0
-      ) {
+      if (formData.type === "media" && formData.mediaItems && formData.mediaItems.length > 0) {
         // For now, use the first media item as the primary media
         // In the future, you could support multiple media in a single post
         const primaryMedia = formData.mediaItems[0];
@@ -363,9 +334,7 @@ export function PostCreationForm({
         if (primaryMedia.url.startsWith("blob:") && !primaryMedia.isUploading) {
           // Media should already be uploaded via onUpload callback
           // If not, this is an error state
-          throw new Error(
-            "Media upload incomplete. Please wait for upload to finish.",
-          );
+          throw new Error("Media upload incomplete. Please wait for upload to finish.");
         }
 
         mediaUrl = primaryMedia.url;
@@ -389,9 +358,7 @@ export function PostCreationForm({
           mediaUrl = uploadResult.url;
           thumbnailUrl = uploadResult.thumbnailUrl;
           // Determine if uploaded file is image or video
-          const fileType = formData.mediaFile.type.startsWith("video/")
-            ? "video"
-            : "image";
+          const fileType = formData.mediaFile.type.startsWith("video/") ? "video" : "image";
           resolvedType = fileType;
         } catch (uploadError) {
           console.error("Failed to upload media:", uploadError);
@@ -490,25 +457,14 @@ export function PostCreationForm({
     } catch (error) {
       console.error("Failed to create post:", error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Failed to create post. Please try again.";
+        error instanceof Error ? error.message : "Failed to create post. Please try again.";
       setSubmitError(errorMessage);
       toast.error(errorMessage);
     } finally {
       setIsSubmitting(false);
       setUploadProgress(null);
     }
-  }, [
-    formData,
-    categories,
-    createPost,
-    createPollPost,
-    deletePost,
-    convex,
-    onSuccess,
-    router,
-  ]);
+  }, [formData, categories, createPost, createPollPost, deletePost, convex, onSuccess, router]);
 
   const handlePreviewConfirm = useCallback(
     (preview: string) => {
@@ -535,10 +491,8 @@ export function PostCreationForm({
         if (!isPostTypeValid()) {
           if (formData.type === "media")
             validationErrors.push("Please add at least one media item");
-          if (formData.type === "link")
-            validationErrors.push("Please enter a valid URL");
-          if (formData.type === "poll")
-            validationErrors.push("Please add at least 2 poll options");
+          if (formData.type === "link") validationErrors.push("Please enter a valid URL");
+          if (formData.type === "poll") validationErrors.push("Please add at least 2 poll options");
         }
 
         if (validationErrors.length > 0) {
@@ -632,12 +586,7 @@ export function PostCreationForm({
           </div>
           <div className="flex items-center gap-3">
             <DraftsModal>
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={isSubmitting}
-                size="sm"
-              >
+              <Button type="button" variant="ghost" disabled={isSubmitting} size="sm">
                 <FileText className="mr-2 h-4 w-4" />
                 Drafts
               </Button>
@@ -688,9 +637,7 @@ export function PostCreationForm({
               autoFocus
             />
             <div className="flex items-center justify-end">
-              <div
-                className={cn("text-xs tabular-nums", "text-muted-foreground")}
-              >
+              <div className={cn("text-xs tabular-nums", "text-muted-foreground")}>
                 {titleInfo.length}
               </div>
             </div>
@@ -722,16 +669,8 @@ export function PostCreationForm({
             <div className="space-y-4">
               {/* Consistent toggle placement at the top */}
               <div className="flex items-center justify-between">
-                <PostPreviewToggle
-                  value={contentTab}
-                  onValueChange={setContentTab}
-                />
-                <div
-                  className={cn(
-                    "text-xs tabular-nums",
-                    "text-muted-foreground",
-                  )}
-                >
+                <PostPreviewToggle value={contentTab} onValueChange={setContentTab} />
+                <div className={cn("text-xs tabular-nums", "text-muted-foreground")}>
                   {contentInfo.length}
                 </div>
               </div>
@@ -828,9 +767,7 @@ export function PostCreationForm({
               />
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Description (optional)
-                </Label>
+                <Label className="text-sm font-medium">Description (optional)</Label>
                 <Suspense fallback={<RichTextEditorSkeleton />}>
                   <RichTextEditor
                     content={formData.content}
@@ -877,9 +814,7 @@ export function PostCreationForm({
                         />
                       )}
                       <div className="min-w-0 flex-1">
-                        <h4 className="truncate font-medium">
-                          {formData.linkTitle}
-                        </h4>
+                        <h4 className="truncate font-medium">{formData.linkTitle}</h4>
                         {formData.linkDescription && (
                           <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
                             {formData.linkDescription}
@@ -905,12 +840,7 @@ export function PostCreationForm({
                   />
                 </Suspense>
                 <div className="flex items-center justify-end">
-                  <div
-                    className={cn(
-                      "text-xs tabular-nums",
-                      "text-muted-foreground",
-                    )}
-                  >
+                  <div className={cn("text-xs tabular-nums", "text-muted-foreground")}>
                     {contentInfo.length}/10,000
                   </div>
                 </div>
@@ -932,9 +862,7 @@ export function PostCreationForm({
               />
 
               <div className="space-y-2">
-                <Label className="text-sm font-medium">
-                  Description (optional)
-                </Label>
+                <Label className="text-sm font-medium">Description (optional)</Label>
                 <Suspense fallback={<RichTextEditorSkeleton />}>
                   <RichTextEditor
                     content={formData.content}

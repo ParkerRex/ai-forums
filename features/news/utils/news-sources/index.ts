@@ -1,11 +1,11 @@
-import { NewsSource, RawItem, SourceType } from "./types";
-import * as rss from "./rss";
-import * as youtube from "./youtube";
-import * as xTwitter from "./x-twitter";
-import * as podcast from "./podcast";
 import * as blog from "./blog";
-import * as website from "./website";
 import * as discord from "./discord";
+import * as podcast from "./podcast";
+import * as rss from "./rss";
+import type { NewsSource, RawItem, SourceType } from "./types";
+import * as website from "./website";
+import * as xTwitter from "./x-twitter";
+import * as youtube from "./youtube";
 
 const fetchers: Record<SourceType, (source: NewsSource) => Promise<RawItem[]>> = {
   rss: rss.fetchItems,

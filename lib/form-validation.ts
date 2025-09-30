@@ -12,9 +12,7 @@ export const postValidationSchema = z.object({
     .min(10, "Content must be at least 10 characters long")
     .max(10000, "Content must be less than 10,000 characters")
     .trim(),
-  categoryId: z
-    .string()
-    .min(1, "Please select a category"),
+  categoryId: z.string().min(1, "Please select a category"),
 });
 
 export type PostFormData = z.infer<typeof postValidationSchema>;
@@ -54,11 +52,12 @@ export const getCharacterCountInfo = (text: string, min: number, max: number) =>
   const length = text.trim().length;
   const remaining = max - length;
 
-  let status: 'normal' | 'warning' | 'error' = 'normal';
+  let status: "normal" | "warning" | "error" = "normal";
   if (length < min) {
-    status = 'error';
-  } else if (remaining < max * 0.1) { // Warning when 90% full
-    status = 'warning';
+    status = "error";
+  } else if (remaining < max * 0.1) {
+    // Warning when 90% full
+    status = "warning";
   }
 
   return {
@@ -72,34 +71,34 @@ export const getCharacterCountInfo = (text: string, min: number, max: number) =>
 // Form validation state helper
 export const validatePostForm = (
   data: Partial<PostFormData>,
-  touchedFields?: Set<keyof PostFormData>
+  touchedFields?: Set<keyof PostFormData>,
 ) => {
   const errors: Partial<Record<keyof PostFormData, string>> = {};
 
   // Only validate fields that have been touched (or validate all if no touchedFields provided)
-  if (data.title !== undefined && (!touchedFields || touchedFields.has('title'))) {
+  if (data.title !== undefined && (!touchedFields || touchedFields.has("title"))) {
     const titleError = validateTitle(data.title);
     if (titleError) errors.title = titleError;
   }
 
-  if (data.content !== undefined && (!touchedFields || touchedFields.has('content'))) {
+  if (data.content !== undefined && (!touchedFields || touchedFields.has("content"))) {
     const contentError = validateContent(data.content);
     if (contentError) errors.content = contentError;
   }
 
-  if (data.categoryId !== undefined && (!touchedFields || touchedFields.has('categoryId'))) {
+  if (data.categoryId !== undefined && (!touchedFields || touchedFields.has("categoryId"))) {
     const categoryError = validateCategory(data.categoryId);
     if (categoryError) errors.categoryId = categoryError;
   }
 
   // For form submission validation, check all fields regardless of touched state
   const allFieldsValid =
-    validateTitle(data.title || '') === null &&
-    validateContent(data.content || '') === null &&
-    validateCategory(data.categoryId || '') === null;
+    validateTitle(data.title || "") === null &&
+    validateContent(data.content || "") === null &&
+    validateCategory(data.categoryId || "") === null;
 
   return {
     errors,
     isValid: touchedFields ? Object.keys(errors).length === 0 : allFieldsValid,
   };
-}; 
+};

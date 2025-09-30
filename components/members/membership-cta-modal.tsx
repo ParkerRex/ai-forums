@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
-import React from "react";
 import { useAuth } from "@clerk/nextjs";
 import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import {
+  BookOpen,
+  CheckCircle,
+  MessageCircle,
+  Rocket,
+  Shield,
+  Star,
+  Users,
+  Zap,
+} from "lucide-react";
+import React, { useState } from "react";
+import { toast } from "sonner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,24 +24,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  CheckCircle,
-  Star,
-  Zap,
-  Users,
-  Shield,
-  MessageCircle,
-  BookOpen,
-  Rocket,
-} from "lucide-react";
-import { SignInModal } from "../auth/sign-in-modal";
-import { toast } from "sonner";
+import { api } from "@/convex/_generated/api";
+import { checkoutAnalytics } from "@/lib/analytics";
 
 import { formatCurrency } from "@/lib/format";
-import { checkoutAnalytics } from "@/lib/analytics";
+import { SignInModal } from "../auth/sign-in-modal";
 
 interface MembershipCTAModalProps {
   /**
@@ -101,14 +100,10 @@ export function MembershipCTAModal({
   const { isSignedIn } = useAuth();
   // Default to the single available tier.
   const [selectedTier] = useState<TierType>("member");
-  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">(
-    "yearly",
-  );
+  const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("yearly");
   const [isLoading, setIsLoading] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
-  const createCheckoutSession = useAction(
-    api.stripe.checkout.createCheckoutSession,
-  );
+  const createCheckoutSession = useAction(api.stripe.checkout.createCheckoutSession);
 
   // Track modal open
   React.useEffect(() => {
@@ -132,8 +127,7 @@ export function MembershipCTAModal({
     {
       icon: <Users className="h-5 w-5" />,
       title: "Elite Network Access",
-      description:
-        "Connect with AI engineers from Google, OpenAI, Anthropic & more",
+      description: "Connect with AI engineers from Google, OpenAI, Anthropic & more",
     },
     {
       icon: <MessageCircle className="h-5 w-5" />,
@@ -173,9 +167,7 @@ export function MembershipCTAModal({
   const monthlyPrice = selectedTierData.monthlyPrice;
   const yearlyPrice = selectedTierData.yearlyPrice;
   const yearlySavings = monthlyPrice * 12 - yearlyPrice;
-  const yearlySavingsPercent = Math.round(
-    (yearlySavings / (monthlyPrice * 12)) * 100,
-  );
+  const yearlySavingsPercent = Math.round((yearlySavings / (monthlyPrice * 12)) * 100);
 
   const handleCheckout = async () => {
     if (!isSignedIn) {
@@ -204,9 +196,7 @@ export function MembershipCTAModal({
     } catch (error) {
       console.error("Error creating checkout session:", error);
       const message =
-        error instanceof Error
-          ? error.message
-          : "Payment setup failed. Please try again.";
+        error instanceof Error ? error.message : "Payment setup failed. Please try again.";
       checkoutAnalytics.checkoutFailed(message);
       toast.error(message);
     } finally {
@@ -333,9 +323,7 @@ export function MembershipCTAModal({
 
                   <div className="space-y-3 text-center">
                     <div>
-                      <h3 className="text-foreground text-xl font-bold">
-                        {selectedTierData.name}
-                      </h3>
+                      <h3 className="text-foreground text-xl font-bold">{selectedTierData.name}</h3>
                       <p className="text-muted-foreground mt-1 text-sm">
                         {selectedTierData.description}
                       </p>
@@ -345,9 +333,7 @@ export function MembershipCTAModal({
                       <div className="flex items-baseline justify-center gap-2">
                         <span className="text-foreground text-4xl font-bold">
                           {formatCurrency(
-                            billingInterval === "monthly"
-                              ? monthlyPrice
-                              : yearlyPrice,
+                            billingInterval === "monthly" ? monthlyPrice : yearlyPrice,
                           )}
                         </span>
                         <span className="text-muted-foreground text-base">
@@ -356,8 +342,7 @@ export function MembershipCTAModal({
                       </div>
                       {billingInterval === "yearly" && (
                         <div className="text-muted-foreground text-xs">
-                          Just {formatCurrency(yearlyPrice / 12)}/month when
-                          paid annually
+                          Just {formatCurrency(yearlyPrice / 12)}/month when paid annually
                         </div>
                       )}
                     </div>
@@ -395,12 +380,8 @@ export function MembershipCTAModal({
                       {feature.icon}
                     </div>
                     <div className="space-y-0.5">
-                      <h5 className="text-foreground text-sm font-medium">
-                        {feature.title}
-                      </h5>
-                      <p className="text-muted-foreground text-xs">
-                        {feature.description}
-                      </p>
+                      <h5 className="text-foreground text-sm font-medium">{feature.title}</h5>
+                      <p className="text-muted-foreground text-xs">{feature.description}</p>
                     </div>
                   </div>
                 ))}
@@ -450,10 +431,7 @@ export function MembershipCTAModal({
         </DialogContent>
       </Dialog>
 
-      <SignInModal
-        isOpen={showSignInModal}
-        onClose={() => setShowSignInModal(false)}
-      />
+      <SignInModal isOpen={showSignInModal} onClose={() => setShowSignInModal(false)} />
     </>
   );
 }
@@ -469,9 +447,9 @@ export function useMembershipCTA() {
     isOpen,
     openModal,
     closeModal,
-    MembershipCTAModal: (
-      props: Omit<MembershipCTAModalProps, "isOpen" | "onClose">,
-    ) => <MembershipCTAModal {...props} isOpen={isOpen} onClose={closeModal} />,
+    MembershipCTAModal: (props: Omit<MembershipCTAModalProps, "isOpen" | "onClose">) => (
+      <MembershipCTAModal {...props} isOpen={isOpen} onClose={closeModal} />
+    ),
   };
 }
 

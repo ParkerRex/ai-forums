@@ -1,9 +1,8 @@
-
 import { v } from "convex/values";
-import { action, mutation } from "../_generated/server";
-import { api } from "../_generated/api";
 import Stripe from "stripe";
-import { getStripePrice, type Tier, type BillingInterval } from "./pricing";
+import { api } from "../_generated/api";
+import { action, mutation } from "../_generated/server";
+import { getStripePrice } from "./pricing";
 
 // Lazily instantiate the Stripe client so Convex's module analyzer
 // doesn't require the secret key at import-time.
@@ -57,21 +56,14 @@ export const getMemberAndUpdateStripeCustomer = mutation({
 
 export const createCheckoutSession = action({
   args: {
-    tier: v.union(
-      v.literal("founding_member"),
-      v.literal("early_bird"), 
-      v.literal("member")
-    ),
-    billingInterval: v.union(
-      v.literal("monthly"),
-      v.literal("yearly")
-    ),
+    tier: v.union(v.literal("founding_member"), v.literal("early_bird"), v.literal("member")),
+    billingInterval: v.union(v.literal("monthly"), v.literal("yearly")),
     couponCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     // Server-side price lookup
     const priceId = getStripePrice(args.tier, args.billingInterval);
-    
+
     // Get member data from database
     const member = await ctx.runMutation(api.stripe.checkout.getMemberAndUpdateStripeCustomer, {});
 
@@ -88,9 +80,9 @@ export const createCheckoutSession = action({
           convexMemberId: member._id,
         },
       });
-      
+
       stripeCustomerId = customer.id;
-      
+
       // Update member with real Stripe customer ID
       await ctx.runMutation(api.stripe.checkout.getMemberAndUpdateStripeCustomer, {
         stripeCustomerId: customer.id,
@@ -134,7 +126,7 @@ export const createCheckoutSession = action({
       ];
 
       // If using scholarship coupon, mark in metadata
-      if (args.couponCode.toLowerCase().includes('scholarship')) {
+      if (args.couponCode.toLowerCase().includes("scholarship")) {
         sessionParams.metadata!.isScholarship = "true";
         sessionParams.subscription_data!.metadata!.isScholarship = "true";
       }
@@ -149,4 +141,3 @@ export const createCheckoutSession = action({
     };
   },
 });
-

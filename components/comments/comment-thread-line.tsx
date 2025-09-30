@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import type React from "react";
 import { cn } from "@/lib/utils";
 
 interface CommentThreadLineProps {
@@ -38,10 +38,7 @@ export const CommentThreadLine: React.FC<CommentThreadLineProps> = ({
   }
 
   return (
-    <div
-      className={cn("absolute pointer-events-none select-none", className)}
-      aria-hidden="true"
-    >
+    <div className={cn("absolute pointer-events-none select-none", className)} aria-hidden="true">
       {/* Vertical line from parent comment */}
       <div
         className={cn(
@@ -73,19 +70,16 @@ export const CommentThreadLine: React.FC<CommentThreadLineProps> = ({
       />
 
       {/* Additional vertical lines for deeper nesting levels */}
-      {depth > 1 && (
-        <>
-          {Array.from({ length: depth - 1 }, (_, index) => (
-            <div
-              key={index}
-              className="absolute border-l-2 border-muted/20 top-0 h-full"
-              style={{
-                left: `${-20 - (index + 1) * 24}px`,
-              }}
-            />
-          ))}
-        </>
-      )}
+      {depth > 1 &&
+        Array.from({ length: depth - 1 }, (_, index) => (
+          <div
+            key={index}
+            className="absolute border-l-2 border-muted/20 top-0 h-full"
+            style={{
+              left: `${-20 - (index + 1) * 24}px`,
+            }}
+          />
+        ))}
     </div>
   );
 };
@@ -135,11 +129,7 @@ export const CommentThreadContainer: React.FC<CommentThreadContainerProps> = ({
       }}
     >
       {/* Threading lines */}
-      <CommentThreadLine
-        depth={depth}
-        isLastChild={isLastChild}
-        showLines={depth > 0}
-      />
+      <CommentThreadLine depth={depth} isLastChild={isLastChild} showLines={depth > 0} />
 
       {/* Comment content */}
       <div className="relative z-10">{children}</div>
@@ -151,10 +141,7 @@ export const CommentThreadContainer: React.FC<CommentThreadContainerProps> = ({
  * Utility function to determine if a comment is the last child
  * in its parent's replies array.
  */
-export const isLastChildComment = (
-  commentIndex: number,
-  totalSiblings: number,
-): boolean => {
+export const isLastChildComment = (commentIndex: number, totalSiblings: number): boolean => {
   return commentIndex === totalSiblings - 1;
 };
 

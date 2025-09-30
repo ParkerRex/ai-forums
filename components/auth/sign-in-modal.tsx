@@ -1,6 +1,8 @@
 "use client";
 
 import { SignInButton } from "@clerk/nextjs";
+import { LogIn } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -8,8 +10,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { LogIn } from "lucide-react";
 
 interface SignInModalProps {
   isOpen: boolean;
@@ -29,9 +29,7 @@ export function SignInModal({
       <DialogContent className="sm:max-w-md">
         <DialogHeader className="text-center">
           <DialogTitle className="text-xl font-bold">{title}</DialogTitle>
-          <DialogDescription className="text-muted-foreground">
-            {description}
-          </DialogDescription>
+          <DialogDescription className="text-muted-foreground">{description}</DialogDescription>
         </DialogHeader>
 
         <div className="mt-6 space-y-4">

@@ -1,6 +1,6 @@
 /**
  * Analytics Helper Functions
- * 
+ *
  * Centralized analytics tracking for the application.
  * Currently supports console logging but can be extended
  * to integrate with analytics services like PostHog, Mixpanel, etc.

@@ -1,13 +1,13 @@
 /**
  * @fileoverview Discord Digest API Route
- * 
+ *
  * This API endpoint fetches processed Discord messages from the database archive
  * for the Discord Daily Digest feature. It provides pre-processed, ranked, and
  * summarized Discord messages from yesterday's activity.
- * 
+ *
  * @route POST /api/discord/digest
  * @returns {object} JSON response containing processed Discord digest entries
- * 
+ *
  * @example
  * ```typescript
  * // Request body
@@ -16,7 +16,7 @@
  *   "channels": ["general", "announcements"],
  *   "limit": 20
  * }
- * 
+ *
  * // Success response
  * {
  *   "digest": [
@@ -36,15 +36,15 @@
  *   ]
  * }
  * ```
- * 
+ *
  * @author VAI Team
  * @since 1.0.0
  */
 
-import { NextRequest, NextResponse } from 'next/server';
-import { ConvexHttpClient } from 'convex/browser';
-import { api } from '../../../../convex/_generated/api';
-import type { Doc } from '../../../../convex/_generated/dataModel';
+import { ConvexHttpClient } from "convex/browser";
+import { type NextRequest, NextResponse } from "next/server";
+import { api } from "../../../../convex/_generated/api";
+import type { Doc } from "../../../../convex/_generated/dataModel";
 
 // Initialize Convex client for server-side API calls
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -54,14 +54,14 @@ type DiscordDigestEntry = Doc<"discordDigest">;
 
 /**
  * Fetches processed Discord digest from the database archive.
- * 
+ *
  * This endpoint serves as a bridge between the client-side news source fetcher
  * and the Convex backend Discord digest query. It provides pre-processed,
  * ranked Discord messages with AI-generated summaries.
- * 
+ *
  * @param {NextRequest} request - The incoming request with digest fetch parameters
  * @returns {Promise<NextResponse>} JSON response containing Discord digest entries
- * 
+ *
  * @example
  * ```typescript
  * // POST /api/discord/digest
@@ -75,7 +75,7 @@ type DiscordDigestEntry = Doc<"discordDigest">;
  * });
  * const data = await response.json();
  * ```
- * 
+ *
  * @performance
  * - Reads from pre-processed database archive for optimal performance
  * - Implements proper error handling and graceful degradation
@@ -89,16 +89,17 @@ export async function POST(request: NextRequest) {
     const { channels, limit, digestDate } = body;
 
     // Call Convex action to fetch Discord digest from database archive
-    const digestEntries = await convex.action(api.discord.getDiscordDigestAction, {
+    const digestEntries = (await convex.action(api.discord.getDiscordDigestAction, {
       digestDate, // Optional - defaults to yesterday in the query
       limit: limit || 20,
-    }) as DiscordDigestEntry[];
+    })) as DiscordDigestEntry[];
 
     // Filter by channels if specified (since database doesn't have channel filtering yet)
     let filteredEntries = digestEntries;
     if (channels && Array.isArray(channels) && channels.length > 0) {
-      filteredEntries = digestEntries.filter((entry: DiscordDigestEntry) =>
-        channels.includes(entry.channelId) || channels.includes(entry.channelName)
+      filteredEntries = digestEntries.filter(
+        (entry: DiscordDigestEntry) =>
+          channels.includes(entry.channelId) || channels.includes(entry.channelName),
       );
     }
 
@@ -108,14 +109,13 @@ export async function POST(request: NextRequest) {
       {
         headers: {
           // Cache for 10 minutes since data is pre-processed and doesn't change frequently
-          'Cache-Control': 'public, s-maxage=600, stale-while-revalidate=1200',
+          "Cache-Control": "public, s-maxage=600, stale-while-revalidate=1200",
         },
-      }
+      },
     );
-
   } catch (error) {
     const err = error as Error;
-    console.error('Discord digest API error:', err);
+    console.error("Discord digest API error:", err);
 
     // Return graceful error response
     // Use 200 status to prevent breaking the news feed
@@ -123,15 +123,15 @@ export async function POST(request: NextRequest) {
       {
         digest: [],
         error: err.message,
-        warning: 'Discord digest unavailable - returning empty results'
+        warning: "Discord digest unavailable - returning empty results",
       },
       {
         status: 200, // Return 200 to prevent breaking news feed
         headers: {
           // Cache error responses briefly to prevent repeated failed requests
-          'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+          "Cache-Control": "public, s-maxage=60, stale-while-revalidate=120",
         },
-      }
+      },
     );
   }
 }
@@ -142,9 +142,9 @@ export async function POST(request: NextRequest) {
 export async function GET() {
   return NextResponse.json(
     {
-      error: 'This endpoint requires POST method',
-      usage: 'POST /api/discord/digest with body: { guildId?, channels?, limit?, digestDate? }'
+      error: "This endpoint requires POST method",
+      usage: "POST /api/discord/digest with body: { guildId?, channels?, limit?, digestDate? }",
     },
-    { status: 405 }
+    { status: 405 },
   );
 }

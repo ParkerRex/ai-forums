@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export interface NetworkStatus {
   isOnline: boolean;
@@ -47,4 +47,4 @@ export function useNetworkStatus(): NetworkStatus {
   }, [isOnline]);
 
   return { isOnline, wasOffline };
-} 
+}

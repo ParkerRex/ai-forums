@@ -1,5 +1,5 @@
-import { query, action } from "./_generated/server";
 import { v } from "convex/values";
+import { action, query } from "./_generated/server";
 
 // Cache table for storing link preview data
 // You may want to add this to your schema.ts:
@@ -16,21 +16,22 @@ export const fetchLinkPreview = action({
   args: {
     url: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (_ctx, args) => {
     try {
       // Validate URL
       const urlObj = new URL(args.url);
-      
-      const isYouTube = urlObj.hostname.includes('youtube.com') || urlObj.hostname.includes('youtu.be');
-      
+
+      const isYouTube =
+        urlObj.hostname.includes("youtube.com") || urlObj.hostname.includes("youtu.be");
+
       if (isYouTube) {
-        let videoId = '';
-        if (urlObj.hostname.includes('youtu.be')) {
+        let videoId = "";
+        if (urlObj.hostname.includes("youtu.be")) {
           videoId = urlObj.pathname.slice(1);
-        } else if (urlObj.searchParams.has('v')) {
-          videoId = urlObj.searchParams.get('v') || '';
+        } else if (urlObj.searchParams.has("v")) {
+          videoId = urlObj.searchParams.get("v") || "";
         }
-        
+
         if (videoId) {
           return {
             url: args.url,
@@ -44,7 +45,7 @@ export const fetchLinkPreview = action({
           };
         }
       }
-      
+
       // Stub response for other links
       const preview = {
         url: args.url,
@@ -54,7 +55,7 @@ export const fetchLinkPreview = action({
         siteName: urlObj.hostname,
         fetchedAt: Date.now(),
       };
-      
+
       return preview;
     } catch (error) {
       console.error("Failed to fetch link preview:", error);
@@ -80,12 +81,12 @@ export const getLinkPreview = query({
     //   .query("linkPreviews")
     //   .withIndex("by_url", (q) => q.eq("url", args.url))
     //   .first();
-    // 
+    //
     // if (cached && Date.now() - cached.fetchedAt < 24 * 60 * 60 * 1000) {
     //   return cached;
     // }
-    
+
     // For now, return null to trigger a fresh fetch
     return null;
   },
-});  
+});

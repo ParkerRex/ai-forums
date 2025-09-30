@@ -1,18 +1,14 @@
 "use client";
 
+import { useAction } from "convex/react";
+import { Lock, Shield, Users, Zap } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Lock, Zap, Shield, Users } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useAction } from "convex/react";
 import { api } from "@/convex/_generated/api";
-import { useState, useEffect } from "react";
-import {
-  paywallCopy,
-  getPaywallVariant,
-  type PaywallVariant,
-} from "@/lib/conversion-copy";
 import { paywallAnalytics } from "@/lib/analytics";
+import { getPaywallVariant, type PaywallVariant, paywallCopy } from "@/lib/conversion-copy";
+import { cn } from "@/lib/utils";
 
 interface PostPaywallDirectProps {
   className?: string;
@@ -27,9 +23,7 @@ export function PostPaywallDirect({
   postTitle,
   variant,
 }: PostPaywallDirectProps) {
-  const createDirectCheckout = useAction(
-    api.stripe.directCheckout.createDirectCheckout,
-  );
+  const createDirectCheckout = useAction(api.stripe.directCheckout.createDirectCheckout);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -86,60 +80,40 @@ export function PostPaywallDirect({
 
         {/* Value prop (if exists) */}
         {copy.valueProp && (
-          <p className="text-muted-foreground mb-6 select-none text-sm italic">
-            {copy.valueProp}
-          </p>
+          <p className="text-muted-foreground mb-6 select-none text-sm italic">{copy.valueProp}</p>
         )}
 
         {/* Primary CTA button */}
-        <Button
-          className="mb-6 px-6 font-medium"
-          onClick={handleUpgradeClick}
-          disabled={isLoading}
-        >
+        <Button className="mb-6 px-6 font-medium" onClick={handleUpgradeClick} disabled={isLoading}>
           {isLoading ? "Loading..." : copy.cta}
         </Button>
 
         {/* Error message */}
-        {error && (
-          <p className="mb-4 select-none text-sm text-red-600">{error}</p>
-        )}
+        {error && <p className="mb-4 select-none text-sm text-red-600">{error}</p>}
 
         {/* Value props */}
         <div className="mb-6 mt-8 grid grid-cols-1 gap-4 md:grid-cols-3">
           <div className="flex flex-col items-center space-y-2">
             <Zap className="text-primary h-5 w-5" />
-            <span className="select-none text-sm font-medium">
-              Instant Access
-            </span>
-            <span className="text-muted-foreground select-none text-xs">
-              All premium content
-            </span>
+            <span className="select-none text-sm font-medium">Instant Access</span>
+            <span className="text-muted-foreground select-none text-xs">All premium content</span>
           </div>
           <div className="flex flex-col items-center space-y-2">
             <Users className="text-primary h-5 w-5" />
-            <span className="select-none text-sm font-medium">
-              Active Community
-            </span>
+            <span className="select-none text-sm font-medium">Active Community</span>
             <span className="text-muted-foreground select-none text-xs">
               Engineers from Google and Microsoft
             </span>
           </div>
           <div className="flex flex-col items-center space-y-2">
             <Shield className="text-primary h-5 w-5" />
-            <span className="select-none text-sm font-medium">
-              Cancel Anytime
-            </span>
-            <span className="text-muted-foreground select-none text-xs">
-              30-day guarantee
-            </span>
+            <span className="select-none text-sm font-medium">Cancel Anytime</span>
+            <span className="text-muted-foreground select-none text-xs">30-day guarantee</span>
           </div>
         </div>
 
         {/* Trust indicators */}
-        <p className="text-muted-foreground select-none text-xs">
-          {copy.trustSignals.join(" • ")}
-        </p>
+        <p className="text-muted-foreground select-none text-xs">{copy.trustSignals.join(" • ")}</p>
       </Card>
     </div>
   );

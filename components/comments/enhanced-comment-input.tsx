@@ -1,31 +1,28 @@
 "use client";
 
-import React, { useState, useCallback, useRef, useEffect } from "react";
 import { useAction, useConvex } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { MediaUploadIcon } from "@/components/icons/media-upload";
-import { GifIcon } from "@/components/icons/gif";
-import { SmileIcon } from "@/components/icons/smile";
-import { toast } from "sonner";
 import EmojiPicker from "emoji-picker-react";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { GifIcon } from "@/components/icons/gif";
+import { MediaUploadIcon } from "@/components/icons/media-upload";
+import { SmileIcon } from "@/components/icons/smile";
+import { MediaPreviewGrid } from "@/components/posts/media-preview-grid";
+import { Button } from "@/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import {
-  uploadMedia,
-  validateMediaFile,
   getFilePreviewUrl,
   revokeFilePreviewUrl,
+  uploadMedia,
+  validateMediaFile,
 } from "@/lib/upload-media";
+import type { MediaItem } from "@/types";
 import { GifPicker } from "./gif-picker";
 import { MentionAutocomplete } from "./mention-autocomplete";
-import { Id } from "@/convex/_generated/dataModel";
-import { MediaPreviewGrid } from "@/components/posts/media-preview-grid";
-import { MediaItem } from "@/types";
 
 type AttachmentType = {
   id: string;
@@ -84,9 +81,7 @@ export function EnhancedCommentInput({
 }: EnhancedCommentInputProps) {
   const [content, setContent] = useState(initialValue);
   const [attachments, setAttachments] = useState<AttachmentItem[]>([]);
-  const [linkPreviews, setLinkPreviews] = useState<
-    Record<string, LinkPreviewType>
-  >({});
+  const [linkPreviews, setLinkPreviews] = useState<Record<string, LinkPreviewType>>({});
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showGifPicker, setShowGifPicker] = useState(false);
   const [showMentionAutocomplete, setShowMentionAutocomplete] = useState(false);
@@ -178,21 +173,18 @@ export function EnhancedCommentInput({
     [attachments],
   );
 
-  const handleReorderAttachments = useCallback(
-    (reorderedMedia: MediaItem[]) => {
-      setAttachments((prev) => {
-        const newOrder = reorderedMedia.map((media) => media.id);
-        const sorted = [...prev].sort((a, b) => {
-          const aIndex = newOrder.indexOf(a.id);
-          const bIndex = newOrder.indexOf(b.id);
-          return aIndex - bIndex;
-        });
-        // Update order property
-        return sorted.map((item, index) => ({ ...item, order: index }));
+  const handleReorderAttachments = useCallback((reorderedMedia: MediaItem[]) => {
+    setAttachments((prev) => {
+      const newOrder = reorderedMedia.map((media) => media.id);
+      const sorted = [...prev].sort((a, b) => {
+        const aIndex = newOrder.indexOf(a.id);
+        const bIndex = newOrder.indexOf(b.id);
+        return aIndex - bIndex;
       });
-    },
-    [],
-  );
+      // Update order property
+      return sorted.map((item, index) => ({ ...item, order: index }));
+    });
+  }, []);
 
   const handleEmojiSelect = useCallback((emojiData: { emoji: string }) => {
     setContent((prev) => prev + emojiData.emoji);
@@ -225,8 +217,7 @@ export function EnhancedCommentInput({
 
         if (lastAtIndex !== -1) {
           const textAfterAt = textBeforeCursor.slice(lastAtIndex + 1);
-          const hasSpaceAfterAt =
-            textAfterAt.includes(" ") || textAfterAt.includes("\n");
+          const hasSpaceAfterAt = textAfterAt.includes(" ") || textAfterAt.includes("\n");
 
           if (!hasSpaceAfterAt && textAfterAt.length <= 20) {
             setMentionSearchTerm(textAfterAt);
@@ -255,16 +246,9 @@ export function EnhancedCommentInput({
   );
 
   const handleMentionSelect = useCallback(
-    (member: {
-      _id: Id<"members">;
-      firstName: string;
-      lastName: string;
-      slug: string;
-    }) => {
+    (member: { _id: Id<"members">; firstName: string; lastName: string; slug: string }) => {
       const beforeMention = content.slice(0, mentionStartIndex);
-      const afterMention = content.slice(
-        mentionStartIndex + mentionSearchTerm.length + 1,
-      );
+      const afterMention = content.slice(mentionStartIndex + mentionSearchTerm.length + 1);
       const newContent = `${beforeMention}@${member.slug} ${afterMention}`;
 
       setContent(newContent);
@@ -369,12 +353,7 @@ export function EnhancedCommentInput({
   // Convert AttachmentItem[] to MediaItem[] for MediaPreviewGrid
   const mediaItems: MediaItem[] = attachments.map((item) => ({
     id: item.id,
-    type:
-      item.type === "gif"
-        ? "image"
-        : item.type === "document"
-          ? "pdf"
-          : "image",
+    type: item.type === "gif" ? "image" : item.type === "document" ? "pdf" : "image",
     url: item.url,
     thumbnailUrl: item.url,
     order: item.order,
@@ -474,9 +453,7 @@ export function EnhancedCommentInput({
       {Object.entries(linkPreviews).map(([url, preview]) => (
         <div key={url} className="bg-muted/50 rounded border p-3">
           <div className="text-sm font-medium">{preview.title}</div>
-          <div className="text-muted-foreground text-xs">
-            {preview.description}
-          </div>
+          <div className="text-muted-foreground text-xs">{preview.description}</div>
           <div className="text-xs text-blue-600">{url}</div>
         </div>
       ))}

@@ -1,6 +1,8 @@
 "use client";
 
-import { CategorySelectorItem } from "@/types";
+import { Check, ChevronDown, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+import type { CategorySelectorItem } from "@/types";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import {
@@ -9,8 +11,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-import { TrendingUp, ChevronDown, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 interface CategoryToggleGroupProps {
   categories: CategorySelectorItem[];
@@ -42,14 +42,10 @@ export function CategoryToggleGroup({
             {selectedCategory ? (
               <>
                 {selectedCategory.icon && (
-                  <span className="text-base flex-shrink-0">
-                    {selectedCategory.icon}
-                  </span>
+                  <span className="text-base flex-shrink-0">{selectedCategory.icon}</span>
                 )}
                 <div className="min-w-0 flex-1">
-                  <div className="font-medium text-sm truncate">
-                    {selectedCategory.displayName}
-                  </div>
+                  <div className="font-medium text-sm truncate">{selectedCategory.displayName}</div>
                   <div className="text-xs text-muted-foreground truncate">
                     {selectedCategory.postCount.toLocaleString()} posts
                   </div>
@@ -73,16 +69,12 @@ export function CategoryToggleGroup({
               className="flex items-center space-x-3 p-3 cursor-pointer"
             >
               {/* Icon */}
-              {category.icon && (
-                <span className="text-base flex-shrink-0">{category.icon}</span>
-              )}
+              {category.icon && <span className="text-base flex-shrink-0">{category.icon}</span>}
 
               {/* Name and Description */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-0.5">
-                  <span className="font-medium text-sm">
-                    {category.displayName}
-                  </span>
+                  <span className="font-medium text-sm">{category.displayName}</span>
                   {category.isTrending && (
                     <Badge
                       variant="secondary"

@@ -1,11 +1,11 @@
-"use client"
+"use client";
 
-import { TooltipProvider } from "@/components/ui/tooltip"
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface HeaderProviderProps {
-  children: React.ReactNode
+  children: React.ReactNode;
 }
 
 export const HeaderProvider = ({ children }: HeaderProviderProps) => {
-  return <TooltipProvider>{children}</TooltipProvider>
-}
+  return <TooltipProvider>{children}</TooltipProvider>;
+};

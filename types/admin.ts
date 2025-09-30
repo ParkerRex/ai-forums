@@ -1,4 +1,4 @@
-import { Doc, Id } from "@/convex/_generated/dataModel";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 
 // Member with computed status
 export type MemberWithStatus = Doc<"members"> & {
@@ -84,7 +84,7 @@ export type PaymentStats = {
 };
 
 // Refund eligibility
-export type RefundEligibility = 
+export type RefundEligibility =
   | { eligible: false; reason: string }
   | {
       eligible: true;

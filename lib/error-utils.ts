@@ -1,4 +1,4 @@
-import { ConvexError, Value } from "convex/values";
+import { ConvexError, type Value } from "convex/values";
 
 export type ErrorType = "network" | "server" | "application" | "unknown";
 
@@ -127,7 +127,7 @@ export function getContextualErrorMessage(error: unknown, context: string): stri
 export async function retryWithBackoff<T>(
   fn: () => Promise<T>,
   maxAttempts: number = 3,
-  baseDelay: number = 1000
+  baseDelay: number = 1000,
 ): Promise<T> {
   let lastError: unknown;
 
@@ -142,11 +142,11 @@ export async function retryWithBackoff<T>(
       }
 
       // Exponential backoff: 1s, 2s, 4s
-      const delay = baseDelay * Math.pow(2, attempt - 1);
+      const delay = baseDelay * 2 ** (attempt - 1);
       console.log(`Retry attempt ${attempt} failed, retrying in ${delay}ms...`);
-      await new Promise(resolve => setTimeout(resolve, delay));
+      await new Promise((resolve) => setTimeout(resolve, delay));
     }
   }
 
   throw lastError;
-} 
+}

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Test endpoint to verify webhook connectivity and configuration
@@ -20,33 +20,36 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.text();
     const headers = Object.fromEntries(request.headers.entries());
-    
+
     console.log("[WEBHOOK TEST] Received POST request");
     console.log("[WEBHOOK TEST] Headers:", headers);
     console.log("[WEBHOOK TEST] Body length:", body.length);
     console.log("[WEBHOOK TEST] Body preview:", body.substring(0, 200));
-    
+
     // Check for Stripe signature header
-    const stripeSignature = headers['stripe-signature'];
-    
+    const stripeSignature = headers["stripe-signature"];
+
     return NextResponse.json({
       status: "received",
       timestamp: new Date().toISOString(),
       hasStripeSignature: !!stripeSignature,
       bodyLength: body.length,
       headers: {
-        'content-type': headers['content-type'],
-        'user-agent': headers['user-agent'],
-        'stripe-signature': stripeSignature ? 'present' : 'missing',
+        "content-type": headers["content-type"],
+        "user-agent": headers["user-agent"],
+        "stripe-signature": stripeSignature ? "present" : "missing",
       },
-      message: "Test webhook received successfully"
+      message: "Test webhook received successfully",
     });
   } catch (error) {
     console.error("[WEBHOOK TEST] Error:", error);
-    return NextResponse.json({
-      status: "error",
-      error: error instanceof Error ? error.message : String(error),
-      timestamp: new Date().toISOString(),
-    }, { status: 500 });
+    return NextResponse.json(
+      {
+        status: "error",
+        error: error instanceof Error ? error.message : String(error),
+        timestamp: new Date().toISOString(),
+      },
+      { status: 500 },
+    );
   }
 }

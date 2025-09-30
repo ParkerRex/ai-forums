@@ -9,12 +9,7 @@ export function BugReportButton() {
 
   return (
     <>
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={() => setIsOpen(true)}
-        className="text-xs"
-      >
+      <Button variant="ghost" size="sm" onClick={() => setIsOpen(true)} className="text-xs">
         Submit Bug
       </Button>
       <BugReportModal isOpen={isOpen} onClose={() => setIsOpen(false)} />

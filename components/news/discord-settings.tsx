@@ -1,21 +1,16 @@
 "use client";
 
+import { useMutation, useQuery } from "convex/react";
+import { AlertCircle, CheckCircle, MessageSquare, RefreshCw } from "lucide-react";
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
-import {
-  MessageSquare,
-  RefreshCw,
-  AlertCircle,
-  CheckCircle,
-} from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Switch } from "@/components/ui/switch";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface DiscordSettingsProps {
   userId: Id<"members">;
@@ -34,22 +29,15 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Query Discord preferences for the current user
-  const discordPreferences = useQuery(
-    api.newsFeedSources.getDiscordPreferences,
-    {
-      userId,
-    },
-  );
+  const discordPreferences = useQuery(api.newsFeedSources.getDiscordPreferences, {
+    userId,
+  });
 
   // Mutation to update Discord preferences
-  const updateDiscordPreferences = useMutation(
-    api.newsFeedSources.updateDiscordPreferences,
-  );
+  const updateDiscordPreferences = useMutation(api.newsFeedSources.updateDiscordPreferences);
 
   // Mutation for quick toggle functionality
-  const toggleDiscordDigest = useMutation(
-    api.newsFeedSources.toggleDiscordDigest,
-  );
+  const toggleDiscordDigest = useMutation(api.newsFeedSources.toggleDiscordDigest);
 
   /**
    * Handle Discord toggle with immediate preference updates
@@ -89,9 +77,7 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
     try {
       const newState = await toggleDiscordDigest({ userId });
 
-      toast.success(
-        newState ? "Discord digest enabled!" : "Discord digest disabled.",
-      );
+      toast.success(newState ? "Discord digest enabled!" : "Discord digest disabled.");
     } catch (error) {
       console.error("Failed to toggle Discord digest:", error);
       toast.error("Failed to update Discord settings. Please try again.");
@@ -127,10 +113,7 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
               Enable Discord Digest
             </Label>
             {isEnabled && (
-              <Badge
-                variant="outline"
-                className="border-green-500 text-green-600"
-              >
+              <Badge variant="outline" className="border-green-500 text-green-600">
                 <CheckCircle className="mr-1 h-3 w-3" />
                 Active
               </Badge>
@@ -194,12 +177,7 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
         {/* Quick Actions */}
         {isEnabled && (
           <div className="flex gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleQuickToggle}
-              disabled={isUpdating}
-            >
+            <Button variant="outline" size="sm" onClick={handleQuickToggle} disabled={isUpdating}>
               {isUpdating ? (
                 <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
               ) : (

@@ -17,7 +17,7 @@ export const COMMON_SKILLS = [
   "c#",
   "swift",
   "kotlin",
-  
+
   // Frontend Frameworks & Libraries
   "next.js",
   "vue.js",
@@ -26,7 +26,7 @@ export const COMMON_SKILLS = [
   "nuxt.js",
   "gatsby",
   "remix",
-  
+
   // UI Libraries & Design Systems
   "shadcn/ui",
   "tailwind css",
@@ -35,7 +35,7 @@ export const COMMON_SKILLS = [
   "ant design",
   "bootstrap",
   "styled-components",
-  
+
   // Backend Frameworks
   "fastapi",
   "express.js",
@@ -46,7 +46,7 @@ export const COMMON_SKILLS = [
   "rails",
   "nest.js",
   "koa.js",
-  
+
   // Build Tools & Bundlers
   "vite",
   "webpack",
@@ -54,7 +54,7 @@ export const COMMON_SKILLS = [
   "parcel",
   "esbuild",
   "turbo",
-  
+
   // Databases
   "postgresql",
   "mysql",
@@ -64,7 +64,7 @@ export const COMMON_SKILLS = [
   "prisma",
   "supabase",
   "firebase",
-  
+
   // Cloud & DevOps
   "aws",
   "vercel",
@@ -75,7 +75,7 @@ export const COMMON_SKILLS = [
   "github actions",
   "azure",
   "gcp",
-  
+
   // AI/ML
   "openai",
   "langchain",
@@ -85,28 +85,28 @@ export const COMMON_SKILLS = [
   "scikit-learn",
   "pandas",
   "numpy",
-  
+
   // Mobile Development
   "react native",
   "flutter",
   "expo",
   "ios",
   "android",
-  
+
   // Testing
   "jest",
   "cypress",
   "playwright",
   "vitest",
   "testing library",
-  
+
   // Other Tools
   "git",
   "figma",
   "notion",
   "linear",
   "slack",
-  "discord"
+  "discord",
 ] as const;
 
 /**
@@ -114,9 +114,9 @@ export const COMMON_SKILLS = [
  */
 export function normalizeSkills(skills: string[]): string[] {
   const normalized = skills
-    .map(skill => skill.toLowerCase().trim())
-    .filter(skill => skill.length > 0);
-  
+    .map((skill) => skill.toLowerCase().trim())
+    .filter((skill) => skill.length > 0);
+
   return Array.from(new Set(normalized));
 }
 
@@ -125,9 +125,7 @@ export function normalizeSkills(skills: string[]): string[] {
  */
 export function filterSkillSuggestions(searchTerm: string, limit = 10): string[] {
   if (!searchTerm.trim()) return COMMON_SKILLS.slice(0, limit);
-  
+
   const term = searchTerm.toLowerCase();
-  return COMMON_SKILLS
-    .filter(skill => skill.includes(term))
-    .slice(0, limit);
-} 
+  return COMMON_SKILLS.filter((skill) => skill.includes(term)).slice(0, limit);
+}

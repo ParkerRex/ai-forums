@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { MediaItem } from "@/types";
-import { Play, Pause, Video, Volume2, VolumeX } from "lucide-react";
+import { Pause, Play, Video, Volume2, VolumeX } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { formatDuration } from "@/lib/utils";
+import type { MediaItem } from "@/types";
 
 interface VideoPreviewProps {
   media: MediaItem;
@@ -105,11 +105,7 @@ export function VideoPreview({ media }: VideoPreviewProps) {
                 className="h-6 w-6 text-primary-foreground hover:bg-background/20"
                 onClick={toggleMute}
               >
-                {isMuted ? (
-                  <VolumeX className="h-3 w-3" />
-                ) : (
-                  <Volume2 className="h-3 w-3" />
-                )}
+                {isMuted ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}
               </Button>
               {duration && (
                 <span>

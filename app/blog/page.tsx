@@ -1,15 +1,15 @@
-import Link from 'next/link';
-import { getAllPosts } from '@/lib/blog';
+import Link from "next/link";
+import { getAllPosts } from "@/lib/blog";
 
 export default function BlogPage() {
   const posts = getAllPosts();
-  
+
   return (
     <div className="max-w-4xl mx-auto px-4 py-12">
       <div className="mb-8">
         <h1 className="text-2xl font-mono font-bold mb-4">Blog</h1>
       </div>
-      
+
       {/* Minimalist table design inspired by neil.computer */}
       <div className="font-mono text-sm">
         <table className="w-full">
@@ -21,16 +21,21 @@ export default function BlogPage() {
           </thead>
           <tbody>
             {posts.map((post) => (
-              <tr key={post.slug} className="border-b border-border/50 hover:bg-muted/50 transition-colors">
+              <tr
+                key={post.slug}
+                className="border-b border-border/50 hover:bg-muted/50 transition-colors"
+              >
                 <td className="py-3 pr-8 text-muted-foreground whitespace-nowrap">
-                  {new Date(post.date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: '2-digit',
-                    day: '2-digit'
-                  }).replace(/\//g, '-')}
+                  {new Date(post.date)
+                    .toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    })
+                    .replace(/\//g, "-")}
                 </td>
                 <td className="py-3">
-                  <Link 
+                  <Link
                     href={`/blog/${post.slug}`}
                     className="text-foreground hover:text-primary transition-colors inline-flex items-center gap-1"
                   >

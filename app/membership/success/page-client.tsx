@@ -21,22 +21,17 @@
  */
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
-import { Card } from "@/components/ui/card";
-import { CheckCircle, Loader2 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { AutoSignIn } from "./auto-signin";
+import { CheckCircle, Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { getCheckoutSessionData } from "@/app/actions/checkout-session";
-import {
-  successCopy,
-  getPaywallVariant,
-  type PaywallVariant,
-} from "@/lib/conversion-copy";
-import { useRouter } from "next/navigation";
+import { Card } from "@/components/ui/card";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { getPaywallVariant, type PaywallVariant, successCopy } from "@/lib/conversion-copy";
+import { AutoSignIn } from "./auto-signin";
 
 interface SessionData {
   email: string;
@@ -110,7 +105,7 @@ export function SuccessPageClient() {
         return Math.random() * (max - min) + min;
       }
 
-      const interval: NodeJS.Timeout = setInterval(function () {
+      const interval: NodeJS.Timeout = setInterval(() => {
         const timeLeft = animationEnd - Date.now();
 
         if (timeLeft <= 0) {
@@ -172,9 +167,7 @@ export function SuccessPageClient() {
           <p className="text-muted-foreground text-xl">
             {copy.welcome(sessionData.customerName?.split(" ")[0])}
           </p>
-          <p className="text-muted-foreground mt-2 text-base">
-            {copy.celebration}
-          </p>
+          <p className="text-muted-foreground mt-2 text-base">{copy.celebration}</p>
         </div>
 
         {/* Auto sign-in component */}
@@ -186,12 +179,9 @@ export function SuccessPageClient() {
           />
         ) : (
           <Card className="p-8 text-center">
-            <h3 className="mb-2 text-lg font-semibold">
-              Setting up your account...
-            </h3>
+            <h3 className="mb-2 text-lg font-semibold">Setting up your account...</h3>
             <p className="text-muted-foreground text-sm">
-              Your account is being created. You&apos;ll be signed in
-              automatically.
+              Your account is being created. You&apos;ll be signed in automatically.
             </p>
             <Loader2 className="mx-auto mt-4 h-6 w-6 animate-spin" />
           </Card>
@@ -200,9 +190,7 @@ export function SuccessPageClient() {
         {/* Additional info */}
         <div className="text-muted-foreground text-center text-sm">
           <p>{copy.nextSteps}</p>
-          <p className="mt-2">
-            Your subscription is now active and will renew automatically.
-          </p>
+          <p className="mt-2">Your subscription is now active and will renew automatically.</p>
         </div>
       </div>
     </div>

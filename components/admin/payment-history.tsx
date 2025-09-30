@@ -1,18 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { Id } from "@/convex/_generated/dataModel";
 import { format } from "date-fns";
-import {
-  ExternalLink,
-  DollarSign,
-  TrendingUp,
-  TrendingDown,
-  RefreshCw,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { DollarSign, ExternalLink, RefreshCw, TrendingDown, TrendingUp } from "lucide-react";
+import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -21,10 +14,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PaymentDetailsModal } from "./payment-details-modal";
+import type { Id } from "@/convex/_generated/dataModel";
 import { paymentStatusConfig } from "@/lib/admin-config";
 import { formatCentsAsCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import { PaymentDetailsModal } from "./payment-details-modal";
 
 export interface PaymentRecord {
   _id: Id<"payments">;
@@ -34,12 +28,7 @@ export interface PaymentRecord {
   stripeInvoiceId?: string;
   amount: number; // in cents
   currency: string;
-  status:
-    | "succeeded"
-    | "pending"
-    | "failed"
-    | "refunded"
-    | "partially_refunded";
+  status: "succeeded" | "pending" | "failed" | "refunded" | "partially_refunded";
   description: string;
   paymentMethod: {
     type: string;
@@ -68,8 +57,7 @@ export function PaymentHistory({
   onPaymentClick,
   className = "",
 }: PaymentHistoryProps) {
-  const [selectedPaymentId, setSelectedPaymentId] =
-    useState<Id<"payments"> | null>(null);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<Id<"payments"> | null>(null);
 
   const handlePaymentClick = (paymentId: Id<"payments">) => {
     if (onPaymentClick) {
@@ -86,12 +74,9 @@ export function PaymentHistory({
           .filter((p) => p.status === "succeeded")
           .reduce((sum, p) => sum + p.amount, 0),
         totalRefunded: payments
-          .filter(
-            (p) => p.status === "refunded" || p.status === "partially_refunded",
-          )
+          .filter((p) => p.status === "refunded" || p.status === "partially_refunded")
           .reduce((sum, p) => sum + (p.refundedAmount || 0), 0),
-        successfulPayments: payments.filter((p) => p.status === "succeeded")
-          .length,
+        successfulPayments: payments.filter((p) => p.status === "succeeded").length,
         failedPayments: payments.filter((p) => p.status === "failed").length,
       }
     : null;
@@ -112,15 +97,11 @@ export function PaymentHistory({
         <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Revenue
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
               <DollarSign className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
-                {formatCentsAsCurrency(stats.totalRevenue)}
-              </div>
+              <div className="text-2xl font-bold">{formatCentsAsCurrency(stats.totalRevenue)}</div>
               <p className="text-muted-foreground text-xs">
                 {stats.successfulPayments} successful payments
               </p>
@@ -129,34 +110,25 @@ export function PaymentHistory({
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Total Refunded
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Total Refunded</CardTitle>
               <RefreshCw className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-red-600">
                 -{formatCentsAsCurrency(stats.totalRefunded)}
               </div>
-              <p className="text-muted-foreground text-xs">
-                Across all refunds
-              </p>
+              <p className="text-muted-foreground text-xs">Across all refunds</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Success Rate
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Success Rate</CardTitle>
               <TrendingUp className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {((stats.successfulPayments / payments.length) * 100).toFixed(
-                  1,
-                )}
-                %
+                {((stats.successfulPayments / payments.length) * 100).toFixed(1)}%
               </div>
               <p className="text-muted-foreground text-xs">
                 {stats.successfulPayments} of {payments.length} payments
@@ -166,15 +138,11 @@ export function PaymentHistory({
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                Failed Payments
-              </CardTitle>
+              <CardTitle className="text-sm font-medium">Failed Payments</CardTitle>
               <TrendingDown className="text-muted-foreground h-4 w-4" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">
-                {stats.failedPayments}
-              </div>
+              <div className="text-2xl font-bold text-red-600">{stats.failedPayments}</div>
               <p className="text-muted-foreground text-xs">Need attention</p>
             </CardContent>
           </Card>
@@ -198,13 +166,10 @@ export function PaymentHistory({
           <TableBody>
             {payments.map((payment) => {
               const statusInfo =
-                paymentStatusConfig[
-                  payment.status as keyof typeof paymentStatusConfig
-                ];
+                paymentStatusConfig[payment.status as keyof typeof paymentStatusConfig];
               const StatusIcon = statusInfo.icon;
               const isRefund =
-                payment.status === "refunded" ||
-                payment.status === "partially_refunded";
+                payment.status === "refunded" || payment.status === "partially_refunded";
 
               return (
                 <TableRow
@@ -229,19 +194,14 @@ export function PaymentHistory({
                       {isRefund ? "-" : ""}
                       {formatCentsAsCurrency(payment.amount)}
                     </span>
-                    {payment.refundedAmount &&
-                      payment.status === "partially_refunded" && (
-                        <span className="block text-xs text-gray-500">
-                          Refunded:{" "}
-                          {formatCentsAsCurrency(payment.refundedAmount)}
-                        </span>
-                      )}
+                    {payment.refundedAmount && payment.status === "partially_refunded" && (
+                      <span className="block text-xs text-gray-500">
+                        Refunded: {formatCentsAsCurrency(payment.refundedAmount)}
+                      </span>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={cn("text-xs", statusInfo.color)}
-                    >
+                    <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
                       <StatusIcon className="mr-1 h-3 w-3" />
                       {statusInfo.label}
                     </Badge>
@@ -249,18 +209,12 @@ export function PaymentHistory({
                   <TableCell>
                     <div className="text-sm">
                       {payment.paymentMethod.brand && (
-                        <span className="capitalize">
-                          {payment.paymentMethod.brand}
-                        </span>
+                        <span className="capitalize">{payment.paymentMethod.brand}</span>
                       )}
                       {payment.paymentMethod.type !== "card" && (
-                        <span className="capitalize">
-                          {payment.paymentMethod.type}
-                        </span>
+                        <span className="capitalize">{payment.paymentMethod.type}</span>
                       )}
-                      <span className="ml-1 text-gray-500">
-                        •••• {payment.paymentMethod.last4}
-                      </span>
+                      <span className="ml-1 text-gray-500">•••• {payment.paymentMethod.last4}</span>
                     </div>
                   </TableCell>
                   <TableCell className="max-w-xs truncate text-sm text-gray-600">
@@ -326,10 +280,7 @@ export function PaymentHistoryCompact({
   return (
     <div className="space-y-2">
       {recentPayments.map((payment) => {
-        const statusInfo =
-          paymentStatusConfig[
-            payment.status as keyof typeof paymentStatusConfig
-          ];
+        const statusInfo = paymentStatusConfig[payment.status as keyof typeof paymentStatusConfig];
         const StatusIcon = statusInfo.icon;
 
         return (
@@ -342,9 +293,7 @@ export function PaymentHistoryCompact({
                 <StatusIcon className="h-3.5 w-3.5" />
               </div>
               <div>
-                <p className="text-sm font-medium">
-                  {formatCentsAsCurrency(payment.amount)}
-                </p>
+                <p className="text-sm font-medium">{formatCentsAsCurrency(payment.amount)}</p>
                 <p className="text-xs text-gray-500">
                   {format(new Date(payment.createdAt), "MMM d")}
                 </p>
@@ -359,12 +308,7 @@ export function PaymentHistoryCompact({
       })}
 
       {payments.length > limit && onViewAll && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="mt-2 w-full"
-          onClick={onViewAll}
-        >
+        <Button variant="ghost" size="sm" className="mt-2 w-full" onClick={onViewAll}>
           View all {payments.length} payments
         </Button>
       )}

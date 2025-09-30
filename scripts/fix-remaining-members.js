@@ -1,6 +1,6 @@
-import { api } from "../convex/_generated/api.js";
 import { ConvexClient } from "convex/browser";
 import * as dotenv from "dotenv";
+import { api } from "../convex/_generated/api.js";
 
 dotenv.config({ path: ".env.local" });
 
@@ -23,7 +23,7 @@ async function fixRemainingMembers() {
       firstName: "Malvinder",
       lastName: "Singh",
       email: "aemaes@gmail.com", // This is the email from Emm Ess
-    }
+    },
   ];
 
   for (const fix of remainingFixes) {
@@ -38,7 +38,7 @@ async function fixRemainingMembers() {
         const member = members[0];
         console.log(`\nFound ${fix.firstName} ${fix.lastName}:`);
         console.log(`  Current email: ${member.email}`);
-        
+
         if (fix.email && member.email.endsWith("@imported.com")) {
           // Update the email
           await convex.mutation(api.members.updateMember, {

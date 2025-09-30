@@ -1,11 +1,11 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
+import { X } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { api } from "@/convex/_generated/api";
 
 /**
  * ReactivateBannerTop component displays a prominent banner at the top of the page
@@ -23,9 +23,7 @@ import Link from "next/link";
  */
 export function ReactivateBannerTop() {
   const [isVisible, setIsVisible] = useState(true);
-  const subscriptionInfo = useQuery(
-    api.stripe.getSubscriptionInfo.getSubscriptionInfo,
-  );
+  const subscriptionInfo = useQuery(api.stripe.getSubscriptionInfo.getSubscriptionInfo);
 
   const handleDismiss = () => {
     setIsVisible(false);
@@ -82,21 +80,14 @@ export function ReactivateBannerTop() {
             <span className="inline-flex items-center rounded-full bg-white/10 px-2.5 py-0.5 text-xs font-semibold text-white dark:bg-black/10 dark:text-black">
               {tierInfo.name}
             </span>
-            <p className="text-sm font-medium text-white dark:text-black">
-              Your plan has expired
-            </p>
+            <p className="text-sm font-medium text-white dark:text-black">Your plan has expired</p>
             <span className="text-white/60 dark:text-black/60">•</span>
             <Link
               href="/reactivate"
               className="inline-flex items-center gap-1 text-sm font-semibold text-white underline decoration-white/30 transition-colors hover:text-white/80 hover:decoration-white/60 dark:text-black dark:decoration-black/30 dark:hover:text-black/80 dark:hover:decoration-black/60"
             >
               Reactivate for {tierInfo.monthly}
-              <svg
-                className="h-4 w-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"

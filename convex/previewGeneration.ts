@@ -9,11 +9,11 @@
  * @version 1.0.0
  */
 
-import { action, internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 import OpenAI from "openai";
-import { api, internal } from "./_generated/api";
+import { internal } from "./_generated/api";
+import type { Id } from "./_generated/dataModel";
+import { action, internalMutation, internalQuery } from "./_generated/server";
 
 /**
  * Generates a preview for a post using OpenAI's GPT-4o-mini model.
@@ -42,7 +42,7 @@ export const generatePostPreview = action({
     title: v.string(),
     content: v.string(),
   },
-  handler: async (ctx, { title, content }) => {
+  handler: async (_ctx, { title, content }) => {
     return await generateSinglePreview(title, content);
   },
 });
@@ -51,10 +51,7 @@ export const generatePostPreview = action({
  * Internal action for generating a single preview.
  * Separated to allow calling from batch operations.
  */
-const generateSinglePreview = async (
-  title: string,
-  content: string,
-): Promise<string> => {
+const generateSinglePreview = async (title: string, content: string): Promise<string> => {
   // Get OpenAI API key from environment
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
@@ -118,9 +115,7 @@ Content: ${cleanContent.substring(0, 1000)}`, // Limit content length for API
           break;
         }
       }
-      return (
-        truncated.trim() + (truncated.length < preview.length ? "..." : "")
-      );
+      return truncated.trim() + (truncated.length < preview.length ? "..." : "");
     }
 
     return preview;
@@ -135,9 +130,7 @@ Content: ${cleanContent.substring(0, 1000)}`, // Limit content length for API
       .join(" ")
       .substring(0, 280);
 
-    return (
-      fallbackPreview || `${title}. Read more to discover the full content.`
-    );
+    return fallbackPreview || `${title}. Read more to discover the full content.`;
   }
 };
 
@@ -167,7 +160,7 @@ export const batchGeneratePreviews = action({
       success: boolean;
       error?: string;
     }> = [];
-    
+
     const successfulUpdates: Array<{
       postId: Id<"posts">;
       preview: string;
@@ -183,7 +176,7 @@ export const batchGeneratePreviews = action({
           preview,
           success: true,
         });
-        
+
         // Collect successful previews for batch update
         successfulUpdates.push({
           postId: post.id as Id<"posts">,
@@ -202,14 +195,12 @@ export const batchGeneratePreviews = action({
         });
       }
     }
-    
+
     // Update all successful previews in the database
     if (successfulUpdates.length > 0) {
-      await ctx.scheduler.runAfter(
-        0,
-        internal.previewGeneration.updatePostPreviews,
-        { updates: successfulUpdates }
-      );
+      await ctx.scheduler.runAfter(0, internal.previewGeneration.updatePostPreviews, {
+        updates: successfulUpdates,
+      });
     }
 
     return results;
@@ -228,14 +219,11 @@ export const processMissingPreviews = internalMutation({
     // Find posts without previews
     const postsWithoutPreview = await ctx.db
       .query("posts")
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.eq(q.field("status"), "active"),
-          q.or(
-            q.eq(q.field("preview"), undefined),
-            q.eq(q.field("preview"), ""),
-          )
-        )
+          q.or(q.eq(q.field("preview"), undefined), q.eq(q.field("preview"), "")),
+        ),
       )
       .take(batchSize);
 
@@ -264,19 +252,19 @@ export const processMissingPreviews = internalMutation({
       postId: Id<"posts">;
       preview: string;
     }> = [];
-    
+
     // Process posts directly in this mutation
     for (const post of posts) {
       try {
         // For now, use a simple preview generation
         const preview = `${post.title}. ${post.content.substring(0, 150)}...`;
-        
+
         results.push({
           id: post._id,
           preview,
           success: true,
         });
-        
+
         successfulUpdates.push({
           postId: post._id,
           preview,
@@ -291,7 +279,7 @@ export const processMissingPreviews = internalMutation({
         });
       }
     }
-    
+
     // Update all successful previews
     if (successfulUpdates.length > 0) {
       for (const update of successfulUpdates) {
@@ -305,14 +293,11 @@ export const processMissingPreviews = internalMutation({
     // Count remaining posts
     const remainingCount = await ctx.db
       .query("posts")
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.eq(q.field("status"), "active"),
-          q.or(
-            q.eq(q.field("preview"), undefined),
-            q.eq(q.field("preview"), ""),
-          )
-        )
+          q.or(q.eq(q.field("preview"), undefined), q.eq(q.field("preview"), "")),
+        ),
       )
       .collect()
       .then((posts) => posts.length - postsWithoutPreview.length);
@@ -334,7 +319,7 @@ export const updatePostPreviews = internalMutation({
       v.object({
         postId: v.id("posts"),
         preview: v.string(),
-      })
+      }),
     ),
   },
   handler: async (ctx, { updates }) => {
@@ -342,7 +327,7 @@ export const updatePostPreviews = internalMutation({
       await ctx.db.patch(postId, { preview });
       console.log(`Updated preview for post ${postId}`);
     }
-    
+
     return { updated: updates.length };
   },
 });
@@ -353,7 +338,9 @@ export const updatePostPreviews = internalMutation({
  */
 export const triggerPreviewGeneration = action({
   args: {},
-  handler: async (ctx): Promise<{
+  handler: async (
+    ctx,
+  ): Promise<{
     message: string;
     stats: {
       totalPosts: number;
@@ -366,18 +353,18 @@ export const triggerPreviewGeneration = action({
   }> => {
     // Get count of posts needing previews
     const stats = await ctx.runQuery(internal.previewGeneration.getPreviewStats);
-    
+
     if (stats.postsWithoutPreview === 0) {
       return { message: "All posts already have previews!", stats };
     }
-    
+
     // Start the first batch
     const result = await ctx.scheduler.runAfter(
       0,
       internal.previewGeneration.processMissingPreviews,
-      { batchSize: 5 }
+      { batchSize: 5 },
     );
-    
+
     return {
       message: `Started preview generation for ${stats.postsWithoutPreview} posts. Processing in batches of 5.`,
       stats,
@@ -393,17 +380,17 @@ export const getPreviewStats = internalQuery({
   args: {},
   handler: async (ctx) => {
     const posts = await ctx.db.query("posts").collect();
-    
+
     const stats = {
       totalPosts: posts.length,
-      postsWithPreview: posts.filter(p => p.preview && p.preview.length > 0).length,
-      postsWithoutPreview: posts.filter(p => !p.preview || p.preview.length === 0).length,
-      activePosts: posts.filter(p => p.status === "active").length,
+      postsWithPreview: posts.filter((p) => p.preview && p.preview.length > 0).length,
+      postsWithoutPreview: posts.filter((p) => !p.preview || p.preview.length === 0).length,
+      activePosts: posts.filter((p) => p.status === "active").length,
       activePostsWithoutPreview: posts.filter(
-        p => p.status === "active" && (!p.preview || p.preview.length === 0)
+        (p) => p.status === "active" && (!p.preview || p.preview.length === 0),
       ).length,
     };
-    
+
     return stats;
   },
 });
@@ -422,22 +409,18 @@ export const generateAndUpdatePostPreview = action({
     try {
       // Generate the preview
       const preview = await generateSinglePreview(title, content);
-      
+
       // Update the post with the generated preview
-      await ctx.scheduler.runAfter(
-        0,
-        internal.previewGeneration.updatePostPreviews,
-        { 
-          updates: [{ postId, preview }] 
-        }
-      );
-      
+      await ctx.scheduler.runAfter(0, internal.previewGeneration.updatePostPreviews, {
+        updates: [{ postId, preview }],
+      });
+
       return { success: true, preview };
     } catch (error) {
       console.error(`Failed to generate preview for post ${postId}:`, error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : "Unknown error" 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   },

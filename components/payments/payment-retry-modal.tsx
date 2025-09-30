@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { AlertCircle, CheckCircle, CreditCard, RefreshCw } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -13,11 +15,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CreditCard, RefreshCw, AlertCircle, CheckCircle } from "lucide-react";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { getPaymentError } from "@/lib/payment-error-utils";
-import { toast } from "sonner";
 
 interface PaymentRetryModalProps {
   open: boolean;
@@ -44,15 +44,11 @@ export function PaymentRetryModal({
   const [showUpdateMethod, setShowUpdateMethod] = useState(false);
   const [retrySuccess, setRetrySuccess] = useState(false);
 
-  const retryPayment = useAction(
-    api.stripe.retryFailedPayment.retryFailedPayment,
-  );
+  const retryPayment = useAction(api.stripe.retryFailedPayment.retryFailedPayment);
 
   if (!failedPayment) return null;
 
-  const paymentError = failedPayment.lastError
-    ? getPaymentError(failedPayment.lastError)
-    : null;
+  const paymentError = failedPayment.lastError ? getPaymentError(failedPayment.lastError) : null;
 
   const handleRetryPayment = async () => {
     setIsRetrying(true);
@@ -118,9 +114,7 @@ export function PaymentRetryModal({
           </DialogHeader>
           <div className="py-6 text-center">
             <p className="mb-2 text-lg">Your payment went through!</p>
-            <p className="text-muted-foreground">
-              Your Pro access has been restored.
-            </p>
+            <p className="text-muted-foreground">Your Pro access has been restored.</p>
           </div>
         </DialogContent>
       </Dialog>
@@ -136,8 +130,8 @@ export function PaymentRetryModal({
             Payment needs attention
           </DialogTitle>
           <DialogDescription>
-            Your {formatAmount(failedPayment.amount, failedPayment.currency)}{" "}
-            payment couldn&apos;t be processed.
+            Your {formatAmount(failedPayment.amount, failedPayment.currency)} payment couldn&apos;t
+            be processed.
           </DialogDescription>
         </DialogHeader>
 
@@ -153,8 +147,8 @@ export function PaymentRetryModal({
           {!showUpdateMethod ? (
             <>
               <p className="text-muted-foreground text-sm">
-                We can try processing your payment again with your current card,
-                or you can update your payment method.
+                We can try processing your payment again with your current card, or you can update
+                your payment method.
               </p>
 
               <div className="space-y-2">
@@ -176,14 +170,14 @@ export function PaymentRetryModal({
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertDescription>
-                  The retry wasn&apos;t successful. Please update your payment
-                  method to continue your subscription.
+                  The retry wasn&apos;t successful. Please update your payment method to continue
+                  your subscription.
                 </AlertDescription>
               </Alert>
 
               <p className="text-muted-foreground text-sm">
-                You&apos;ll be redirected to securely update your card
-                information. Your subscription will resume once updated.
+                You&apos;ll be redirected to securely update your card information. Your
+                subscription will resume once updated.
               </p>
             </>
           )}
@@ -192,11 +186,7 @@ export function PaymentRetryModal({
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           {!showUpdateMethod ? (
             <>
-              <Button
-                onClick={handleRetryPayment}
-                disabled={isRetrying}
-                className="w-full"
-              >
+              <Button onClick={handleRetryPayment} disabled={isRetrying} className="w-full">
                 {isRetrying ? (
                   <>
                     <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -222,11 +212,7 @@ export function PaymentRetryModal({
             </>
           ) : (
             <>
-              <Button
-                onClick={handleUpdatePaymentMethod}
-                disabled={isRetrying}
-                className="w-full"
-              >
+              <Button onClick={handleUpdatePaymentMethod} disabled={isRetrying} className="w-full">
                 {isRetrying ? (
                   <>
                     <RefreshCw className="mr-2 h-4 w-4 animate-spin" />

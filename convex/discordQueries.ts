@@ -1,11 +1,11 @@
-import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { query } from "./_generated/server";
 
 // Helper function to get yesterday's date in YYYY-MM-DD format
 function getYesterdayDateString(): string {
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  return yesterday.toISOString().split('T')[0];
+  return yesterday.toISOString().split("T")[0];
 }
 
 // Query to get archived Discord digest for users (database-based digest retrieval)
@@ -24,16 +24,13 @@ export const getDiscordDigest = query({
       // Fetch from database archive, sorted by reaction score
       const digestEntries = await ctx.db
         .query("discordDigest")
-        .withIndex("by_reaction_score", (q) =>
-          q.eq("digestDate", targetDate)
-        )
+        .withIndex("by_reaction_score", (q) => q.eq("digestDate", targetDate))
         .order("desc")
         .take(args.limit || 50);
 
       return digestEntries;
-
     } catch (error) {
-      console.error('Failed to fetch Discord digest:', error);
+      console.error("Failed to fetch Discord digest:", error);
       return []; // Always return empty array, never throw
     }
   },

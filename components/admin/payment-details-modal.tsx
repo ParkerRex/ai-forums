@@ -1,33 +1,23 @@
 "use client";
 
-import { useState } from "react";
-import { useQuery, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import type { PaymentDetailsResponse, RefundEligibility } from "@/types/admin";
+import { useAction, useQuery } from "convex/react";
 import { format } from "date-fns";
-import {
-  CreditCard,
-  Copy,
-  Loader2,
-  RefreshCw,
-  AlertCircle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AlertCircle, Copy, CreditCard, Loader2, RefreshCw } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
-  DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -35,25 +25,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { toast } from "sonner";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 import { paymentStatusConfig } from "@/lib/admin-config";
 import { formatCentsAsCurrency } from "@/lib/format";
+import { cn } from "@/lib/utils";
+import type { PaymentDetailsResponse, RefundEligibility } from "@/types/admin";
 
 interface PaymentDetailsModalProps {
   paymentId: Id<"payments">;
   onClose: () => void;
 }
 
-export function PaymentDetailsModal({
-  paymentId,
-  onClose,
-}: PaymentDetailsModalProps) {
+export function PaymentDetailsModal({ paymentId, onClose }: PaymentDetailsModalProps) {
   const [showRefundForm, setShowRefundForm] = useState(false);
   const [refundAmount, setRefundAmount] = useState("");
-  const [refundReason, setRefundReason] = useState<string>(
-    "requested_by_customer",
-  );
+  const [refundReason, setRefundReason] = useState<string>("requested_by_customer");
   const [refundNotes, setRefundNotes] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
@@ -78,8 +67,7 @@ export function PaymentDetailsModal({
   }
 
   const { payment, member } = paymentDetails;
-  const statusInfo =
-    paymentStatusConfig[payment.status as keyof typeof paymentStatusConfig];
+  const statusInfo = paymentStatusConfig[payment.status as keyof typeof paymentStatusConfig];
   const StatusIcon = statusInfo.icon;
 
   const fullName =
@@ -104,11 +92,7 @@ export function PaymentDetailsModal({
       await refundPayment({
         paymentId,
         amount: amountInCents,
-        reason: refundReason as
-          | "requested_by_customer"
-          | "duplicate"
-          | "fraudulent"
-          | "other",
+        reason: refundReason as "requested_by_customer" | "duplicate" | "fraudulent" | "other",
         notes: refundNotes,
       });
 
@@ -121,9 +105,7 @@ export function PaymentDetailsModal({
     } catch (error) {
       toast.error("Refund Failed", {
         description:
-          error instanceof Error
-            ? error.message
-            : "An error occurred while processing the refund",
+          error instanceof Error ? error.message : "An error occurred while processing the refund",
       });
     } finally {
       setIsProcessing(false);
@@ -141,9 +123,7 @@ export function PaymentDetailsModal({
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Payment Details</DialogTitle>
-          <DialogDescription>
-            Transaction information and refund options
-          </DialogDescription>
+          <DialogDescription>Transaction information and refund options</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -153,15 +133,11 @@ export function PaymentDetailsModal({
               <StatusIcon
                 className={cn(
                   "h-8 w-8",
-                  statusInfo.color.includes("green")
-                    ? "text-green-600"
-                    : "text-gray-600",
+                  statusInfo.color.includes("green") ? "text-green-600" : "text-gray-600",
                 )}
               />
               <div>
-                <p className="text-lg font-semibold">
-                  ${(payment.amount / 100).toFixed(2)}
-                </p>
+                <p className="text-lg font-semibold">${(payment.amount / 100).toFixed(2)}</p>
                 <Badge className={statusInfo.color}>{statusInfo.label}</Badge>
               </div>
             </div>
@@ -187,8 +163,7 @@ export function PaymentDetailsModal({
                 <div className="flex items-center gap-2">
                   <CreditCard className="h-4 w-4 text-gray-400" />
                   <span className="font-medium">
-                    {payment.paymentMethod.brand} ••••{" "}
-                    {payment.paymentMethod.last4}
+                    {payment.paymentMethod.brand} •••• {payment.paymentMethod.last4}
                   </span>
                 </div>
               </div>
@@ -224,9 +199,7 @@ export function PaymentDetailsModal({
             <div className="space-y-2 rounded-none bg-gray-50 p-4">
               <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Gross Amount</span>
-                <span className="font-medium">
-                  {formatCentsAsCurrency(payment.amount)}
-                </span>
+                <span className="font-medium">{formatCentsAsCurrency(payment.amount)}</span>
               </div>
 
               {payment.transactionFee ? (
@@ -285,8 +258,7 @@ export function PaymentDetailsModal({
               <AlertCircle className="h-4 w-4" />
               <AlertTitle>Refund Available</AlertTitle>
               <AlertDescription>
-                You can refund up to ${(maxRefundAmount / 100).toFixed(2)} for
-                this payment.
+                You can refund up to ${(maxRefundAmount / 100).toFixed(2)} for this payment.
                 {"eligible" in refundEligibility &&
                   refundEligibility.alreadyRefunded > 0 &&
                   ` (Already refunded: $${(refundEligibility.alreadyRefunded / 100).toFixed(2)})`}
@@ -326,8 +298,7 @@ export function PaymentDetailsModal({
                     />
                   </div>
                   <p className="mt-1 text-xs text-gray-500">
-                    Leave empty to refund full amount (
-                    {formatCentsAsCurrency(maxRefundAmount)})
+                    Leave empty to refund full amount ({formatCentsAsCurrency(maxRefundAmount)})
                   </p>
                 </div>
 
@@ -338,12 +309,8 @@ export function PaymentDetailsModal({
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="requested_by_customer">
-                        Requested by Customer
-                      </SelectItem>
-                      <SelectItem value="duplicate">
-                        Duplicate Payment
-                      </SelectItem>
+                      <SelectItem value="requested_by_customer">Requested by Customer</SelectItem>
+                      <SelectItem value="duplicate">Duplicate Payment</SelectItem>
                       <SelectItem value="fraudulent">Fraudulent</SelectItem>
                       <SelectItem value="other">Other</SelectItem>
                     </SelectContent>
@@ -363,14 +330,8 @@ export function PaymentDetailsModal({
               </div>
 
               <div className="flex gap-2">
-                <Button
-                  variant="destructive"
-                  onClick={handleRefund}
-                  disabled={isProcessing}
-                >
-                  {isProcessing && (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  )}
+                <Button variant="destructive" onClick={handleRefund} disabled={isProcessing}>
+                  {isProcessing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Process Refund
                 </Button>
                 <Button

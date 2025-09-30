@@ -1,11 +1,11 @@
 /**
  * @fileoverview VAI Community Calendar Page
- * 
+ *
  * This is the main calendar page for the VAI community, providing a comprehensive
  * view of all community events including watch parties, workshops, community calls,
  * and meetups. The page features a monthly calendar grid with event visualization,
  * event creation/editing capabilities, and role-based access control.
- * 
+ *
  * Key Features:
  * - Monthly calendar grid view with event display
  * - Event creation and management (authenticated users only)
@@ -13,7 +13,7 @@
  * - Authentication-gated functionality with membership CTA
  * - Real-time event updates via Convex
  * - Responsive design for mobile and desktop
- * 
+ *
  * @author VAI Team
  * @version 1.0.0
  * @since 2024
@@ -21,25 +21,25 @@
 
 "use client";
 
+import { Authenticated, Unauthenticated } from "convex/react";
+import { Plus } from "lucide-react";
 import { useState } from "react";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { EventModal } from "@/components/calendar/event-modal";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Plus } from "lucide-react";
-import { Authenticated, Unauthenticated } from "convex/react";
 import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 /**
  * Main calendar page component that renders the VAI community calendar
- * 
+ *
  * This component manages the overall calendar state including selected dates,
  * modal visibility, and event selection. It provides different interfaces
  * for authenticated and unauthenticated users, with full calendar functionality
  * for members and membership prompts for non-members.
- * 
+ *
  * @returns {JSX.Element} The complete calendar page with grid, modals, and controls
- * 
+ *
  * @example
  * ```tsx
  * // Rendered at /calendar route
@@ -50,10 +50,10 @@ export default function CalendarPage() {
   // State management for calendar interactions
   // Currently selected date (defaults to today for new event creation)
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  
+
   // Controls visibility of the event creation modal
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
-  
+
   // Stores the ID of the selected event for viewing/editing
   // null when no event is selected
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
@@ -69,7 +69,7 @@ export default function CalendarPage() {
             Stay up to date with VAI community events, watch parties, and workshops
           </p>
         </div>
-        
+
         {/* Create Event button - only visible to authenticated users */}
         <Authenticated>
           <Button onClick={() => setIsCreateModalOpen(true)}>
@@ -77,7 +77,7 @@ export default function CalendarPage() {
             Create Event
           </Button>
         </Authenticated>
-        
+
         {/* Membership CTA for unauthenticated users */}
         {/* Shows same button but opens membership modal instead of event creation */}
         <Unauthenticated>
@@ -98,8 +98,8 @@ export default function CalendarPage() {
         <AlertTitle>Work in Progress</AlertTitle>
         <AlertDescription>
           This calendar feature is currently under development. Track progress on{" "}
-          <a 
-            href="https://github.com/joinvai/vai/issues/69" 
+          <a
+            href="https://github.com/joinvai/vai/issues/69"
             className="underline text-[#00794c] hover:text-[#00794c]/80"
             target="_blank"
             rel="noopener noreferrer"

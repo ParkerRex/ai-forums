@@ -18,20 +18,17 @@
 
 "use client";
 
-import { Authenticated, Unauthenticated } from "convex/react";
-import PostDetail from "@/components/posts/post-detail";
-import { PostDeleteModal } from "@/components/posts/post-delete-modal";
-import { PostHistoryModal } from "@/components/posts/post-history-modal";
-
-import { PostPaywallDirect } from "@/components/posts/post-paywall-direct";
-import React from "react";
-import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { Authenticated, Unauthenticated, useQuery } from "convex/react";
+import { notFound, useRouter, useSearchParams } from "next/navigation";
+import { use, useEffect, useState } from "react";
 import CommentSection from "@/components/comments/comment-section-flat";
-import { use, useState, useEffect } from "react";
-import { notFound, useSearchParams, useRouter } from "next/navigation";
+import { PostDeleteModal } from "@/components/posts/post-delete-modal";
+import PostDetail from "@/components/posts/post-detail";
+import { PostHistoryModal } from "@/components/posts/post-history-modal";
+import { PostPaywallDirect } from "@/components/posts/post-paywall-direct";
 import { Badge } from "@/components/ui/badge";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 /**
  * Props for the PostPageClient component
@@ -155,9 +152,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
         <div className="text-center">
-          <h1 className="text-foreground mb-4 text-2xl font-bold">
-            Invalid URL
-          </h1>
+          <h1 className="text-foreground mb-4 text-2xl font-bold">Invalid URL</h1>
           <p className="text-muted-foreground">The URL format is invalid.</p>
         </div>
       </div>
@@ -258,158 +253,150 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   }
 
   return (
-    <>
-      <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
-        {/* Authenticated User Experience */}
-        <Authenticated>
-          {canViewPost === undefined ? (
-            // Loading state while checking access
-            <div className="animate-pulse space-y-4">
-              <div className="bg-muted h-8 w-3/4 rounded" />
-              <div className="bg-muted h-4 w-full rounded" />
-              <div className="bg-muted h-4 w-full rounded" />
-              <div className="bg-muted h-4 w-2/3 rounded" />
-            </div>
-          ) : canViewPost === true ? (
-            <>
-              {/* Full post detail with all interactive features */}
-              <PostDetail
-                post={post}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onViewHistory={handleViewHistory}
-                isEditing={isEditing}
-                onCancelEdit={handleCancelEdit}
-              />
+    <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
+      {/* Authenticated User Experience */}
+      <Authenticated>
+        {canViewPost === undefined ? (
+          // Loading state while checking access
+          <div className="animate-pulse space-y-4">
+            <div className="bg-muted h-8 w-3/4 rounded" />
+            <div className="bg-muted h-4 w-full rounded" />
+            <div className="bg-muted h-4 w-full rounded" />
+            <div className="bg-muted h-4 w-2/3 rounded" />
+          </div>
+        ) : canViewPost === true ? (
+          <>
+            {/* Full post detail with all interactive features */}
+            <PostDetail
+              post={post}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onViewHistory={handleViewHistory}
+              isEditing={isEditing}
+              onCancelEdit={handleCancelEdit}
+            />
 
-              {/* Comment section with deep linking support */}
-              <CommentSection
-                postId={post._id as Id<"posts">}
-                targetCommentId={commentId ?? undefined}
-              />
+            {/* Comment section with deep linking support */}
+            <CommentSection
+              postId={post._id as Id<"posts">}
+              targetCommentId={commentId ?? undefined}
+            />
 
-              {/* Post Management Modals - Only available to authenticated users */}
-              {post && (
-                <>
-                  <PostDeleteModal
-                    postId={post._id as Id<"posts">}
-                    postTitle={post.title}
-                    isOpen={isDeleteModalOpen}
-                    onClose={() => setIsDeleteModalOpen(false)}
-                    onSuccess={handleDeleteSuccess}
-                  />
-                  <PostHistoryModal
-                    postId={post._id as Id<"posts">}
-                    isOpen={isHistoryModalOpen}
-                    onClose={() => setIsHistoryModalOpen(false)}
-                  />
-                </>
-              )}
-            </>
-          ) : (
-            // Authenticated user without access - show paywall
-            <div className="space-y-6">
-              {/* Post Header */}
-              <div className="border-b pb-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Badge
-                      variant="secondary"
-                      className="bg-primary/10 text-primary"
-                    >
-                      {post.category?.displayName || "General"}
-                    </Badge>
-                  </div>
-                </div>
-                <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
-                <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                  <span>
-                    by {post.member?.firstName} {post.member?.lastName}
-                  </span>
-                  <span>•</span>
-                  <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                  <span>•</span>
-                  <span>{post.upvotes} upvotes</span>
+            {/* Post Management Modals - Only available to authenticated users */}
+            {post && (
+              <>
+                <PostDeleteModal
+                  postId={post._id as Id<"posts">}
+                  postTitle={post.title}
+                  isOpen={isDeleteModalOpen}
+                  onClose={() => setIsDeleteModalOpen(false)}
+                  onSuccess={handleDeleteSuccess}
+                />
+                <PostHistoryModal
+                  postId={post._id as Id<"posts">}
+                  isOpen={isHistoryModalOpen}
+                  onClose={() => setIsHistoryModalOpen(false)}
+                />
+              </>
+            )}
+          </>
+        ) : (
+          // Authenticated user without access - show paywall
+          <div className="space-y-6">
+            {/* Post Header */}
+            <div className="border-b pb-6">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    {post.category?.displayName || "General"}
+                  </Badge>
                 </div>
               </div>
-
-              {/* Preview Content with Paywall */}
-              <div className="relative">
-                <div className="prose prose-lg post-content max-w-none">
-                  <div className="text-foreground leading-relaxed">
-                    {/* Show preview if available, otherwise fallback to truncated content */}
-                    {post.preview || post.content?.substring(0, 200) + "..."}
-                  </div>
-                </div>
-
-                {/* Direct Paywall */}
-                <PostPaywallDirect postId={post._id} postTitle={post.title} />
+              <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
+              <div className="text-muted-foreground flex items-center space-x-4 text-sm">
+                <span>
+                  by {post.member?.firstName} {post.member?.lastName}
+                </span>
+                <span>•</span>
+                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                <span>•</span>
+                <span>{post.upvotes} upvotes</span>
               </div>
             </div>
-          )}
-        </Authenticated>
 
-        {/* Unauthenticated User Experience - Preview with membership CTA */}
-        <Unauthenticated>
-          {post.isFree ? (
-            // Free posts show full content for everyone
-            <>
-              <PostDetail
-                post={post}
-                onEdit={handleEdit}
-                onDelete={handleDelete}
-                onViewHistory={handleViewHistory}
-                isEditing={isEditing}
-                onCancelEdit={handleCancelEdit}
-              />
-              <CommentSection
-                postId={post._id as Id<"posts">}
-                targetCommentId={commentId ?? undefined}
-              />
-            </>
-          ) : (
-            // Paywalled posts show preview with overlay
-            <div className="space-y-6">
-              {/* Post Header - Same as authenticated but no interaction */}
-              <div className="border-b pb-6">
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Badge
-                      variant="secondary"
-                      className="bg-primary/10 text-primary"
-                    >
-                      {post.category?.displayName || "General"}
-                    </Badge>
-                  </div>
-                </div>
-                <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
-                <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                  <span>
-                    by {post.member?.firstName} {post.member?.lastName}
-                  </span>
-                  <span>•</span>
-                  <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                  <span>•</span>
-                  <span>{post.upvotes} upvotes</span>
+            {/* Preview Content with Paywall */}
+            <div className="relative">
+              <div className="prose prose-lg post-content max-w-none">
+                <div className="text-foreground leading-relaxed">
+                  {/* Show preview if available, otherwise fallback to truncated content */}
+                  {post.preview || `${post.content?.substring(0, 200)}...`}
                 </div>
               </div>
 
-              {/* Preview Content with Overlay */}
-              <div className="relative">
-                <div className="prose prose-lg post-content max-w-none">
-                  <div className="text-foreground leading-relaxed">
-                    {/* Show preview if available, otherwise fallback to truncated content */}
-                    {post.preview || post.content?.substring(0, 200) + "..."}
-                  </div>
-                </div>
+              {/* Direct Paywall */}
+              <PostPaywallDirect postId={post._id} postTitle={post.title} />
+            </div>
+          </div>
+        )}
+      </Authenticated>
 
-                {/* Direct Paywall */}
-                <PostPaywallDirect postId={post._id} postTitle={post.title} />
+      {/* Unauthenticated User Experience - Preview with membership CTA */}
+      <Unauthenticated>
+        {post.isFree ? (
+          // Free posts show full content for everyone
+          <>
+            <PostDetail
+              post={post}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
+              onViewHistory={handleViewHistory}
+              isEditing={isEditing}
+              onCancelEdit={handleCancelEdit}
+            />
+            <CommentSection
+              postId={post._id as Id<"posts">}
+              targetCommentId={commentId ?? undefined}
+            />
+          </>
+        ) : (
+          // Paywalled posts show preview with overlay
+          <div className="space-y-6">
+            {/* Post Header - Same as authenticated but no interaction */}
+            <div className="border-b pb-6">
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Badge variant="secondary" className="bg-primary/10 text-primary">
+                    {post.category?.displayName || "General"}
+                  </Badge>
+                </div>
+              </div>
+              <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
+              <div className="text-muted-foreground flex items-center space-x-4 text-sm">
+                <span>
+                  by {post.member?.firstName} {post.member?.lastName}
+                </span>
+                <span>•</span>
+                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                <span>•</span>
+                <span>{post.upvotes} upvotes</span>
               </div>
             </div>
-          )}
-        </Unauthenticated>
-      </div>
-    </>
+
+            {/* Preview Content with Overlay */}
+            <div className="relative">
+              <div className="prose prose-lg post-content max-w-none">
+                <div className="text-foreground leading-relaxed">
+                  {/* Show preview if available, otherwise fallback to truncated content */}
+                  {post.preview || `${post.content?.substring(0, 200)}...`}
+                </div>
+              </div>
+
+              {/* Direct Paywall */}
+              <PostPaywallDirect postId={post._id} postTitle={post.title} />
+            </div>
+          </div>
+        )}
+      </Unauthenticated>
+    </div>
   );
 }

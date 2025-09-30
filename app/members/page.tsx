@@ -19,13 +19,13 @@
  * @version 1.0.0
  */
 
-import { Input } from "@/components/ui/input";
-import { Search, X, Loader2 } from "lucide-react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { useState, useEffect } from "react";
+import { Loader2, Search, X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { PageErrorBoundary } from "@/components/error-boundary";
 import MembersDisplay from "@/components/members/members-display";
+import { Input } from "@/components/ui/input";
+import { api } from "@/convex/_generated/api";
 
 /**
  * Main content component for the Members Directory page.
@@ -123,9 +123,7 @@ function MembersPageContent() {
         <div className="mx-auto max-w-7xl px-4 py-10">
           {/* Page header with title and description */}
           <div className="mb-8">
-            <h1 className="text-foreground mb-2 text-3xl font-bold">
-              Members Directory
-            </h1>
+            <h1 className="text-foreground mb-2 text-3xl font-bold">Members Directory</h1>
             <p className="text-muted-foreground">
               Discover and connect with developers in the VAI community.
             </p>
@@ -158,9 +156,7 @@ function MembersPageContent() {
       <div className="mx-auto max-w-7xl px-4 py-10">
         {/* Page header - consistent across all states */}
         <div className="mb-8">
-          <h1 className="text-foreground mb-2 text-3xl font-bold">
-            Members Directory
-          </h1>
+          <h1 className="text-foreground mb-2 text-3xl font-bold">Members Directory</h1>
           <p className="text-muted-foreground">
             Discover and connect with developers in the VAI community.
           </p>
@@ -181,9 +177,7 @@ function MembersPageContent() {
             {hasSearchTerm && (
               <div className="absolute right-3 top-1/2 flex -translate-y-1/2 transform items-center space-x-2">
                 {/* Show loading spinner during debounce period */}
-                {isTyping && (
-                  <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />
-                )}
+                {isTyping && <Loader2 className="text-muted-foreground h-4 w-4 animate-spin" />}
                 {/* Clear search button */}
                 <button
                   onClick={clearSearch}
@@ -221,9 +215,7 @@ function MembersPageContent() {
         {/* Empty search state */}
         {!isLoading && members.length === 0 && isSearching && (
           <div className="py-12 text-center transition-opacity duration-300">
-            <div className="text-muted-foreground mb-2 text-lg">
-              No members found
-            </div>
+            <div className="text-muted-foreground mb-2 text-lg">No members found</div>
             <p className="text-muted-foreground/70">
               Try adjusting your search terms or{" "}
               <button

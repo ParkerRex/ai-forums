@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import { toast } from "sonner";
-import { useNewsFeed, NewsItem } from "../hooks/use-news-feed";
+import { Button } from "@/components/ui/button";
+import { type NewsItem, useNewsFeed } from "../hooks/use-news-feed";
 
 const RATE_LIMIT_DURATION = 30 * 1000; // 30 seconds
 
@@ -29,7 +29,7 @@ export function NewsFeedWidget() {
   const formatTimeAgo = (dateString?: string) => {
     if (!dateString) return "";
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "";
+    if (Number.isNaN(date.getTime())) return "";
 
     const now = new Date();
     const diffMs = now.getTime() - date.getTime();
@@ -91,9 +91,7 @@ export function NewsFeedWidget() {
           />
         </Button>
       </div>
-      <div
-        className={`space-y-1 text-xs transition-all ${refreshing ? "opacity-50 blur-sm" : ""}`}
-      >
+      <div className={`space-y-1 text-xs transition-all ${refreshing ? "opacity-50 blur-sm" : ""}`}>
         {news.slice(0, 5).map((item: NewsItem, index: number) => {
           return (
             <div key={index} className="group">

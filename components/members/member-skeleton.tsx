@@ -1,6 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // Export the header skeleton from the dedicated component
 export { default as MemberHeaderSkeleton } from "./member-header-skeleton";
@@ -228,9 +228,7 @@ export function LoadingIndicator({
 
   return (
     <div className={`flex items-center space-x-2 ${className}`}>
-      <Loader2
-        className={`text-muted-foreground animate-spin ${sizeClasses[size]}`}
-      />
+      <Loader2 className={`text-muted-foreground animate-spin ${sizeClasses[size]}`} />
       {text && <span className="text-muted-foreground text-sm">{text}</span>}
     </div>
   );
@@ -345,9 +343,7 @@ export function LoadingSpinner({ size = "md", text }: LoadingSpinnerProps) {
 
   return (
     <div className="flex flex-col items-center justify-center space-y-2">
-      <Loader2
-        className={`text-muted-foreground animate-spin ${sizeClasses[size]}`}
-      />
+      <Loader2 className={`text-muted-foreground animate-spin ${sizeClasses[size]}`} />
       {text && <span className="text-muted-foreground text-sm">{text}</span>}
     </div>
   );

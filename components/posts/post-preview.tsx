@@ -1,38 +1,30 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
 import { formatDistanceToNow } from "date-fns";
+import { BarChart3, ChevronUp, ExternalLink, Eye, MessageSquare, Pin, Play } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useRef, useState } from "react";
+import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
+import { getInitials } from "@/lib/avatar-utils";
 import {
-  getPostPreviewAsset,
-  getContentExcerpt,
+  extractYouTubeVideoId,
   formatPostStats,
+  getContentExcerpt,
+  getMediaPlaceholder,
+  getPostPreviewAsset,
+  getPostTypeLabel,
   getPreviewClasses,
   hasMedia,
   isLinkPost,
   isPollPost,
-  getPostTypeLabel,
-  shouldAutoplay,
-  getMediaPlaceholder,
-  extractYouTubeVideoId,
   type PostData,
   type PreviewSize,
+  shouldAutoplay,
 } from "@/lib/post-preview-utils";
-import {
-  MessageSquare,
-  Eye,
-  ChevronUp,
-  Play,
-  ExternalLink,
-  BarChart3,
-  Pin,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
-import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { getInitials } from "@/lib/avatar-utils";
 
 interface PostPreviewProps {
   post: PostData;
@@ -75,11 +67,7 @@ export default function PostPreview({
   const previewClasses = getPreviewClasses(size, assetInfo, post);
 
   const stats = formatPostStats(post);
-  const excerpt = getContentExcerpt(
-    post.content,
-    size === "small" ? 80 : 140,
-    post.preview,
-  );
+  const excerpt = getContentExcerpt(post.content, size === "small" ? 80 : 140, post.preview);
 
   // Handle video autoplay on hover
   useEffect(() => {
@@ -127,8 +115,7 @@ export default function PostPreview({
     (post.type === "video" ||
       (post.type === "link" &&
         post.linkUrl &&
-        (post.linkUrl.includes("youtube.com") ||
-          post.linkUrl.includes("youtu.be"))) ||
+        (post.linkUrl.includes("youtube.com") || post.linkUrl.includes("youtu.be"))) ||
       size !== "small");
 
   if (hasLargeMedia) {
@@ -175,9 +162,7 @@ export default function PostPreview({
                 </span>
               )}
               {post.type !== "text" && (
-                <span className="text-muted-foreground/60">
-                  {getPostTypeLabel(post)}
-                </span>
+                <span className="text-muted-foreground/60">{getPostTypeLabel(post)}</span>
               )}
               {post.isPinned && (
                 <div className="flex items-center gap-1">
@@ -188,10 +173,7 @@ export default function PostPreview({
             </div>
 
             {/* Title */}
-            <Link
-              href={postUrl}
-              className="text-foreground block text-4xl transition-colors"
-            >
+            <Link href={postUrl} className="text-foreground block text-4xl transition-colors">
               <h3
                 className={cn(
                   "line-clamp-2 text-[32px] leading-tight",
@@ -217,10 +199,7 @@ export default function PostPreview({
                     <Avatar className="h-4 w-4">
                       <AvatarImage src={post.member.avatarUrl || ""} />
                       <AvatarFallback className="text-[8px]">
-                        {getInitials(
-                          post.member.firstName || "",
-                          post.member.lastName || "",
-                        )}
+                        {getInitials(post.member.firstName || "", post.member.lastName || "")}
                       </AvatarFallback>
                     </Avatar>
                     <Link
@@ -327,13 +306,9 @@ export default function PostPreview({
               {post.type === "link" && (
                 <div className="bg-muted flex h-full flex-col justify-between p-4">
                   {post.linkUrl &&
-                  (post.linkUrl.includes("youtube.com") ||
-                    post.linkUrl.includes("youtu.be")) ? (
+                  (post.linkUrl.includes("youtube.com") || post.linkUrl.includes("youtu.be")) ? (
                     <div className="w-full">
-                      <div
-                        className="relative w-full"
-                        style={{ paddingBottom: "56.25%" }}
-                      >
+                      <div className="relative w-full" style={{ paddingBottom: "56.25%" }}>
                         <iframe
                           src={`https://www.youtube.com/embed/${extractYouTubeVideoId(post.linkUrl)}`}
                           title={post.linkTitle || "YouTube video"}
@@ -344,9 +319,7 @@ export default function PostPreview({
                         />
                       </div>
                       {post.linkTitle && (
-                        <h4 className="mt-2 line-clamp-2 text-sm font-medium">
-                          {post.linkTitle}
-                        </h4>
+                        <h4 className="mt-2 line-clamp-2 text-sm font-medium">{post.linkTitle}</h4>
                       )}
                     </div>
                   ) : (
@@ -373,8 +346,7 @@ export default function PostPreview({
                       <div className="text-muted-foreground mt-2 flex items-center gap-1 text-xs">
                         <ExternalLink className="h-3 w-3" />
                         <span className="truncate">
-                          {previewAsset.url &&
-                            new URL(previewAsset.url).hostname}
+                          {previewAsset.url && new URL(previewAsset.url).hostname}
                         </span>
                       </div>
                     </>
@@ -413,10 +385,7 @@ export default function PostPreview({
   // Compact layout for text posts and small media
   return (
     <div
-      className={cn(
-        "border-border/40 group border-b py-2 transition-colors",
-        className,
-      )}
+      className={cn("border-border/40 group border-b py-2 transition-colors", className)}
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onClick={handleClick}
@@ -454,9 +423,7 @@ export default function PostPreview({
               </span>
             )}
             {post.type !== "text" && (
-              <span className="text-muted-foreground/60">
-                {getPostTypeLabel(post)}
-              </span>
+              <span className="text-muted-foreground/60">{getPostTypeLabel(post)}</span>
             )}
             {post.isPinned && (
               <div className="flex items-center gap-1">
@@ -496,10 +463,7 @@ export default function PostPreview({
                   <Avatar className="h-4 w-4">
                     <AvatarImage src={post.member.avatarUrl || ""} />
                     <AvatarFallback className="text-[8px]">
-                      {getInitials(
-                        post.member.firstName || "",
-                        post.member.lastName || "",
-                      )}
+                      {getInitials(post.member.firstName || "", post.member.lastName || "")}
                     </AvatarFallback>
                   </Avatar>
                   <Link

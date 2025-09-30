@@ -1,29 +1,29 @@
 /**
  * Guest Account Linking Migration
- * 
+ *
  * This migration links guest members (created during direct checkout without authentication)
  * to their Clerk accounts when they sign up with the same email address.
- * 
+ *
  * The migration:
- * 1. Finds all members with an externalId (Clerk ID) 
+ * 1. Finds all members with an externalId (Clerk ID)
  * 2. Checks if there's a guest member with the same email but no externalId
  * 3. Transfers subscription data from the guest member to the authenticated member
  * 4. Deactivates the guest member record to prevent duplicates
- * 
+ *
  * This ensures users who purchase as guests can later create an account and retain
  * their subscription status without needing to purchase again.
  */
 
-import { internalMutation } from "../_generated/server";
 import { v } from "convex/values";
-import { Doc } from "../_generated/dataModel";
+import type { Doc } from "../_generated/dataModel";
+import { internalMutation } from "../_generated/server";
 
 /**
  * Links guest members to authenticated members by email
- * 
+ *
  * Run this migration periodically or after user sign-ups to ensure
  * guest purchases are properly linked to authenticated accounts.
- * 
+ *
  * @returns Object with statistics about the migration results
  */
 export const linkGuestAccounts = internalMutation({
@@ -43,16 +43,16 @@ export const linkGuestAccounts = internalMutation({
 
     for (const authMember of authenticatedMembers) {
       stats.processed++;
-      
+
       // Check if there's a guest member with the same email
       const guestMember = await ctx.db
         .query("members")
-        .filter((q) => 
+        .filter((q) =>
           q.and(
             q.eq(q.field("email"), authMember.email),
             q.eq(q.field("externalId"), undefined),
-            q.eq(q.field("status"), "active")
-          )
+            q.eq(q.field("status"), "active"),
+          ),
         )
         .first();
 
@@ -60,7 +60,7 @@ export const linkGuestAccounts = internalMutation({
         try {
           // Transfer subscription data from guest to authenticated member
           const updates: Partial<Doc<"members">> = {};
-          
+
           // Only update if guest has subscription data we don't have
           if (guestMember.stripeCustomerId && !authMember.stripeCustomerId) {
             updates.stripeCustomerId = guestMember.stripeCustomerId;
@@ -74,10 +74,17 @@ export const linkGuestAccounts = internalMutation({
           if (guestMember.billingInterval && !authMember.billingInterval) {
             updates.billingInterval = guestMember.billingInterval;
           }
-          if (guestMember.subscriptionStatus === "active" && authMember.subscriptionStatus !== "active") {
+          if (
+            guestMember.subscriptionStatus === "active" &&
+            authMember.subscriptionStatus !== "active"
+          ) {
             updates.subscriptionStatus = guestMember.subscriptionStatus;
           }
-          if (guestMember.lastPaymentDate && (!authMember.lastPaymentDate || guestMember.lastPaymentDate > authMember.lastPaymentDate)) {
+          if (
+            guestMember.lastPaymentDate &&
+            (!authMember.lastPaymentDate ||
+              guestMember.lastPaymentDate > authMember.lastPaymentDate)
+          ) {
             updates.lastPaymentDate = guestMember.lastPaymentDate;
           }
 
@@ -97,8 +104,10 @@ export const linkGuestAccounts = internalMutation({
             });
 
             stats.linked++;
-            
-            console.log(`Linked guest member ${guestMember._id} to authenticated member ${authMember._id}`);
+
+            console.log(
+              `Linked guest member ${guestMember._id} to authenticated member ${authMember._id}`,
+            );
           }
         } catch (error) {
           console.error(`Error linking guest member ${guestMember._id}:`, error);
@@ -113,10 +122,10 @@ export const linkGuestAccounts = internalMutation({
 
 /**
  * Link a specific guest account to an authenticated member
- * 
+ *
  * Used when a user signs up with Clerk and we need to immediately
  * link their guest purchase to their new account.
- * 
+ *
  * @param email - Email address to link
  * @param externalId - Clerk ID of the authenticated member
  */
@@ -139,12 +148,12 @@ export const linkSpecificGuestAccount = internalMutation({
     // Find guest member with same email
     const guestMember = await ctx.db
       .query("members")
-      .filter((q) => 
+      .filter((q) =>
         q.and(
           q.eq(q.field("email"), email),
           q.eq(q.field("externalId"), undefined),
-          q.eq(q.field("status"), "active")
-        )
+          q.eq(q.field("status"), "active"),
+        ),
       )
       .first();
 
@@ -155,7 +164,7 @@ export const linkSpecificGuestAccount = internalMutation({
 
     // Transfer subscription data
     const updates: Partial<Doc<"members">> = {};
-    
+
     if (guestMember.stripeCustomerId) {
       updates.stripeCustomerId = guestMember.stripeCustomerId;
     }

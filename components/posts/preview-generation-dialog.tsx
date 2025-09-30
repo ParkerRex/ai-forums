@@ -1,6 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Check, Edit2, Loader2, Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,10 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Sparkles, Check, Edit2 } from "lucide-react";
 
 interface PreviewGenerationDialogProps {
   isOpen: boolean;
@@ -104,12 +104,7 @@ export function PreviewGenerationDialog({
                 <div className="flex items-center justify-between">
                   <h4 className="text-sm font-medium">Preview Text</h4>
                   {!isEditing && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleEdit}
-                      className="h-7 text-xs"
-                    >
+                    <Button variant="ghost" size="sm" onClick={handleEdit} className="h-7 text-xs">
                       <Edit2 className="h-3 w-3 mr-1" />
                       Edit
                     </Button>
@@ -155,8 +150,7 @@ export function PreviewGenerationDialog({
                       {editedPreview || generatedPreview}
                     </p>
                     <p className="text-xs text-muted-foreground mt-2">
-                      {(editedPreview || generatedPreview).length}/280
-                      characters
+                      {(editedPreview || generatedPreview).length}/280 characters
                     </p>
                   </div>
                 )}
@@ -164,8 +158,8 @@ export function PreviewGenerationDialog({
 
               <Alert>
                 <AlertDescription className="text-xs">
-                  This preview will be shown to non-members and in post
-                  listings. It helps readers understand what your post is about.
+                  This preview will be shown to non-members and in post listings. It helps readers
+                  understand what your post is about.
                 </AlertDescription>
               </Alert>
             </div>

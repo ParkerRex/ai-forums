@@ -1,8 +1,8 @@
 "use client";
 
-import * as React from "react";
 import type { Variants } from "framer-motion";
 import { motion, useAnimation } from "framer-motion";
+import type * as React from "react";
 import type { HTMLAttributes } from "react";
 import { forwardRef, useCallback, useImperativeHandle, useRef } from "react";
 import { cn } from "@/lib/utils";
@@ -73,7 +73,7 @@ const LinkIcon = forwardRef<LinkIconHandle, LinkIconProps>(
         className={cn(className)}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        style={{ display: 'inline-block' }}
+        style={{ display: "inline-block" }}
         {...props}
       >
         <svg

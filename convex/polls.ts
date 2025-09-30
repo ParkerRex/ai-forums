@@ -1,8 +1,8 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+import { ensureUniqueSlug, generateSlug } from "../lib/slug-utils";
+import type { Id } from "./_generated/dataModel";
+import { mutation, query } from "./_generated/server";
 import { getAuthenticatedMember } from "./auth";
-import { generateSlug, ensureUniqueSlug } from "../lib/slug-utils";
 
 // Create a new poll post
 export const createPollPost = mutation({
@@ -10,16 +10,15 @@ export const createPollPost = mutation({
     title: v.string(),
     content: v.string(),
     categoryId: v.id("categories"),
-    pollOptions: v.array(v.object({
-      id: v.string(),
-      text: v.string(),
-    })),
-    pollDuration: v.optional(v.union(
-      v.literal("24h"),
-      v.literal("3d"),
-      v.literal("7d"),
-      v.literal("unlimited")
-    )),
+    pollOptions: v.array(
+      v.object({
+        id: v.string(),
+        text: v.string(),
+      }),
+    ),
+    pollDuration: v.optional(
+      v.union(v.literal("24h"), v.literal("3d"), v.literal("7d"), v.literal("unlimited")),
+    ),
     preview: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
@@ -66,21 +65,18 @@ export const createPollPost = mutation({
 
     // Generate unique slug
     const baseSlug = generateSlug(args.title);
-    const posts = await ctx.db
-      .query("posts")
-      .withIndex("by_slug")
-      .collect();
+    const posts = await ctx.db.query("posts").withIndex("by_slug").collect();
     const existingSlugs = posts
-      .map(p => p.slug)
+      .map((p) => p.slug)
       .filter((slug): slug is string => slug !== undefined);
     const slug = ensureUniqueSlug(baseSlug, existingSlugs);
 
     const now = Date.now();
 
     // Create poll options with initial vote count
-    const pollOptionsWithVotes = args.pollOptions.map(option => ({
+    const pollOptionsWithVotes = args.pollOptions.map((option) => ({
       ...option,
-      voteCount: 0
+      voteCount: 0,
     }));
 
     // Create the poll post
@@ -146,7 +142,7 @@ export const voteOnPoll = mutation({
 
     // Validate option exists
     const pollOptions = post.pollOptions || [];
-    const optionIndex = pollOptions.findIndex(opt => opt.id === args.optionId);
+    const optionIndex = pollOptions.findIndex((opt) => opt.id === args.optionId);
     if (optionIndex === -1) {
       throw new Error("Invalid poll option");
     }
@@ -154,9 +150,7 @@ export const voteOnPoll = mutation({
     // Check if user has already voted
     const existingVote = await ctx.db
       .query("pollVotes")
-      .withIndex("by_user_and_poll", q => 
-        q.eq("userId", member._id).eq("pollId", args.pollId)
-      )
+      .withIndex("by_user_and_poll", (q) => q.eq("userId", member._id).eq("pollId", args.pollId))
       .first();
 
     // If changing vote, update the vote counts
@@ -167,9 +161,12 @@ export const voteOnPoll = mutation({
       }
 
       // Find old option and decrease its count
-      const oldOptionIndex = pollOptions.findIndex(opt => opt.id === existingVote.optionId);
+      const oldOptionIndex = pollOptions.findIndex((opt) => opt.id === existingVote.optionId);
       if (oldOptionIndex !== -1) {
-        pollOptions[oldOptionIndex].voteCount = Math.max(0, pollOptions[oldOptionIndex].voteCount - 1);
+        pollOptions[oldOptionIndex].voteCount = Math.max(
+          0,
+          pollOptions[oldOptionIndex].voteCount - 1,
+        );
       }
 
       // Update vote record
@@ -200,7 +197,7 @@ export const voteOnPoll = mutation({
       updatedAt: Date.now(),
     });
 
-    return { success: true, changed: existingVote ? true : false };
+    return { success: true, changed: !!existingVote };
   },
 });
 
@@ -219,19 +216,22 @@ export const getPollVotes = query({
     // Get all votes for this poll
     const votes = await ctx.db
       .query("pollVotes")
-      .withIndex("by_poll", q => q.eq("pollId", args.pollId))
+      .withIndex("by_poll", (q) => q.eq("pollId", args.pollId))
       .collect();
 
     // Get member information for each vote
-    const votesByOption: Record<string, Array<{
-      memberId: Id<"members">;
-      firstName: string;
-      lastName: string;
-      email: string;
-      slug: string;
-      avatarUrl?: string;
-      votedAt: number;
-    }>> = {};
+    const votesByOption: Record<
+      string,
+      Array<{
+        memberId: Id<"members">;
+        firstName: string;
+        lastName: string;
+        email: string;
+        slug: string;
+        avatarUrl?: string;
+        votedAt: number;
+      }>
+    > = {};
 
     // Initialize empty arrays for each option
     if (post.pollOptions) {
@@ -241,7 +241,7 @@ export const getPollVotes = query({
     }
 
     // Fetch all member data in parallel
-    const memberPromises = votes.map(vote => ctx.db.get(vote.userId));
+    const memberPromises = votes.map((vote) => ctx.db.get(vote.userId));
     const members = await Promise.all(memberPromises);
 
     // Group votes by option with member info
@@ -287,8 +287,8 @@ export const getPollResults = query({
     if (args.userId) {
       userVote = await ctx.db
         .query("pollVotes")
-        .withIndex("by_user_and_poll", q => 
-          q.eq("userId", args.userId!).eq("pollId", args.pollId)
+        .withIndex("by_user_and_poll", (q) =>
+          q.eq("userId", args.userId!).eq("pollId", args.pollId),
         )
         .first();
     }

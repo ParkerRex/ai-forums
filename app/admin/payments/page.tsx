@@ -1,33 +1,22 @@
 "use client";
 
-import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import type { PaymentWithMember, PaymentStats } from "@/types/admin";
-import { format, subDays, startOfDay, endOfDay } from "date-fns";
+import { endOfDay, format, startOfDay, subDays } from "date-fns";
 import {
-  DollarSign,
-  TrendingUp,
-  CreditCard,
-  RefreshCw,
-  Download,
   Calendar,
-  Filter,
   CheckCircle,
-  XCircle,
   Clock,
+  CreditCard,
+  DollarSign,
+  Download,
   ExternalLink,
+  Filter,
+  RefreshCw,
+  TrendingUp,
+  XCircle,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useState } from "react";
+import { PaymentDetailsModal } from "@/components/admin/payment-details-modal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -37,7 +26,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { PaymentDetailsModal } from "@/components/admin/payment-details-modal";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
+import type { PaymentStats, PaymentWithMember } from "@/types/admin";
 
 const paymentStatusConfig = {
   succeeded: {
@@ -64,15 +64,9 @@ const paymentStatusConfig = {
 };
 
 export default function AdminPaymentsPage() {
-  const [selectedPaymentId, setSelectedPaymentId] =
-    useState<Id<"payments"> | null>(null);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<Id<"payments"> | null>(null);
   const [statusFilter, setStatusFilter] = useState<
-    | "all"
-    | "pending"
-    | "succeeded"
-    | "failed"
-    | "refunded"
-    | "partially_refunded"
+    "all" | "pending" | "succeeded" | "failed" | "refunded" | "partially_refunded"
   >("all");
   const [dateRange, setDateRange] = useState("30");
 
@@ -81,7 +75,7 @@ export default function AdminPaymentsPage() {
   const startDate =
     dateRange === "all"
       ? undefined
-      : startOfDay(subDays(endDate, parseInt(dateRange))).getTime();
+      : startOfDay(subDays(endDate, parseInt(dateRange, 10))).getTime();
 
   const payments = useQuery(api.admin.payments.getAllPayments, {
     status: statusFilter === "all" ? undefined : statusFilter,
@@ -108,20 +102,10 @@ export default function AdminPaymentsPage() {
       refunded: p.refundedAmount ? (p.refundedAmount / 100).toFixed(2) : "0",
     }));
 
-    const headers = [
-      "date",
-      "customer",
-      "amount",
-      "status",
-      "method",
-      "description",
-      "refunded",
-    ];
+    const headers = ["date", "customer", "amount", "status", "method", "description", "refunded"];
     const csv = [
       headers.join(","),
-      ...data.map((row) =>
-        headers.map((key) => `"${row[key as keyof typeof row]}"`).join(","),
-      ),
+      ...data.map((row) => headers.map((key) => `"${row[key as keyof typeof row]}"`).join(",")),
     ].join("\n");
 
     const blob = new Blob([csv], { type: "text/csv" });
@@ -150,9 +134,7 @@ export default function AdminPaymentsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold text-gray-900">Payments</h1>
-            <p className="mt-1 text-gray-600">
-              View payment history and process refunds
-            </p>
+            <p className="mt-1 text-gray-600">View payment history and process refunds</p>
           </div>
           <Button onClick={exportPayments} variant="outline">
             <Download className="mr-2 h-4 w-4" />
@@ -170,9 +152,7 @@ export default function AdminPaymentsPage() {
               <p className="mt-1 text-2xl font-bold text-gray-900">
                 {stats.revenue.formattedGross}
               </p>
-              <p className="mt-1 text-xs text-gray-500">
-                Before fees & refunds
-              </p>
+              <p className="mt-1 text-xs text-gray-500">Before fees & refunds</p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-none bg-green-100">
               <DollarSign className="h-6 w-6 text-green-600" />
@@ -184,9 +164,7 @@ export default function AdminPaymentsPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-sm font-medium text-gray-600">Net Revenue</p>
-              <p className="mt-1 text-2xl font-bold text-gray-900">
-                {stats.revenue.formattedNet}
-              </p>
+              <p className="mt-1 text-2xl font-bold text-gray-900">{stats.revenue.formattedNet}</p>
               <p className="mt-1 text-xs text-gray-500">After fees & refunds</p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-none bg-blue-100">
@@ -202,9 +180,7 @@ export default function AdminPaymentsPage() {
               <p className="mt-1 text-2xl font-bold text-red-600">
                 {stats.revenue.formattedRefunds}
               </p>
-              <p className="mt-1 text-xs text-gray-500">
-                {stats.refundedPayments} payments
-              </p>
+              <p className="mt-1 text-xs text-gray-500">{stats.refundedPayments} payments</p>
             </div>
             <div className="flex h-12 w-12 items-center justify-center rounded-none bg-red-100">
               <RefreshCw className="h-6 w-6 text-red-600" />
@@ -218,10 +194,7 @@ export default function AdminPaymentsPage() {
               <p className="text-sm font-medium text-gray-600">Success Rate</p>
               <p className="mt-1 text-2xl font-bold text-gray-900">
                 {stats.totalPayments > 0
-                  ? (
-                      (stats.successfulPayments / stats.totalPayments) *
-                      100
-                    ).toFixed(1)
+                  ? ((stats.successfulPayments / stats.totalPayments) * 100).toFixed(1)
                   : 0}
                 %
               </p>
@@ -302,9 +275,7 @@ export default function AdminPaymentsPage() {
           <TableBody>
             {payments.map((payment) => {
               const statusInfo =
-                paymentStatusConfig[
-                  payment.status as keyof typeof paymentStatusConfig
-                ];
+                paymentStatusConfig[payment.status as keyof typeof paymentStatusConfig];
               const StatusIcon = statusInfo.icon;
 
               return (
@@ -321,30 +292,22 @@ export default function AdminPaymentsPage() {
                         <div className="font-medium">
                           {payment.member.firstName} {payment.member.lastName}
                         </div>
-                        <div className="text-sm text-gray-500">
-                          {payment.member.email}
-                        </div>
+                        <div className="text-sm text-gray-500">{payment.member.email}</div>
                       </div>
                     ) : (
                       <span className="text-gray-400">Unknown</span>
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="font-medium">
-                      ${(payment.amount / 100).toFixed(2)}
-                    </div>
+                    <div className="font-medium">${(payment.amount / 100).toFixed(2)}</div>
                     {(payment.refundedAmount ?? 0) > 0 && (
                       <div className="text-xs text-red-600">
-                        -${((payment.refundedAmount ?? 0) / 100).toFixed(2)}{" "}
-                        refunded
+                        -${((payment.refundedAmount ?? 0) / 100).toFixed(2)} refunded
                       </div>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={cn("text-xs", statusInfo.color)}
-                    >
+                    <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
                       <StatusIcon className="mr-1 h-3 w-3" />
                       {statusInfo.label}
                     </Badge>
@@ -352,8 +315,7 @@ export default function AdminPaymentsPage() {
                   <TableCell className="text-sm">
                     <div className="flex items-center gap-1">
                       <CreditCard className="h-3 w-3 text-gray-400" />
-                      {payment.paymentMethod.brand} ••••{" "}
-                      {payment.paymentMethod.last4}
+                      {payment.paymentMethod.brand} •••• {payment.paymentMethod.last4}
                     </div>
                   </TableCell>
                   <TableCell className="max-w-xs truncate text-sm text-gray-600">

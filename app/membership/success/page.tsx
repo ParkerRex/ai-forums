@@ -8,14 +8,16 @@ export const metadata = {
 
 export default function SuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse text-center">
-          <div className="h-8 bg-muted rounded w-48 mx-auto mb-4" />
-          <div className="h-4 bg-muted rounded w-64 mx-auto" />
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-pulse text-center">
+            <div className="h-8 bg-muted rounded w-48 mx-auto mb-4" />
+            <div className="h-4 bg-muted rounded w-64 mx-auto" />
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <SuccessPageClient />
     </Suspense>
   );

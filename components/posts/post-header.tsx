@@ -1,20 +1,20 @@
 "use client";
-import React from "react";
-import Link from "next/link";
 import { useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
-import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 import { usePathname } from "next/navigation";
-import PostHeaderSkeleton from "@/components/posts/post-header-skeleton";
-import { HomeIcon, HomeIconHandle } from "@/components/icons/home";
-import { Button } from "@/components/ui/button";
+import React from "react";
 import { ClapIcon } from "@/components/icons/clap";
-import { SquareStackIcon } from "@/components/icons/square-stack";
-import { FlaskIcon } from "@/components/icons/flask";
 import { FlameIcon } from "@/components/icons/flame";
+import { FlaskIcon } from "@/components/icons/flask";
+import { HomeIcon, type HomeIconHandle } from "@/components/icons/home";
 import { PartyPopperIcon } from "@/components/icons/party-popper";
+import { SquareStackIcon } from "@/components/icons/square-stack";
+import PostHeaderSkeleton from "@/components/posts/post-header-skeleton";
 import { SortPopover } from "@/components/posts/sort-popover";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
 
 interface PostHeaderProps {
   sortBy?: "newest" | "popular" | "trending";
@@ -29,15 +29,17 @@ type CategoryIconRef = {
 
 export default function PostHeader({ sortBy = "newest", onSortChange }: PostHeaderProps) {
   const homeIconRef = React.useRef<HomeIconHandle>(null);
-  const categoryIconRefs = React.useRef<{[key: string]: CategoryIconRef | null}>({});
-  const categories = useQuery(api.categories.getCategories) as Array<{
-    _id: Id<"categories">;
-    name: string;
-    displayName: string;
-    description: string;
-    icon?: string;
-    postCount: number;
-  }> | undefined;
+  const categoryIconRefs = React.useRef<{ [key: string]: CategoryIconRef | null }>({});
+  const categories = useQuery(api.categories.getCategories) as
+    | Array<{
+        _id: Id<"categories">;
+        name: string;
+        displayName: string;
+        description: string;
+        icon?: string;
+        postCount: number;
+      }>
+    | undefined;
   const pathname = usePathname();
 
   // Show skeleton while categories are loading
@@ -46,22 +48,24 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
   }
 
   // Icon mapping for categories
-  const getCategoryIcon = (categoryName: string, isActive: boolean, categoryId: string) => {
+  const getCategoryIcon = (categoryName: string, _isActive: boolean, categoryId: string) => {
     const iconProps = {
       size: 16,
-      ref: (ref: CategoryIconRef | null) => { categoryIconRefs.current[categoryId] = ref; }
+      ref: (ref: CategoryIconRef | null) => {
+        categoryIconRefs.current[categoryId] = ref;
+      },
     };
 
     switch (categoryName) {
-      case 'content':
+      case "content":
         return <ClapIcon {...iconProps} />;
-      case 'connect':
+      case "connect":
         return <SquareStackIcon {...iconProps} />;
-      case 'prompts':
+      case "prompts":
         return <FlaskIcon {...iconProps} />;
-      case 'workflows':
+      case "workflows":
         return <FlameIcon {...iconProps} />;
-      case 'announcements':
+      case "announcements":
         return <PartyPopperIcon {...iconProps} />;
       default:
         return null;
@@ -88,7 +92,7 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
           <Button
             variant="ghost"
             size="sm"
-            className={`px-2 ${pathname === '/' ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
+            className={`px-2 ${pathname === "/" ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
             onMouseEnter={() => homeIconRef.current?.startAnimation()}
             onMouseLeave={() => homeIconRef.current?.stopAnimation()}
             asChild
@@ -102,9 +106,7 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
           {/* Category Tabs */}
           {categories === undefined ? (
             // Loading state
-            [...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-8 w-20" />
-            ))
+            [...Array(5)].map((_, i) => <Skeleton key={i} className="h-8 w-20" />)
           ) : categories?.length === 0 ? (
             <span className="text-muted-foreground text-sm">No categories available</span>
           ) : (
@@ -119,9 +121,9 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
                   className={`px-2 ${isActive ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
                   asChild
                 >
-                  <Link 
-                    href={`/${category.name}`} 
-                    className="flex items-center gap-1" 
+                  <Link
+                    href={`/${category.name}`}
+                    className="flex items-center gap-1"
                     prefetch={true}
                     onMouseEnter={() => handleCategoryIconAnimation(category._id, true)}
                     onMouseLeave={() => handleCategoryIconAnimation(category._id, false)}
@@ -137,10 +139,7 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
           {/* Sort Options */}
           {onSortChange && (
             <div className="ml-6">
-              <SortPopover
-                sortBy={sortBy}
-                onSortChange={onSortChange}
-              />
+              <SortPopover sortBy={sortBy} onSortChange={onSortChange} />
             </div>
           )}
         </div>

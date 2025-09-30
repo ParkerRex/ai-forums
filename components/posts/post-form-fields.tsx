@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useCallback, lazy, Suspense, useEffect } from "react";
-import { useQuery, useAction } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Id } from "@/convex/_generated/dataModel";
+import { useAction, useQuery } from "convex/react";
+import { FileText, Image as ImageIcon, Link, Upload, X } from "lucide-react";
+import Image from "next/image";
+import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,27 +16,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { api } from "@/convex/_generated/api";
+import type { Id } from "@/convex/_generated/dataModel";
+import { getCharacterCountInfo, type PostFormData, validatePostForm } from "@/lib/form-validation";
 import {
-  PostFormData,
-  validatePostForm,
-  getCharacterCountInfo,
-} from "@/lib/form-validation";
-import {
-  // uploadMedia,
-  validateMediaFile,
   getFilePreviewUrl,
   revokeFilePreviewUrl,
+  // uploadMedia,
+  validateMediaFile,
 } from "@/lib/upload-media";
-import { FileText, Image as ImageIcon, Link, Upload, X } from "lucide-react";
-import Image from "next/image";
-import { toast } from "sonner";
 
 // Lazy load heavy components
-const RichTextEditor = lazy(
-  () => import("@/components/posts/rich-text-editor"),
-);
+const RichTextEditor = lazy(() => import("@/components/posts/rich-text-editor"));
 const PostPreview = lazy(() => import("@/components/posts/post-preview"));
 
 // Extended form data with media/link fields
@@ -238,7 +232,7 @@ export function PostFormFields({
       onFormDataChange({ linkUrl: url });
 
       // Fetch link preview if valid URL
-      if (url && url.match(/^https?:\/\/.+/)) {
+      if (url?.match(/^https?:\/\/.+/)) {
         try {
           const preview = await fetchLinkPreview({ url });
           if (preview) {
@@ -274,11 +268,7 @@ export function PostFormFields({
   return (
     <div className="space-y-6">
       {/* Post Type Tabs */}
-      <Tabs
-        value={formData.type}
-        onValueChange={handleTypeChange}
-        className="w-full"
-      >
+      <Tabs value={formData.type} onValueChange={handleTypeChange} className="w-full">
         <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="text" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -457,9 +447,7 @@ export function PostFormFields({
                       <div className="relative">
                         {formData.type === "image" ? (
                           <Image
-                            src={
-                              (mediaPreviewUrl || formData.mediaUrl) as string
-                            }
+                            src={(mediaPreviewUrl || formData.mediaUrl) as string}
                             alt="Media preview"
                             width={400}
                             height={256}
@@ -573,9 +561,7 @@ export function PostFormFields({
                 <CardContent className="p-4">
                   <h4 className="font-semibold">{formData.linkTitle}</h4>
                   {formData.linkDescription && (
-                    <p className="text-muted-foreground mt-1 text-sm">
-                      {formData.linkDescription}
-                    </p>
+                    <p className="text-muted-foreground mt-1 text-sm">{formData.linkDescription}</p>
                   )}
                   {formData.linkImage && (
                     <Image

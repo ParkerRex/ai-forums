@@ -1,19 +1,25 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { Button } from "@/components/ui/button"
-import type React from "react"
+import Link from "next/link";
+import type React from "react";
+import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface HeaderIconLinkProps {
-  href: string
-  tooltip: string
-  children: React.ReactNode
-  onMouseEnter?: () => void
-  onMouseLeave?: () => void
+  href: string;
+  tooltip: string;
+  children: React.ReactNode;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
-export const HeaderIconLink = ({ href, tooltip, children, onMouseEnter, onMouseLeave }: HeaderIconLinkProps) => {
+export const HeaderIconLink = ({
+  href,
+  tooltip,
+  children,
+  onMouseEnter,
+  onMouseLeave,
+}: HeaderIconLinkProps) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -34,5 +40,5 @@ export const HeaderIconLink = ({ href, tooltip, children, onMouseEnter, onMouseL
         <p>{tooltip}</p>
       </TooltipContent>
     </Tooltip>
-  )
-}
+  );
+};

@@ -1,6 +1,6 @@
 /**
  * Formatting Utilities
- * 
+ *
  * Centralized formatting functions for consistent display
  * across the application
  */
@@ -11,7 +11,7 @@
 export function formatCurrency(
   amount: number,
   currency: string = "USD",
-  locale: string = "en-US"
+  locale: string = "en-US",
 ): string {
   return new Intl.NumberFormat(locale, {
     style: "currency",
@@ -27,7 +27,7 @@ export function formatCurrency(
 export function formatCentsAsCurrency(
   amountInCents: number,
   currency: string = "USD",
-  locale: string = "en-US"
+  locale: string = "en-US",
 ): string {
   return formatCurrency(amountInCents / 100, currency, locale);
 }
@@ -38,15 +38,18 @@ export function formatCentsAsCurrency(
 export function formatDate(
   date: Date | string | number,
   options?: Intl.DateTimeFormatOptions,
-  locale: string = "en-US"
+  locale: string = "en-US",
 ): string {
   const dateObj = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
-  
-  return dateObj.toLocaleDateString(locale, options || {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
+
+  return dateObj.toLocaleDateString(
+    locale,
+    options || {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    },
+  );
 }
 
 /**
@@ -56,7 +59,7 @@ export function formatRelativeTime(date: Date | string | number): string {
   const dateObj = typeof date === "string" || typeof date === "number" ? new Date(date) : date;
   const now = new Date();
   const diffInSeconds = Math.floor((now.getTime() - dateObj.getTime()) / 1000);
-  
+
   if (diffInSeconds < 60) return "just now";
   if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)} minutes ago`;
   if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)} hours ago`;
@@ -76,6 +79,6 @@ export function formatTierName(tier: string): string {
     scholarship: "Scholarship",
     free: "Free",
   };
-  
+
   return tierNames[tier] || tier;
 }

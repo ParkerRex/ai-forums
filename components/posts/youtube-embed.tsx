@@ -1,16 +1,13 @@
 "use client";
 
-import React from "react";
+import type React from "react";
 
 interface YouTubeEmbedProps {
   videoId: string;
   title?: string;
 }
 
-export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({
-  videoId,
-  title,
-}) => {
+export const YouTubeEmbed: React.FC<YouTubeEmbedProps> = ({ videoId, title }) => {
   return (
     <div className="relative mb-6 aspect-video overflow-hidden rounded-none">
       <iframe

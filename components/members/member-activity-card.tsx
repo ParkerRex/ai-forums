@@ -1,9 +1,9 @@
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { useRef } from "react";
 import { ArrowBigUpIcon } from "@/components/icons/arrow-big-up";
 import { MessageSquareIcon } from "@/components/icons/message-square";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useRef } from "react";
 
 interface MemberActivityCardProps {
   activity: {
@@ -20,10 +20,7 @@ interface MemberActivityCardProps {
   size?: "small" | "medium" | "large";
 }
 
-export default function MemberActivityCard({
-  activity,
-  size = "medium",
-}: MemberActivityCardProps) {
+export default function MemberActivityCard({ activity, size = "medium" }: MemberActivityCardProps) {
   const router = useRouter();
 
   // Refs for animated icons
@@ -59,9 +56,7 @@ export default function MemberActivityCard({
         <div className="text-muted-foreground mb-1 flex items-center gap-2 text-xs">
           <MessageSquareIcon size={12} />
           <span>Commented on</span>
-          <span className="text-foreground truncate font-medium">
-            {activity.postTitle}
-          </span>
+          <span className="text-foreground truncate font-medium">{activity.postTitle}</span>
         </div>
 
         {/* Comment content */}
@@ -80,11 +75,7 @@ export default function MemberActivityCard({
         <div className="text-muted-foreground mt-2 flex items-center space-x-3 text-xs">
           {/* Vote count (read-only for activity) */}
           <div className="flex items-center px-2 py-1">
-            <ArrowBigUpIcon
-              ref={upvoteIconRef}
-              size={12}
-              className="text-muted-foreground mr-1"
-            />
+            <ArrowBigUpIcon ref={upvoteIconRef} size={12} className="text-muted-foreground mr-1" />
             <span className="font-medium">{activity.netVotes}</span>
           </div>
 
@@ -103,11 +94,7 @@ export default function MemberActivityCard({
             onMouseEnter={() => commentIconRef.current?.startAnimation()}
             onMouseLeave={() => commentIconRef.current?.stopAnimation()}
           >
-            <MessageSquareIcon
-              ref={commentIconRef}
-              size={12}
-              className="mr-1"
-            />
+            <MessageSquareIcon ref={commentIconRef} size={12} className="mr-1" />
             <span className="font-medium">View thread</span>
           </Button>
         </div>

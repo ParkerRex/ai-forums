@@ -2,14 +2,14 @@
  * @fileoverview Country Detection Module - AI-powered country detection from location strings
  */
 
-import { action, internalAction, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import OpenAI from "openai";
 import { internal } from "./_generated/api";
+import { action, internalAction, internalMutation } from "./_generated/server";
 
 /**
  * Detects country from a location string using OpenAI's GPT-4o-mini model.
- * 
+ *
  * @param location - The location string (e.g., "San Francisco, CA", "London", "東京")
  * @returns ISO 3166-1 alpha-2 country code or null if not detected
  */
@@ -17,7 +17,7 @@ export const detectCountryFromLocationAI = action({
   args: {
     location: v.string(),
   },
-  handler: async (ctx, { location }) => {
+  handler: async (_ctx, { location }) => {
     // Get OpenAI API key from environment
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -60,14 +60,14 @@ Examples:
       });
 
       const countryCode = completion.choices[0]?.message?.content?.trim().toUpperCase();
-      
+
       // Validate the response is a 2-letter code
       if (countryCode && countryCode.length === 2 && /^[A-Z]{2}$/.test(countryCode)) {
         return countryCode;
       } else if (countryCode === "UNKNOWN") {
         return null;
       }
-      
+
       return null;
     } catch (error) {
       console.error("Error detecting country with AI:", error);
@@ -83,7 +83,7 @@ export const detectCountryFromLocationAIInternal = internalAction({
   args: {
     location: v.string(),
   },
-  handler: async (ctx, { location }) => {
+  handler: async (_ctx, { location }) => {
     // Get OpenAI API key from environment
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
@@ -126,14 +126,14 @@ Examples:
       });
 
       const countryCode = completion.choices[0]?.message?.content?.trim().toUpperCase();
-      
+
       // Validate the response is a 2-letter code
       if (countryCode && countryCode.length === 2 && /^[A-Z]{2}$/.test(countryCode)) {
         return countryCode;
       } else if (countryCode === "UNKNOWN") {
         return null;
       }
-      
+
       return null;
     } catch (error) {
       console.error("Error detecting country with AI:", error);
@@ -193,7 +193,7 @@ Examples:
       });
 
       const countryCode = completion.choices[0]?.message?.content?.trim().toUpperCase();
-      
+
       // Validate the response is a 2-letter code
       if (countryCode && countryCode.length === 2 && /^[A-Z]{2}$/.test(countryCode)) {
         // Update the member record

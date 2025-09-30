@@ -1,15 +1,15 @@
 /**
  * @fileoverview News Search API Route
- * 
+ *
  * This API endpoint provides news search functionality using the Exa AI search service.
  * It searches for recent news articles based on user queries and returns structured
  * results with content summaries and metadata. The endpoint is optimized for news
  * content with a focus on recent articles published within the last 7 days.
- * 
+ *
  * @route POST /api/news
  * @requires EXA_API_KEY environment variable for Exa AI service authentication
  * @returns {object} JSON response containing search results from Exa AI
- * 
+ *
  * @example
  * ```typescript
  * // Request body
@@ -18,7 +18,7 @@
  *   "numResults": 10,
  *   "includeDomains": ["techcrunch.com", "wired.com"]
  * }
- * 
+ *
  * // Success response (structure depends on Exa AI API)
  * {
  *   "results": [
@@ -32,29 +32,29 @@
  *   ],
  *   "totalResults": 1
  * }
- * 
+ *
  * // Error response
  * {
  *   "error": "EXA API key not configured"
  * }
  * ```
- * 
+ *
  * @author VAI Team
  * @since 1.0.0
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * Searches for news articles using the Exa AI search service.
- * 
+ *
  * This endpoint accepts search queries and optional parameters to find relevant
  * news articles from the past 7 days. It leverages Exa AI's specialized search
  * capabilities to provide high-quality, recent news content with summaries.
- * 
+ *
  * @param {NextRequest} request - The incoming HTTP request containing search parameters
  * @returns {Promise<NextResponse>} JSON response with search results from Exa AI
- * 
+ *
  * @example
  * ```typescript
  * // POST /api/news
@@ -69,15 +69,15 @@ import { NextRequest, NextResponse } from 'next/server';
  * });
  * const news = await response.json();
  * ```
- * 
+ *
  * @throws {Error} When EXA_API_KEY environment variable is not configured
  * @throws {Error} When Exa AI API request fails
- * 
+ *
  * @security
  * - Requires valid EXA_API_KEY environment variable
  * - API key is passed securely via headers
  * - Request data is validated before processing
- * 
+ *
  * @search_parameters
  * - query: Search terms for finding relevant news articles
  * - numResults: Number of results to return (default: 10)
@@ -94,20 +94,20 @@ export async function POST(request: NextRequest) {
     // This key is required for authenticated requests to Exa AI's search service
     const apiKey = process.env.EXA_API_KEY;
     if (!apiKey) {
-      console.error('EXA_API_KEY not found in environment variables');
-      return NextResponse.json({ error: 'EXA API key not configured' }, { status: 500 });
+      console.error("EXA_API_KEY not found in environment variables");
+      return NextResponse.json({ error: "EXA API key not configured" }, { status: 500 });
     }
 
     // Construct request body for Exa AI search API
     // Configuration optimized for news content with recent articles
     const requestBody = {
-      query,                    // User's search query
-      category: 'news',         // Restrict to news category for relevant results
-      numResults,              // Number of results to return (default: 10)
-      includeDomains,          // Optional domain filtering for trusted sources
+      query, // User's search query
+      category: "news", // Restrict to news category for relevant results
+      numResults, // Number of results to return (default: 10)
+      includeDomains, // Optional domain filtering for trusted sources
       contents: {
-        text: true,            // Include full article text when available
-        summary: true,         // Include AI-generated summaries
+        text: true, // Include full article text when available
+        summary: true, // Include AI-generated summaries
       },
       // Only search for articles published within the last 7 days
       // This ensures content freshness and relevance
@@ -115,11 +115,11 @@ export async function POST(request: NextRequest) {
     };
 
     // Make authenticated request to Exa AI search API
-    const response = await fetch('https://api.exa.ai/search', {
-      method: 'POST',
+    const response = await fetch("https://api.exa.ai/search", {
+      method: "POST",
       headers: {
-        'x-api-key': apiKey,           // Authentication header
-        'Content-Type': 'application/json',
+        "x-api-key": apiKey, // Authentication header
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(requestBody),
     });
@@ -127,7 +127,7 @@ export async function POST(request: NextRequest) {
     // Handle Exa AI API errors gracefully
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('EXA API error:', response.status, response.statusText);
+      console.error("EXA API error:", response.status, response.statusText);
       throw new Error(`EXA API error: ${response.status} - ${errorText}`);
     }
 
@@ -137,7 +137,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(data);
   } catch (error) {
     // Log errors for debugging while providing user-friendly error messages
-    console.error('News API error:', error);
-    return NextResponse.json({ error: 'Failed to fetch news' }, { status: 500 });
+    console.error("News API error:", error);
+    return NextResponse.json({ error: "Failed to fetch news" }, { status: 500 });
   }
 }

@@ -1,26 +1,25 @@
 "use client";
 
-import { useMemo } from "react";
 import {
-  DndContext,
   closestCenter,
+  DndContext,
+  type DragEndEvent,
+  DragOverlay,
+  type DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
-  DragEndEvent,
-  DragStartEvent,
-  DragOverlay,
 } from "@dnd-kit/core";
 import {
   arrayMove,
+  rectSortingStrategy,
   SortableContext,
   sortableKeyboardCoordinates,
-  rectSortingStrategy,
 } from "@dnd-kit/sortable";
-import { MediaItem } from "@/types";
+import { useMemo, useState } from "react";
+import type { MediaItem } from "@/types";
 import { MediaPreviewItem } from "./media-preview-item";
-import { useState } from "react";
 
 interface MediaPreviewGridProps {
   media: MediaItem[];
@@ -48,10 +47,7 @@ export function MediaPreviewGrid({
     }),
   );
 
-  const sortedMedia = useMemo(
-    () => [...media].sort((a, b) => a.order - b.order),
-    [media],
-  );
+  const sortedMedia = useMemo(() => [...media].sort((a, b) => a.order - b.order), [media]);
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id as string);
@@ -93,10 +89,7 @@ export function MediaPreviewGrid({
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <SortableContext
-        items={sortedMedia.map((item) => item.id)}
-        strategy={rectSortingStrategy}
-      >
+      <SortableContext items={sortedMedia.map((item) => item.id)} strategy={rectSortingStrategy}>
         <div className="relative">
           {media.length > 12 && (
             <div className="text-muted-foreground mb-2 text-xs">

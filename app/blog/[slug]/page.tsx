@@ -1,13 +1,13 @@
-import { notFound } from "next/navigation";
-import { getPostBySlug, getAllPostSlugs } from "@/lib/blog";
-import { compileMDX } from "next-mdx-remote/rsc";
+import type { Element } from "hast";
 import Link from "next/link";
-import { HTMLAttributes, AnchorHTMLAttributes } from "react";
+import { notFound } from "next/navigation";
+import { compileMDX } from "next-mdx-remote/rsc";
+import type { AnchorHTMLAttributes, HTMLAttributes } from "react";
+import rehypePrettyCode from "rehype-pretty-code";
 import { CodeBlock, InlineCode } from "@/components/mdx/code-block";
 import { YouTubeEmbed } from "@/components/mdx/youtube-embed";
 import { LinkPreview } from "@/components/ui/link-preview";
-import rehypePrettyCode from "rehype-pretty-code";
-import type { Element } from "hast";
+import { getAllPostSlugs, getPostBySlug } from "@/lib/blog";
 import "@/styles/highlight-overrides.css";
 
 interface BlogPostPageProps {
@@ -25,34 +25,19 @@ type AnchorProps = AnchorHTMLAttributes<HTMLAnchorElement>;
 
 // Custom components for MDX
 const components = {
-  h1: (props: HeadingProps) => (
-    <h1 className="mb-4 mt-8 text-3xl font-bold" {...props} />
-  ),
-  h2: (props: HeadingProps) => (
-    <h2 className="mb-3 mt-6 text-2xl font-bold" {...props} />
-  ),
-  h3: (props: HeadingProps) => (
-    <h3 className="mb-2 mt-4 text-xl font-bold" {...props} />
-  ),
+  h1: (props: HeadingProps) => <h1 className="mb-4 mt-8 text-3xl font-bold" {...props} />,
+  h2: (props: HeadingProps) => <h2 className="mb-3 mt-6 text-2xl font-bold" {...props} />,
+  h3: (props: HeadingProps) => <h3 className="mb-2 mt-4 text-xl font-bold" {...props} />,
   p: (props: ParagraphProps) => <p className="mb-4 leading-7" {...props} />,
-  ul: (props: ListProps) => (
-    <ul className="mb-4 list-inside list-disc space-y-1" {...props} />
-  ),
-  ol: (props: ListProps) => (
-    <ol className="mb-4 list-inside list-decimal space-y-1" {...props} />
-  ),
+  ul: (props: ListProps) => <ul className="mb-4 list-inside list-disc space-y-1" {...props} />,
+  ol: (props: ListProps) => <ol className="mb-4 list-inside list-decimal space-y-1" {...props} />,
   li: (props: ListItemProps) => <li className="ml-4" {...props} />,
   code: InlineCode,
   pre: CodeBlock,
   blockquote: (props: BlockquoteProps) => (
-    <blockquote
-      className="border-border mb-4 border-l-4 pl-4 italic"
-      {...props}
-    />
+    <blockquote className="border-border mb-4 border-l-4 pl-4 italic" {...props} />
   ),
-  a: (props: AnchorProps) => (
-    <a className="text-primary hover:underline" {...props} />
-  ),
+  a: (props: AnchorProps) => <a className="text-primary hover:underline" {...props} />,
   LinkPreview,
   YouTubeEmbed,
 };
@@ -115,17 +100,9 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                     node.properties = node.properties || {};
                     const existingClasses = node.properties.className;
                     if (Array.isArray(existingClasses)) {
-                      node.properties.className = [
-                        ...existingClasses,
-                        "group",
-                        "relative",
-                      ];
+                      node.properties.className = [...existingClasses, "group", "relative"];
                     } else if (typeof existingClasses === "string") {
-                      node.properties.className = [
-                        existingClasses,
-                        "group",
-                        "relative",
-                      ];
+                      node.properties.className = [existingClasses, "group", "relative"];
                     } else {
                       node.properties.className = ["group", "relative"];
                     }

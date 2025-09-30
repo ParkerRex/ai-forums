@@ -1,30 +1,27 @@
 "use client";
 
-import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useConvex, useQuery } from "convex/react";
-import { api } from "@/convex/_generated/api";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MarkdownRenderer } from "@/components/posts/markdown-renderer";
 import {
   Bold,
+  Code,
+  FileCode,
   Italic,
   Link,
-  ListOrdered,
   List,
-  Code,
-  Quote,
+  ListOrdered,
   Paperclip,
-  FileCode,
+  Quote,
 } from "lucide-react";
-import {
-  uploadMedia,
-  validateMediaFile,
-  getFilePreviewUrl,
-} from "@/lib/upload-media";
+import type React from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { MarkdownRenderer } from "@/components/posts/markdown-renderer";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { api } from "@/convex/_generated/api";
+import { getFilePreviewUrl, uploadMedia, validateMediaFile } from "@/lib/upload-media";
+import { cn } from "@/lib/utils";
 
 type AttachmentType = {
   id: string;
@@ -60,8 +57,7 @@ export function GitHubCommentInput({
 }: GitHubCommentInputProps) {
   const [content, setContent] = useState(initialValue);
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write");
-  const [attachments, setAttachments] =
-    useState<AttachmentType[]>(initialAttachments);
+  const [attachments, setAttachments] = useState<AttachmentType[]>(initialAttachments);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const convex = useConvex();
@@ -78,8 +74,7 @@ export function GitHubCommentInput({
       const selectedText = content.substring(start, end);
       const replacement = `${before}${selectedText}${after}`;
 
-      const newContent =
-        content.substring(0, start) + replacement + content.substring(end);
+      const newContent = content.substring(0, start) + replacement + content.substring(end);
 
       setContent(newContent);
 
@@ -87,10 +82,7 @@ export function GitHubCommentInput({
       setTimeout(() => {
         textarea.focus();
         const newPosition = start + before.length;
-        textarea.setSelectionRange(
-          newPosition,
-          newPosition + selectedText.length,
-        );
+        textarea.setSelectionRange(newPosition, newPosition + selectedText.length);
       }, 0);
     },
     [content],
@@ -154,14 +146,7 @@ export function GitHubCommentInput({
       setContent("");
       setAttachments([]);
     }
-  }, [
-    content,
-    attachments,
-    onSubmit,
-    initialValue,
-    setContent,
-    setAttachments,
-  ]);
+  }, [content, attachments, onSubmit, initialValue, setContent, setAttachments]);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -189,7 +174,7 @@ export function GitHubCommentInput({
             e.preventDefault();
             insertMarkdown("`", "`");
             break;
-          case "j":
+          case "j": {
             e.preventDefault();
             // Insert code block
             const textarea = textareaRef.current;
@@ -198,22 +183,17 @@ export function GitHubCommentInput({
               const end = textarea.selectionEnd;
               const selectedText = content.substring(start, end);
               const codeBlock = `\`\`\`\n${selectedText || "code"}\n\`\`\``;
-              const newContent =
-                content.substring(0, start) +
-                codeBlock +
-                content.substring(end);
+              const newContent = content.substring(0, start) + codeBlock + content.substring(end);
               setContent(newContent);
               setTimeout(() => {
                 // Position cursor inside code block
                 const newPos = start + 4;
-                textarea.setSelectionRange(
-                  newPos,
-                  newPos + (selectedText.length || 4),
-                );
+                textarea.setSelectionRange(newPos, newPos + (selectedText.length || 4));
                 textarea.focus();
               }, 0);
             }
             break;
+          }
           case "enter":
             e.preventDefault();
             handleSubmit();
@@ -232,10 +212,7 @@ export function GitHubCommentInput({
       <Avatar className="h-10 w-10">
         {/* Display member avatar if available */}
         {currentMember?.avatarUrl && (
-          <AvatarImage
-            src={currentMember.avatarUrl}
-            alt={currentMember.firstName || ""}
-          />
+          <AvatarImage src={currentMember.avatarUrl} alt={currentMember.firstName || ""} />
         )}
         <AvatarFallback className="text-sm">
           {currentMember?.firstName?.[0]?.toUpperCase() || "?"}
@@ -347,16 +324,11 @@ export function GitHubCommentInput({
                     const selectedText = content.substring(start, end);
                     const codeBlock = `\`\`\`\n${selectedText || "code"}\n\`\`\``;
                     const newContent =
-                      content.substring(0, start) +
-                      codeBlock +
-                      content.substring(end);
+                      content.substring(0, start) + codeBlock + content.substring(end);
                     setContent(newContent);
                     setTimeout(() => {
                       const newPos = start + 4;
-                      textarea.setSelectionRange(
-                        newPos,
-                        newPos + (selectedText.length || 4),
-                      );
+                      textarea.setSelectionRange(newPos, newPos + (selectedText.length || 4));
                       textarea.focus();
                     }, 0);
                   }
@@ -412,8 +384,7 @@ export function GitHubCommentInput({
                   const beforeCursor = content.substring(0, start);
 
                   // Count ``` before cursor
-                  const codeBlocksBefore = (beforeCursor.match(/```/g) || [])
-                    .length;
+                  const codeBlocksBefore = (beforeCursor.match(/```/g) || []).length;
                   const isInCodeBlock = codeBlocksBefore % 2 === 1;
 
                   if (isInCodeBlock) {
@@ -421,8 +392,7 @@ export function GitHubCommentInput({
                     const spaces = "    ";
                     if (e.shiftKey) {
                       // Shift+Tab - outdent
-                      const lineStart =
-                        content.lastIndexOf("\n", start - 1) + 1;
+                      const lineStart = content.lastIndexOf("\n", start - 1) + 1;
                       const lineContent = content.substring(lineStart, start);
                       if (lineContent.startsWith(spaces)) {
                         const newContent =
@@ -432,23 +402,20 @@ export function GitHubCommentInput({
                         setTimeout(() => {
                           if (textareaRef.current) {
                             const newPos = start - spaces.length;
-                            textareaRef.current.selectionStart =
-                              textareaRef.current.selectionEnd = newPos;
+                            textareaRef.current.selectionStart = textareaRef.current.selectionEnd =
+                              newPos;
                           }
                         }, 0);
                       }
                     } else {
                       // Tab - indent with 4 spaces
                       const newContent =
-                        content.substring(0, start) +
-                        spaces +
-                        content.substring(end);
+                        content.substring(0, start) + spaces + content.substring(end);
                       setContent(newContent);
                       setTimeout(() => {
                         if (textareaRef.current) {
-                          textareaRef.current.selectionStart =
-                            textareaRef.current.selectionEnd =
-                              start + spaces.length;
+                          textareaRef.current.selectionStart = textareaRef.current.selectionEnd =
+                            start + spaces.length;
                         }
                       }, 0);
                     }
@@ -456,15 +423,12 @@ export function GitHubCommentInput({
                     // Outside code block - use 2 spaces
                     const spaces = "  ";
                     const newContent =
-                      content.substring(0, start) +
-                      spaces +
-                      content.substring(end);
+                      content.substring(0, start) + spaces + content.substring(end);
                     setContent(newContent);
                     setTimeout(() => {
                       if (textareaRef.current) {
-                        textareaRef.current.selectionStart =
-                          textareaRef.current.selectionEnd =
-                            start + spaces.length;
+                        textareaRef.current.selectionStart = textareaRef.current.selectionEnd =
+                          start + spaces.length;
                       }
                     }, 0);
                   }
@@ -486,9 +450,7 @@ export function GitHubCommentInput({
         <div className="flex justify-end px-4 pb-3">
           <Button
             onClick={handleSubmit}
-            disabled={
-              isSubmitting || (!content.trim() && attachments.length === 0)
-            }
+            disabled={isSubmitting || (!content.trim() && attachments.length === 0)}
             size="sm"
           >
             {isSubmitting ? "Posting..." : "Comment"}
@@ -503,12 +465,7 @@ export function GitHubCommentInput({
           </span>
 
           {replyingTo && onCancelReply && (
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={onCancelReply}
-            >
+            <Button type="button" variant="ghost" size="sm" onClick={onCancelReply}>
               Cancel
             </Button>
           )}

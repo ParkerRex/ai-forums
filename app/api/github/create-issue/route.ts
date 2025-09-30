@@ -1,13 +1,13 @@
-import { NextResponse } from 'next/server';
+import { NextResponse } from "next/server";
 
 /** GitHub API base URL for all GitHub API requests */
-const GITHUB_API_URL = 'https://api.github.com';
+const GITHUB_API_URL = "https://api.github.com";
 
 /** GitHub repository owner/organization name */
-const OWNER = 'joinvai';
+const OWNER = "joinvai";
 
 /** GitHub repository name where issues will be created */
-const REPO = 'VAI';
+const REPO = "VAI";
 
 /**
  * Bug report data structure from user submissions
@@ -46,12 +46,9 @@ export async function POST(request: Request) {
     // Verify GitHub API token is configured
     // This token is required for authenticated requests to GitHub's API
     const githubToken = process.env.GITHUB_TOKEN;
-    
+
     if (!githubToken) {
-      return NextResponse.json(
-        { error: 'GitHub token not configured' },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "GitHub token not configured" }, { status: 500 });
     }
 
     // Parse and validate incoming bug report data
@@ -74,63 +71,64 @@ ${data.actualBehavior}
 ## Environment
 - Browser: ${data.browserInfo}
 - Platform: VAI
-${data.memberInfo ? `- Reported by: ${data.memberInfo.name} (${data.memberInfo.email})` : '- Reported by: Anonymous user'}
+${data.memberInfo ? `- Reported by: ${data.memberInfo.name} (${data.memberInfo.email})` : "- Reported by: Anonymous user"}
 
 ## Severity
 ${data.severity}
 
-${data.additionalContext ? `## Additional Context
-${data.additionalContext}` : ''}
+${
+  data.additionalContext
+    ? `## Additional Context
+${data.additionalContext}`
+    : ""
+}
 
 ---
 *This bug report was submitted via the in-app bug reporting system.*`;
 
     // Initialize base labels for all user-submitted bug reports
-    const labels = ['bug', 'user submitted'];
-    
+    const labels = ["bug", "user submitted"];
+
     // Map severity levels to GitHub priority labels for proper triage
     // This helps maintainers quickly identify and prioritize issues
     switch (data.severity.toLowerCase()) {
-      case 'critical':
-        labels.push('priority: critical');
+      case "critical":
+        labels.push("priority: critical");
         break;
-      case 'high':
-        labels.push('priority: high');
+      case "high":
+        labels.push("priority: high");
         break;
-      case 'medium':
-        labels.push('priority: medium');
+      case "medium":
+        labels.push("priority: medium");
         break;
-      case 'low':
-        labels.push('priority: low');
+      case "low":
+        labels.push("priority: low");
         break;
     }
 
     // Create GitHub issue using the Issues API
-    const response = await fetch(
-      `${GITHUB_API_URL}/repos/${OWNER}/${REPO}/issues`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${githubToken}`,
-          Accept: 'application/vnd.github+json',
-          'X-GitHub-Api-Version': '2022-11-28',
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          title: `[Bug] ${data.title}`, // Prefix for easy identification
-          body: issueBody,
-          labels,
-        }),
-      }
-    );
+    const response = await fetch(`${GITHUB_API_URL}/repos/${OWNER}/${REPO}/issues`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${githubToken}`,
+        Accept: "application/vnd.github+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        title: `[Bug] ${data.title}`, // Prefix for easy identification
+        body: issueBody,
+        labels,
+      }),
+    });
 
     // Handle GitHub API errors gracefully
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      console.error('GitHub API error:', errorData);
+      console.error("GitHub API error:", errorData);
       return NextResponse.json(
-        { error: 'Failed to create GitHub issue' },
-        { status: response.status }
+        { error: "Failed to create GitHub issue" },
+        { status: response.status },
       );
     }
 
@@ -145,10 +143,7 @@ ${data.additionalContext}` : ''}
     });
   } catch (error) {
     // Log errors for debugging while providing user-friendly error messages
-    console.error('Error creating GitHub issue:', error);
-    return NextResponse.json(
-      { error: 'Failed to create bug report' },
-      { status: 500 }
-    );
+    console.error("Error creating GitHub issue:", error);
+    return NextResponse.json({ error: "Failed to create bug report" }, { status: 500 });
   }
 }

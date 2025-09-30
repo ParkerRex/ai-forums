@@ -19,11 +19,11 @@ export async function GET() {
     expectedWebhookUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/webhook`,
     requiredEvents: [
       "checkout.session.completed",
-      "customer.subscription.created", 
+      "customer.subscription.created",
       "customer.subscription.updated",
       "customer.subscription.deleted",
       "invoice.payment_succeeded",
-      "invoice.payment_failed"
+      "invoice.payment_failed",
     ],
     troubleshooting: {
       steps: [
@@ -31,16 +31,16 @@ export async function GET() {
         "2. Ensure webhook secret in Stripe dashboard matches STRIPE_WEBHOOK_SECRET env var",
         "3. Check that all required events are enabled for the webhook",
         "4. Test webhook delivery using Stripe CLI: stripe listen --forward-to localhost:3000/api/stripe/webhook",
-        "5. Check Convex logs for webhook processing errors"
+        "5. Check Convex logs for webhook processing errors",
       ],
       commonIssues: [
         "Webhook URL mismatch between Stripe dashboard and actual endpoint",
         "Webhook secret mismatch",
         "Missing required events in webhook configuration",
         "Endpoint returning non-200 status codes",
-        "Network connectivity issues between Stripe and your server"
-      ]
-    }
+        "Network connectivity issues between Stripe and your server",
+      ],
+    },
   };
 
   return NextResponse.json(health);

@@ -7,7 +7,7 @@ const crons = cronJobs();
 crons.interval(
   "cleanup expired sign-in tokens",
   { hours: 1 },
-  internal.auth.cleanupExpiredTokens.cleanup
+  internal.auth.cleanupExpiredTokens.cleanup,
 );
 
 export default crons;

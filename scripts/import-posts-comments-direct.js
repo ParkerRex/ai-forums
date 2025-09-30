@@ -2,8 +2,8 @@
 // Direct import of posts and comments using standard Convex mutations
 
 const { ConvexClient } = require("convex/browser");
-const fs = require("fs");
-const path = require("path");
+const fs = require("node:fs");
+const path = require("node:path");
 require("dotenv").config({ path: path.join(__dirname, "../.env.local") });
 
 const CONVEX_URL = process.env.NEXT_PUBLIC_CONVEX_URL;
@@ -16,16 +16,10 @@ const client = new ConvexClient(CONVEX_URL);
 
 // Read the prepared data
 const postBatches = JSON.parse(
-  fs.readFileSync(
-    path.join(__dirname, "../migration-data/post-batches-ready.json"),
-    "utf8",
-  ),
+  fs.readFileSync(path.join(__dirname, "../migration-data/post-batches-ready.json"), "utf8"),
 );
 const commentBatches = JSON.parse(
-  fs.readFileSync(
-    path.join(__dirname, "../migration-data/comment-batches.json"),
-    "utf8",
-  ),
+  fs.readFileSync(path.join(__dirname, "../migration-data/comment-batches.json"), "utf8"),
 );
 
 // Store post ID mappings
@@ -57,17 +51,14 @@ async function importPosts() {
           content: post.content,
           categoryId: post.categoryId,
           type: post.type || "text",
-          preview: post.content.substring(0, 150) + "...",
+          preview: `${post.content.substring(0, 150)}...`,
         });
 
         // Store the mapping
         postIdMapping.set(post.skoolId, postId);
         console.log(`✅ Created post: ${post.title.substring(0, 50)}...`);
       } catch (error) {
-        console.error(
-          `❌ Failed to create post "${post.title}":`,
-          error.message,
-        );
+        console.error(`❌ Failed to create post "${post.title}":`, error.message);
       }
     }
   }
@@ -79,9 +70,7 @@ async function importPosts() {
     JSON.stringify(mappingArray, null, 2),
   );
 
-  console.log(
-    `\n✅ Post import complete! Imported ${postIdMapping.size} posts total\n`,
-  );
+  console.log(`\n✅ Post import complete! Imported ${postIdMapping.size} posts total\n`);
   return postIdMapping;
 }
 
@@ -90,9 +79,7 @@ async function importComments(postIdMapping) {
 
   // Sort all comments by depth to ensure parents are imported before children
   const allComments = commentBatches.flat();
-  const sortedComments = allComments.sort(
-    (a, b) => (a.depth || 0) - (b.depth || 0),
-  );
+  const sortedComments = allComments.sort((a, b) => (a.depth || 0) - (b.depth || 0));
 
   let totalImported = 0;
   let totalSkipped = 0;
@@ -103,9 +90,7 @@ async function importComments(postIdMapping) {
       // Get the post ID from our mapping
       const postId = postIdMapping.get(comment.postSkoolId);
       if (!postId) {
-        console.log(
-          `⚠️  Skipping comment - post not found: ${comment.postSkoolId}`,
-        );
+        console.log(`⚠️  Skipping comment - post not found: ${comment.postSkoolId}`);
         totalSkipped++;
         continue;
       }
@@ -121,7 +106,7 @@ async function importComments(postIdMapping) {
       }
 
       // Get parent comment ID if exists
-      let parentCommentId = undefined;
+      let parentCommentId;
       if (comment.parentCommentSkoolId) {
         parentCommentId = commentIdMapping.get(comment.parentCommentSkoolId);
       }
@@ -161,9 +146,7 @@ async function main() {
   console.log("=== CONVEX DATA IMPORT (DIRECT) ===\n");
   console.log("This will import:");
   console.log(`  - ${postBatches.reduce((sum, b) => sum + b.length, 0)} posts`);
-  console.log(
-    `  - ${commentBatches.reduce((sum, b) => sum + b.length, 0)} comments\n`,
-  );
+  console.log(`  - ${commentBatches.reduce((sum, b) => sum + b.length, 0)} comments\n`);
 
   console.log("Starting in 3 seconds...\n");
 

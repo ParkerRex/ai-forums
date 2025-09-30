@@ -1,8 +1,8 @@
-import { api } from "../convex/_generated/api.js";
+import fs from "node:fs";
 import { ConvexClient } from "convex/browser";
-import * as dotenv from "dotenv";
-import fs from "fs";
 import { parse } from "csv-parse";
+import * as dotenv from "dotenv";
+import { api } from "../convex/_generated/api.js";
 
 dotenv.config({ path: ".env.local" });
 
@@ -19,7 +19,7 @@ async function fixMemberEmails() {
       newLastName: "Victory",
       email: "derek@getfwd.com",
       joinedDate: "2025-04-16",
-      subscription: { amount: 50, interval: "monthly" }
+      subscription: { amount: 50, interval: "monthly" },
     },
     {
       firstName: "Emm",
@@ -28,15 +28,15 @@ async function fixMemberEmails() {
       newLastName: "",
       email: "aemaes@gmail.com",
       joinedDate: "2025-06-23",
-      subscription: { amount: 50, interval: "monthly" }
+      subscription: { amount: 50, interval: "monthly" },
     },
     {
       oldName: "Sin Adain",
       newFirstName: "Hiram",
       newLastName: "Clark",
       joinedDate: "2025-07-08",
-      subscription: { amount: 50, interval: "monthly" }
-    }
+      subscription: { amount: 50, interval: "monthly" },
+    },
   ];
 
   // Apply specific updates
@@ -45,16 +45,16 @@ async function fixMemberEmails() {
       if (update.oldName) {
         // Handle name changes
         const members = await convex.query(api.members.searchByName, {
-          name: update.oldName
+          name: update.oldName,
         });
-        
+
         if (members && members.length > 0) {
           const member = members[0];
           await convex.mutation(api.members.updateMember, {
             memberId: member._id,
             firstName: update.newFirstName,
             lastName: update.newLastName,
-            email: update.email || member.email
+            email: update.email || member.email,
           });
           console.log(`Updated ${update.oldName} -> ${update.newFirstName} ${update.newLastName}`);
         }
@@ -62,16 +62,16 @@ async function fixMemberEmails() {
         // Handle email updates
         const members = await convex.query(api.members.searchByName, {
           firstName: update.firstName,
-          lastName: update.lastName
+          lastName: update.lastName,
         });
-        
+
         if (members && members.length > 0) {
           const member = members[0];
           await convex.mutation(api.members.updateMember, {
             memberId: member._id,
             firstName: update.newFirstName || member.firstName,
             lastName: update.newLastName || member.lastName,
-            email: update.email
+            email: update.email,
           });
           console.log(`Updated ${update.firstName} ${update.lastName} with email ${update.email}`);
         }
@@ -83,7 +83,7 @@ async function fixMemberEmails() {
 
   // Now read CSV and update all @imported.com emails
   const emailMap = new Map();
-  
+
   await new Promise((resolve, reject) => {
     fs.createReadStream("migration-data/community_members-latest.csv")
       .pipe(parse({ columns: true }))
@@ -101,18 +101,18 @@ async function fixMemberEmails() {
 
   // Get all members with @imported.com emails
   const importedMembers = await convex.query(api.members.getMembersWithImportedEmails);
-  
+
   console.log(`Found ${importedMembers.length} members with @imported.com emails`);
 
   for (const member of importedMembers) {
     const fullName = `${member.firstName} ${member.lastName}`;
     const correctEmail = emailMap.get(fullName);
-    
+
     if (correctEmail) {
       try {
         await convex.mutation(api.members.updateMember, {
           memberId: member._id,
-          email: correctEmail
+          email: correctEmail,
         });
         console.log(`Updated ${fullName}: ${member.email} -> ${correctEmail}`);
       } catch (error) {
