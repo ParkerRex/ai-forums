@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import localFont from "next/font/local";
+import { ConsoleBranding } from "@/components/console-branding";
 import ConvexClientProvider from "@/components/convex-client-provider";
 import { NetworkStatusIndicator } from "@/components/error-display";
 import { Footer } from "@/components/header/footer";
@@ -40,6 +41,7 @@ export default function RootLayout({
         >
           <ClerkProvider dynamic>
             <ConvexClientProvider>
+              <ConsoleBranding />
               <ActivateSubscriptionBanner />
               <Header />
               <div className="pb-[24px]">{children}</div>
