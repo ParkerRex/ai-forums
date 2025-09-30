@@ -199,7 +199,9 @@ function CommentItemFlat({
                   }
                   className="text-foreground font-semibold hover:underline"
                 >
-                  {comment.member?.username || "Unknown"}
+                  {comment.member
+                    ? `${comment.member.firstName} ${comment.member.lastName}`
+                    : "Unknown"}
                 </Link>
               </MemberHoverCardWrapper>
 
@@ -213,7 +215,7 @@ function CommentItemFlat({
                     })}
                     className="text-primary font-medium hover:underline"
                   >
-                    @{comment.replyToMember.username}
+                    @{comment.replyToMember.firstName} {comment.replyToMember.lastName}
                   </Link>
                 </>
               )}

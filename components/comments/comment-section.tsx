@@ -232,9 +232,7 @@ function CommentItem({
           <MemberHoverCardWrapper member={comment.member}>
             <Avatar className="h-7 w-7 cursor-pointer">
               <AvatarFallback className="bg-muted text-muted-foreground text-xs">
-                {comment.member?.username?.[0]?.toUpperCase() ||
-                  comment.member?.firstName?.[0]?.toUpperCase() ||
-                  "U"}
+                {comment.member?.firstName?.[0]?.toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
           </MemberHoverCardWrapper>
@@ -251,8 +249,7 @@ function CommentItem({
                       className="text-foreground font-medium hover:underline"
                       data-testid="member-link"
                     >
-                      {comment.member.username ||
-                        `${comment.member.firstName} ${comment.member.lastName}`}
+                      {`${comment.member.firstName} ${comment.member.lastName}`}
                     </Link>
                   </MemberHoverCardWrapper>
                 ) : (
