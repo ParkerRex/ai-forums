@@ -1,0 +1,231 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - banner [ref=e2]:
+    - navigation [ref=e3]:
+      - link "Zeke Logo" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6] [cursor=pointer]: Zeke Logo
+        - img [ref=e7] [cursor=pointer]
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - generic [ref=e11] [cursor=pointer]: Features
+          - generic:
+            - list [ref=e12]:
+              - listitem [ref=e13]:
+                - link "Overview" [ref=e14] [cursor=pointer]:
+                  - /url: /overview/
+                  - img [ref=e16] [cursor=pointer]
+                  - generic [ref=e18] [cursor=pointer]: Overview
+              - listitem [ref=e19]:
+                - link "Content Sources" [ref=e20] [cursor=pointer]:
+                  - /url: /sources/
+                  - img [ref=e22] [cursor=pointer]
+                  - generic [ref=e24] [cursor=pointer]: Content Sources
+              - listitem [ref=e25]:
+                - link "Library" [ref=e26] [cursor=pointer]:
+                  - /url: /library/
+                  - img [ref=e28] [cursor=pointer]
+                  - generic [ref=e32] [cursor=pointer]: Library
+              - listitem [ref=e33]:
+                - link "Insights" [ref=e34] [cursor=pointer]:
+                  - /url: /insights/
+                  - img [ref=e36] [cursor=pointer]
+                  - generic [ref=e38] [cursor=pointer]: Insights
+              - listitem [ref=e39]:
+                - link "Playbooks" [ref=e40] [cursor=pointer]:
+                  - /url: /playbooks/
+                  - img [ref=e42] [cursor=pointer]
+                  - generic [ref=e44] [cursor=pointer]: Playbooks
+            - link "Assistant" [ref=e46] [cursor=pointer]:
+              - /url: /#assistant
+              - generic [ref=e48] [cursor=pointer]:
+                - img [ref=e50] [cursor=pointer]
+                - paragraph [ref=e52] [cursor=pointer]: Assistant
+        - listitem [ref=e54]:
+          - link "Pricing" [ref=e55] [cursor=pointer]:
+            - /url: /pricing/
+        - listitem [ref=e56]:
+          - link "Blog" [ref=e57] [cursor=pointer]:
+            - /url: /blog/
+        - listitem [ref=e58]:
+          - link "Download" [ref=e59] [cursor=pointer]:
+            - /url: /download/
+        - listitem [ref=e60]:
+          - generic [ref=e61] [cursor=pointer]: Developers
+          - generic:
+            - list [ref=e62]:
+              - listitem [ref=e63]:
+                - link "Open Source" [ref=e64] [cursor=pointer]:
+                  - /url: https://github.com/zeke-ai/zeke
+                  - img [ref=e66] [cursor=pointer]
+                  - generic [ref=e68] [cursor=pointer]: Open Source
+              - listitem [ref=e69]:
+                - link "Documentation" [ref=e70] [cursor=pointer]:
+                  - /url: https://docs.zekehq.com
+                  - img [ref=e72] [cursor=pointer]
+                  - generic [ref=e75] [cursor=pointer]: Documentation
+              - listitem [ref=e76]:
+                - link "Engine" [ref=e77] [cursor=pointer]:
+                  - /url: /engine/
+                  - img [ref=e79] [cursor=pointer]
+                  - generic [ref=e82] [cursor=pointer]: Engine
+              - listitem [ref=e83]:
+                - link "Join the community" [ref=e84] [cursor=pointer]:
+                  - /url: https://discord.gg/BAbK8MsG2F
+                  - img [ref=e86] [cursor=pointer]
+                  - generic [ref=e88] [cursor=pointer]: Join the community
+              - listitem [ref=e89]:
+                - link "Apps & Integrations" [ref=e90] [cursor=pointer]:
+                  - /url: https://docs.zekehq.com/integrations
+                  - img [ref=e92] [cursor=pointer]
+                  - generic [ref=e99] [cursor=pointer]: Apps & Integrations
+              - listitem [ref=e100]:
+                - link "Components" [ref=e101] [cursor=pointer]:
+                  - /url: /components/
+                  - img [ref=e103] [cursor=pointer]
+                  - generic [ref=e106] [cursor=pointer]: Components
+            - link "Engine" [ref=e108] [cursor=pointer]:
+              - /url: /engine/
+              - generic [ref=e110] [cursor=pointer]:
+                - img [ref=e112] [cursor=pointer]
+                - paragraph [ref=e114] [cursor=pointer]: Engine
+      - link "Sign in" [ref=e116] [cursor=pointer]:
+        - /url: http://localhost:3001
+  - main [ref=e117]:
+    - generic [ref=e119]:
+      - img [ref=e120]
+      - heading "Something went wrong" [level=2] [ref=e122]
+      - paragraph [ref=e123]: We encountered an error while loading the stories. This might be a temporary issue.
+      - button "Try Again" [ref=e124] [cursor=pointer]
+      - group [ref=e125]
+  - generic [ref=e127]:
+    - generic [ref=e128]: From chaos to cited outcomes.
+    - paragraph [ref=e129]: Paste the long-form content, Zeke handles the research, receipts, and ready-to-ship outputs for your team.
+    - link "Start free trial" [ref=e131] [cursor=pointer]:
+      - /url: https://app.zekehq.com
+      - button "Start free trial" [ref=e132] [cursor=pointer]
+  - contentinfo [ref=e133]:
+    - generic [ref=e134]:
+      - generic [ref=e135]:
+        - link "Zeke" [ref=e136] [cursor=pointer]:
+          - /url: /
+          - img [ref=e137] [cursor=pointer]
+          - generic [ref=e139] [cursor=pointer]: Zeke
+        - generic [ref=e140]: Turn research into applied outcomes.
+      - generic [ref=e141]:
+        - generic [ref=e142]:
+          - generic [ref=e143]:
+            - generic [ref=e144]: Features
+            - list [ref=e145]:
+              - listitem [ref=e146]:
+                - link "Overview" [ref=e147] [cursor=pointer]:
+                  - /url: /overview/
+              - listitem [ref=e148]:
+                - link "Content Sources" [ref=e149] [cursor=pointer]:
+                  - /url: /sources/
+              - listitem [ref=e150]:
+                - link "Library" [ref=e151] [cursor=pointer]:
+                  - /url: /library/
+              - listitem [ref=e152]:
+                - link "Insights" [ref=e153] [cursor=pointer]:
+                  - /url: /insights/
+              - listitem [ref=e154]:
+                - link "Playbooks" [ref=e155] [cursor=pointer]:
+                  - /url: /playbooks/
+              - listitem [ref=e156]:
+                - link "Pricing" [ref=e157] [cursor=pointer]:
+                  - /url: /pricing/
+              - listitem [ref=e158]:
+                - link "Engine" [ref=e159] [cursor=pointer]:
+                  - /url: /engine/
+              - listitem [ref=e160]:
+                - link "Download" [ref=e161] [cursor=pointer]:
+                  - /url: /download/
+          - generic [ref=e162]:
+            - generic [ref=e163]: Resources
+            - list [ref=e164]:
+              - listitem [ref=e165]:
+                - link "Github" [ref=e166] [cursor=pointer]:
+                  - /url: https://github.com/zeke-ai/zeke
+              - listitem [ref=e167]:
+                - link "Support" [ref=e168] [cursor=pointer]:
+                  - /url: /support/
+              - listitem [ref=e169]:
+                - link "Privacy policy" [ref=e170] [cursor=pointer]:
+                  - /url: /policy/
+              - listitem [ref=e171]:
+                - link "Terms and Conditions" [ref=e172] [cursor=pointer]:
+                  - /url: /terms/
+              - listitem [ref=e173]:
+                - link "Branding" [ref=e174] [cursor=pointer]:
+                  - /url: /branding/
+          - generic [ref=e175]:
+            - generic [ref=e176]: Company
+            - list [ref=e177]:
+              - listitem [ref=e178]:
+                - link "Blog" [ref=e179] [cursor=pointer]:
+                  - /url: /blog/
+              - listitem [ref=e180]:
+                - link "OSS friends" [ref=e181] [cursor=pointer]:
+                  - /url: /oss-friends/
+        - generic [ref=e183]:
+          - generic [ref=e184]:
+            - link "Star 0" [ref=e185] [cursor=pointer]:
+              - /url: https://github.com/zeke-ai/zeke
+              - generic [ref=e186] [cursor=pointer]:
+                - img [ref=e187] [cursor=pointer]
+                - generic [ref=e189] [cursor=pointer]: Star
+              - generic [ref=e190] [cursor=pointer]: "0"
+            - list [ref=e191]:
+              - listitem [ref=e192]:
+                - link "X (Twitter)" [ref=e193] [cursor=pointer]:
+                  - /url: https://twitter.com/zeke_hq
+                  - generic [ref=e194] [cursor=pointer]: X (Twitter)
+                  - img [ref=e195] [cursor=pointer]
+              - listitem [ref=e197]:
+                - link "LinkedIn" [ref=e198] [cursor=pointer]:
+                  - /url: https://www.linkedin.com/company/zeke-hq
+                  - generic [ref=e199] [cursor=pointer]: LinkedIn
+                  - img [ref=e200] [cursor=pointer]
+              - listitem [ref=e202]:
+                - link "Discord" [ref=e203] [cursor=pointer]:
+                  - /url: https://discord.gg/BAbK8MsG2F
+                  - generic [ref=e204] [cursor=pointer]: Discord
+                  - img [ref=e205] [cursor=pointer]
+              - listitem [ref=e207]:
+                - link "GitHub" [ref=e208] [cursor=pointer]:
+                  - /url: https://github.com/zeke-ai/zeke
+                  - generic [ref=e209] [cursor=pointer]: GitHub
+                  - img [ref=e210] [cursor=pointer]
+              - listitem [ref=e212]:
+                - link "Product Hunt" [ref=e213] [cursor=pointer]:
+                  - /url: https://www.producthunt.com/products/zeke
+                  - generic [ref=e214] [cursor=pointer]: Product Hunt
+                  - img [ref=e215] [cursor=pointer]
+              - listitem [ref=e217]:
+                - link "YouTube" [ref=e218] [cursor=pointer]:
+                  - /url: https://www.youtube.com/@zekehq
+                  - generic [ref=e219] [cursor=pointer]: YouTube
+                  - img [ref=e220] [cursor=pointer]
+          - group [ref=e226]:
+            - textbox "Email address" [active] [ref=e227]: weak-1759609135456@example.com
+            - button "Subscribe" [ref=e228] [cursor=pointer]
+          - link "Unknown" [ref=e230] [cursor=pointer]:
+            - /url: https://status.zekehq.com
+            - paragraph [ref=e232] [cursor=pointer]: Unknown
+    - heading "zeke" [level=5]
+  - generic [ref=e240] [cursor=pointer]:
+    - button "Open Next.js Dev Tools" [ref=e241] [cursor=pointer]:
+      - img [ref=e242] [cursor=pointer]
+    - generic [ref=e245] [cursor=pointer]:
+      - button "Open issues overlay" [ref=e246] [cursor=pointer]:
+        - generic [ref=e247] [cursor=pointer]:
+          - generic [ref=e248] [cursor=pointer]: "0"
+          - generic [ref=e249] [cursor=pointer]: "1"
+        - generic [ref=e250] [cursor=pointer]: Issue
+      - button "Collapse issues badge" [ref=e251] [cursor=pointer]:
+        - img [ref=e252] [cursor=pointer]
+  - alert [ref=e254]
+```

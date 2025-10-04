@@ -84,7 +84,7 @@ const members = defineTable({
   firstName: v.string(), // User's first name
   lastName: v.string(), // User's last name
   email: v.string(), // Primary email address (unique identifier)
-  externalId: v.optional(v.string()), // Clerk user ID for modern auth system
+  externalId: v.optional(v.string()), // Clerk user ID for modern auth system (kept for migration)
 
   // Member status and lifecycle
   status: v.union(
@@ -105,7 +105,14 @@ const members = defineTable({
       v.literal("discord"),
     ),
   ),
-  signInToken: v.optional(v.string()), // Temporary token for auto-signin
+  signInToken: v.optional(v.string()), // Temporary token for auto-signin (kept for migration)
+
+  // Custom authentication fields
+  passwordHash: v.optional(v.string()), // Bcrypt hashed password for custom auth
+  emailVerified: v.optional(v.boolean()), // Email verification status
+  lastLoginAt: v.optional(v.number()), // Last successful login timestamp
+  failedLoginAttempts: v.optional(v.number()), // Failed login count for account lockout
+  lockedUntil: v.optional(v.number()), // Account lock expiration timestamp
 
   // Profile and location data
   country: v.optional(v.string()), // Country code or name
@@ -173,6 +180,7 @@ const members = defineTable({
   .index("by_slug", ["slug"]) // URL routing by slug
   .index("by_externalId", ["externalId"]) // Auth lookup by Clerk ID
   .index("by_email", ["email"]) // Lookup by email for migrations
+  .index("by_emailVerified", ["emailVerified"]) // Filter verified users
   .searchIndex("search_members", {
     // Full-text member search
     searchField: "firstName",
@@ -970,6 +978,100 @@ const discordDigest = defineTable({
   .index("by_processed_at", ["processedAt"]); // Processing audit trail
 
 /**
+ * Sessions table - User session management for custom authentication
+ *
+ * Stores active user sessions with JWT token hashes for secure authentication.
+ * Each session has an expiration time and tracks the device/browser used.
+ * Supports session revocation and multi-device login tracking.
+ */
+const sessions = defineTable({
+  memberId: v.id("members"), // Member who owns this session
+  tokenHash: v.string(), // Hashed JWT token for security
+  expiresAt: v.number(), // Session expiration timestamp
+  createdAt: v.number(), // Session creation timestamp
+  ipAddress: v.optional(v.string()), // IP address for security audit
+  userAgent: v.optional(v.string()), // Browser/device info
+  lastActiveAt: v.optional(v.number()), // Last activity timestamp
+})
+  .index("by_memberId", ["memberId"]) // All sessions for a member
+  .index("by_token", ["tokenHash"]) // Session lookup by token
+  .index("by_expiresAt", ["expiresAt"]) // Cleanup expired sessions
+  .index("by_member_and_active", ["memberId", "expiresAt"]); // Active sessions per member
+
+/**
+ * Email Verifications table - Email verification token management
+ *
+ * Stores email verification tokens sent to users during sign-up.
+ * Tokens are hashed for security and have a 24-hour expiration.
+ * Tracks verification status for audit trail.
+ */
+const email_verifications = defineTable({
+  memberId: v.id("members"), // Member to be verified
+  tokenHash: v.string(), // Hashed verification token
+  email: v.string(), // Email being verified
+  expiresAt: v.number(), // Token expiration timestamp (24 hours)
+  createdAt: v.number(), // Token creation timestamp
+  verifiedAt: v.optional(v.number()), // Verification timestamp (if completed)
+})
+  .index("by_memberId", ["memberId"]) // Verifications for a member
+  .index("by_token", ["tokenHash"]) // Token lookup
+  .index("by_expiresAt", ["expiresAt"]) // Cleanup expired tokens
+  .index("by_email", ["email"]); // Lookup by email
+
+/**
+ * Password Resets table - Password reset token management
+ *
+ * Stores password reset tokens with 1-hour expiration for security.
+ * Tracks usage status to prevent token reuse attacks.
+ * Also used for migration tokens with 7-day expiration.
+ */
+const password_resets = defineTable({
+  memberId: v.id("members"), // Member requesting reset
+  tokenHash: v.string(), // Hashed reset token
+  expiresAt: v.number(), // Token expiration timestamp
+  createdAt: v.number(), // Token creation timestamp
+  usedAt: v.optional(v.number()), // When token was used (if used)
+  isMigrationToken: v.optional(v.boolean()), // True if this is a migration token (7-day expiry)
+})
+  .index("by_memberId", ["memberId"]) // Resets for a member
+  .index("by_token", ["tokenHash"]) // Token lookup
+  .index("by_expiresAt", ["expiresAt"]) // Cleanup expired tokens
+  .index("by_usedAt", ["usedAt"]); // Track token usage
+
+/**
+ * Rate Limits table - Rate limiting and abuse prevention
+ *
+ * Tracks API call attempts for rate limiting enforcement.
+ * Supports configurable time windows and attempt thresholds.
+ * Used for sign-in, sign-up, password reset, and other sensitive operations.
+ */
+const rate_limits = defineTable({
+  key: v.string(), // Rate limit key (e.g., "signin:email@example.com")
+  attempts: v.number(), // Number of attempts in current window
+  windowStart: v.number(), // Window start timestamp
+  windowEnd: v.number(), // Window end timestamp
+  firstAttemptAt: v.number(), // First attempt in window
+  lastAttemptAt: v.number(), // Most recent attempt
+})
+  .index("by_key", ["key"]) // Lookup by rate limit key
+  .index("by_windowEnd", ["windowEnd"]); // Cleanup expired windows
+
+/**
+ * Password History table - Password reuse prevention
+ *
+ * Stores hashed previous passwords to prevent password reuse.
+ * Keeps last 3 passwords per member for security best practices.
+ * Older entries are automatically cleaned up by cron job.
+ */
+const password_history = defineTable({
+  memberId: v.id("members"), // Member who owns this password
+  passwordHash: v.string(), // Hashed password (bcrypt)
+  createdAt: v.number(), // When this password was set
+})
+  .index("by_memberId", ["memberId"]) // Password history for a member
+  .index("by_member_and_createdAt", ["memberId", "createdAt"]); // Chronological history
+
+/**
  * Complete database schema export for the VAI community platform.
  *
  * This schema defines a comprehensive social platform with:
@@ -1001,4 +1103,9 @@ export default defineSchema({
   events, // Community event management
   newsFeedCache, // News feed caching system
   discordDigest, // Discord daily digest archive
+  sessions, // User session management for custom auth
+  email_verifications, // Email verification tokens
+  password_resets, // Password reset and migration tokens
+  rate_limits, // Rate limiting for abuse prevention
+  password_history, // Password reuse prevention
 });

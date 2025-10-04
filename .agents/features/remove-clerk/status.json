@@ -1,0 +1,22 @@
+{
+  "featureName": "Remove Clerk Auth and Implement Custom Email/Password Auth",
+  "identifier": "remove-clerk",
+  "description": "we need to remove clerk auth, and roll our own auth, using email and password.",
+  "status": "in_progress",
+  "currentPhase": "initialization",
+  "autoMode": true,
+  "startedAt": "2025-10-04T00:00:00Z",
+  "lastUpdated": "2025-10-04T00:00:00Z",
+  "phases": {
+    "initialization": { "status": "completed" },
+    "stackAnalysis": { "status": "completed" },
+    "clarification": { "status": "completed" },
+    "spec": { "status": "completed" },
+    "plan": { "status": "completed" },
+    "implementation": { "status": "completed" },
+    "validation": { "status": "completed" },
+    "finish": { "status": "pending" }
+  },
+  "interventionsPaused": 0,
+  "errors": []
+}
