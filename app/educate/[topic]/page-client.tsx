@@ -24,6 +24,7 @@ import { ArrowUpIcon, BookOpen, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
 import { use, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -34,6 +35,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 import { api } from "@/convex/_generated/api";
 import type { Id } from "@/convex/_generated/dataModel";
 
@@ -136,6 +138,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
   const [isVoting, setIsVoting] = useState(false);
   const [optimisticNetVotes, setOptimisticNetVotes] = useState(resource.netVotes);
   const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   // Use optimistic state if available, otherwise fall back to server state
   const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote;
@@ -205,8 +208,11 @@ function ResourceCard({ resource }: { resource: Resource }) {
   const handleResourceClick = async () => {
     // Check if user has access to this resource
     if (canViewResource === false) {
-      // TODO: Show upgrade modal or redirect to paywall
-      console.log("Access denied: Premium resource");
+      // Show upgrade modal for premium resources
+      setShowUpgradeModal(true);
+      toast.info("Upgrade to access premium resources", {
+        description: "Join VAI Pro to unlock all educational content",
+      });
       return;
     }
 
@@ -244,41 +250,51 @@ function ResourceCard({ resource }: { resource: Resource }) {
   };
 
   return (
-    <Card
-      className="hover:border-primary transition-colors cursor-pointer"
-      onClick={handleResourceClick}
-    >
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            {getTypeIcon(resource.type)}
-            {resource.title}
-          </span>
-          <div className="flex items-center gap-2">
-            <Authenticated>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleUpvote(e);
-                }}
-                disabled={isVoting}
-                className={`hover:bg-transparent ${
-                  currentUserVote === "upvote" ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                <ArrowUpIcon size={16} />
-              </Button>
-            </Authenticated>
-            <span className="text-sm font-medium text-muted-foreground">{optimisticNetVotes}</span>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-0">
-        <p className="text-sm text-muted-foreground line-clamp-2">{resource.description}</p>
-      </CardContent>
-    </Card>
+    <>
+      <Card
+        className="hover:border-primary transition-colors cursor-pointer"
+        onClick={handleResourceClick}
+      >
+        <CardHeader>
+          <CardTitle className="text-lg flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              {getTypeIcon(resource.type)}
+              {resource.title}
+            </span>
+            <div className="flex items-center gap-2">
+              <Authenticated>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUpvote(e);
+                  }}
+                  disabled={isVoting}
+                  className={`hover:bg-transparent ${
+                    currentUserVote === "upvote" ? "text-primary" : "text-muted-foreground"
+                  }`}
+                >
+                  <ArrowUpIcon size={16} />
+                </Button>
+              </Authenticated>
+              <span className="text-sm font-medium text-muted-foreground">{optimisticNetVotes}</span>
+            </div>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <p className="text-sm text-muted-foreground line-clamp-2">{resource.description}</p>
+        </CardContent>
+      </Card>
+
+      <MembershipCTAModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        title="Unlock Premium Educational Resources"
+        description="Access exclusive learning materials and resources from top AI engineers"
+        source="education-resource-paywall"
+      />
+    </>
   );
 }
 

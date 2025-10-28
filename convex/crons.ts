@@ -39,4 +39,8 @@ crons.cron("cleanup expired tokens", "0 3 * * *", internal.auth.cleanupExpiredTo
 // Keeps only the last 3 passwords per member
 crons.cron("cleanup password history", "0 4 * * *", internal.auth.cleanupPasswordHistory, {});
 
+// Clean up expired link preview cache entries daily at 5 AM UTC
+// Removes cached link previews that have exceeded their 24-hour TTL
+crons.cron("cleanup expired link previews", "0 5 * * *", internal.linkPreview.cleanupExpiredLinkPreviews, {});
+
 export default crons;

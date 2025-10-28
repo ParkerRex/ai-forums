@@ -540,6 +540,28 @@ const postViews = defineTable({
   .index("by_viewedAt", ["viewedAt"]); // Time-based analytics
 
 /**
+ * Analytics Events table - Application-wide event tracking
+ *
+ * Records user interactions and business events for analytics and insights.
+ * Supports flexible event properties for different event types.
+ * Used for funnel analysis, user behavior tracking, and business metrics.
+ */
+const analyticsEvents = defineTable({
+  event: v.string(), // Event name (e.g., "checkout_initiated")
+  userId: v.optional(v.id("members")), // User who triggered the event (if authenticated)
+  properties: v.optional(v.any()), // Event-specific properties as JSON
+  timestamp: v.number(), // Event timestamp
+  sessionId: v.optional(v.string()), // Session identifier for grouping events
+  userAgent: v.optional(v.string()), // Browser/device information
+  ipAddress: v.optional(v.string()), // IP address for location tracking
+})
+  // Indexes for analytics queries
+  .index("by_event", ["event"]) // Events by type
+  .index("by_userId", ["userId"]) // User's event history
+  .index("by_timestamp", ["timestamp"]) // Time-based analysis
+  .index("by_event_and_timestamp", ["event", "timestamp"]); // Event trends over time
+
+/**
  * Post Versions table - Edit history and content versioning
  *
  * Maintains complete edit history for posts with full content snapshots.
@@ -1072,6 +1094,27 @@ const password_history = defineTable({
   .index("by_member_and_createdAt", ["memberId", "createdAt"]); // Chronological history
 
 /**
+ * Link Preview Cache table - Caching for fetched link metadata
+ *
+ * Stores fetched link previews to avoid re-fetching the same URLs repeatedly.
+ * Each entry has a 24-hour TTL for freshness while reducing external API calls.
+ * Significantly improves performance when multiple users share the same links.
+ */
+const linkPreviewCache = defineTable({
+  url: v.string(), // Original URL (normalized)
+  title: v.optional(v.string()), // Page title from meta tags
+  description: v.optional(v.string()), // Meta description
+  image: v.optional(v.string()), // Preview image URL
+  siteName: v.optional(v.string()), // Site name (og:site_name)
+  fetchedAt: v.number(), // Timestamp when preview was fetched
+  expiresAt: v.number(), // Cache expiration timestamp (24 hours from fetch)
+  isYouTubeEmbed: v.optional(v.boolean()), // Whether this is a YouTube video
+  youTubeVideoId: v.optional(v.string()), // YouTube video ID (if applicable)
+})
+  .index("by_url", ["url"]) // Primary lookup by URL
+  .index("by_expiresAt", ["expiresAt"]); // Cleanup expired cache entries
+
+/**
  * Complete database schema export for the VAI community platform.
  *
  * This schema defines a comprehensive social platform with:
@@ -1093,6 +1136,7 @@ export default defineSchema({
   comments, // Threaded discussion system
   votes, // Voting and ranking system
   postViews, // Analytics and view tracking
+  analyticsEvents, // Application-wide event tracking
   post_versions, // Edit history and versioning
   bookmarks, // Personal content curation
   notifications, // Real-time user engagement
@@ -1108,4 +1152,5 @@ export default defineSchema({
   password_resets, // Password reset and migration tokens
   rate_limits, // Rate limiting for abuse prevention
   password_history, // Password reuse prevention
+  linkPreviewCache, // Link preview caching to avoid re-fetching URLs
 });

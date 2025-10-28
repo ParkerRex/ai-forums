@@ -11,6 +11,7 @@ import { Resend } from "resend";
 import { VerifyEmail } from "../emails/VerifyEmail";
 import { ResetPassword } from "../emails/ResetPassword";
 import { AuthMigration } from "../emails/AuthMigration";
+import { PasswordChanged } from "../emails/PasswordChanged";
 
 // Initialize Resend client
 function getResendClient() {
@@ -210,6 +211,68 @@ export const sendMigrationEmail = internalAction({
       console.error("[Email] Failed to send migration email after retries:", error);
       // Don't throw - log the error
       // Migration emails can be retried
+    }
+
+    return null;
+  },
+});
+
+/**
+ * Send password change notification email action
+ *
+ * Sends a security notification email when a user's password is changed.
+ * This helps users detect unauthorized password changes.
+ */
+export const sendPasswordChangedEmail = internalAction({
+  args: {
+    email: v.string(),
+    firstName: v.string(),
+  },
+  returns: v.null(),
+  handler: async (ctx, { email, firstName }) => {
+    // Get app URL from environment
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const resetUrl = `${appUrl}/auth/forgot-password`;
+
+    // Format current time for email display
+    const changeTime = new Date().toLocaleString("en-US", {
+      dateStyle: "full",
+      timeStyle: "short",
+      timeZone: "UTC",
+    });
+
+    console.log(`[Email] Sending password changed notification to ${email}`);
+
+    const resend = getResendClient();
+
+    if (!resend) {
+      console.log("[Email] Resend not configured - logging email only");
+      return null;
+    }
+
+    try {
+      await sendWithRetry(async () => {
+        const { data, error } = await resend.emails.send({
+          from: process.env.EMAIL_FROM || "VAI Security <security@vai.com>",
+          to: email,
+          subject: "Your password was changed - VAI",
+          react: PasswordChanged({
+            firstName,
+            changeTime,
+            resetUrl,
+          }),
+        });
+
+        if (error) {
+          throw new Error(`Resend API error: ${JSON.stringify(error)}`);
+        }
+
+        console.log(`[Email] Password changed notification sent successfully: ${data?.id}`);
+      });
+    } catch (error) {
+      console.error("[Email] Failed to send password changed notification after retries:", error);
+      // Don't throw - log the error but don't block the password reset flow
+      // The password has already been changed at this point
     }
 
     return null;

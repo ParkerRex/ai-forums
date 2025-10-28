@@ -185,7 +185,9 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     .filter((slug): slug is string => slug !== undefined);
   const slug = ensureUniqueSlug(baseSlug, existingSlugs);
 
-  // Create new member
+  // Create new member with temporary Stripe customer ID
+  const tempStripeCustomerId = `cus_temp_${email.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`;
+
   const newMemberData: any = {
     firstName,
     lastName,
@@ -199,7 +201,7 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
     // Payment fields - new members start without a tier
     tier: undefined,
     subscriptionStatus: "none" as const,
-    stripeCustomerId: `cus_temp_${email.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`, // TODO: Replace with Stripe API call
+    stripeCustomerId: tempStripeCustomerId, // Temporary ID, will be replaced by Stripe action
   };
 
   // Add avatarUrl if available from Clerk
@@ -208,6 +210,14 @@ export async function getAuthenticatedMember(ctx: QueryCtx | MutationCtx) {
   }
 
   const memberId = await mutationCtx.db.insert("members", newMemberData);
+
+  // Schedule Stripe customer creation asynchronously (doesn't block member creation)
+  await mutationCtx.scheduler.runAfter(0, internal.payments.createAndUpdateStripeCustomer, {
+    memberId,
+    email,
+    firstName,
+    lastName,
+  });
 
   // Return the newly created member
   const newMember = await ctx.db.get(memberId);
@@ -333,6 +343,9 @@ export const signUp = mutation({
       .filter((slug): slug is string => slug !== undefined);
     const slug = ensureUniqueSlug(baseSlug, existingSlugs);
 
+    // Create temporary Stripe customer ID (will be replaced by actual Stripe ID)
+    const tempStripeCustomerId = `cus_temp_${email.replace(/[^a-zA-Z0-9]/g, "_")}_${Date.now()}`;
+
     // Create member record
     const memberId = await ctx.db.insert("members", {
       email: email.toLowerCase(),
@@ -347,6 +360,18 @@ export const signUp = mutation({
       updatedAt: now,
       lastOnline: now,
       authMethod: "password",
+      // Payment fields - new members start without a tier
+      tier: undefined,
+      subscriptionStatus: "none" as const,
+      stripeCustomerId: tempStripeCustomerId, // Temporary ID, will be replaced by Stripe action
+    });
+
+    // Schedule Stripe customer creation asynchronously (doesn't block signup)
+    await ctx.scheduler.runAfter(0, internal.payments.createAndUpdateStripeCustomer, {
+      memberId,
+      email: email.toLowerCase(),
+      firstName,
+      lastName,
     });
 
     // Generate verification token
@@ -362,12 +387,12 @@ export const signUp = mutation({
       createdAt: now,
     });
 
-    // TODO: Schedule email send action
-    // await ctx.scheduler.runAfter(0, internal.emails.sendVerificationEmail, {
-    //   email: email.toLowerCase(),
-    //   token: verificationToken,
-    //   firstName,
-    // });
+    // Schedule verification email send action
+    await ctx.scheduler.runAfter(0, internal.emails.sendVerificationEmail, {
+      email: email.toLowerCase(),
+      token: verificationToken,
+      firstName,
+    });
 
     return {
       memberId,
@@ -627,12 +652,12 @@ export const requestPasswordReset = mutation({
       createdAt: now,
     });
 
-    // TODO: Schedule email send action
-    // await ctx.scheduler.runAfter(0, internal.emails.sendPasswordResetEmail, {
-    //   email: normalizedEmail,
-    //   token: resetToken,
-    //   firstName: member.firstName,
-    // });
+    // Schedule password reset email send action
+    await ctx.scheduler.runAfter(0, internal.emails.sendPasswordResetEmail, {
+      email: normalizedEmail,
+      token: resetToken,
+      firstName: member.firstName,
+    });
 
     return null;
   },
@@ -760,6 +785,12 @@ export const resetPassword = mutation({
       expiresAt: now + 7 * 24 * 60 * 60 * 1000, // 7 days
       createdAt: now,
       lastActiveAt: now,
+    });
+
+    // Send password change notification email for security
+    await ctx.scheduler.runAfter(0, internal.emails.sendPasswordChangedEmail, {
+      email: member.email,
+      firstName: member.firstName,
     });
 
     return {
@@ -911,12 +942,12 @@ export const resendVerification = mutation({
       createdAt: now,
     });
 
-    // TODO: Schedule email send action
-    // await ctx.scheduler.runAfter(0, internal.emails.sendVerificationEmail, {
-    //   email: normalizedEmail,
-    //   token: verificationToken,
-    //   firstName: member.firstName,
-    // });
+    // Schedule verification email send action
+    await ctx.scheduler.runAfter(0, internal.emails.sendVerificationEmail, {
+      email: normalizedEmail,
+      token: verificationToken,
+      firstName: member.firstName,
+    });
 
     return null;
   },
