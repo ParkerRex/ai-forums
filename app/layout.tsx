@@ -11,6 +11,7 @@ import Header from "@/components/header/header";
 import { ActivateSubscriptionBanner } from "@/components/payments/activate-subscription-banner";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/components/auth/AuthProvider";
 
 const myFont = localFont({
   src: "../public/fonts/MonaspaceArgon-Regular.otf",
@@ -30,6 +31,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Feature flag to enable custom auth (defaults to false - Clerk active)
+  const useCustomAuth = process.env.NEXT_PUBLIC_USE_CUSTOM_AUTH === "true";
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${myFont.className} antialiased`}>
@@ -39,18 +43,35 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <ClerkProvider dynamic>
+          {useCustomAuth ? (
+            // Custom auth provider
             <ConvexClientProvider>
-              <ConsoleBranding />
-              <ActivateSubscriptionBanner />
-              <Header />
-              <div className="pb-[24px]">{children}</div>
-              <Footer />
-              <GlobalSearch />
-              <Toaster />
-              <NetworkStatusIndicator />
+              <AuthProvider>
+                <ConsoleBranding />
+                <ActivateSubscriptionBanner />
+                <Header />
+                <div className="pb-[24px]">{children}</div>
+                <Footer />
+                <GlobalSearch />
+                <Toaster />
+                <NetworkStatusIndicator />
+              </AuthProvider>
             </ConvexClientProvider>
-          </ClerkProvider>
+          ) : (
+            // Clerk auth provider (default)
+            <ClerkProvider dynamic>
+              <ConvexClientProvider>
+                <ConsoleBranding />
+                <ActivateSubscriptionBanner />
+                <Header />
+                <div className="pb-[24px]">{children}</div>
+                <Footer />
+                <GlobalSearch />
+                <Toaster />
+                <NetworkStatusIndicator />
+              </ConvexClientProvider>
+            </ClerkProvider>
+          )}
         </ThemeProvider>
       </body>
     </html>

@@ -27,4 +27,20 @@ crons.cron("process discord digest", "0 6 * * *", internal.discord.processDiscor
   })(),
 });
 
+// Clean up expired auth sessions hourly
+// Removes sessions where expiresAt < current time
+crons.interval("cleanup expired sessions", { hours: 1 }, internal.auth.cleanupExpiredSessions, {});
+
+// Clean up expired auth tokens daily at 3 AM UTC
+// Removes expired email verifications and password reset tokens
+crons.cron("cleanup expired tokens", "0 3 * * *", internal.auth.cleanupExpiredTokens, {});
+
+// Clean up old password history daily at 4 AM UTC
+// Keeps only the last 3 passwords per member
+crons.cron("cleanup password history", "0 4 * * *", internal.auth.cleanupPasswordHistory, {});
+
+// Clean up expired link preview cache entries daily at 5 AM UTC
+// Removes cached link previews that have exceeded their 24-hour TTL
+crons.cron("cleanup expired link previews", "0 5 * * *", internal.linkPreview.cleanupExpiredLinkPreviews, {});
+
 export default crons;

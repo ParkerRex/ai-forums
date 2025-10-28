@@ -312,6 +312,9 @@ async function calculateTierMetrics(
     }
   > = {};
 
+  const now = Date.now();
+  const thirtyDaysAgo = now - 30 * 24 * 60 * 60 * 1000;
+
   for (const tier of tiers) {
     const tierMembers = members.filter((m) => m.tier === tier && m.subscriptionStatus === "active");
 
@@ -322,6 +325,36 @@ async function calculateTierMetrics(
       );
       tierPayments.push(...memberPayments);
     }
+
+    // Calculate churn rate: members who churned in last 30 days / active members at start of period
+    const allTierMembers = members.filter((m) => m.tier === tier);
+    const churnedInPeriod = allTierMembers.filter((m) => {
+      const isChurned = m.subscriptionStatus === "expired" || m.status === "churned";
+      const churnDate = m.subscriptionEndDate || m.updatedAt;
+      return isChurned && churnDate >= thirtyDaysAgo;
+    });
+
+    // Active members at start of period (current active + recently churned)
+    const activeMembersAtPeriodStart = tierMembers.length + churnedInPeriod.length;
+    const churnRate =
+      activeMembersAtPeriodStart > 0
+        ? Math.round((churnedInPeriod.length / activeMembersAtPeriodStart) * 1000) / 10
+        : 0;
+
+    // Calculate growth rate: new members who joined this tier in last 30 days / active members at start of period
+    const newMembersInPeriod = allTierMembers.filter((m) => {
+      const isActive = m.subscriptionStatus === "active";
+      return isActive && m.joinedDate >= thirtyDaysAgo;
+    });
+
+    // Active members at start = current active - new members in period
+    const activeMembersAtStart = Math.max(0, tierMembers.length - newMembersInPeriod.length);
+    const growthRate =
+      activeMembersAtStart > 0
+        ? Math.round((newMembersInPeriod.length / activeMembersAtStart) * 1000) / 10
+        : newMembersInPeriod.length > 0
+          ? 100
+          : 0;
 
     const revenue = tierPayments.reduce((sum, p) => sum + p.amount, 0);
     const monthlyCount = tierMembers.filter((m) => m.billingInterval === "monthly").length;
@@ -334,8 +367,8 @@ async function calculateTierMetrics(
         yearlyCount * (tier === "founding_member" ? 2100 : tier === "early_bird" ? 4100 : 8300),
       totalRevenue: revenue,
       avgRevenue: tierMembers.length > 0 ? Math.round(revenue / tierMembers.length) : 0,
-      churnRate: 0, // TODO: Calculate actual churn rate
-      growthRate: 0, // TODO: Calculate actual growth rate
+      churnRate,
+      growthRate,
     };
   }
 

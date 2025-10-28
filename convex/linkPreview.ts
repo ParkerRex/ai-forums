@@ -1,22 +1,78 @@
 import { v } from "convex/values";
-import { action, query } from "./_generated/server";
+import { action, internalMutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 
-// Cache table for storing link preview data
-// You may want to add this to your schema.ts:
-// linkPreviews: defineTable({
-//   url: v.string(),
-//   title: v.optional(v.string()),
-//   description: v.optional(v.string()),
-//   image: v.optional(v.string()),
-//   siteName: v.optional(v.string()),
-//   fetchedAt: v.number(),
-// }).index("by_url", ["url"]),
+/**
+ * Internal mutation to save link preview to cache
+ * Called by fetchLinkPreview action after successfully fetching metadata
+ */
+export const saveLinkPreviewToCache = internalMutation({
+  args: {
+    url: v.string(),
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    image: v.optional(v.string()),
+    siteName: v.optional(v.string()),
+    isYouTubeEmbed: v.optional(v.boolean()),
+    youTubeVideoId: v.optional(v.string()),
+  },
+  returns: v.null(),
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const expiresAt = now + 24 * 60 * 60 * 1000; // 24 hours from now
+
+    // Check if cache entry already exists
+    const existing = await ctx.db
+      .query("linkPreviewCache")
+      .withIndex("by_url", (q) => q.eq("url", args.url))
+      .first();
+
+    if (existing) {
+      // Update existing cache entry
+      await ctx.db.patch(existing._id, {
+        title: args.title,
+        description: args.description,
+        image: args.image,
+        siteName: args.siteName,
+        fetchedAt: now,
+        expiresAt,
+        isYouTubeEmbed: args.isYouTubeEmbed,
+        youTubeVideoId: args.youTubeVideoId,
+      });
+    } else {
+      // Create new cache entry
+      await ctx.db.insert("linkPreviewCache", {
+        url: args.url,
+        title: args.title,
+        description: args.description,
+        image: args.image,
+        siteName: args.siteName,
+        fetchedAt: now,
+        expiresAt,
+        isYouTubeEmbed: args.isYouTubeEmbed,
+        youTubeVideoId: args.youTubeVideoId,
+      });
+    }
+
+    return null;
+  },
+});
 
 export const fetchLinkPreview = action({
   args: {
     url: v.string(),
   },
-  handler: async (_ctx, args) => {
+  returns: v.object({
+    url: v.string(),
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    image: v.optional(v.string()),
+    siteName: v.optional(v.string()),
+    fetchedAt: v.number(),
+    isYouTubeEmbed: v.optional(v.boolean()),
+    youTubeVideoId: v.optional(v.string()),
+  }),
+  handler: async (ctx, args) => {
     try {
       // Validate URL
       const urlObj = new URL(args.url);
@@ -33,7 +89,7 @@ export const fetchLinkPreview = action({
         }
 
         if (videoId) {
-          return {
+          const preview = {
             url: args.url,
             title: `YouTube Video`,
             description: "YouTube video embed",
@@ -43,6 +99,19 @@ export const fetchLinkPreview = action({
             isYouTubeEmbed: true,
             youTubeVideoId: videoId,
           };
+
+          // Save to cache
+          await ctx.runMutation(internal.linkPreview.saveLinkPreviewToCache, {
+            url: preview.url,
+            title: preview.title,
+            description: preview.description,
+            image: preview.image,
+            siteName: preview.siteName,
+            isYouTubeEmbed: preview.isYouTubeEmbed,
+            youTubeVideoId: preview.youTubeVideoId,
+          });
+
+          return preview;
         }
       }
 
@@ -56,10 +125,19 @@ export const fetchLinkPreview = action({
         fetchedAt: Date.now(),
       };
 
+      // Save stub response to cache as well
+      await ctx.runMutation(internal.linkPreview.saveLinkPreviewToCache, {
+        url: preview.url,
+        title: preview.title,
+        description: preview.description,
+        image: preview.image,
+        siteName: preview.siteName,
+      });
+
       return preview;
     } catch (error) {
       console.error("Failed to fetch link preview:", error);
-      return {
+      const fallbackPreview = {
         url: args.url,
         title: new URL(args.url).hostname,
         description: undefined,
@@ -67,7 +145,53 @@ export const fetchLinkPreview = action({
         siteName: undefined,
         fetchedAt: Date.now(),
       };
+
+      // Save fallback to cache to avoid re-fetching failed URLs
+      try {
+        await ctx.runMutation(internal.linkPreview.saveLinkPreviewToCache, {
+          url: fallbackPreview.url,
+          title: fallbackPreview.title,
+          description: fallbackPreview.description,
+          image: fallbackPreview.image,
+          siteName: fallbackPreview.siteName,
+        });
+      } catch (cacheError) {
+        // Log but don't fail if cache save fails
+        console.error("Failed to save fallback preview to cache:", cacheError);
+      }
+
+      return fallbackPreview;
     }
+  },
+});
+
+/**
+ * Internal mutation to clean up expired link preview cache entries
+ * Called by cron job to remove stale cache data
+ */
+export const cleanupExpiredLinkPreviews = internalMutation({
+  args: {},
+  returns: v.object({
+    deletedCount: v.number(),
+  }),
+  handler: async (ctx) => {
+    const now = Date.now();
+
+    // Find all expired cache entries
+    const expiredEntries = await ctx.db
+      .query("linkPreviewCache")
+      .withIndex("by_expiresAt")
+      .filter((q) => q.lt(q.field("expiresAt"), now))
+      .collect();
+
+    // Delete each expired entry
+    for (const entry of expiredEntries) {
+      await ctx.db.delete(entry._id);
+    }
+
+    return {
+      deletedCount: expiredEntries.length,
+    };
   },
 });
 
@@ -75,18 +199,41 @@ export const getLinkPreview = query({
   args: {
     url: v.string(),
   },
-  handler: async () => {
-    // TODO: Check cache first
-    // const cached = await ctx.db
-    //   .query("linkPreviews")
-    //   .withIndex("by_url", (q) => q.eq("url", args.url))
-    //   .first();
-    //
-    // if (cached && Date.now() - cached.fetchedAt < 24 * 60 * 60 * 1000) {
-    //   return cached;
-    // }
+  returns: v.union(
+    v.object({
+      url: v.string(),
+      title: v.optional(v.string()),
+      description: v.optional(v.string()),
+      image: v.optional(v.string()),
+      siteName: v.optional(v.string()),
+      fetchedAt: v.number(),
+      isYouTubeEmbed: v.optional(v.boolean()),
+      youTubeVideoId: v.optional(v.string()),
+    }),
+    v.null(),
+  ),
+  handler: async (ctx, args) => {
+    // Check cache first for this URL
+    const cached = await ctx.db
+      .query("linkPreviewCache")
+      .withIndex("by_url", (q) => q.eq("url", args.url))
+      .first();
 
-    // For now, return null to trigger a fresh fetch
+    // Return cached data if it exists and hasn't expired
+    if (cached && Date.now() < cached.expiresAt) {
+      return {
+        url: cached.url,
+        title: cached.title,
+        description: cached.description,
+        image: cached.image,
+        siteName: cached.siteName,
+        fetchedAt: cached.fetchedAt,
+        isYouTubeEmbed: cached.isYouTubeEmbed,
+        youTubeVideoId: cached.youTubeVideoId,
+      };
+    }
+
+    // If no valid cache entry exists, return null to trigger a fresh fetch
     return null;
   },
 });

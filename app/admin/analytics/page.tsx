@@ -129,9 +129,9 @@ export default function AnalyticsPage() {
             <TrendingUp className="text-muted-foreground h-4 w-4" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(metrics.revenue.net)}</div>
+            <div className="text-2xl font-bold">{formatCurrency(metrics.revenue.net as number)}</div>
             <p className="text-muted-foreground text-xs">
-              {formatCurrency(metrics.revenue.gross)} gross
+              {formatCurrency(metrics.revenue.gross as number)} gross
             </p>
           </CardContent>
         </Card>
