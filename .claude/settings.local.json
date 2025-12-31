@@ -46,7 +46,10 @@
       "Bash(bun install:*)",
       "Bash(bun run lint:*)",
       "Bash(bun run lint:fix:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(git -C /Users/parkerrex/Developer/Old Dev Projects/vai-skool-clone log --all --grep=\"auth\" --oneline)",
+      "Bash(xargs:*)",
+      "Bash(bun add:*)"
     ],
     "deny": []
   }

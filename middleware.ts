@@ -1,45 +1,58 @@
-import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
 // Routes that require authentication
-const isProtectedRoute = createRouteMatcher(["/server", "/account(.*)", "/settings(.*)"]);
+const protectedRoutes = ["/server", "/account", "/settings"];
 
 // Routes that are always public
-const _isPublicRoute = createRouteMatcher([
-  "/",
-  "/sign-in(.*)",
-  "/sign-up(.*)",
-  "/pricing",
-  "/membership/success",
-  "/api(.*)",
-  "/blog(.*)",
-]);
+const publicRoutes = [
+	"/",
+	"/sign-in",
+	"/sign-up",
+	"/pricing",
+	"/blog",
+	"/api/auth",
+	"/api/stripe/webhook",
+	"/forgot-password",
+	"/reset-password",
+];
 
-// Routes that should bypass all middleware (including Clerk)
-const isBypassRoute = createRouteMatcher(["/api/stripe/webhook"]);
+// Routes that should bypass all middleware
+const bypassRoutes = ["/api/stripe/webhook", "/api/health"];
 
-export default clerkMiddleware(async (auth, req) => {
-  // Bypass middleware entirely for webhook endpoints
-  if (isBypassRoute(req)) {
-    return NextResponse.next();
-  }
+export async function middleware(request: NextRequest) {
+	const { pathname } = request.nextUrl;
 
-  const authResult = await auth();
-  const { userId } = authResult;
+	// Bypass middleware for specific routes
+	if (bypassRoutes.some((route) => pathname.startsWith(route))) {
+		return NextResponse.next();
+	}
 
-  // Protected routes require authentication
-  if (isProtectedRoute(req)) {
-    await auth.protect();
-  }
+	// Check for session cookie
+	const sessionToken = request.cookies.get("vai_session")?.value;
 
-  return NextResponse.next();
-});
+	// Public routes - always accessible
+	if (publicRoutes.some((route) => pathname.startsWith(route))) {
+		return NextResponse.next();
+	}
+
+	// Protected routes require authentication
+	if (protectedRoutes.some((route) => pathname.startsWith(route))) {
+		if (!sessionToken) {
+			const signInUrl = new URL("/sign-in", request.url);
+			signInUrl.searchParams.set("redirect", pathname);
+			return NextResponse.redirect(signInUrl);
+		}
+	}
+
+	return NextResponse.next();
+}
 
 export const config = {
-  matcher: [
-    // Skip Next.js internals and all static files, unless found in search params
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    // Always run for API routes
-    "/(api|trpc)(.*)",
-  ],
+	matcher: [
+		// Skip Next.js internals and all static files
+		"/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+		// Always run for API routes
+		"/(api|trpc)(.*)",
+	],
 };

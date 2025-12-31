@@ -1,0 +1,17 @@
+import { db } from "@/db";
+import { sessions, passwordResetTokens } from "@/db/schema";
+import { lt } from "drizzle-orm";
+
+export async function cleanupExpiredSessions(): Promise<number> {
+	const result = await db
+		.delete(sessions)
+		.where(lt(sessions.expiresAt, new Date()))
+		.returning({ id: sessions.id });
+
+	// Also cleanup expired password reset tokens
+	await db
+		.delete(passwordResetTokens)
+		.where(lt(passwordResetTokens.expiresAt, new Date()));
+
+	return result.length;
+}
