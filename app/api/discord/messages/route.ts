@@ -121,7 +121,7 @@ async function fetchChannelMessages(
  * Fetches Discord messages from the specified guild and channels.
  *
  * This endpoint serves as a bridge between the client-side news source fetcher
- * and the Convex backend Discord functions. It handles authentication and
+ * and the Discord API. It handles authentication and
  * error handling for Discord API integration.
  *
  * @param {NextRequest} request - The incoming request with Discord fetch parameters
@@ -145,7 +145,7 @@ async function fetchChannelMessages(
  * @throws {Error} When Discord API is unreachable or returns an error
  *
  * @performance
- * - Delegates heavy lifting to Convex backend for optimal performance
+ * - Calls Discord API directly for real-time message fetching
  * - Implements proper error handling and graceful degradation
  * - Returns empty array on errors to prevent breaking news feed
  */

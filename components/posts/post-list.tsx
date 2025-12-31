@@ -105,7 +105,7 @@ export default function PostList({
 				<PostCard
 					key={post.id}
 					post={{
-						_id: post.id,
+						id: post.id,
 						title: post.title,
 						content: post.content,
 						preview: post.preview,
@@ -137,7 +137,7 @@ export default function PostList({
 						attachments: post.attachments || undefined,
 						member: post.member
 							? {
-									_id: post.member.id,
+									id: post.member.id,
 									firstName: post.member.firstName,
 									lastName: post.member.lastName,
 									email: "",
@@ -147,7 +147,7 @@ export default function PostList({
 							: null,
 						category: post.category
 							? {
-									_id: post.category.id,
+									id: post.category.id,
 									name: post.category.name,
 									displayName: post.category.displayName,
 									icon: post.category.icon || undefined,

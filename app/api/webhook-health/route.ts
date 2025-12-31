@@ -13,7 +13,7 @@ export async function GET() {
     configuration: {
       hasStripeSecretKey: !!process.env.STRIPE_SECRET_KEY,
       hasWebhookSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
-      hasConvexUrl: !!process.env.NEXT_PUBLIC_CONVEX_URL,
+      hasDatabaseUrl: !!process.env.DATABASE_URL,
       appUrl: process.env.NEXT_PUBLIC_APP_URL,
     },
     expectedWebhookUrl: `${process.env.NEXT_PUBLIC_APP_URL}/api/stripe/webhook`,
@@ -31,7 +31,7 @@ export async function GET() {
         "2. Ensure webhook secret in Stripe dashboard matches STRIPE_WEBHOOK_SECRET env var",
         "3. Check that all required events are enabled for the webhook",
         "4. Test webhook delivery using Stripe CLI: stripe listen --forward-to localhost:3000/api/stripe/webhook",
-        "5. Check Convex logs for webhook processing errors",
+        "5. Check server logs for webhook processing errors",
       ],
       commonIssues: [
         "Webhook URL mismatch between Stripe dashboard and actual endpoint",

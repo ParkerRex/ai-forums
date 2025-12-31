@@ -48,13 +48,13 @@ interface CommentSectionFlatProps {
 }
 
 type FlatComment = {
-  _id: string;
+  id: string;
   content: string;
   createdAt: number;
   upvotes: number;
   netVotes: number;
   member: {
-    _id: string;
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -64,7 +64,7 @@ type FlatComment = {
   } | null;
   parentCommentId?: string | null;
   replyToMember?: {
-    _id: string;
+    id: string;
     firstName: string;
     lastName: string;
     username: string;
@@ -197,7 +197,7 @@ function CommentItemFlat({
                     comment.member
                       ? memberProfileUrl({
                           slug: comment.member.slug,
-                          _id: comment.member._id,
+                          id: comment.member.id,
                         })
                       : "#"
                   }
@@ -215,7 +215,7 @@ function CommentItemFlat({
                   <Link
                     href={memberProfileUrl({
                       slug: comment.replyToMember.slug,
-                      _id: comment.replyToMember._id,
+                      id: comment.replyToMember.id,
                     })}
                     className="text-primary font-medium hover:underline"
                   >
@@ -233,8 +233,8 @@ function CommentItemFlat({
             {comment.member && (
               <Authenticated>
                 <CommentActionsMenu
-                  commentId={comment._id}
-                  authorId={comment.member._id}
+                  commentId={comment.id}
+                  authorId={comment.member.id}
                   postSlug={postSlug}
                   categoryName={categoryName}
                   onEditClick={() => setIsEditing(true)}
@@ -400,13 +400,13 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
 
   // Transform the API response to the expected format
   const comments = commentsData?.items?.map((c: any) => ({
-    _id: c.id,
+    id: c.id,
     content: c.content,
     createdAt: new Date(c.createdAt).getTime(),
     upvotes: c.upvotes || 0,
     netVotes: c.netVotes || 0,
     member: c.member ? {
-      _id: c.member.id,
+      id: c.member.id,
       firstName: c.member.firstName,
       lastName: c.member.lastName,
       email: "",
@@ -416,7 +416,7 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
     } : null,
     parentCommentId: c.parentCommentId,
     replyToMember: c.replyToMember ? {
-      _id: c.replyToMember.id,
+      id: c.replyToMember.id,
       firstName: c.replyToMember.firstName,
       lastName: c.replyToMember.lastName,
       username: c.replyToMember.slug,
@@ -431,7 +431,7 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
   const categoryName = (params.category as string) || "";
 
   // Batch fetch user votes for all comments
-  const commentIds = comments?.map((c) => c._id) || [];
+  const commentIds = comments?.map((c) => c.id) || [];
   const { votes: userVotes } = useUserVotes(commentIds, "comment");
 
   useEffect(() => {

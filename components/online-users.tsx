@@ -23,7 +23,7 @@ export function OnlineUsers() {
 					const initials = `${member.firstName?.[0] || ""}${member.lastName?.[0] || ""}`;
 					const memberUrl = memberProfileUrl({
 						slug: member.slug,
-						_id: member.id,
+						id: member.id,
 					});
 
 					return (

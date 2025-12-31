@@ -50,7 +50,7 @@ import { discordDigest } from "@/db/schema";
  * Fetches processed Discord digest from the database archive.
  *
  * This endpoint serves as a bridge between the client-side news source fetcher
- * and the Convex backend Discord digest query. It provides pre-processed,
+ * and the database Discord digest table. It provides pre-processed,
  * ranked Discord messages with AI-generated summaries.
  *
  * @param {NextRequest} request - The incoming request with digest fetch parameters

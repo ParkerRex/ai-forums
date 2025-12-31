@@ -95,7 +95,7 @@ export function MemberHoverCard({
 
 interface MemberHoverCardWrapperProps {
   member: {
-    _id: string;
+    id: string;
     firstName: string;
     lastName: string;
     slug?: string;
@@ -118,7 +118,7 @@ export function MemberHoverCardWrapper({
   }
 
   return (
-    <MemberHoverCard memberId={member._id} side={side} align={align}>
+    <MemberHoverCard memberId={member.id} side={side} align={align}>
       {children}
     </MemberHoverCard>
   );
