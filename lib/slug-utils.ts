@@ -2,8 +2,6 @@
  * Utility functions for generating and managing post slugs
  */
 
-import type { Id } from "../convex/_generated/dataModel";
-
 /**
  * Generate a URL-safe slug from a member's full name
  * @param fullName - The member's full name (firstName + lastName)
@@ -67,9 +65,9 @@ export function isValidSlug(slug: string): boolean {
 
 /**
  * Generate a URL for a member's profile page
- * @param member - Member object with slug and _id
+ * @param member - Member object with slug and id
  * @returns Profile URL path
  */
-export function memberProfileUrl(member: { slug: string; _id: Id<"members"> }): string {
+export function memberProfileUrl(member: { slug: string; id: string }): string {
   return `/members/${member.slug}`;
 }

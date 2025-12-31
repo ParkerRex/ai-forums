@@ -17,35 +17,10 @@ import { useCurrentMember } from "@/hooks/use-current-member";
 import {
 	useNotifications,
 	useMarkNotificationsRead,
+	type Notification,
 } from "@/hooks/use-notifications";
 import { NotificationBell } from "./notification-bell";
 import { formatDistanceToNow } from "date-fns";
-
-interface NotificationData {
-	id: string;
-	recipientId: string;
-	type:
-		| "mention"
-		| "reply"
-		| "upvote"
-		| "follow"
-		| "comment_report"
-		| "payment_reminder";
-	entityType: "post" | "comment" | "payment";
-	entityId: string;
-	actorId: string;
-	message: string;
-	read: boolean;
-	createdAt: string;
-	actor: {
-		id: string;
-		firstName: string;
-		lastName: string;
-		slug: string;
-	} | null;
-	postId: string | null;
-	postSlug: string | null;
-}
 
 export function NotificationDropdown() {
 	const { member } = useCurrentMember();
@@ -77,7 +52,7 @@ export function NotificationDropdown() {
 		}
 	};
 
-	const getNotificationLink = (notification: NotificationData) => {
+	const getNotificationLink = (notification: Notification) => {
 		if (notification.type === "comment_report") {
 			return "/admin/reported-comments";
 		}
@@ -147,7 +122,7 @@ export function NotificationDropdown() {
 								}
 							>
 								<Link
-									href={getNotificationLink(notification as NotificationData)}
+									href={getNotificationLink(notification)}
 									className="hover:bg-accent flex w-full items-start gap-3 rounded-none p-3"
 								>
 									<Avatar className="h-8 w-8 flex-shrink-0">

@@ -18,8 +18,8 @@ export function NotificationBell({ onClick }: NotificationBellProps) {
 		stopAnimation: () => void;
 	}>(null);
 
-	const { data: notifications } = useNotifications({ limit: 10 });
-	const unreadCount = notifications?.filter((n) => !n.read).length ?? 0;
+	// Use the unreadCount from the API response for accurate count
+	const { unreadCount } = useNotifications({ limit: 10 });
 
 	if (!member) return null;
 

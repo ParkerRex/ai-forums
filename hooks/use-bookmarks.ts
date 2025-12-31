@@ -10,12 +10,48 @@ interface Bookmark {
 	createdAt: string;
 }
 
-async function getBookmarks(): Promise<Bookmark[]> {
-	const res = await fetch("/api/bookmarks");
+interface BookmarkWithTarget extends Bookmark {
+	target?: {
+		id: string;
+		title: string;
+		content: string;
+		slug: string;
+		createdAt: string;
+		member?: {
+			id: string;
+			firstName: string;
+			lastName: string;
+			slug: string;
+			avatarUrl: string | null;
+		};
+		category?: {
+			id: string;
+			name: string;
+			displayName: string;
+		};
+	};
+}
+
+async function getBookmarks(targetType?: "post" | "resource"): Promise<{ items: Bookmark[] }> {
+	const params = new URLSearchParams();
+	if (targetType) params.set("type", targetType);
+	const res = await fetch(`/api/bookmarks?${params}`);
 	if (!res.ok) {
 		throw new Error("Failed to fetch bookmarks");
 	}
 	return res.json();
+}
+
+async function getBookmarksWithDetails(targetType?: "post" | "resource"): Promise<BookmarkWithTarget[]> {
+	const params = new URLSearchParams();
+	if (targetType) params.set("type", targetType);
+	params.set("expand", "true");
+	const res = await fetch(`/api/bookmarks?${params}`);
+	if (!res.ok) {
+		throw new Error("Failed to fetch bookmarks");
+	}
+	const data = await res.json();
+	return data.items || [];
 }
 
 async function toggleBookmark(data: {
@@ -33,10 +69,17 @@ async function toggleBookmark(data: {
 	return res.json();
 }
 
-export function useBookmarks() {
+export function useBookmarks(targetType?: "post" | "resource") {
 	return useQuery({
-		queryKey: ["bookmarks"],
-		queryFn: getBookmarks,
+		queryKey: ["bookmarks", targetType],
+		queryFn: () => getBookmarks(targetType),
+	});
+}
+
+export function useBookmarksWithDetails(targetType?: "post" | "resource") {
+	return useQuery({
+		queryKey: ["bookmarks", "withDetails", targetType],
+		queryFn: () => getBookmarksWithDetails(targetType),
 	});
 }
 

@@ -1,6 +1,7 @@
-import { useQuery } from "convex/react";
+"use client";
+
+import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo } from "react";
-import { api } from "../convex/_generated/api";
 import type { NewsItem } from "../features/news/utils/news-sources/types";
 import { useCurrentMember } from "./use-current-member";
 
@@ -35,7 +36,7 @@ interface DiscordPreferences {
 
 // Cache configuration
 const CACHE_KEY = "discord-digest";
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes (matching localStorage pattern)
+const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
 
 // Local storage cache interface
 interface CachedDiscordData {
@@ -44,14 +45,29 @@ interface CachedDiscordData {
   expiresAt: number;
 }
 
+async function fetchDiscordDigest(userId: string, limit: number): Promise<DiscordDigestEntry[]> {
+  const response = await fetch(`/api/discord/digest?userId=${userId}&limit=${limit}`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch Discord digest");
+  }
+  const data = await response.json();
+  return data.entries || [];
+}
+
+async function fetchDiscordPreferences(): Promise<DiscordPreferences> {
+  const response = await fetch("/api/discord/preferences");
+  if (!response.ok) {
+    throw new Error("Failed to fetch Discord preferences");
+  }
+  return response.json();
+}
+
 /**
  * Transform Discord digest entry to NewsItem format
- * Requirements: 2.4 - Transform Discord messages to NewsItem interface format
  */
 function transformDiscordEntryToNewsItem(entry: DiscordDigestEntry): NewsItem {
   const defaultGuildId = "1355280592962453585"; // VAI Discord server
 
-  // Create meaningful title from the message
   const maxContentLength = 100;
   const reactionCount = entry.reactions.reduce((sum, r) => sum + r.count, 0);
 
@@ -69,7 +85,6 @@ function transformDiscordEntryToNewsItem(entry: DiscordDigestEntry): NewsItem {
     title = `${entry.author.username} in #${entry.channelName}${reactionIndicator}`;
   }
 
-  // Create Discord message URL
   const url = `https://discord.com/channels/${defaultGuildId}/${entry.channelId}/${entry.messageId}`;
 
   return {
@@ -89,27 +104,24 @@ function transformDiscordEntryToNewsItem(entry: DiscordDigestEntry): NewsItem {
 }
 
 /**
- * Custom hook for Discord digest functionality on the dedicated Discord page
- * Provides Discord-only data fetching with loading states, error handling, and manual refresh
- * Requirements: 4.2, 4.3 - Discord digest page functionality and manual refresh
+ * Custom hook for Discord digest functionality
  */
 export function useDiscordDigest(limit?: number) {
   const { member } = useCurrentMember();
 
-  // Convex queries
-  const discordDigestData = useQuery(
-    api.discordQueries.getDiscordDigest,
-    member
-      ? {
-          userId: member._id,
-          limit: limit || 20,
-        }
-      : "skip",
-  );
-  const discordPreferences = useQuery(
-    api.newsFeedSources.getDiscordPreferences,
-    member ? { userId: member._id } : "skip",
-  );
+  // React Query for Discord digest
+  const { data: discordDigestData, isLoading: digestLoading } = useQuery({
+    queryKey: ["discordDigest", member?.id, limit || 20],
+    queryFn: () => fetchDiscordDigest(member!.id, limit || 20),
+    enabled: !!member,
+  });
+
+  // React Query for Discord preferences
+  const { data: discordPreferences, isLoading: preferencesLoading } = useQuery({
+    queryKey: ["discordPreferences", member?.id],
+    queryFn: fetchDiscordPreferences,
+    enabled: !!member,
+  });
 
   // Transform raw Discord digest data to NewsItems
   const messages = useMemo(() => {
@@ -151,12 +163,10 @@ export function useDiscordDigest(limit?: number) {
       const parsedCache: CachedDiscordData = JSON.parse(cached);
       const now = Date.now();
 
-      // Check if cache is still valid
       if (parsedCache.expiresAt > now) {
         return parsedCache.data;
       }
 
-      // Remove expired cache
       localStorage.removeItem(CACHE_KEY);
       return null;
     } catch (error) {
@@ -166,18 +176,13 @@ export function useDiscordDigest(limit?: number) {
     }
   }, []);
 
-  // Manual refresh function - clears cache and forces component re-render
+  // Manual refresh function
   const refresh = useCallback(() => {
-    // Clear the cache to force fresh data
     try {
       localStorage.removeItem(CACHE_KEY);
     } catch (error) {
       console.error("Failed to clear cache during refresh:", error);
     }
-
-    // Note: Convex queries automatically refetch when their dependencies change
-    // The cache clearing will ensure we don't show stale cached data
-    // The query will naturally refetch due to Convex's reactive nature
   }, []);
 
   // Clear cache utility function
@@ -189,8 +194,7 @@ export function useDiscordDigest(limit?: number) {
     }
   }, []);
 
-  // Determine loading state
-  const loading = discordDigestData === undefined || discordPreferences === undefined;
+  const loading = digestLoading || preferencesLoading;
 
   // Determine error state
   const error = useMemo(() => {
@@ -198,26 +202,24 @@ export function useDiscordDigest(limit?: number) {
       return "Please sign in to view Discord digest";
     }
 
-    if (discordPreferences === undefined) {
-      return null; // Still loading preferences
+    if (preferencesLoading) {
+      return null;
     }
 
     if (!discordPreferences?.enabled) {
       return "Discord digest is not enabled. Please enable it in your news source settings.";
     }
 
-    // If we have no data and we're not loading, there might be an issue
     if (!loading && (!discordDigestData || discordDigestData.length === 0)) {
-      // Try to load from cache as fallback
       const cachedData = loadFromCache();
       if (cachedData && cachedData.length > 0) {
         return "Unable to load fresh Discord data (showing cached content)";
       }
-      return null; // No error, just no data available
+      return null;
     }
 
     return null;
-  }, [member, discordPreferences, loading, discordDigestData, loadFromCache]);
+  }, [member, discordPreferences, loading, discordDigestData, loadFromCache, preferencesLoading]);
 
   // Use cached data if we have an error and no fresh data
   const finalMessages = useMemo(() => {
@@ -225,7 +227,6 @@ export function useDiscordDigest(limit?: number) {
       return messages;
     }
 
-    // If we have an error but no fresh data, try to use cached data
     if (error?.includes("cached content")) {
       const cachedData = loadFromCache();
       return cachedData || [];
@@ -239,10 +240,9 @@ export function useDiscordDigest(limit?: number) {
     loading,
     error,
     preferences: discordPreferences || null,
-    preferencesLoading: discordPreferences === undefined,
+    preferencesLoading,
     refresh,
     clearCache,
-    // Computed properties for convenience
     isEnabled: discordPreferences?.enabled || false,
     hasMessages: finalMessages.length > 0,
     isEmpty: !loading && finalMessages.length === 0 && !error,
@@ -251,18 +251,19 @@ export function useDiscordDigest(limit?: number) {
 
 /**
  * Lightweight hook for checking Discord preferences only
- * Useful for components that only need to know if Discord is enabled
  */
 export function useDiscordPreferences() {
   const { member } = useCurrentMember();
-  const preferences = useQuery(
-    api.newsFeedSources.getDiscordPreferences,
-    member ? { userId: member._id } : "skip",
-  );
+
+  const { data: preferences, isLoading } = useQuery({
+    queryKey: ["discordPreferences", member?.id],
+    queryFn: fetchDiscordPreferences,
+    enabled: !!member,
+  });
 
   return {
     preferences,
-    loading: preferences === undefined,
+    loading: isLoading,
     isEnabled: preferences?.enabled || false,
   };
 }

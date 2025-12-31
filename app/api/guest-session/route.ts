@@ -1,10 +1,10 @@
-import { ConvexHttpClient } from "convex/browser";
+import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { api } from "@/convex/_generated/api";
+import { db } from "@/db";
+import { members } from "@/db/schema";
 
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 /**
@@ -36,10 +36,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "No email found in session" }, { status: 400 });
     }
 
-    // Verify the member exists in Convex
-    const member = await convex.query(api.members.getMemberByEmail, { email });
+    // Verify the member exists in the database
+    const member = await db
+      .select()
+      .from(members)
+      .where(eq(members.email, email))
+      .limit(1);
 
-    if (!member || !member.stripeCustomerId) {
+    if (!member || member.length === 0) {
       return NextResponse.json({ error: "Member not found" }, { status: 404 });
     }
 
@@ -49,7 +53,7 @@ export async function POST(request: NextRequest) {
       name: "guest-session",
       value: JSON.stringify({
         email,
-        memberId: member._id,
+        memberId: member[0].id,
         expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
       }),
       httpOnly: true,

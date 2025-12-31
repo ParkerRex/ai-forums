@@ -19,13 +19,12 @@
  * @version 1.0.0
  */
 
-import { useQuery } from "convex/react";
 import { Loader2, Search, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { PageErrorBoundary } from "@/components/error-boundary";
 import MembersDisplay from "@/components/members/members-display";
 import { Input } from "@/components/ui/input";
-import { api } from "@/convex/_generated/api";
+import { useMembers } from "@/hooks/use-members";
 
 /**
  * Main content component for the Members Directory page.
@@ -58,36 +57,26 @@ function MembersPageContent() {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
-  // Conditional queries based on search state - only run one query at a time
-  // This optimization prevents unnecessary API calls and improves performance
-  const allMembersData = useQuery(
-    api.members.getMembersWithStats,
-    debouncedSearchTerm ? "skip" : {}, // Skip when searching to avoid duplicate calls
-  );
+  // Fetch members based on search term using React Query
+  const { data: membersData, isLoading, isError } = useMembers({
+    search: debouncedSearchTerm || undefined,
+  });
 
-  // Search-specific query that only runs when there's a search term
-  const searchResults = useQuery(
-    api.members.searchMembersWithStats,
-    debouncedSearchTerm ? { searchTerm: debouncedSearchTerm } : "skip",
-  );
-
-  // Determine which data to display and calculate various loading states
+  // Determine various loading states
   // These states help provide granular loading feedback to users
-  const membersData = debouncedSearchTerm ? searchResults : allMembersData;
   const isSearching = debouncedSearchTerm.length > 0; // True when actively searching
-  const isLoading = membersData === undefined; // True when waiting for API response
   const hasSearchTerm = searchTerm.length > 0; // True when user has typed something
   const isTyping = searchTerm !== debouncedSearchTerm; // True during debounce period
 
   // Transform server data to match MembersDisplay interface
   // This transformation layer allows us to adapt server data structure to component needs
   const members =
-    membersData?.map((member) => ({
-      id: member._id, // Convert Convex _id to generic id for component
+    membersData?.items?.map((member) => ({
+      id: member.id,
       firstName: member.firstName,
       lastName: member.lastName,
-      status: member.status, // Member status: active, churned, or free
-      joinedDate: member.joinedDateFormatted, // Use server-formatted date for consistency
+      status: member.status || "active",
+      joinedDate: member.joinedDate ? new Date(member.joinedDate).toLocaleDateString() : undefined,
       country: member.country,
       bio: member.bio,
       linkGithub: member.linkGithub,
@@ -98,7 +87,7 @@ function MembersPageContent() {
       avatarUrl: member.avatarUrl,
       websiteUrl: member.websiteUrl,
       linkedinUrl: member.linkedinUrl,
-      skills: member.skills, // Array of member skills/technologies
+      skills: member.skills,
       // Community engagement statistics
       postCount: member.postCount,
       commentCount: member.commentCount,

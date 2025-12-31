@@ -2,7 +2,7 @@
  * @fileoverview Discord Messages API Route
  *
  * This API endpoint fetches Discord messages from the VAI Discord server
- * for the Discord Daily Digest feature. It integrates with the Convex backend
+ * for the Discord Daily Digest feature. It calls the Discord API directly
  * to retrieve messages from the previous day, ranked by reaction count.
  *
  * @route POST /api/discord/messages
@@ -38,12 +38,84 @@
  * @since 1.0.0
  */
 
-import { ConvexHttpClient } from "convex/browser";
 import { type NextRequest, NextResponse } from "next/server";
-import { api } from "../../../../convex/_generated/api";
 
-// Initialize Convex client for server-side API calls
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+const DISCORD_API_BASE = "https://discord.com/api/v10";
+const DEFAULT_GUILD_ID = "1355280592962453585"; // VAI Discord server
+
+interface DiscordMessage {
+  id: string;
+  content: string;
+  author: {
+    id: string;
+    username: string;
+    avatar?: string;
+  };
+  timestamp: string;
+  reactions?: Array<{
+    emoji: { name: string };
+    count: number;
+  }>;
+  channel_id: string;
+}
+
+interface DiscordChannel {
+  id: string;
+  name: string;
+  type: number;
+}
+
+async function fetchDiscordChannels(guildId: string): Promise<DiscordChannel[]> {
+  const token = process.env.DISCORD_BOT_TOKEN;
+  if (!token) {
+    throw new Error("Discord bot token not configured");
+  }
+
+  const response = await fetch(`${DISCORD_API_BASE}/guilds/${guildId}/channels`, {
+    headers: {
+      Authorization: `Bot ${token}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch channels: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function fetchChannelMessages(
+  channelId: string,
+  since: number,
+  limit: number
+): Promise<DiscordMessage[]> {
+  const token = process.env.DISCORD_BOT_TOKEN;
+  if (!token) {
+    throw new Error("Discord bot token not configured");
+  }
+
+  const response = await fetch(
+    `${DISCORD_API_BASE}/channels/${channelId}/messages?limit=${Math.min(limit, 100)}`,
+    {
+      headers: {
+        Authorization: `Bot ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    if (response.status === 403) {
+      // Bot doesn't have access to this channel
+      return [];
+    }
+    throw new Error(`Failed to fetch messages: ${response.status}`);
+  }
+
+  const messages: DiscordMessage[] = await response.json();
+
+  // Filter by timestamp
+  return messages.filter((msg) => new Date(msg.timestamp).getTime() >= since);
+}
 
 /**
  * Fetches Discord messages from the specified guild and channels.
@@ -81,7 +153,7 @@ export async function POST(request: NextRequest) {
   try {
     // Parse request body
     const body = await request.json();
-    const { guildId, channels, since, limit } = body;
+    const { guildId = DEFAULT_GUILD_ID, channels, since, limit = 20 } = body;
 
     // Validate required parameters
     if (!since || typeof since !== "number") {
@@ -91,17 +163,71 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Call Convex action to fetch Discord messages
-    const messages = await convex.action(api.discord.fetchDiscordMessages, {
-      guildId,
-      channels,
-      since,
-      limit,
-    });
+    // Fetch channel list to get channel names
+    const allChannels = await fetchDiscordChannels(guildId);
+    const channelMap = new Map(allChannels.map((c) => [c.id, c.name]));
+
+    // Filter to text channels only (type 0)
+    let targetChannels = allChannels.filter((c) => c.type === 0);
+
+    // If specific channels requested, filter to those
+    if (channels && Array.isArray(channels) && channels.length > 0) {
+      targetChannels = targetChannels.filter(
+        (c) => channels.includes(c.id) || channels.includes(c.name)
+      );
+    }
+
+    // Fetch messages from each channel
+    const allMessages: Array<{
+      id: string;
+      content: string;
+      author: { id: string; username: string; avatar?: string };
+      timestamp: string;
+      reactions: Array<{ emoji: string; count: number }>;
+      channelId: string;
+      channelName: string;
+    }> = [];
+
+    for (const channel of targetChannels.slice(0, 10)) {
+      // Limit to 10 channels to avoid rate limits
+      try {
+        const messages = await fetchChannelMessages(channel.id, since, limit);
+        for (const msg of messages) {
+          allMessages.push({
+            id: msg.id,
+            content: msg.content,
+            author: {
+              id: msg.author.id,
+              username: msg.author.username,
+              avatar: msg.author.avatar,
+            },
+            timestamp: msg.timestamp,
+            reactions: (msg.reactions || []).map((r) => ({
+              emoji: r.emoji.name,
+              count: r.count,
+            })),
+            channelId: msg.channel_id,
+            channelName: channelMap.get(msg.channel_id) || "unknown",
+          });
+        }
+      } catch (channelError) {
+        console.warn(`Failed to fetch messages from channel ${channel.name}:`, channelError);
+        // Continue with other channels
+      }
+    }
+
+    // Sort by reaction count (descending) and limit results
+    const sortedMessages = allMessages
+      .sort((a, b) => {
+        const aScore = a.reactions.reduce((sum, r) => sum + r.count, 0);
+        const bScore = b.reactions.reduce((sum, r) => sum + r.count, 0);
+        return bScore - aScore;
+      })
+      .slice(0, limit);
 
     // Return successful response
     return NextResponse.json(
-      { messages },
+      { messages: sortedMessages },
       {
         headers: {
           // Cache for 5 minutes to reduce Discord API calls

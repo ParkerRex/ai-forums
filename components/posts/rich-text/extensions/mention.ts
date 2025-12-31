@@ -9,11 +9,10 @@ import {
 } from "@tiptap/suggestion";
 import tippy, { type Instance as TippyInstance } from "tippy.js";
 import { MentionAutocomplete } from "@/components/comments/mention-autocomplete";
-import type { Id } from "@/convex/_generated/dataModel";
 
 // Type for member data returned by search
 interface MemberSearchResult {
-  _id: Id<"members">;
+  _id: string;
   firstName: string;
   lastName: string;
   slug: string;

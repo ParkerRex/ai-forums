@@ -1,22 +1,21 @@
 "use client";
 
-import { SignInButton } from "@clerk/nextjs";
-import { Authenticated, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import { Link as LinkLucide } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 import { LinkIcon } from "@/components/icons/link";
 import { VoteButton } from "@/components/icons/vote-button";
 import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useComments, useCreateComment, useVoteOnComment, useEditComment } from "@/hooks/use-comments";
+import { useCurrentMember } from "@/hooks/use-current-member";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useUserVotes } from "@/hooks/use-user-votes";
 import { cn, memberProfileUrl } from "@/lib/utils";
@@ -44,27 +43,30 @@ type LinkPreviewType = {
 };
 
 interface CommentSectionFlatProps {
-  postId: Id<"posts">;
+  postId: string;
   targetCommentId?: string;
 }
 
 type FlatComment = {
-  _id: Id<"comments">;
+  _id: string;
   content: string;
   createdAt: number;
   upvotes: number;
   netVotes: number;
   member: {
-    _id: Id<"members">;
+    _id: string;
     firstName: string;
     lastName: string;
     email: string;
     username: string;
     slug: string;
+    avatarUrl?: string;
   } | null;
-  parentCommentId?: Id<"comments"> | null;
+  parentCommentId?: string | null;
   replyToMember?: {
-    _id: Id<"members">;
+    _id: string;
+    firstName: string;
+    lastName: string;
     username: string;
     slug: string;
   } | null;
@@ -92,7 +94,7 @@ type FlatComment = {
 
 interface CommentItemFlatProps {
   comment: FlatComment;
-  onReply: (commentId: Id<"comments">, replyToUsername: string) => void;
+  onReply: (commentId: string, replyToUsername: string) => void;
   isNewlyCreated?: boolean;
   postSlug: string;
   categoryName: string;
@@ -118,8 +120,8 @@ function CommentItemFlat({
 
   const isHighlighted = targetCommentId === comment._id;
 
-  const voteOnComment = useMutation(api.votes.voteOnComment);
-  const editComment = useMutation(api.comments.editComment);
+  const voteOnCommentMutation = useVoteOnComment();
+  const editCommentMutation = useEditComment();
   const { handleMutationError, handleMutationSuccess } = useMutationError();
 
   const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote;
@@ -144,12 +146,10 @@ function CommentItemFlat({
     setOptimisticUserVote(newUserVote);
 
     try {
-      const result = await voteOnComment({
+      await voteOnCommentMutation.mutateAsync({
         commentId: comment._id,
         voteType,
       });
-      setOptimisticNetVotes(result.netVotes);
-      setOptimisticUserVote(result.newVoteType);
     } catch (error) {
       setOptimisticNetVotes(comment.netVotes);
       setOptimisticUserVote(userVote || null);
@@ -254,7 +254,7 @@ function CommentItemFlat({
                 initialAttachments={comment.attachments}
                 onSubmit={async (content, attachments) => {
                   try {
-                    await editComment({
+                    await editCommentMutation.mutateAsync({
                       commentId: comment._id,
                       content: content.trim(),
                       attachments,
@@ -265,7 +265,7 @@ function CommentItemFlat({
                     handleMutationError(error);
                   }
                 }}
-                isSubmitting={false}
+                isSubmitting={editCommentMutation.isPending}
                 className="mb-2"
               />
             </div>
@@ -386,16 +386,45 @@ function CommentItemFlat({
 export default function CommentSectionFlat({ postId, targetCommentId }: CommentSectionFlatProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [replyingTo, setReplyingTo] = useState<{
-    commentId: Id<"comments">;
+    commentId: string;
     username: string;
   } | null>(null);
   const [newlyCreatedCommentIds, setNewlyCreatedCommentIds] = useState<Set<string>>(new Set());
 
   const params = useParams();
-  const comments = useQuery(api.comments.getCommentsByPostFlat, { postId });
-  const createComment = useMutation(api.comments.createComment);
-  const currentMember = useQuery(api.members.getCurrentMember);
+  const router = useRouter();
+  const { data: commentsData, isLoading: isLoadingComments } = useComments(postId, { flat: true });
+  const createCommentMutation = useCreateComment(postId);
+  const { member: currentMember } = useCurrentMember();
   const { handleMutationError, handleMutationSuccess } = useMutationError();
+
+  // Transform the API response to the expected format
+  const comments = commentsData?.items?.map((c: any) => ({
+    _id: c.id,
+    content: c.content,
+    createdAt: new Date(c.createdAt).getTime(),
+    upvotes: c.upvotes || 0,
+    netVotes: c.netVotes || 0,
+    member: c.member ? {
+      _id: c.member.id,
+      firstName: c.member.firstName,
+      lastName: c.member.lastName,
+      email: "",
+      username: c.member.slug,
+      slug: c.member.slug,
+      avatarUrl: c.member.avatarUrl,
+    } : null,
+    parentCommentId: c.parentCommentId,
+    replyToMember: c.replyToMember ? {
+      _id: c.replyToMember.id,
+      firstName: c.replyToMember.firstName,
+      lastName: c.replyToMember.lastName,
+      username: c.replyToMember.slug,
+      slug: c.replyToMember.slug,
+    } : null,
+    attachments: c.attachments,
+    linkPreviews: c.linkPreviews,
+  })) as FlatComment[] | undefined;
 
   const isAdmin = currentMember?.role === "admin";
   const postSlug = (params.slug as string) || "";
@@ -428,7 +457,7 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
-    mentions?: Id<"members">[],
+    mentions?: string[],
   ) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
@@ -436,22 +465,19 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
 
     try {
       const parentCommentId = replyingTo?.commentId || undefined;
-      const newComment = await createComment({
-        postId,
+      const newComment = await createCommentMutation.mutateAsync({
         content: content.trim(),
         parentCommentId,
-        attachments,
-        linkPreviews,
-        mentions,
       });
 
       if (newComment) {
-        setNewlyCreatedCommentIds((prev) => new Set(prev).add(newComment));
+        const newId = (newComment as any).id || (newComment as any)._id;
+        setNewlyCreatedCommentIds((prev) => new Set(prev).add(newId));
 
         setTimeout(() => {
           setNewlyCreatedCommentIds((prev) => {
             const next = new Set(prev);
-            next.delete(newComment);
+            next.delete(newId);
             return next;
           });
         }, 1000);
@@ -468,7 +494,7 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
     }
   };
 
-  const handleReply = (commentId: Id<"comments">, username: string) => {
+  const handleReply = (commentId: string, username: string) => {
     setReplyingTo({ commentId, username });
   };
 
@@ -493,11 +519,9 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
               Members-only discussion. Join VAI Community to participate.
             </p>
             <div className="space-y-2">
-              <SignInButton mode="modal">
-                <Button variant="outline" className="w-full sm:w-auto">
-                  Sign In (Members Only)
-                </Button>
-              </SignInButton>
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push("/login")}>
+                Sign In (Members Only)
+              </Button>
               <Button
                 variant="ghost"
                 className="w-full sm:w-auto"
@@ -510,7 +534,7 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
         </Unauthenticated>
 
         <div className="space-y-1">
-          {comments === undefined ? (
+          {isLoadingComments ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="py-4">

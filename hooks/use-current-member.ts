@@ -8,6 +8,6 @@ import { useAuth } from "@/components/providers/auth-provider";
  * Uses the custom auth system with PostgreSQL sessions.
  */
 export function useCurrentMember() {
-	const { member, isLoading } = useAuth();
-	return { member, isLoading };
+	const { user, isLoading } = useAuth();
+	return { member: user, isLoading };
 }

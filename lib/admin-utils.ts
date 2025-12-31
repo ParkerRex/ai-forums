@@ -4,7 +4,15 @@
  * Common utility functions for admin components
  */
 
-import type { Doc } from "../convex/_generated/dataModel";
+type MemberLike = {
+  firstName?: string;
+  lastName?: string;
+  email: string;
+  status?: string;
+  subscriptionStatus?: string;
+  subscriptionEndDate?: number | null;
+  amountCents?: number | null;
+};
 
 /**
  * Get display name for a member
@@ -37,7 +45,7 @@ export function getMemberInitials(member: {
 /**
  * Determine member status based on subscription data
  */
-export function getMemberStatus(member: Partial<Doc<"members">>): string {
+export function getMemberStatus(member: MemberLike): string {
   // If member has an explicit status field, use it
   if (member.status) {
     // Map "duplicate" to appropriate display status (no free tier)
@@ -116,6 +124,6 @@ export function formatTierPrice(
  * A member is considered to have a scholarship if their subscription is active
  * and their payment amount is zero.
  */
-export function isScholarshipMember(member: Partial<Doc<"members">>): boolean {
+export function isScholarshipMember(member: MemberLike): boolean {
   return member.subscriptionStatus === "active" && member.amountCents === 0;
 }

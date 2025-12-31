@@ -20,8 +20,11 @@ async function fetchCategories(): Promise<{ items: Category[] }> {
 	return response.json();
 }
 
-async function fetchCategory(categoryId: string): Promise<Category> {
+async function fetchCategory(categoryId: string): Promise<Category | null> {
 	const response = await fetch(`/api/categories/${categoryId}`);
+	if (response.status === 404) {
+		return null;
+	}
 	if (!response.ok) {
 		throw new Error("Failed to fetch category");
 	}
@@ -41,5 +44,16 @@ export function useCategory(categoryId: string) {
 		queryKey: ["categories", categoryId],
 		queryFn: () => fetchCategory(categoryId),
 		enabled: !!categoryId,
+	});
+}
+
+/**
+ * Fetch category by name (supports both ID and name lookup via API)
+ */
+export function useCategoryByName(categoryName: string) {
+	return useQuery({
+		queryKey: ["categories", "byName", categoryName],
+		queryFn: () => fetchCategory(categoryName),
+		enabled: !!categoryName,
 	});
 }

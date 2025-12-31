@@ -16,7 +16,6 @@ import Link from "next/link";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { Id } from "@/convex/_generated/dataModel";
 import { memberProfileUrl } from "@/lib/slug-utils";
 
 interface Member {
@@ -94,7 +93,7 @@ export default function MemberCard({ member }: MemberCardProps) {
   // Generate member profile URL using slug
   const memberUrl = memberProfileUrl({
     slug: member.slug!,
-    _id: member.id as Id<"members">,
+    _id: member.id,
   });
 
   return (

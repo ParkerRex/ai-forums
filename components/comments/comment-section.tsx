@@ -1,6 +1,5 @@
 "use client";
 
-import { SignInButton } from "@clerk/nextjs";
 import {
   closestCenter,
   DndContext,
@@ -10,15 +9,15 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
-import { Authenticated, Unauthenticated, useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import { ChevronDown, ChevronRight, GripVertical } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 import {
   CommentThreadContainer,
   isLastChildComment,
@@ -30,8 +29,8 @@ import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { UploadIcon } from "@/components/ui/upload";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useComments, useCreateComment, useDeleteComment, useVoteOnComment, useReorderCommentReplies } from "@/hooks/use-comments";
+import { useCurrentMember } from "@/hooks/use-current-member";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useUserVotes } from "@/hooks/use-user-votes";
 import { memberProfileUrl } from "@/lib/utils";
@@ -59,23 +58,24 @@ type LinkPreviewType = {
 };
 
 interface CommentSectionProps {
-  postId: Id<"posts">;
+  postId: string;
   targetCommentId?: string;
 }
 
 type CommentWithReplies = {
-  _id: Id<"comments">;
+  _id: string;
   content: string;
   createdAt: number;
   upvotes: number;
   netVotes: number;
   member: {
-    _id: Id<"members">;
+    _id: string;
     firstName: string;
     lastName: string;
     email: string;
     username: string;
     slug: string;
+    avatarUrl?: string;
   } | null;
   depth: number;
   replies: CommentWithReplies[];
@@ -104,14 +104,14 @@ type CommentWithReplies = {
 
 interface CommentItemProps {
   comment: CommentWithReplies;
-  onReply: (parentId: Id<"comments"> | null) => void;
-  replyingTo: Id<"comments"> | null;
+  onReply: (parentId: string | null) => void;
+  replyingTo: string | null;
   onSubmitReply: (
-    parentId: Id<"comments">,
+    parentId: string,
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
-    mentions?: Id<"members">[],
+    mentions?: string[],
   ) => void;
   isSubmittingReply: boolean;
   isNewlyCreated?: boolean;
@@ -158,8 +158,7 @@ function CommentItem({
 
   const hasReplies = comment.replies && comment.replies.length > 0;
 
-  const voteOnComment = useMutation(api.votes.voteOnComment);
-  const editComment = useMutation(api.comments.editComment);
+  const voteOnCommentMutation = useVoteOnComment();
   const { handleMutationError, handleMutationSuccess } = useMutationError();
 
   const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote || null;
@@ -188,13 +187,10 @@ function CommentItem({
     setOptimisticUserVote(newUserVote);
 
     try {
-      const result = await voteOnComment({
+      await voteOnCommentMutation.mutateAsync({
         commentId: comment._id,
         voteType,
       });
-
-      setOptimisticNetVotes(result.netVotes);
-      setOptimisticUserVote(result.newVoteType);
     } catch (error) {
       setOptimisticNetVotes(comment.netVotes);
       setOptimisticUserVote(userVote || null);
@@ -206,7 +202,7 @@ function CommentItem({
     }
   };
 
-  const shouldReduceMotion = window?.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const shouldReduceMotion = typeof window !== 'undefined' && window?.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const highlightVariants = {
     initial: {
@@ -288,11 +284,13 @@ function CommentItem({
                   initialAttachments={comment.attachments}
                   onSubmit={async (content, attachments) => {
                     try {
-                      await editComment({
-                        commentId: comment._id,
-                        content: content.trim(),
-                        attachments,
+                      // Use the edit comment mutation from the hook
+                      const response = await fetch(`/api/comments/${comment._id}`, {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ content: content.trim(), attachments }),
                       });
+                      if (!response.ok) throw new Error("Failed to edit comment");
                       handleMutationSuccess("Comment updated successfully");
                       setIsEditing(false);
                     } catch (error) {
@@ -495,12 +493,12 @@ function CommentItem({
 }
 
 interface ReplyDragContextProps {
-  parentCommentId: Id<"comments">;
+  parentCommentId: string;
   replies: CommentWithReplies[];
-  onReply: (parentId: Id<"comments"> | null) => void;
-  replyingTo: Id<"comments"> | null;
+  onReply: (parentId: string | null) => void;
+  replyingTo: string | null;
   onSubmitReply: (
-    parentId: Id<"comments">,
+    parentId: string,
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
@@ -526,8 +524,8 @@ function ReplyDragContext({
   isAdmin,
   userVotes,
 }: ReplyDragContextProps) {
-  const reorderReplies = useMutation(api.comments.reorderCommentReplies);
-  const currentMember = useQuery(api.members.getCurrentMember);
+  const reorderRepliesMutation = useReorderCommentReplies();
+  const { member: currentMember } = useCurrentMember();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -544,9 +542,9 @@ function ReplyDragContext({
       const newIndex = replies.findIndex((reply) => reply._id === over?.id);
 
       try {
-        await reorderReplies({
+        await reorderRepliesMutation.mutateAsync({
           parentCommentId,
-          commentId: active.id as Id<"comments">,
+          commentId: active.id as string,
           newOrder: newIndex,
         });
       } catch (error) {
@@ -556,7 +554,7 @@ function ReplyDragContext({
   };
 
   const canReorder =
-    currentMember && (isAdmin || replies.some((r) => r.member?._id === currentMember._id));
+    currentMember && (isAdmin || replies.some((r) => r.member?._id === currentMember.id));
 
   if (!canReorder) {
     return (
@@ -612,16 +610,41 @@ function ReplyDragContext({
 
 export default function CommentSection({ postId, targetCommentId }: CommentSectionProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [replyingTo, setReplyingTo] = useState<Id<"comments"> | null>(null);
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [isSubmittingReply, setIsSubmittingReply] = useState(false);
   const [newlyCreatedCommentIds, setNewlyCreatedCommentIds] = useState<Set<string>>(new Set());
 
   const params = useParams();
+  const router = useRouter();
 
-  const comments = useQuery(api.comments.getCommentsByPost, { postId });
-  const createComment = useMutation(api.comments.createComment);
-  const currentMember = useQuery(api.members.getCurrentMember);
+  const { data: commentsData, isLoading: isLoadingComments } = useComments(postId);
+  const createCommentMutation = useCreateComment(postId);
+  const deleteCommentMutation = useDeleteComment();
+  const { member: currentMember } = useCurrentMember();
   const { handleMutationError } = useMutationError();
+
+  // Transform the flat comments response into a nested structure
+  const comments = commentsData?.items?.map((c: any) => ({
+    _id: c.id,
+    content: c.content,
+    createdAt: new Date(c.createdAt).getTime(),
+    upvotes: c.upvotes || 0,
+    netVotes: c.netVotes || 0,
+    member: c.member ? {
+      _id: c.member.id,
+      firstName: c.member.firstName,
+      lastName: c.member.lastName,
+      email: "",
+      username: c.member.slug,
+      slug: c.member.slug,
+      avatarUrl: c.member.avatarUrl,
+    } : null,
+    depth: c.depth || 0,
+    replies: [], // Will be populated if we have nested structure
+    attachments: c.attachments,
+    linkPreviews: c.linkPreviews,
+    editedAt: c.editedAt ? new Date(c.editedAt).getTime() : undefined,
+  })) as CommentWithReplies[] | undefined;
 
   // Check if current user is admin
   const isAdmin = currentMember?.role === "admin";
@@ -690,35 +713,31 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
     return () => clearTimeout(timeoutId);
   }, [targetCommentId, comments]);
 
-  const deleteComment = useMutation(api.comments.deleteComment);
-
   const handleSubmitComment = async (
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
-    mentions?: Id<"members">[],
+    mentions?: string[],
   ) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     setIsSubmitting(true);
 
     try {
-      const newComment = await createComment({
-        postId,
+      const newComment = await createCommentMutation.mutateAsync({
         content: content.trim(),
-        attachments,
-        linkPreviews,
-        mentions,
+        // attachments and linkPreviews will be handled by the API
       });
 
       if (newComment) {
-        setNewlyCreatedCommentIds((prev) => new Set(prev).add(newComment));
+        const newId = (newComment as any).id || (newComment as any)._id;
+        setNewlyCreatedCommentIds((prev) => new Set(prev).add(newId));
 
         // Remove the highlight after animation completes
         setTimeout(() => {
           setNewlyCreatedCommentIds((prev) => {
             const next = new Set(prev);
-            next.delete(newComment);
+            next.delete(newId);
             return next;
           });
         }, 1000);
@@ -729,7 +748,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
             label: "Undo",
             onClick: async () => {
               try {
-                await deleteComment({ commentId: newComment });
+                await deleteCommentMutation.mutateAsync(newId);
                 toast.success("Comment deleted");
               } catch (error) {
                 console.error("Failed to delete comment:", error);
@@ -750,34 +769,31 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
   };
 
   const handleSubmitReply = async (
-    parentId: Id<"comments">,
+    parentId: string,
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
-    mentions?: Id<"members">[],
+    mentions?: string[],
   ) => {
     if (!content.trim() && (!attachments || attachments.length === 0)) return;
 
     setIsSubmittingReply(true);
 
     try {
-      const newReply = await createComment({
-        postId,
+      const newReply = await createCommentMutation.mutateAsync({
         content: content.trim(),
         parentCommentId: parentId,
-        attachments,
-        linkPreviews,
-        mentions,
       });
 
       if (newReply) {
-        setNewlyCreatedCommentIds((prev) => new Set(prev).add(newReply));
+        const newId = (newReply as any).id || (newReply as any)._id;
+        setNewlyCreatedCommentIds((prev) => new Set(prev).add(newId));
 
         // Remove the highlight after animation completes
         setTimeout(() => {
           setNewlyCreatedCommentIds((prev) => {
             const next = new Set(prev);
-            next.delete(newReply);
+            next.delete(newId);
             return next;
           });
         }, 1000);
@@ -791,7 +807,8 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
           label: "Undo",
           onClick: async () => {
             try {
-              await deleteComment({ commentId: newReply });
+              const newId = (newReply as any).id || (newReply as any)._id;
+              await deleteCommentMutation.mutateAsync(newId);
               toast.success("Comment deleted");
             } catch (error) {
               console.error("Failed to delete comment:", error);
@@ -810,7 +827,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
     }
   };
 
-  const handleReply = (parentId: Id<"comments"> | null) => {
+  const handleReply = (parentId: string | null) => {
     setReplyingTo(parentId);
   };
 
@@ -844,11 +861,9 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
               Members-only discussion. Join VAI Community to participate.
             </p>
             <div className="space-y-2">
-              <SignInButton mode="modal">
-                <Button variant="outline" className="w-full sm:w-auto">
-                  Sign In (Members Only)
-                </Button>
-              </SignInButton>
+              <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push("/login")}>
+                Sign In (Members Only)
+              </Button>
               <Button
                 variant="ghost"
                 className="w-full sm:w-auto"
@@ -861,7 +876,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
         </Unauthenticated>
 
         <div className="space-y-4">
-          {comments === undefined ? (
+          {isLoadingComments ? (
             <div className="space-y-4">
               {[...Array(3)].map((_, i) => (
                 <div key={i} className="py-4">

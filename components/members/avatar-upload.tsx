@@ -1,5 +1,4 @@
 "use client";
-import { useAction } from "convex/react";
 import { Loader2, Trash2, Upload, User } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import ReactCrop, { type Crop, centerCrop, makeAspectCrop } from "react-image-crop";
@@ -7,7 +6,6 @@ import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { api } from "@/convex/_generated/api";
 import "react-image-crop/dist/ReactCrop.css";
 
 interface AvatarUploadProps {
@@ -42,8 +40,6 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
   const [completedCrop, setCompletedCrop] = useState<Crop>();
   const imgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const generateUploadUrl = useAction(api.storage.generateUploadUrl);
 
   useEffect(() => {
     setUrl(initialUrl || "");
@@ -217,10 +213,16 @@ export function AvatarUpload({ initialUrl, onUpload, onRemove }: AvatarUploadPro
       let retries = 3;
       while (retries > 0) {
         try {
-          uploadData = await generateUploadUrl({
-            contentType: optimizedFile.type,
-            fileName: optimizedFile.name,
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              contentType: optimizedFile.type,
+              fileName: optimizedFile.name,
+            }),
           });
+          if (!response.ok) throw new Error("Failed to get upload URL");
+          uploadData = await response.json();
           break;
         } catch (error) {
           retries--;

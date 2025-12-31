@@ -1,7 +1,5 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
-import { useMutation } from "convex/react";
 import { Edit, Flag, Link2, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -23,13 +21,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useDeleteComment, useReportComment } from "@/hooks/use-comments";
 import { COMMENT_EDIT_WINDOW_MS } from "@/lib/constants";
 
 interface CommentActionsMenuProps {
-  commentId: Id<"comments">;
-  authorId: Id<"members">;
+  commentId: string;
+  authorId: string;
   postSlug: string;
   categoryName: string;
   onEditClick: () => void;
@@ -46,14 +44,14 @@ export default function CommentActionsMenu({
   isAdmin = false,
   commentCreatedAt,
 }: CommentActionsMenuProps) {
-  const { user } = useUser();
+  const { user } = useAuth();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showReportDialog, setShowReportDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const deleteComment = useMutation(api.comments.deleteComment);
+  const deleteCommentMutation = useDeleteComment();
 
-  const isOwnComment = user?.publicMetadata?.memberId === authorId;
+  const isOwnComment = user?.id === authorId;
 
   const canEdit = useMemo(() => {
     if (!isOwnComment && !isAdmin) return false;
@@ -78,7 +76,7 @@ export default function CommentActionsMenu({
   const handleDelete = async () => {
     setIsDeleting(true);
     try {
-      await deleteComment({ commentId });
+      await deleteCommentMutation.mutateAsync(commentId);
       toast.success("Comment deleted successfully");
       setShowDeleteDialog(false);
     } catch (err) {
@@ -175,7 +173,7 @@ export default function CommentActionsMenu({
 }
 
 interface CommentReportDialogProps {
-  commentId: Id<"comments">;
+  commentId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
@@ -184,12 +182,12 @@ function CommentReportDialog({ commentId, open, onOpenChange }: CommentReportDia
   const [reason, setReason] = useState<"spam" | "inappropriate" | "harassment" | "other">("spam");
   const [reasonText, setReasonText] = useState("");
   const [isReporting, setIsReporting] = useState(false);
-  const reportComment = useMutation(api.comments.reportComment);
+  const reportCommentMutation = useReportComment();
 
   const handleReport = async () => {
     setIsReporting(true);
     try {
-      await reportComment({
+      await reportCommentMutation.mutateAsync({
         commentId,
         reason,
         reasonText: reason === "other" ? reasonText : undefined,

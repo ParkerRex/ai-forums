@@ -16,7 +16,6 @@
  * @since 1.0.0
  */
 
-import { useQuery } from "convex/react";
 import Link from "next/link";
 import { useState } from "react";
 import { PageErrorBoundary, QueryErrorBoundary } from "@/components/error-boundary";
@@ -24,7 +23,7 @@ import { PostSkeletonList } from "@/components/members/member-skeleton";
 import PostCard from "@/components/posts/post-card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/convex/_generated/api";
+import { useBookmarksWithDetails } from "@/hooks/use-bookmarks";
 
 /**
  * Main content component for the bookmarks page.
@@ -36,17 +35,11 @@ function BookmarksContent() {
   // State to track which tab is currently active for filtering bookmarks
   const [activeTab, setActiveTab] = useState<"all" | "posts" | "resources">("all");
 
-  // Fetch user's bookmarks with optional filtering by target type
-  // targetType is mapped from tab selection: "all" -> undefined, "posts" -> "post", "resources" -> "resource"
-  const bookmarksData = useQuery(api.bookmarks.getUserBookmarks, {
-    targetType: activeTab === "all" ? undefined : activeTab === "posts" ? "post" : "resource",
-    paginationOpts: { numItems: 20, cursor: null }, // Load 20 items per page
-  });
+  // Determine target type based on active tab for API filtering
+  const targetType = activeTab === "all" ? undefined : activeTab === "posts" ? "post" : "resource";
 
-  // Loading state - Convex queries return undefined while loading
-  const isLoading = bookmarksData === undefined;
-  // Extract bookmarks from paginated response, defaulting to empty array
-  const bookmarks = bookmarksData?.page || [];
+  // Fetch user's bookmarks with optional filtering by target type
+  const { data: bookmarks, isLoading, isError } = useBookmarksWithDetails(targetType);
 
   return (
     <div className="min-h-screen bg-background">
@@ -75,13 +68,22 @@ function BookmarksContent() {
               {isLoading ? (
                 // Show skeleton loading state while fetching bookmarks
                 <PostSkeletonList count={5} />
-              ) : bookmarks.length > 0 ? (
+              ) : isError ? (
+                // Show error state
+                <div className="text-center py-12">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Error loading bookmarks</h3>
+                  <p className="text-muted-foreground mb-4">
+                    Something went wrong while loading your bookmarks
+                  </p>
+                  <Button onClick={() => window.location.reload()}>Try Again</Button>
+                </div>
+              ) : bookmarks && bookmarks.length > 0 ? (
                 // Display list of bookmarked items when data is available
                 <div className="space-y-6">
                   {bookmarks.map((bookmark) => (
-                    <div key={bookmark._id} className="relative">
+                    <div key={bookmark.id} className="relative">
                       {/* Use PostCard component to display bookmark target (post or resource) */}
-                      <PostCard post={bookmark.target} />
+                      {bookmark.target && <PostCard post={bookmark.target} />}
                       {/* Show when the item was bookmarked */}
                       <div className="absolute top-2 right-2 text-xs text-muted-foreground">
                         Saved {new Date(bookmark.createdAt).toLocaleDateString()}

@@ -1,10 +1,9 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import { Activity, BarChart3, ChevronLeft, FileText, Receipt, Shield, Users } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { api } from "@/convex/_generated/api";
+import { useAuth } from "@/components/providers/auth-provider";
 import { cn } from "@/lib/utils";
 
 interface AdminNavItem {
@@ -49,10 +48,12 @@ const navItems: AdminNavItem[] = [
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAdmin = useQuery(api.admin.isCurrentUserAdmin);
+  const { user, isLoading } = useAuth();
+
+  const isAdmin = user?.role === "admin";
 
   // Loading state
-  if (isAdmin === undefined) {
+  if (isLoading) {
     return (
       <div className="flex h-screen items-center justify-center">
         <div className="text-center">

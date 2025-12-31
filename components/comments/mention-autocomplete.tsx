@@ -2,17 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import type { Id } from "@/convex/_generated/dataModel";
 
 interface MentionAutocompleteProps {
   items: Array<{
-    _id: Id<"members">;
+    _id: string;
     firstName: string;
     lastName: string;
     slug: string;
   }>;
   onSelect: (member: {
-    _id: Id<"members">;
+    _id: string;
     firstName: string;
     lastName: string;
     slug: string;

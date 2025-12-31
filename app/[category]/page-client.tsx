@@ -1,13 +1,12 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import { notFound } from "next/navigation";
 import { use, useState } from "react";
 import PostHeader from "@/components/posts/post-header";
 import PostList from "@/components/posts/post-list";
 import PostSidebar from "@/components/posts/post-sidebar";
 import { Badge } from "@/components/ui/badge";
-import { api } from "@/convex/_generated/api";
+import { useCategoryByName } from "@/hooks/use-categories";
 
 interface CategoryPageClientProps {
   /** Promise containing the dynamic route parameters */
@@ -36,19 +35,14 @@ export default function CategoryPageClient({ params }: CategoryPageClientProps) 
   const resolvedParams = use(params);
   const categoryName = resolvedParams?.category;
 
-  // Fetch category data by name from Convex database
-  // Uses conditional query - skips if no categoryName to avoid unnecessary requests
-  const category = useQuery(
-    api.categories.getCategoryByName,
-    categoryName ? { name: categoryName } : "skip",
-  );
+  // Fetch category data by name from PostgreSQL database via React Query
+  const { data: category, isLoading, isError } = useCategoryByName(categoryName ?? "");
 
   // State for post sorting - controls how posts are ordered in the list
   const [sortBy, setSortBy] = useState<"newest" | "popular" | "trending">("newest");
 
   // Show loading skeleton while fetching category data
-  // In Convex, undefined means loading, null means not found
-  if (category === undefined) {
+  if (isLoading) {
     return (
       <div className="mx-auto max-w-7xl px-4 py-6">
         <div className="animate-pulse">
@@ -73,8 +67,8 @@ export default function CategoryPageClient({ params }: CategoryPageClientProps) 
   }
 
   // Handle invalid category or missing category name
-  // null from Convex means the category doesn't exist in the database
-  if (category === null || !categoryName) {
+  // null from API means the category doesn't exist in the database
+  if (category === null || !categoryName || isError) {
     notFound();
   }
 
@@ -93,7 +87,7 @@ export default function CategoryPageClient({ params }: CategoryPageClientProps) 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
         {/* Main post list - takes 3/4 of the width on large screens */}
         <div className="lg:col-span-3">
-          <PostList categoryId={category._id} sortBy={sortBy} currentCategoryId={category._id} />
+          <PostList categoryId={category.id} sortBy={sortBy} currentCategoryId={category.id} />
         </div>
         {/* Sidebar - takes 1/4 of the width on large screens */}
         <div className="lg:col-span-1">

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
 import { format } from "date-fns";
 import {
   Calendar,
@@ -50,10 +49,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
 import { cn } from "@/lib/utils";
-import type { MembershipStats, MemberWithStatus } from "@/types/admin";
+import {
+  useAdminMembers,
+  useAdminMemberStats,
+  useUpdateMemberRole,
+} from "@/hooks/use-admin";
 
 type SortField = "name" | "email" | "joinedAt" | "lastActiveAt" | "tier" | "status" | "revenue";
 type SortOrder = "asc" | "desc";
@@ -104,19 +105,22 @@ export default function AdminMembersPage() {
   const [tierFilter, setTierFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("joinedAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
-  const [selectedMemberId, setSelectedMemberId] = useState<Id<"members"> | null>(null);
-  const [selectedMembers, setSelectedMembers] = useState<Set<Id<"members">>>(new Set());
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [selectedMembers, setSelectedMembers] = useState<Set<string>>(new Set());
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  const members = useQuery(api.admin.members.getAllMembersForAdmin, {
-    status: statusFilter === "all" ? undefined : statusFilter,
+  // Fetch members using the admin hook
+  const { data: members } = useAdminMembers({
+    status: statusFilter,
     search: search || undefined,
-  }) as MemberWithStatus[] | undefined;
+  });
 
-  const stats = useQuery(api.admin.members.getMembershipStats) as MembershipStats | undefined;
-  // Note: Scholarships now handled via Stripe coupons, not mutations
-  const updateRole = useMutation(api.admin.members.updateMemberRole);
+  // Fetch member stats using the admin hook
+  const { data: stats } = useAdminMemberStats();
+
+  // Update role mutation using the admin hook
+  const updateRoleMutation = useUpdateMemberRole();
 
   // Client-side filtering and sorting
   const filteredAndSortedMembers = useMemo(() => {
@@ -192,7 +196,7 @@ export default function AdminMembersPage() {
     }
   };
 
-  const toggleMemberSelection = (memberId: Id<"members">) => {
+  const toggleMemberSelection = (memberId: string) => {
     const newSelection = new Set(selectedMembers);
     if (newSelection.has(memberId)) {
       newSelection.delete(memberId);
@@ -660,7 +664,7 @@ export default function AdminMembersPage() {
                         {member.billingInterval === "monthly" ? "mo" : "yr"}
                       </div>
                     ) : (
-                      <span className="text-muted-foreground text-sm">—</span>
+                      <span className="text-muted-foreground text-sm">-</span>
                     )}
                   </TableCell>
                   <TableCell className="text-right">
@@ -690,7 +694,7 @@ export default function AdminMembersPage() {
                           {member.role !== "admin" && (
                             <DropdownMenuItem
                               onClick={() =>
-                                updateRole({
+                                updateRoleMutation.mutate({
                                   memberId: member._id,
                                   role: "admin",
                                 })
@@ -704,7 +708,7 @@ export default function AdminMembersPage() {
                           {member.role === "admin" && (
                             <DropdownMenuItem
                               onClick={() =>
-                                updateRole({
+                                updateRoleMutation.mutate({
                                   memberId: member._id,
                                   role: "user",
                                 })

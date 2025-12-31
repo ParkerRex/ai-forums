@@ -1,6 +1,5 @@
 "use client";
 
-import { useMutation } from "convex/react";
 import { Globe, Loader2, Save, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -16,13 +15,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useUpdateMember } from "@/hooks/use-members";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useNetworkStatus } from "@/hooks/use-network-status";
 
 interface MemberProfileFieldModalProps {
-  memberId: Id<"members">;
+  memberId: string;
   field: "bio" | "location" | "github" | "x" | "youtube" | "website" | "avatar";
   currentValue?: string;
   isOpen: boolean;
@@ -113,7 +111,7 @@ export function MemberProfileFieldModal({
 }: MemberProfileFieldModalProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(currentValue || "");
-  const updateMemberProfile = useMutation(api.members.updateMemberProfile);
+  const updateMemberMutation = useUpdateMember();
   const { handleMutationError, handleMutationSuccess } = useMutationError();
   const { isOnline } = useNetworkStatus();
 
@@ -141,16 +139,7 @@ export function MemberProfileFieldModal({
     setIsSubmitting(true);
 
     try {
-      const updateData: {
-        id: Id<"members">;
-        bio?: string;
-        location?: string;
-        linkGithub?: string;
-        linkX?: string;
-        linkYouTube?: string;
-        websiteUrl?: string;
-        avatarUrl?: string;
-      } = { id: memberId };
+      const updateData: Record<string, string | undefined> = {};
 
       if (field === "bio") {
         updateData.bio = data.value.trim() || undefined;
@@ -168,7 +157,7 @@ export function MemberProfileFieldModal({
         updateData.avatarUrl = avatarUrl || undefined;
       }
 
-      await updateMemberProfile(updateData);
+      await updateMemberMutation.mutateAsync({ memberId, data: updateData });
       handleMutationSuccess(`${config.title.replace("Add ", "")} added successfully!`);
       onClose();
     } catch (error) {

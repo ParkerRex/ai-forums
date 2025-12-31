@@ -12,9 +12,9 @@ interface AuthWrapperProps {
  * Replacement for Convex's Authenticated component.
  */
 export function Authenticated({ children }: AuthWrapperProps) {
-	const { member, isLoading } = useAuth();
+	const { user, isLoading } = useAuth();
 
-	if (isLoading || !member) {
+	if (isLoading || !user) {
 		return null;
 	}
 
@@ -26,9 +26,9 @@ export function Authenticated({ children }: AuthWrapperProps) {
  * Replacement for Convex's Unauthenticated component.
  */
 export function Unauthenticated({ children }: AuthWrapperProps) {
-	const { member, isLoading } = useAuth();
+	const { user, isLoading } = useAuth();
 
-	if (isLoading || member) {
+	if (isLoading || user) {
 		return null;
 	}
 

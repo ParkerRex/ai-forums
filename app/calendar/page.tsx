@@ -11,17 +11,16 @@
  * - Event creation and management (authenticated users only)
  * - Event details modal for viewing/editing events
  * - Authentication-gated functionality with membership CTA
- * - Real-time event updates via Convex
+ * - Event data fetched via React Query
  * - Responsive design for mobile and desktop
  *
  * @author VAI Team
- * @version 1.0.0
+ * @version 2.0.0
  * @since 2024
  */
 
 "use client";
 
-import { Authenticated, Unauthenticated } from "convex/react";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
@@ -29,6 +28,7 @@ import { EventModal } from "@/components/calendar/event-modal";
 import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 
 /**
  * Main calendar page component that renders the VAI community calendar

@@ -1,6 +1,5 @@
 "use client";
 
-import { useMutation } from "convex/react";
 import { Globe, Loader2, Save, X } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -9,13 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useUpdateMember } from "@/hooks/use-members";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useNetworkStatus } from "@/hooks/use-network-status";
 
 interface Member {
-  _id: Id<"members">;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -84,7 +82,7 @@ const validateHandle = (handle: string): boolean => {
 export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEditFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState(member.avatarUrl || "");
-  const updateMemberProfile = useMutation(api.members.updateMemberProfile);
+  const updateMemberMutation = useUpdateMember();
   const { handleMutationError, handleMutationSuccess } = useMutationError();
   const { isOnline } = useNetworkStatus();
 
@@ -119,7 +117,6 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
     setIsSubmitting(true);
 
     const updateData = {
-      id: member._id,
       firstName: data.firstName.trim() || undefined,
       lastName: data.lastName.trim() || undefined,
       bio: data.bio.trim() || undefined,
@@ -132,14 +129,14 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
     };
 
     try {
-      await updateMemberProfile(updateData);
+      await updateMemberMutation.mutateAsync({ memberId: member._id, data: updateData });
       handleMutationSuccess("Profile updated successfully!");
       onSuccess();
     } catch (error) {
       handleMutationError(
         error,
         async () => {
-          await updateMemberProfile(updateData);
+          await updateMemberMutation.mutateAsync({ memberId: member._id, data: updateData });
         },
         {
           context: "updating profile",

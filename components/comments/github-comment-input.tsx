@@ -1,6 +1,5 @@
 "use client";
 
-import { useConvex, useQuery } from "convex/react";
 import {
   Bold,
   Code,
@@ -19,7 +18,7 @@ import { MarkdownRenderer } from "@/components/posts/markdown-renderer";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/convex/_generated/api";
+import { useCurrentMember } from "@/hooks/use-current-member";
 import { getFilePreviewUrl, uploadMedia, validateMediaFile } from "@/lib/upload-media";
 import { cn } from "@/lib/utils";
 
@@ -60,9 +59,8 @@ export function GitHubCommentInput({
   const [attachments, setAttachments] = useState<AttachmentType[]>(initialAttachments);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const convex = useConvex();
 
-  const currentMember = useQuery(api.members.getCurrentMember);
+  const { member: currentMember } = useCurrentMember();
 
   const insertMarkdown = useCallback(
     (before: string, after: string = "") => {
@@ -109,7 +107,7 @@ export function GitHubCommentInput({
         }
 
         await getFilePreviewUrl(file);
-        const uploadResult = await uploadMedia(convex, file);
+        const uploadResult = await uploadMedia(file);
 
         const attachment: AttachmentType = {
           id: crypto.randomUUID(),

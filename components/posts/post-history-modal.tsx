@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import { Clock, Eye, FileText, User } from "lucide-react";
 import { useState } from "react";
 import { RenderTipTapContent } from "@/components/posts/render-post-content";
@@ -11,25 +10,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { usePost, usePostHistory } from "@/hooks/use-posts";
 
 interface PostHistoryModalProps {
-  postId: Id<"posts">;
+  postId: string;
   isOpen: boolean;
   onClose: () => void;
 }
 
 interface PostVersion {
-  _id: Id<"post_versions">;
-  postId: Id<"posts">;
+  id: string;
+  postId: string;
   version: number;
   title: string;
   content: string;
-  editorId: Id<"members">;
-  editedAt: number;
+  editorId: string;
+  editedAt: string;
   editor: {
-    _id: Id<"members">;
+    id: string;
     firstName: string;
     lastName: string;
     avatarUrl?: string;
@@ -37,9 +35,10 @@ interface PostVersion {
 }
 
 // Helper function to format time ago
-function formatTimeAgo(timestamp: number): string {
+function formatTimeAgo(timestamp: string | number): string {
+  const date = typeof timestamp === "string" ? new Date(timestamp) : new Date(timestamp);
   const now = Date.now();
-  const diff = now - timestamp;
+  const diff = now - date.getTime();
   const minutes = Math.floor(diff / (1000 * 60));
   const hours = Math.floor(diff / (1000 * 60 * 60));
   const days = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -80,34 +79,12 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
   const [selectedVersion, setSelectedVersion] = useState<PostVersion | null>(null);
   const [viewMode, setViewMode] = useState<"rendered" | "diff">("rendered");
 
-  // Fetch post history
-  const history = useQuery(api.postVersions.getPostHistory, { postId }) as
-    | PostVersion[]
-    | undefined;
-  const currentPost = useQuery(api.posts.getPostById, { postId }) as
-    | {
-        _id: Id<"posts">;
-        title: string;
-        content: string;
-        createdAt: number;
-        editedAt?: number;
-        member?: {
-          _id: Id<"members">;
-          firstName: string;
-          lastName: string;
-          avatarUrl?: string;
-        } | null;
-        category?: {
-          _id: Id<"categories">;
-          name: string;
-          displayName: string;
-        } | null;
-      }
-    | null
-    | undefined;
+  // Fetch post history using React Query
+  const { data: history, isLoading: historyLoading } = usePostHistory(postId);
+  const { data: currentPost, isLoading: postLoading } = usePost(postId);
 
   // Loading state
-  if (history === undefined || currentPost === undefined) {
+  if (historyLoading || postLoading) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="max-w-4xl max-h-[80vh]">
@@ -197,9 +174,9 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                 {/* Historical versions */}
                 {history.map((version) => (
                   <Card
-                    key={version._id}
+                    key={version.id}
                     className={`cursor-pointer transition-colors ${
-                      selectedVersion?._id === version._id
+                      selectedVersion?.id === version.id
                         ? "ring-2 ring-primary"
                         : "hover:bg-muted/50"
                     }`}
@@ -295,7 +272,7 @@ export function PostHistoryModal({ postId, isOpen, onClose }: PostHistoryModalPr
                     <CardTitle className="text-lg">{currentPost.title}</CardTitle>
                     <div className="flex items-center text-sm text-muted-foreground">
                       <Avatar className="h-6 w-6 mr-2">
-                        <AvatarImage src={currentPost.member?.avatarUrl} />
+                        <AvatarImage src={currentPost.member?.avatarUrl || undefined} />
                         <AvatarFallback>
                           {currentPost.member?.firstName?.[0]}
                           {currentPost.member?.lastName?.[0]}

@@ -41,16 +41,10 @@
  * @since 1.0.0
  */
 
-import { ConvexHttpClient } from "convex/browser";
+import { desc, gte, inArray, or } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
-import { api } from "../../../../convex/_generated/api";
-import type { Doc } from "../../../../convex/_generated/dataModel";
-
-// Initialize Convex client for server-side API calls
-const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-
-// Use generated type from Convex schema
-type DiscordDigestEntry = Doc<"discordDigest">;
+import { db } from "@/db";
+import { discordDigest } from "@/db/schema";
 
 /**
  * Fetches processed Discord digest from the database archive.
@@ -88,24 +82,55 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { channels, limit, digestDate } = body;
 
-    // Call Convex action to fetch Discord digest from database archive
-    const digestEntries = (await convex.action(api.discord.getDiscordDigestAction, {
-      digestDate, // Optional - defaults to yesterday in the query
-      limit: limit || 20,
-    })) as DiscordDigestEntry[];
+    // Calculate the target date (defaults to yesterday)
+    const targetDate = digestDate
+      ? new Date(digestDate)
+      : new Date(Date.now() - 24 * 60 * 60 * 1000);
+    targetDate.setHours(0, 0, 0, 0);
 
-    // Filter by channels if specified (since database doesn't have channel filtering yet)
-    let filteredEntries = digestEntries;
+    // Query Discord digest from database
+    let query = db
+      .select()
+      .from(discordDigest)
+      .where(gte(discordDigest.digestDate, targetDate))
+      .orderBy(desc(discordDigest.reactionScore))
+      .limit(limit || 20);
+
+    // Apply channel filter if specified
     if (channels && Array.isArray(channels) && channels.length > 0) {
-      filteredEntries = digestEntries.filter(
-        (entry: DiscordDigestEntry) =>
-          channels.includes(entry.channelId) || channels.includes(entry.channelName),
-      );
+      query = db
+        .select()
+        .from(discordDigest)
+        .where(
+          or(
+            inArray(discordDigest.channelId, channels),
+            inArray(discordDigest.channelName, channels)
+          )
+        )
+        .orderBy(desc(discordDigest.reactionScore))
+        .limit(limit || 20);
     }
+
+    const digestEntries = await query;
+
+    // Transform entries to match expected format
+    const formattedEntries = digestEntries.map((entry) => ({
+      messageId: entry.messageId,
+      content: entry.content,
+      author: entry.author,
+      timestamp: entry.timestamp?.getTime() || 0,
+      reactions: entry.reactions || [],
+      channelId: entry.channelId,
+      channelName: entry.channelName,
+      reactionScore: entry.reactionScore,
+      summary: entry.summary,
+      digestDate: entry.digestDate?.toISOString().split("T")[0],
+      processedAt: entry.processedAt?.getTime() || 0,
+    }));
 
     // Return successful response
     return NextResponse.json(
-      { digest: filteredEntries },
+      { digest: formattedEntries },
       {
         headers: {
           // Cache for 10 minutes since data is pre-processed and doesn't change frequently

@@ -19,7 +19,6 @@
  */
 
 "use client";
-import { Authenticated, useMutation, useQuery } from "convex/react";
 import { ArrowUpIcon, BookOpen, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import type React from "react";
@@ -34,8 +33,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useTopicByName } from "@/hooks/use-topics";
+import {
+  useResources,
+  useVoteOnResource,
+  useUserResourceVote,
+  useTrackResourceView,
+  type Resource,
+} from "@/hooks/use-resources";
+import { useCurrentMember } from "@/hooks/use-current-member";
 
 /**
  * Props interface for the TopicPageClient component
@@ -50,45 +56,6 @@ interface TopicPageClientProps {
 }
 
 /**
- * Represents a learning resource with all its metadata and engagement data
- *
- * @interface Resource
- * @property {Id<"resources">} _id - Unique identifier for the resource
- * @property {string} title - Resource title for display
- * @property {string} description - Detailed description of the resource content
- * @property {string} url - External URL where the resource is hosted
- * @property {string} type - Category of resource (article, video, course, etc.)
- * @property {string} [difficulty] - Optional difficulty level indicator
- * @property {boolean} isPaid - Whether the resource requires payment
- * @property {number} upvotes - Total number of upvotes (legacy field)
- * @property {number} netVotes - Net votes (upvotes - downvotes)
- * @property {number} viewCount - Number of times resource has been viewed
- * @property {number} createdAt - Timestamp when resource was created
- * @property {Object|null} member - Resource contributor information
- */
-interface Resource {
-  _id: Id<"resources">;
-  title: string;
-  description: string;
-  url: string;
-  type: "article" | "video" | "course" | "documentation" | "tool" | "book" | "other";
-  difficulty?: "beginner" | "intermediate" | "advanced";
-  isPaid: boolean;
-  isFree?: boolean;
-  upvotes: number;
-  netVotes: number;
-  viewCount: number;
-  createdAt: number;
-  member: {
-    _id: Id<"members">;
-    firstName: string;
-    lastName: string;
-    username: string;
-    slug: string;
-  } | null;
-}
-
-/**
  * Resource card component that displays a single learning resource with interactions
  *
  * This component handles the presentation and interaction logic for individual
@@ -98,39 +65,12 @@ interface Resource {
  * @param {Object} props - Component properties
  * @param {Resource} props.resource - The resource data to display
  * @returns {JSX.Element} Rendered resource card component
- *
- * @example
- * ```tsx
- * <ResourceCard resource={{
- *   _id: "resource123",
- *   title: "React Hooks Guide",
- *   description: "Complete guide to React hooks",
- *   url: "https://example.com/hooks",
- *   type: "article",
- *   difficulty: "intermediate",
- *   isPaid: false,
- *   netVotes: 25,
- *   viewCount: 150,
- *   createdAt: Date.now(),
- *   member: { ... }
- * }} />
- * ```
  */
 function ResourceCard({ resource }: { resource: Resource }) {
-  // Mutations for resource interactions
-  const voteOnResource = useMutation(api.votes.voteOnResource);
-  const trackResourceView = useMutation(api.resources.trackResourceView);
-
-  // Query current user's vote status for this resource
-  const userVote = useQuery(api.votes.getUserVote, {
-    targetId: resource._id,
-    targetType: "resource",
-  });
-
-  // Query if user can access this resource
-  const canViewResource = useQuery(api.resources.canUserViewResource, {
-    resourceId: resource._id,
-  });
+  const { member } = useCurrentMember();
+  const voteOnResource = useVoteOnResource();
+  const trackResourceView = useTrackResourceView();
+  const { data: userVoteData } = useUserResourceVote(resource.id);
 
   // Local state for voting interactions and optimistic updates
   const [isVoting, setIsVoting] = useState(false);
@@ -138,21 +78,15 @@ function ResourceCard({ resource }: { resource: Resource }) {
   const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
 
   // Use optimistic state if available, otherwise fall back to server state
-  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVote;
+  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : userVoteData?.voteType;
 
   /**
    * Handles upvote button clicks with optimistic updates
-   *
-   * Implements optimistic UI updates for immediate feedback, then syncs with
-   * server state. If the vote fails, it reverts to the previous state.
-   * Prevents event bubbling to avoid triggering card click handlers.
-   *
-   * @param {React.MouseEvent} e - Mouse event from button click
    */
   const handleUpvote = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (isVoting) return;
+    if (isVoting || !member) return;
     setIsVoting(true);
 
     // Determine if this is an upvote or vote removal
@@ -162,11 +96,9 @@ function ResourceCard({ resource }: { resource: Resource }) {
 
     // Calculate optimistic vote counts
     if (voteType === "upvote") {
-      // Add vote (regardless of previous state, we increment by 1)
-      newNetVotes = optimisticNetVotes + (currentUserVote === null ? 1 : 1);
+      newNetVotes = optimisticNetVotes + 1;
       newUserVote = "upvote";
     } else {
-      // Remove existing upvote
       newNetVotes = optimisticNetVotes - 1;
       newUserVote = null;
     }
@@ -177,8 +109,8 @@ function ResourceCard({ resource }: { resource: Resource }) {
 
     try {
       // Sync with server and get actual vote counts
-      const result = await voteOnResource({
-        resourceId: resource._id,
+      const result = await voteOnResource.mutateAsync({
+        resourceId: resource.id,
         voteType,
       });
       // Update with server-confirmed values
@@ -187,7 +119,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
     } catch (error) {
       // Revert optimistic updates on error
       setOptimisticNetVotes(resource.netVotes);
-      setOptimisticUserVote(userVote || null);
+      setOptimisticUserVote(userVoteData?.voteType || null);
       console.error("Failed to vote:", error);
     } finally {
       setIsVoting(false);
@@ -196,23 +128,11 @@ function ResourceCard({ resource }: { resource: Resource }) {
 
   /**
    * Handles resource link clicks with view tracking
-   *
-   * Tracks when users click to view a resource for analytics purposes,
-   * then opens the resource in a new tab with security attributes.
-   * View tracking failures are logged but don't prevent navigation.
-   * Checks access permissions before allowing navigation.
    */
   const handleResourceClick = async () => {
-    // Check if user has access to this resource
-    if (canViewResource === false) {
-      // TODO: Show upgrade modal or redirect to paywall
-      console.log("Access denied: Premium resource");
-      return;
-    }
-
     try {
       // Track view for analytics (fire-and-forget)
-      await trackResourceView({ resourceId: resource._id });
+      await trackResourceView.mutateAsync(resource.id);
     } catch (error) {
       console.error("Failed to track resource view:", error);
     }
@@ -222,25 +142,16 @@ function ResourceCard({ resource }: { resource: Resource }) {
 
   /**
    * Returns appropriate emoji icon for resource type
-   *
-   * @param {string} type - Resource type identifier
-   * @returns {string} Emoji icon representing the resource type
    */
   const getTypeIcon = (type: string) => {
-    switch (type) {
-      case "video":
-        return "🎥";
-      case "course":
-        return "🎓";
-      case "book":
-        return "📚";
-      case "tool":
-        return "🔧";
-      case "documentation":
-        return "📖";
-      default:
-        return "📄";
-    }
+    const icons: Record<string, string> = {
+      video: "\uD83C\uDFA5",
+      course: "\uD83C\uDF93",
+      book: "\uD83D\uDCDA",
+      tool: "\uD83D\uDD27",
+      documentation: "\uD83D\uDCD6",
+    };
+    return icons[type] || "\uD83D\uDCC4";
   };
 
   return (
@@ -255,7 +166,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
             {resource.title}
           </span>
           <div className="flex items-center gap-2">
-            <Authenticated>
+            {member && (
               <Button
                 variant="ghost"
                 size="sm"
@@ -270,7 +181,7 @@ function ResourceCard({ resource }: { resource: Resource }) {
               >
                 <ArrowUpIcon size={16} />
               </Button>
-            </Authenticated>
+            )}
             <span className="text-sm font-medium text-muted-foreground">{optimisticNetVotes}</span>
           </div>
         </CardTitle>
@@ -284,23 +195,6 @@ function ResourceCard({ resource }: { resource: Resource }) {
 
 /**
  * Loading skeleton component for resource cards
- *
- * Displays animated placeholder content while resource data is being fetched.
- * Maintains the same layout structure as ResourceCard to prevent layout shifts
- * during loading transitions. Shows placeholders for all interactive elements.
- *
- * @returns {JSX.Element} Rendered skeleton loading component
- *
- * @example
- * ```tsx
- * {isLoading && (
- *   <div className="grid grid-cols-3 gap-4">
- *     {Array.from({ length: 6 }, (_, i) => (
- *       <ResourceCardSkeleton key={i} />
- *     ))}
- *   </div>
- * )}
- * ```
  */
 function ResourceCardSkeleton() {
   return (
@@ -351,27 +245,6 @@ function ResourceCardSkeleton() {
 
 /**
  * Main client component for displaying resources within a specific topic
- *
- * This component handles the complete user experience for browsing learning
- * resources within a topic, including filtering, sorting, searching, and
- * interacting with individual resources. It manages complex state for all
- * filter combinations and provides real-time search capabilities.
- *
- * State management includes:
- * - Search functionality across resource titles and descriptions
- * - Filtering by resource type, difficulty level, and payment status
- * - Sorting by creation date (newest) or popularity (votes)
- * - Authentication-based UI variations
- * - Loading and error states
- *
- * @param {TopicPageClientProps} props - Component props
- * @returns {JSX.Element} Complete topic page with resources
- *
- * @example
- * ```tsx
- * // Used via Next.js routing: /educate/react
- * <TopicPageClient params={Promise.resolve({ topic: "react" })} />
- * ```
  */
 export default function TopicPageClient({ params }: TopicPageClientProps) {
   // Extract topic name from URL parameters
@@ -385,33 +258,20 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   const [previousResources, setPreviousResources] = useState<Resource[] | null>(null);
 
+  const { member } = useCurrentMember();
+
   // Fetch topic data by name from URL
-  const topic = useQuery(api.topics.getTopicByName, { name: topicName });
+  const { data: topic, isLoading: topicLoading } = useTopicByName(topicName);
 
   // Fetch filtered and sorted resources for this topic
-  const resources = useQuery(
-    api.resources.getResourcesByTopic,
-    topic?._id
-      ? {
-          topicId: topic._id,
-          sortBy,
-        }
-      : "skip",
-  );
+  const { data: resourcesData, isLoading: resourcesLoading } = useResources({
+    topicSlug: topicName,
+    sortBy,
+    searchTerm: searchTerm.trim() || undefined,
+  });
 
-  // Fetch search results when user searches within this topic
-  const searchResults = useQuery(
-    api.resources.searchResources,
-    searchTerm.trim() && topic?._id
-      ? {
-          searchTerm: searchTerm.trim(),
-          topicId: topic._id,
-        }
-      : "skip",
-  );
-
-  // Determine which resources to display based on search state
-  const displayResources = searchTerm.trim() ? searchResults : resources;
+  // Determine which resources to display
+  const displayResources = resourcesData?.items;
 
   // Track when we receive resources to manage loading states
   useEffect(() => {
@@ -422,7 +282,7 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
   }, [displayResources]);
 
   // Loading state while topic data is being fetched
-  if (topic === undefined) {
+  if (topicLoading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Page header skeleton */}
@@ -492,10 +352,10 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
       <div className="mb-8">
         <div className="mb-6">
           <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
-            {topic.icon && <span>{topic.icon}</span>}
-            {topic.displayName}
+            {topic?.icon && <span>{topic.icon}</span>}
+            {topic?.displayName}
           </h1>
-          <p className="text-sm text-muted-foreground">{topic.resourceCount} resources</p>
+          <p className="text-sm text-muted-foreground">{topic?.resourceCount} resources</p>
         </div>
 
         {/* Search and filter controls */}
@@ -539,16 +399,16 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
               <p className="text-muted-foreground mb-4">
                 {searchTerm.trim()
                   ? "Try adjusting your search terms or filters"
-                  : `Be the first to add a ${topic.displayName} resource!`}
+                  : `Be the first to add a ${topic?.displayName} resource!`}
               </p>
-              <Authenticated>
+              {member && (
                 <Button asChild>
                   <Link href={`/educate/${topicName}/submit`}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add First Resource
                   </Link>
                 </Button>
-              </Authenticated>
+              )}
             </div>
           )
         ) : displayResources.length === 0 ? (
@@ -560,20 +420,20 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
             <p className="text-muted-foreground mb-4">
               {searchTerm.trim()
                 ? "Try adjusting your search terms or filters"
-                : `Be the first to add a ${topic.displayName} resource!`}
+                : `Be the first to add a ${topic?.displayName} resource!`}
             </p>
-            <Authenticated>
+            {member && (
               <Button asChild>
                 <Link href={`/educate/${topicName}/submit`}>
                   <Plus className="w-4 h-4 mr-2" />
                   Add First Resource
                 </Link>
               </Button>
-            </Authenticated>
+            )}
           </div>
         ) : (
-          displayResources.map((resource: Resource) => (
-            <ResourceCard key={resource._id} resource={resource} />
+          displayResources.map((resource) => (
+            <ResourceCard key={resource.id} resource={resource} />
           ))
         )}
       </div>

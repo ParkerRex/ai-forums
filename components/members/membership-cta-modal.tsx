@@ -1,7 +1,5 @@
 "use client";
 
-import { useAuth } from "@clerk/nextjs";
-import { useAction } from "convex/react";
 import {
   BookOpen,
   CheckCircle,
@@ -25,11 +23,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { api } from "@/convex/_generated/api";
 import { checkoutAnalytics } from "@/lib/analytics";
-
 import { formatCurrency } from "@/lib/format";
 import { SignInModal } from "../auth/sign-in-modal";
+import { useAuth } from "@/components/providers/auth-provider";
 
 interface MembershipCTAModalProps {
   /**
@@ -97,13 +94,13 @@ export function MembershipCTAModal({
     }
   };
 
-  const { isSignedIn } = useAuth();
+  const { user: currentUser } = useAuth();
+  const isSignedIn = !!currentUser;
   // Default to the single available tier.
   const [selectedTier] = useState<TierType>("member");
   const [billingInterval, setBillingInterval] = useState<"monthly" | "yearly">("yearly");
   const [isLoading, setIsLoading] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
-  const createCheckoutSession = useAction(api.stripe.checkout.createCheckoutSession);
 
   // Track modal open
   React.useEffect(() => {
@@ -181,10 +178,20 @@ export function MembershipCTAModal({
 
     setIsLoading(true);
     try {
-      const result = await createCheckoutSession({
-        tier: selectedTier,
-        billingInterval,
+      const response = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          tier: selectedTier,
+          billingInterval,
+        }),
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to create checkout session");
+      }
+
+      const result = await response.json();
 
       if (result.checkoutUrl) {
         checkoutAnalytics.checkoutSessionCreated(result.sessionId || "unknown");

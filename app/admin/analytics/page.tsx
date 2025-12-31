@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import {
   ArrowDownRight,
   ArrowUpRight,
@@ -32,14 +31,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/convex/_generated/api";
+import {
+  useAdminMetrics,
+  useAdminMRRHistory,
+  useAdminChurnAnalysis,
+  type TimeRange,
+} from "@/hooks/use-admin";
 
 export default function AnalyticsPage() {
-  const [timeRange, setTimeRange] = useState<"7d" | "30d" | "90d" | "1y" | "all">("30d");
+  const [timeRange, setTimeRange] = useState<TimeRange>("30d");
 
-  const metrics = useQuery(api.admin.metrics.getPaymentMetrics, { timeRange });
-  const mrrHistory = useQuery(api.admin.metrics.getMRRHistory, { months: 12 });
-  const churnAnalysis = useQuery(api.admin.metrics.getChurnAnalysis);
+  const { data: metrics } = useAdminMetrics(timeRange);
+  const { data: mrrHistory } = useAdminMRRHistory();
+  const { data: churnAnalysis } = useAdminChurnAnalysis();
 
   const formatCurrency = (cents: number) => {
     return new Intl.NumberFormat("en-US", {

@@ -1,5 +1,4 @@
 "use client";
-import { Authenticated, Unauthenticated } from "convex/react";
 import { Bookmark, BookOpen, Newspaper } from "lucide-react";
 import Link from "next/link";
 import React from "react";
@@ -15,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { UsersIcon, type UsersIconHandle } from "@/components/ui/users";
+import { useAuth } from "@/components/providers/auth-provider";
 // We intentionally do NOT import useSearchHotkey here because we
 // only need to *trigger* the global search dialog. The actual
 // open/close state is maintained inside the GlobalSearch
@@ -26,6 +26,8 @@ export default function Header() {
   const iconRef = React.useRef<UsersIconHandle>(null);
   const calendarIconRef = React.useRef<CalendarDaysIconHandle>(null);
   const searchIconRef = React.useRef<SearchIconHandle>(null);
+  const { isAuthenticated } = useAuth();
+
   // Trigger helper for the global search. This dispatches the
   // custom event that <GlobalSearch/> listens to, ensuring we
   // modify *its* state rather than a separate local hook state.
@@ -91,53 +93,52 @@ export default function Header() {
               <HeaderIconLink href="/blog" tooltip="blog">
                 <Newspaper size={18} />
               </HeaderIconLink>
-              <Authenticated>
-                <HeaderIconLink href="/bookmarks" tooltip="bookmarks">
-                  <Bookmark size={18} />
-                </HeaderIconLink>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link href="/create">
-                      <Button
-                        variant="default"
-                        size="default"
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
-                      >
-                        Create Post
-                      </Button>
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>Create post</p>
-                  </TooltipContent>
-                </Tooltip>
-              </Authenticated>
-              <Unauthenticated>
-                <Button
-                  variant="cta"
-                  size="default"
-                  className="h-[24px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                  onClick={() => (window.location.href = "/pricing")}
-                >
-                  Join VAI
-                </Button>
-              </Unauthenticated>
-              <Authenticated>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <div>
-                      <NotificationDropdown />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>notifications</p>
-                  </TooltipContent>
-                </Tooltip>
-                <MemberDropdown />
-              </Authenticated>
-              <Unauthenticated>
-                <AuthButton />
-              </Unauthenticated>
+              {isAuthenticated ? (
+                <>
+                  <HeaderIconLink href="/bookmarks" tooltip="bookmarks">
+                    <Bookmark size={18} />
+                  </HeaderIconLink>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link href="/create">
+                        <Button
+                          variant="default"
+                          size="default"
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+                        >
+                          Create Post
+                        </Button>
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Create post</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div>
+                        <NotificationDropdown />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>notifications</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <MemberDropdown />
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="cta"
+                    size="default"
+                    className="h-[24px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
+                    onClick={() => (window.location.href = "/pricing")}
+                  >
+                    Join VAI
+                  </Button>
+                  <AuthButton />
+                </>
+              )}
             </div>
           </div>
         </div>

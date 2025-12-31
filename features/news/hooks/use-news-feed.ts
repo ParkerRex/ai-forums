@@ -1,94 +1,68 @@
 "use client";
 
-import { useAction } from "convex/react";
-import { useCallback, useEffect, useState } from "react";
-import { api } from "@/convex/_generated/api";
-import { useCurrentMember } from "@/hooks/use-current-member";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 
 export type NewsItem = {
-  title: string;
-  url: string;
-  publishedDate?: string;
-  author?: string;
-  summary?: string;
-  source: string;
+	title: string;
+	url: string;
+	publishedDate?: string;
+	author?: string;
+	summary?: string;
+	source: string;
+	imageUrl?: string;
 };
 
-const CACHE_KEY = "vai_news_cache";
-const CACHE_DURATION = 30 * 60 * 1000; // 30 minutes
+type NewsFeedResponse = {
+	articles: NewsItem[];
+	sources: Array<{
+		type: string;
+		name: string;
+		url?: string;
+	}>;
+	cached: boolean;
+	expiresAt: string;
+};
 
-interface CachedData {
-  data: NewsItem[];
-  timestamp: number;
+async function fetchNewsFeed(): Promise<NewsFeedResponse> {
+	const response = await fetch("/api/news/feed");
+	if (!response.ok) {
+		throw new Error("Failed to fetch news feed");
+	}
+	return response.json();
+}
+
+async function refreshNewsFeed(): Promise<NewsFeedResponse> {
+	const response = await fetch("/api/news/feed", {
+		method: "POST",
+	});
+	if (!response.ok) {
+		throw new Error("Failed to refresh news feed");
+	}
+	return response.json();
 }
 
 export function useNewsFeed() {
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const { member } = useCurrentMember();
-  const getNews = useAction(api.newsFeed.get);
+	const queryClient = useQueryClient();
 
-  const loadNews = useCallback(
-    async (skipCache = false) => {
-      // Try to load from localStorage cache first
-      if (!skipCache) {
-        try {
-          const cached = localStorage.getItem(CACHE_KEY);
-          if (cached) {
-            const { data, timestamp }: CachedData = JSON.parse(cached);
-            if (Date.now() - timestamp < CACHE_DURATION) {
-              setNews(data);
-              setLoading(false);
-              return;
-            }
-          }
-        } catch (error) {
-          console.error("Failed to load from cache:", error);
-        }
-      }
+	const query = useQuery({
+		queryKey: ["newsFeed"],
+		queryFn: fetchNewsFeed,
+		staleTime: 15 * 60 * 1000, // 15 minutes
+		refetchOnWindowFocus: false,
+	});
 
-      try {
-        setLoading(true);
+	const refreshMutation = useMutation({
+		mutationFn: refreshNewsFeed,
+		onSuccess: (data) => {
+			queryClient.setQueryData(["newsFeed"], data);
+		},
+	});
 
-        // Fetch news from Convex action
-        const articles = await getNews({
-          userId: member?._id,
-        });
-
-        setNews(articles);
-
-        // Cache the results in localStorage
-        try {
-          localStorage.setItem(
-            CACHE_KEY,
-            JSON.stringify({
-              data: articles,
-              timestamp: Date.now(),
-            }),
-          );
-        } catch (error) {
-          console.error("Failed to cache news:", error);
-        }
-      } catch (error) {
-        console.error("Failed to load news:", error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [getNews, member?._id],
-  );
-
-  const refresh = useCallback(async () => {
-    await loadNews(true);
-  }, [loadNews]);
-
-  useEffect(() => {
-    loadNews();
-  }, [loadNews]);
-
-  return {
-    news,
-    loading,
-    refresh,
-  };
+	return {
+		news: query.data?.articles || [],
+		loading: query.isLoading,
+		error: query.error,
+		refresh: () => refreshMutation.mutate(),
+		isRefreshing: refreshMutation.isPending,
+	};
 }

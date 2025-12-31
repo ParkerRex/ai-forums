@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import { format, formatDistanceToNow } from "date-fns";
 import { Calendar, Clock, FileText, User } from "lucide-react";
 import Link from "next/link";
@@ -8,12 +7,11 @@ import type React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useMember } from "@/hooks/use-members";
 import { getFlagEmoji } from "@/lib/country-utils";
 
 interface MemberHoverCardProps {
-  memberId: Id<"members">;
+  memberId: string;
   children: React.ReactNode;
   side?: "top" | "bottom" | "left" | "right";
   align?: "start" | "center" | "end";
@@ -25,7 +23,7 @@ export function MemberHoverCard({
   side = "top",
   align = "center",
 }: MemberHoverCardProps) {
-  const member = useQuery(api.members.getMemberById, { id: memberId });
+  const { data: member } = useMember(memberId);
 
   if (!member) {
     return <>{children}</>;
@@ -97,7 +95,7 @@ export function MemberHoverCard({
 
 interface MemberHoverCardWrapperProps {
   member: {
-    _id: Id<"members">;
+    _id: string;
     firstName: string;
     lastName: string;
     slug?: string;

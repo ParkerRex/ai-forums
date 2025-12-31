@@ -164,7 +164,7 @@ export const pollVotesRelations = relations(pollVotes, ({ one }) => ({
 		fields: [pollVotes.pollId],
 		references: [posts.id],
 	}),
-	user: one(members, {
+	member: one(members, {
 		fields: [pollVotes.userId],
 		references: [members.id],
 	}),

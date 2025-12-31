@@ -1,5 +1,3 @@
-import { ConvexError, type Value } from "convex/values";
-
 export type ErrorType = "network" | "server" | "application" | "unknown";
 
 export interface ProcessedError {
@@ -10,10 +8,10 @@ export interface ProcessedError {
 }
 
 /**
- * Determines if an error is a ConvexError with structured data
+ * Determines if an error is an application error with structured data
  */
-export function isConvexError(error: unknown): error is ConvexError<Value> {
-  return error instanceof ConvexError;
+export function isApplicationError(error: unknown): error is Error & { data?: unknown } {
+  return error instanceof Error && "data" in error;
 }
 
 /**
@@ -39,8 +37,8 @@ export function isNetworkError(error: unknown): boolean {
 export function processError(error: unknown, context?: string): ProcessedError {
   console.error("Error occurred:", error, context ? `Context: ${context}` : "");
 
-  // Handle ConvexError (application errors)
-  if (isConvexError(error)) {
+  // Handle application errors with structured data
+  if (isApplicationError(error)) {
     const errorData = error.data;
     let message = "An error occurred";
 

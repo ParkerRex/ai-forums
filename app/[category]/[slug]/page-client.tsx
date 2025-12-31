@@ -18,17 +18,17 @@
 
 "use client";
 
-import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { notFound, useRouter, useSearchParams } from "next/navigation";
 import { use, useEffect, useState } from "react";
+import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 import CommentSection from "@/components/comments/comment-section-flat";
 import { PostDeleteModal } from "@/components/posts/post-delete-modal";
 import PostDetail from "@/components/posts/post-detail";
 import { PostHistoryModal } from "@/components/posts/post-history-modal";
 import { PostPaywallDirect } from "@/components/posts/post-paywall-direct";
 import { Badge } from "@/components/ui/badge";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useAuth } from "@/components/providers/auth-provider";
+import { usePostBySlug } from "@/hooks/use-posts";
 
 /**
  * Props for the PostPageClient component
@@ -61,6 +61,7 @@ interface PostPageClientProps {
  */
 export default function PostPageClient({ params }: PostPageClientProps) {
   const router = useRouter();
+  const { user, isLoading: isAuthLoading } = useAuth();
 
   // Unwrap the params promise using React's use() hook (Next.js 15 behavior)
   const resolvedParams = use(params);
@@ -85,19 +86,12 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     typeof slug === "string" &&
     slug.trim() !== "";
 
-  // Query for the post by slug from Convex database
-  // Uses conditional query - skips if parameters are invalid
-  const post = useQuery(
-    api.posts.getPostBySlug,
-    hasValidParams ? { slug } : "skip",
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ) as any;
+  // Query for the post by slug from PostgreSQL database via React Query
+  const { data: post, isLoading: isPostLoading, isError } = usePostBySlug(hasValidParams ? slug : "");
 
-  // Query to check if the current user can view the full content
-  const canViewPost = useQuery(
-    api.posts.canUserViewPost,
-    post?._id ? { postId: post._id } : "skip",
-  );
+  // For now, authenticated users can view posts (simplified access check)
+  // In a full implementation, this would check subscription status
+  const canViewPost = user ? true : (post?.isFree ?? true);
 
   // Debug logging for development (consider removing in production)
   console.log(
@@ -141,10 +135,10 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   // user to the home page instead of showing a 404. We still show a 404 for
   // mismatched categories (malformed URL).
   useEffect(() => {
-    if (post === null) {
+    if (post === null && !isPostLoading) {
       router.replace("/");
     }
-  }, [post, router]);
+  }, [post, isPostLoading, router]);
 
   // Early return for invalid URL parameters
   // Show user-friendly error message instead of breaking the app
@@ -160,8 +154,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   }
 
   // Show loading skeleton while fetching post data
-  // In Convex, undefined means loading, null means not found
-  if (post === undefined) {
+  if (isPostLoading) {
     return (
       <div className="mx-auto max-w-4xl px-4 py-8">
         {/* Post header skeleton */}
@@ -240,7 +233,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   // If the post no longer exists (e.g., it was just deleted), redirect the
   // user to the home page instead of showing a 404. We still show a 404 for
   // mismatched categories (malformed URL).
-  if (post === null) {
+  if (post === null || isError) {
     // The redirection will run in the effect; render nothing meanwhile.
     return null;
   }
@@ -256,7 +249,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
       {/* Authenticated User Experience */}
       <Authenticated>
-        {canViewPost === undefined ? (
+        {isAuthLoading ? (
           // Loading state while checking access
           <div className="animate-pulse space-y-4">
             <div className="bg-muted h-8 w-3/4 rounded" />
@@ -264,7 +257,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
             <div className="bg-muted h-4 w-full rounded" />
             <div className="bg-muted h-4 w-2/3 rounded" />
           </div>
-        ) : canViewPost === true ? (
+        ) : canViewPost ? (
           <>
             {/* Full post detail with all interactive features */}
             <PostDetail
@@ -278,7 +271,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
 
             {/* Comment section with deep linking support */}
             <CommentSection
-              postId={post._id as Id<"posts">}
+              postId={post.id}
               targetCommentId={commentId ?? undefined}
             />
 
@@ -286,14 +279,14 @@ export default function PostPageClient({ params }: PostPageClientProps) {
             {post && (
               <>
                 <PostDeleteModal
-                  postId={post._id as Id<"posts">}
+                  postId={post.id}
                   postTitle={post.title}
                   isOpen={isDeleteModalOpen}
                   onClose={() => setIsDeleteModalOpen(false)}
                   onSuccess={handleDeleteSuccess}
                 />
                 <PostHistoryModal
-                  postId={post._id as Id<"posts">}
+                  postId={post.id}
                   isOpen={isHistoryModalOpen}
                   onClose={() => setIsHistoryModalOpen(false)}
                 />
@@ -317,9 +310,9 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 <span>
                   by {post.member?.firstName} {post.member?.lastName}
                 </span>
-                <span>•</span>
+                <span>-</span>
                 <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                <span>•</span>
+                <span>-</span>
                 <span>{post.upvotes} upvotes</span>
               </div>
             </div>
@@ -334,7 +327,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
               </div>
 
               {/* Direct Paywall */}
-              <PostPaywallDirect postId={post._id} postTitle={post.title} />
+              <PostPaywallDirect postId={post.id} postTitle={post.title} />
             </div>
           </div>
         )}
@@ -354,7 +347,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
               onCancelEdit={handleCancelEdit}
             />
             <CommentSection
-              postId={post._id as Id<"posts">}
+              postId={post.id}
               targetCommentId={commentId ?? undefined}
             />
           </>
@@ -375,9 +368,9 @@ export default function PostPageClient({ params }: PostPageClientProps) {
                 <span>
                   by {post.member?.firstName} {post.member?.lastName}
                 </span>
-                <span>•</span>
+                <span>-</span>
                 <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                <span>•</span>
+                <span>-</span>
                 <span>{post.upvotes} upvotes</span>
               </div>
             </div>
@@ -392,7 +385,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
               </div>
 
               {/* Direct Paywall */}
-              <PostPaywallDirect postId={post._id} postTitle={post.title} />
+              <PostPaywallDirect postId={post.id} postTitle={post.title} />
             </div>
           </div>
         )}

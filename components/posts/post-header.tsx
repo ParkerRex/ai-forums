@@ -1,5 +1,4 @@
 "use client";
-import { useQuery } from "convex/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
@@ -13,8 +12,7 @@ import PostHeaderSkeleton from "@/components/posts/post-header-skeleton";
 import { SortPopover } from "@/components/posts/sort-popover";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useCategories } from "@/hooks/use-categories";
 
 interface PostHeaderProps {
   sortBy?: "newest" | "popular" | "trending";
@@ -30,20 +28,12 @@ type CategoryIconRef = {
 export default function PostHeader({ sortBy = "newest", onSortChange }: PostHeaderProps) {
   const homeIconRef = React.useRef<HomeIconHandle>(null);
   const categoryIconRefs = React.useRef<{ [key: string]: CategoryIconRef | null }>({});
-  const categories = useQuery(api.categories.getCategories) as
-    | Array<{
-        _id: Id<"categories">;
-        name: string;
-        displayName: string;
-        description: string;
-        icon?: string;
-        postCount: number;
-      }>
-    | undefined;
+  const { data: categoriesData, isLoading } = useCategories();
+  const categories = categoriesData?.items;
   const pathname = usePathname();
 
   // Show skeleton while categories are loading
-  if (categories === undefined) {
+  if (isLoading) {
     return <PostHeaderSkeleton />;
   }
 
@@ -104,18 +94,15 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
           </Button>
 
           {/* Category Tabs */}
-          {categories === undefined ? (
-            // Loading state
-            [...Array(5)].map((_, i) => <Skeleton key={i} className="h-8 w-20" />)
-          ) : categories?.length === 0 ? (
+          {!categories || categories.length === 0 ? (
             <span className="text-muted-foreground text-sm">No categories available</span>
           ) : (
-            categories?.map((category) => {
+            categories.map((category) => {
               const isActive = pathname === `/${category.name}`;
 
               return (
                 <Button
-                  key={category._id}
+                  key={category.id}
                   variant="ghost"
                   size="sm"
                   className={`px-2 ${isActive ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground"}`}
@@ -125,10 +112,10 @@ export default function PostHeader({ sortBy = "newest", onSortChange }: PostHead
                     href={`/${category.name}`}
                     className="flex items-center gap-1"
                     prefetch={true}
-                    onMouseEnter={() => handleCategoryIconAnimation(category._id, true)}
-                    onMouseLeave={() => handleCategoryIconAnimation(category._id, false)}
+                    onMouseEnter={() => handleCategoryIconAnimation(category.id, true)}
+                    onMouseLeave={() => handleCategoryIconAnimation(category.id, false)}
                   >
-                    {getCategoryIcon(category.name, isActive, category._id)}
+                    {getCategoryIcon(category.name, isActive, category.id)}
                     <span>/{category.name}</span>
                   </Link>
                 </Button>

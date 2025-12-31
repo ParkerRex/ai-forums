@@ -23,12 +23,12 @@
 
 "use client";
 
-import { useMutation, useQuery } from "convex/react";
 import { formatDistanceToNow } from "date-fns";
 import { ExternalLink, Trash2, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { PageErrorBoundary } from "@/components/error-boundary";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -46,9 +46,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
-import { useMutationError } from "@/hooks/use-mutation-error";
+import { useToast } from "@/hooks/use-toast";
+import {
+  useReportedComments,
+  useResolveReport,
+  type EnrichedReport,
+} from "@/hooks/use-admin";
 
 /**
  * Represents the possible states of a comment report
@@ -61,47 +64,12 @@ import { useMutationError } from "@/hooks/use-mutation-error";
 type ReportStatus = "pending" | "resolved" | "dismissed" | undefined;
 
 /**
- * Type for enriched report data returned from the API
- */
-type EnrichedReport = {
-  _id: Id<"commentReports">;
-  commentId: Id<"comments">;
-  reporterId: Id<"members">;
-  reason: string;
-  reasonText?: string;
-  status: "pending" | "resolved" | "dismissed";
-  createdAt: number;
-  comment: {
-    _id: Id<"comments">;
-    content: string;
-    author: {
-      _id: Id<"members">;
-      firstName: string;
-      lastName: string;
-      email: string;
-    } | null;
-  } | null;
-  reporter: {
-    _id: Id<"members">;
-    firstName: string;
-    lastName: string;
-    email: string;
-  } | null;
-  post: {
-    _id: Id<"posts">;
-    title: string;
-    slug: string;
-    categoryName: string | null;
-  } | null;
-};
-
-/**
  * Main content component for the reported comments admin page
  *
  * This component handles the core functionality of displaying and managing reported comments.
  * It includes admin authorization, data fetching, filtering, and moderation actions.
  *
- * The component uses Convex for real-time data synchronization, ensuring that multiple
+ * The component uses React Query for data synchronization, ensuring that multiple
  * admin users can work simultaneously without conflicts.
  *
  * @returns JSX element containing the reported comments interface or access denied message
@@ -117,30 +85,35 @@ function ReportedCommentsContent() {
   // Starts as undefined to show all reports by default
   const [statusFilter, setStatusFilter] = useState<ReportStatus>(undefined);
 
-  // Custom hook for standardized error handling across mutations
-  // Provides consistent error messages and retry functionality
-  const { handleMutationError, handleMutationSuccess } = useMutationError();
+  const { toast } = useToast();
 
   // Check if current user has admin privileges
-  // This query will return false for non-admin users, blocking access to the page
-  const isAdmin = useQuery(api.admin.isCurrentUserAdmin);
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const isAdmin = user?.role === "admin";
 
-  // Fetch reported comments based on current filter settings
-  // Limited to 50 reports per query to prevent performance issues
-  // The query automatically re-runs when statusFilter changes
-  const reports = useQuery(api.admin.getReportedComments, {
-    status: statusFilter,
-    limit: 50,
-  });
+  // Fetch reported comments using the admin hook
+  const { data: reports, isLoading: isReportsLoading } = useReportedComments(
+    statusFilter,
+    50,
+  );
 
-  // Mutation for resolving or dismissing reports
-  // This can optionally delete the associated comment when resolving
-  const resolveReport = useMutation(api.admin.resolveReport);
+  // Resolve report mutation using the admin hook
+  const resolveReportMutation = useResolveReport();
 
   // Early return if user is not an admin
   // This prevents unauthorized access to sensitive moderation tools
-  // The isAdmin query returns false for non-admin users and undefined while loading
-  if (isAdmin === false) {
+  if (isAuthLoading) {
+    return (
+      <div className="container mx-auto max-w-4xl p-6">
+        <div className="py-12 text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
     return (
       <div className="container mx-auto max-w-4xl p-6">
         <div className="py-12 text-center">
@@ -158,39 +131,23 @@ function ReportedCommentsContent() {
    * 1. Resolve without action (comment stays, report marked as resolved)
    * 2. Resolve with deletion (comment is deleted, report marked as resolved)
    *
-   * This function uses optimistic UI updates and provides retry functionality
-   * on failure to ensure reliable moderation actions.
-   *
    * @param reportId - The ID of the report to resolve
    * @param deleteComment - Whether to delete the associated comment (default: false)
-   *
-   * @example
-   * // Resolve report without deleting comment
-   * handleResolve("report123")
-   *
-   * // Resolve report and delete the comment
-   * handleResolve("report123", true)
    */
   const handleResolve = async (reportId: string, deleteComment: boolean = false) => {
     try {
-      // Call the Convex mutation to resolve the report
-      // The reportId is cast to the correct Convex ID type for type safety
-      await resolveReport({
-        reportId: reportId as Id<"commentReports">,
+      await resolveReportMutation.mutateAsync({
+        reportId,
         action: "resolve",
         deleteComment,
       });
-
-      // Show success message based on whether comment was deleted
-      // This provides clear feedback to the admin about what action was taken
-      handleMutationSuccess(
-        deleteComment ? "Report resolved and comment deleted" : "Report resolved",
-      );
-    } catch (error) {
-      // Handle errors with retry functionality
-      // The error handler will show a toast with retry button
-      handleMutationError(error, () => handleResolve(reportId, deleteComment), {
-        context: "resolving report",
+      toast({
+        title: deleteComment ? "Report resolved and comment deleted" : "Report resolved",
+      });
+    } catch {
+      toast({
+        title: "Error resolving report",
+        variant: "destructive",
       });
     }
   };
@@ -202,31 +159,21 @@ function ReportedCommentsContent() {
    * no action was necessary. The comment remains unchanged, but the report
    * is marked as dismissed to remove it from the pending queue.
    *
-   * This is useful for false reports, spam reports, or cases where the
-   * reported content doesn't violate community guidelines.
-   *
    * @param reportId - The ID of the report to dismiss
-   *
-   * @example
-   * // Dismiss a report without taking action on the comment
-   * handleDismiss("report123")
    */
   const handleDismiss = async (reportId: string) => {
     try {
-      // Call the Convex mutation to dismiss the report
-      // This changes the report status to "dismissed" without affecting the comment
-      await resolveReport({
-        reportId: reportId as Id<"commentReports">,
+      await resolveReportMutation.mutateAsync({
+        reportId,
         action: "dismiss",
       });
-
-      // Show success confirmation to the admin
-      handleMutationSuccess("Report dismissed");
-    } catch (error) {
-      // Handle errors with retry functionality
-      // Provides consistent error handling across all admin actions
-      handleMutationError(error, () => handleDismiss(reportId), {
-        context: "dismissing report",
+      toast({
+        title: "Report dismissed",
+      });
+    } catch {
+      toast({
+        title: "Error dismissing report",
+        variant: "destructive",
       });
     }
   };
@@ -241,13 +188,6 @@ function ReportedCommentsContent() {
    *
    * @param status - The current status of the report
    * @returns JSX Badge component with appropriate styling
-   *
-   * @example
-   * // Renders a red badge for pending reports
-   * getStatusBadge("pending")
-   *
-   * // Renders a gray badge for dismissed reports
-   * getStatusBadge("dismissed")
    */
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -277,13 +217,6 @@ function ReportedCommentsContent() {
    *
    * @param reason - The reason why the comment was reported
    * @returns JSX Badge component with color-coded styling
-   *
-   * @example
-   * // Renders a red badge for spam reports
-   * getReasonBadge("spam")
-   *
-   * // Renders a muted badge for custom reasons
-   * getReasonBadge("other")
    */
   const getReasonBadge = (reason: string) => {
     // Color mapping for different report reasons
@@ -335,7 +268,7 @@ function ReportedCommentsContent() {
 
       {/* Loading state with skeleton placeholders */}
       {/* Shows while reports are being fetched from the database */}
-      {reports === undefined ? (
+      {isReportsLoading || reports === undefined ? (
         <div className="space-y-4">
           {/* Create 5 skeleton cards to indicate loading */}
           {[...Array(5)].map((_, i) => (
@@ -499,10 +432,6 @@ function ReportedCommentsContent() {
  * Access: Admin users only (enforced within ReportedCommentsContent)
  *
  * @returns JSX element with error boundary protection around the main content
- *
- * @example
- * // This component is automatically rendered when navigating to /admin/reported-comments
- * // Next.js handles the routing based on the file path
  */
 export default function ReportedCommentsPage() {
   return (

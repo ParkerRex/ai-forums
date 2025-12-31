@@ -1,6 +1,5 @@
 "use client";
 
-import { useAction, useQuery } from "convex/react";
 import { FileText, Image as ImageIcon, Link, Upload, X } from "lucide-react";
 import Image from "next/image";
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
@@ -17,13 +16,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useCategories } from "@/hooks/use-categories";
+import { useLinkPreview } from "@/hooks/use-posts";
 import { getCharacterCountInfo, type PostFormData, validatePostForm } from "@/lib/form-validation";
 import {
   getFilePreviewUrl,
   revokeFilePreviewUrl,
-  // uploadMedia,
   validateMediaFile,
 } from "@/lib/upload-media";
 
@@ -106,18 +104,10 @@ export function PostFormFields({
   // Real-time validation (only for touched fields)
   const { errors } = validatePostForm(formData, touchedFields);
 
-  // Queries and actions
-  const categories = useQuery(api.categories.getCategories) as
-    | Array<{
-        _id: Id<"categories">;
-        name: string;
-        displayName: string;
-        description: string;
-        icon?: string;
-        postCount: number;
-      }>
-    | undefined;
-  const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
+  // React Query hooks
+  const { data: categoriesData, isLoading: categoriesLoading } = useCategories();
+  const categories = categoriesData?.items;
+  const linkPreviewMutation = useLinkPreview();
 
   // Character count helpers
   const titleInfo = getCharacterCountInfo(formData.title, 5, 200);
@@ -234,7 +224,7 @@ export function PostFormFields({
       // Fetch link preview if valid URL
       if (url?.match(/^https?:\/\/.+/)) {
         try {
-          const preview = await fetchLinkPreview({ url });
+          const preview = await linkPreviewMutation.mutateAsync(url);
           if (preview) {
             onFormDataChange({
               linkTitle: preview.title,
@@ -247,11 +237,11 @@ export function PostFormFields({
         }
       }
     },
-    [onFormDataChange, fetchLinkPreview],
+    [onFormDataChange, linkPreviewMutation],
   );
 
   // Loading state for categories
-  if (categories === undefined) {
+  if (categoriesLoading) {
     return (
       <div className="space-y-6">
         <div className="animate-pulse space-y-4">
@@ -338,7 +328,7 @@ export function PostFormFields({
               </SelectTrigger>
               <SelectContent>
                 {categories?.map((category) => (
-                  <SelectItem key={category._id} value={category._id}>
+                  <SelectItem key={category.id} value={category.id}>
                     <div className="flex items-center space-x-2">
                       <span>{category.icon}</span>
                       <span>{category.displayName}</span>
@@ -385,7 +375,7 @@ export function PostFormFields({
                   <Suspense fallback={<PostPreviewSkeleton />}>
                     <PostPreview
                       post={{
-                        _id: "preview" as unknown as Id<"posts">,
+                        id: "preview",
                         title: formData.title || "Untitled Post",
                         content: formData.content || "No content yet...",
                         createdAt: Date.now(),

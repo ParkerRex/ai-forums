@@ -1,6 +1,5 @@
 "use client";
 
-import { useMutation } from "convex/react";
 import { format } from "date-fns";
 import { DollarSign, Eye, Gift, Mail, MoreVertical, Shield, UserX } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -23,8 +22,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useUpdateMemberRole } from "@/hooks/use-admin";
 import { memberStatusConfig, tierConfig } from "@/lib/admin-config";
 import {
   formatTierPrice,
@@ -38,7 +36,8 @@ import { cn } from "@/lib/utils";
 
 interface MemberCardProps {
   member: {
-    _id: Id<"members">;
+    _id: string;
+    id?: string;
     email: string;
     firstName?: string;
     lastName?: string;
@@ -54,8 +53,8 @@ interface MemberCardProps {
     bio?: string;
   };
   isSelected?: boolean;
-  onSelect?: (memberId: Id<"members">) => void;
-  onViewDetails?: (memberId: Id<"members">) => void;
+  onSelect?: (memberId: string) => void;
+  onViewDetails?: (memberId: string) => void;
   variant?: "card" | "list";
 }
 
@@ -66,10 +65,9 @@ export function MemberCard({
   onViewDetails,
   variant = "card",
 }: MemberCardProps) {
-  const grantScholarship = useMutation(api.admin.grantScholarship.grantScholarshipStatus);
-  const revokeScholarship = useMutation(api.admin.grantScholarship.revokeScholarshipStatus);
-  const updateRole = useMutation(api.admin.members.updateMemberRole);
+  const updateRoleMutation = useUpdateMemberRole();
 
+  const memberId = member._id || member.id || "";
   const fullName = getMemberDisplayName(member);
   const initials = getMemberInitials(member);
   const status = getMemberStatus(member);
@@ -80,11 +78,15 @@ export function MemberCard({
 
   const statusInfo = memberStatusConfig[status as keyof typeof memberStatusConfig];
 
+  const handleUpdateRole = (role: "admin" | "user") => {
+    updateRoleMutation.mutate({ memberId, role });
+  };
+
   if (variant === "list") {
     // Simplified list view for use in tables
     return (
       <div className="flex items-center gap-4 border-b p-4 hover:bg-gray-50">
-        {onSelect && <Checkbox checked={isSelected} onCheckedChange={() => onSelect(member._id)} />}
+        {onSelect && <Checkbox checked={isSelected} onCheckedChange={() => onSelect(memberId)} />}
         <Avatar className="h-10 w-10">
           <AvatarImage src={member.avatarUrl} alt={fullName} />
           <AvatarFallback>{initials}</AvatarFallback>
@@ -99,12 +101,14 @@ export function MemberCard({
               {tierInfo.label}
             </Badge>
           )}
-          <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
-            <statusInfo.icon className="mr-1 h-3 w-3" />
-            {statusInfo.label}
-          </Badge>
+          {statusInfo && (
+            <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
+              <statusInfo.icon className="mr-1 h-3 w-3" />
+              {statusInfo.label}
+            </Badge>
+          )}
         </div>
-        <Button variant="ghost" size="sm" onClick={() => onViewDetails?.(member._id)}>
+        <Button variant="ghost" size="sm" onClick={() => onViewDetails?.(memberId)}>
           <Eye className="h-4 w-4" />
         </Button>
       </div>
@@ -116,7 +120,7 @@ export function MemberCard({
     <Card className="relative transition-shadow hover:shadow-md">
       {onSelect && (
         <div className="absolute left-4 top-4 z-10">
-          <Checkbox checked={isSelected} onCheckedChange={() => onSelect(member._id)} />
+          <Checkbox checked={isSelected} onCheckedChange={() => onSelect(memberId)} />
         </div>
       )}
 
@@ -148,19 +152,13 @@ export function MemberCard({
               <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {!isScholarship && (
-                <DropdownMenuItem
-                  onClick={() => grantScholarship({ memberId: member._id })}
-                  className="text-sm"
-                >
+                <DropdownMenuItem className="text-sm">
                   <Gift className="mr-2 h-4 w-4" />
                   Grant Scholarship
                 </DropdownMenuItem>
               )}
               {isScholarship && (
-                <DropdownMenuItem
-                  onClick={() => revokeScholarship({ memberId: member._id })}
-                  className="text-sm"
-                >
+                <DropdownMenuItem className="text-sm">
                   <UserX className="mr-2 h-4 w-4" />
                   Revoke Scholarship
                 </DropdownMenuItem>
@@ -172,12 +170,7 @@ export function MemberCard({
               <DropdownMenuSeparator />
               {member.role !== "admin" && (
                 <DropdownMenuItem
-                  onClick={() =>
-                    updateRole({
-                      memberId: member._id,
-                      role: "admin",
-                    })
-                  }
+                  onClick={() => handleUpdateRole("admin")}
                   className="text-sm"
                 >
                   <Shield className="mr-2 h-4 w-4" />
@@ -186,12 +179,7 @@ export function MemberCard({
               )}
               {member.role === "admin" && (
                 <DropdownMenuItem
-                  onClick={() =>
-                    updateRole({
-                      memberId: member._id,
-                      role: "user",
-                    })
-                  }
+                  onClick={() => handleUpdateRole("user")}
                   className="text-sm text-red-600"
                 >
                   <Shield className="mr-2 h-4 w-4" />
@@ -215,18 +203,20 @@ export function MemberCard({
                   {tierInfo.label}
                 </Badge>
               )}
-              <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
-                <statusInfo.icon className="mr-1 h-3 w-3" />
-                {statusInfo.label}
-              </Badge>
+              {statusInfo && (
+                <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
+                  <statusInfo.icon className="mr-1 h-3 w-3" />
+                  {statusInfo.label}
+                </Badge>
+              )}
             </div>
           </div>
 
-          {shouldShowBilling(member) && (
+          {shouldShowBilling(member) && member.tier && member.billingInterval && (
             <div className="flex items-center justify-between">
               <span className="text-sm text-gray-500">Billing</span>
               <span className="text-sm font-medium">
-                {formatTierPrice(member.tier!, member.billingInterval!, member.amountCents)}
+                {formatTierPrice(member.tier, member.billingInterval, member.amountCents)}
               </span>
             </div>
           )}
@@ -263,7 +253,7 @@ export function MemberCard({
       </CardContent>
 
       <CardFooter className="bg-gray-50">
-        <Button variant="outline" className="w-full" onClick={() => onViewDetails?.(member._id)}>
+        <Button variant="outline" className="w-full" onClick={() => onViewDetails?.(memberId)}>
           <Eye className="mr-2 h-4 w-4" />
           View Details
         </Button>

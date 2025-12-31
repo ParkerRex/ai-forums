@@ -1,6 +1,5 @@
 "use client";
 
-import { useQuery } from "convex/react";
 import { format } from "date-fns";
 import {
   AlertCircle,
@@ -14,11 +13,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { api } from "@/convex/_generated/api";
+import { useWebhookHealth, useWebhookFailures } from "@/hooks/use-admin";
 
 export default function MonitoringPage() {
-  const webhookHealth = useQuery(api.stripe.monitoring.getWebhookHealth);
-  const recentFailures = useQuery(api.stripe.monitoring.getRecentFailures, { limit: 10 });
+  const { data: webhookHealth } = useWebhookHealth();
+  const { data: recentFailures } = useWebhookFailures(10);
 
   const getHealthIcon = (status: string) => {
     switch (status) {
@@ -180,30 +179,22 @@ export default function MonitoringPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentFailures.map(
-                (failure: {
-                  eventId: string;
-                  type: string;
-                  error: string | undefined;
-                  createdAt: number;
-                  age: number;
-                }) => (
-                  <div
-                    key={failure.eventId}
-                    className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
-                  >
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">{failure.type}</p>
-                      <p className="text-sm text-destructive">{failure.error}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {format(failure.createdAt, "PPp")} ({Math.round(failure.age / 1000 / 60)}{" "}
-                        minutes ago)
-                      </p>
-                    </div>
-                    <Badge variant="destructive">Failed</Badge>
+              {recentFailures.map((failure) => (
+                <div
+                  key={failure.eventId}
+                  className="flex items-start justify-between border-b pb-4 last:border-0 last:pb-0"
+                >
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium">{failure.type}</p>
+                    <p className="text-sm text-destructive">{failure.error}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {format(failure.createdAt, "PPp")} ({Math.round(failure.age / 1000 / 60)}{" "}
+                      minutes ago)
+                    </p>
                   </div>
-                ),
-              )}
+                  <Badge variant="destructive">Failed</Badge>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

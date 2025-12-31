@@ -17,39 +17,12 @@
  */
 
 "use client";
-import { useQuery } from "convex/react";
 import { BookOpen, Search } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { api } from "@/convex/_generated/api";
-
-/**
- * Represents a learning topic with its metadata and resource count
- *
- * @interface Topic
- * @property {string} _id - Unique identifier for the topic
- * @property {string} name - URL-friendly name used in routing
- * @property {string} displayName - Human-readable name shown in UI
- * @property {string} description - Brief description of the topic's content
- * @property {string} [icon] - Optional emoji or icon for visual representation
- * @property {number} resourceCount - Total number of resources in this topic
- * @property {number} createdAt - Timestamp when topic was created
- * @property {number} updatedAt - Timestamp when topic was last modified
- * @property {"active" | "inactive"} status - Current visibility status
- */
-interface Topic {
-  _id: string;
-  name: string;
-  displayName: string;
-  description: string;
-  icon?: string;
-  resourceCount: number;
-  createdAt: number;
-  updatedAt: number;
-  status: "active" | "inactive";
-}
+import { useTopics, type Topic } from "@/hooks/use-topics";
 
 /**
  * Individual topic card component that displays a single learning topic
@@ -61,21 +34,6 @@ interface Topic {
  * @param {Object} props - Component properties
  * @param {Topic} props.topic - The topic data to display
  * @returns {JSX.Element} Rendered topic card component
- *
- * @example
- * ```tsx
- * <TopicCard topic={{
- *   _id: "123",
- *   name: "react",
- *   displayName: "React",
- *   description: "JavaScript library for building user interfaces",
- *   icon: "⚛️",
- *   resourceCount: 42,
- *   createdAt: Date.now(),
- *   updatedAt: Date.now(),
- *   status: "active"
- * }} />
- * ```
  */
 function TopicCard({ topic }: { topic: Topic }) {
   return (
@@ -103,17 +61,6 @@ function TopicCard({ topic }: { topic: Topic }) {
  * layout shifts during loading states.
  *
  * @returns {JSX.Element} Rendered skeleton loading component
- *
- * @example
- * ```tsx
- * {isLoading && (
- *   <div className="grid grid-cols-3 gap-4">
- *     {Array.from({ length: 6 }, (_, i) => (
- *       <TopicCardSkeleton key={i} />
- *     ))}
- *   </div>
- * )}
- * ```
  */
 function TopicCardSkeleton() {
   return (
@@ -158,34 +105,19 @@ function TopicCardSkeleton() {
  * - Empty states for no topics or search results
  *
  * @returns {JSX.Element} The complete education hub page
- *
- * @example
- * ```tsx
- * // This component is used as a Next.js page
- * // app/educate/page.tsx
- * export default function Page() {
- *   return <EducatePage />;
- * }
- * ```
  */
 export default function EducatePage() {
   // Local state for managing search functionality
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Fetch all topics from the database
-  const topics = useQuery(api.topics.getTopics, {});
+  // Fetch topics based on search term
+  const { data: topicsData, isLoading } = useTopics(searchTerm.trim() || undefined);
 
-  // Conditionally fetch search results when user enters search term
-  const searchResults = useQuery(
-    api.topics.searchTopics,
-    searchTerm.trim() ? { searchTerm: searchTerm.trim() } : "skip",
-  );
-
-  // Determine which topics to display based on search state
-  const displayTopics = searchTerm.trim() ? searchResults : topics;
+  // Get the topics array from the response
+  const displayTopics = topicsData?.items;
 
   // Show full page skeleton while initial data is loading
-  if (topics === undefined && !searchTerm.trim()) {
+  if (isLoading && !searchTerm.trim()) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-6">
         {/* Page header skeleton */}
@@ -269,7 +201,7 @@ export default function EducatePage() {
           </div>
         ) : (
           // Render topic cards when data is available
-          displayTopics.map((topic: Topic) => <TopicCard key={topic._id} topic={topic} />)
+          displayTopics.map((topic) => <TopicCard key={topic.id} topic={topic} />)
         )}
       </div>
     </div>

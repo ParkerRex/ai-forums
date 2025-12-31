@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { notifications, members } from "@/db/schema";
-import { eq, and, desc, sql } from "drizzle-orm";
+import { notifications, members, posts, comments } from "@/db/schema";
+import { eq, and, desc, sql, inArray } from "drizzle-orm";
 import { z } from "zod";
 import { getCurrentMember } from "@/lib/auth";
 
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
 		const unreadOnly = searchParams.get("unread") === "true";
 		const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
 
-		let conditions = [eq(notifications.recipientId, member.id)];
+		const conditions = [eq(notifications.recipientId, member.id)];
 		if (unreadOnly) {
 			conditions.push(eq(notifications.read, false));
 		}
@@ -44,6 +44,47 @@ export async function GET(request: NextRequest) {
 			.orderBy(desc(notifications.createdAt))
 			.limit(limit);
 
+		// Get post info for notifications that reference posts or comments
+		const postEntityIds = result
+			.filter((r) => r.notification.entityType === "post" && r.notification.entityId)
+			.map((r) => r.notification.entityId as string);
+
+		const commentEntityIds = result
+			.filter((r) => r.notification.entityType === "comment" && r.notification.entityId)
+			.map((r) => r.notification.entityId as string);
+
+		// Fetch posts directly referenced
+		const postInfoMap = new Map<string, { id: string; slug: string }>();
+		if (postEntityIds.length > 0) {
+			const postInfos = await db
+				.select({ id: posts.id, slug: posts.slug })
+				.from(posts)
+				.where(inArray(posts.id, postEntityIds));
+			for (const post of postInfos) {
+				postInfoMap.set(post.id, post);
+			}
+		}
+
+		// Fetch posts for comments
+		const commentPostMap = new Map<string, { postId: string; postSlug: string }>();
+		if (commentEntityIds.length > 0) {
+			const commentInfos = await db
+				.select({
+					commentId: comments.id,
+					postId: posts.id,
+					postSlug: posts.slug,
+				})
+				.from(comments)
+				.innerJoin(posts, eq(comments.postId, posts.id))
+				.where(inArray(comments.id, commentEntityIds));
+			for (const info of commentInfos) {
+				commentPostMap.set(info.commentId, {
+					postId: info.postId,
+					postSlug: info.postSlug,
+				});
+			}
+		}
+
 		// Get unread count
 		const unreadCount = await db
 			.select({ count: sql<number>`count(*)` })
@@ -56,10 +97,31 @@ export async function GET(request: NextRequest) {
 			);
 
 		return NextResponse.json({
-			items: result.map((row) => ({
-				...row.notification,
-				actor: row.actor,
-			})),
+			items: result.map((row) => {
+				let postId: string | null = null;
+				let postSlug: string | null = null;
+
+				if (row.notification.entityType === "post" && row.notification.entityId) {
+					const postInfo = postInfoMap.get(row.notification.entityId);
+					if (postInfo) {
+						postId = postInfo.id;
+						postSlug = postInfo.slug;
+					}
+				} else if (row.notification.entityType === "comment" && row.notification.entityId) {
+					const commentInfo = commentPostMap.get(row.notification.entityId);
+					if (commentInfo) {
+						postId = commentInfo.postId;
+						postSlug = commentInfo.postSlug;
+					}
+				}
+
+				return {
+					...row.notification,
+					actor: row.actor,
+					postId,
+					postSlug,
+				};
+			}),
 			unreadCount: Number(unreadCount[0]?.count || 0),
 		});
 	} catch (error) {

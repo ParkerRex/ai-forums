@@ -1,19 +1,17 @@
 "use client";
 
-import { useMutation } from "convex/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import { type ExtendedPostFormData, PostFormFields } from "@/components/posts/post-form-fields";
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useUpdatePost } from "@/hooks/use-posts";
 import type { PostFormData } from "@/lib/form-validation";
 import { cn } from "@/lib/utils";
 
 interface PostEditInlineProps {
   post: {
-    _id: Id<"posts">;
+    _id: string;
     title: string;
     content: string;
     type?: "text" | "image" | "video" | "link" | "poll";
@@ -26,7 +24,7 @@ interface PostEditInlineProps {
     pollOptions?: Array<{ id: string; text: string }>;
     pollEndsAt?: number;
     category?: {
-      _id?: Id<"categories">;
+      _id?: string;
       name: string;
       displayName?: string;
     } | null;
@@ -37,7 +35,7 @@ interface PostEditInlineProps {
 
 export function PostEditInline({ post, onCancel, className }: PostEditInlineProps) {
   const router = useRouter();
-  const editPost = useMutation(api.posts.editPost);
+  const updatePostMutation = useUpdatePost();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [touchedFields, setTouchedFields] = useState<Set<keyof PostFormData>>(new Set());
 
@@ -51,7 +49,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
     linkImage: post.linkImage || "",
     mediaUrl: post.mediaUrl || "",
     thumbnailUrl: post.thumbnailUrl || "",
-    categoryId: post.category?._id || ("uncategorized" as Id<"categories">),
+    categoryId: post.category?._id || "uncategorized",
   });
 
   const handleFormDataChange = (data: Partial<ExtendedPostFormData>) => {
@@ -73,7 +71,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
     setIsSubmitting(true);
 
     try {
-      const result = await editPost({
+      const result = await updatePostMutation.mutateAsync({
         postId: post._id,
         title: formData.title.trim(),
         content: formData.content,
@@ -87,7 +85,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
         thumbnailUrl: formData.type === "video" ? formData.thumbnailUrl : undefined,
         categoryId:
           formData.categoryId !== post.category?._id
-            ? (formData.categoryId as Id<"categories">)
+            ? formData.categoryId
             : undefined,
       });
 

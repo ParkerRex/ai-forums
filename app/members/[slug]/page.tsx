@@ -26,7 +26,6 @@
  * @version 1.0.0
  */
 
-import { useQuery } from "convex/react";
 import { ArrowLeft, Bookmark } from "lucide-react";
 import { notFound, useRouter } from "next/navigation";
 import React, { use } from "react";
@@ -41,7 +40,9 @@ import {
 import PostCard from "@/components/posts/post-card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { api } from "@/convex/_generated/api";
+import { useAuth } from "@/components/providers/auth-provider";
+import { useMember, useMemberPosts, useMemberActivity } from "@/hooks/use-members";
+import { useBookmarksWithDetails } from "@/hooks/use-bookmarks";
 
 /**
  * Props interface for the MemberDetailPage component.
@@ -75,137 +76,89 @@ interface PageProps {
  */
 function MemberDetailContent({ slug }: { slug: string }) {
   const router = useRouter();
-  const [postsCursor, setPostsCursor] = React.useState<string | null>(null);
-  const [allPosts, setAllPosts] = React.useState<
-    Array<NonNullable<typeof memberPostsData>["page"][number]>
-  >([]);
+  const { user } = useAuth();
 
-  // Fetch member data from Convex using slug - primary data source
-  const memberData = useQuery(api.members.getMemberBySlug, { slug });
+  // Fetch member data using React Query
+  const { data: memberData, isLoading: isMemberLoading, isError: isMemberError } = useMember(slug);
 
-  // Fetch member posts from Convex (only if member data is loaded)
-  // This conditional approach prevents unnecessary API calls and errors
-  const memberPostsData = useQuery(
-    api.members.getMemberPosts,
-    memberData
-      ? {
-          memberId: memberData._id,
-          paginationOpts: { numItems: 10, cursor: postsCursor }, // Paginated posts loading
-        }
-      : "skip", // Skip query if member data not loaded yet
-  );
+  // Fetch member posts using React Query with pagination
+  const {
+    data: memberPostsData,
+    isLoading: arePostsLoading,
+    hasNextPage: hasMorePosts,
+    fetchNextPage: loadMorePosts,
+    isFetchingNextPage: isLoadingMorePosts,
+  } = useMemberPosts(memberData?.id);
 
-  // Fetch member activity from Convex (only if member data is loaded)
-  // Activity includes comments and other engagement metrics
-  const memberActivityData = useQuery(
-    api.members.getMemberActivity,
-    memberData
-      ? {
-          memberId: memberData._id,
-          paginationOpts: { numItems: 10, cursor: null }, // Get first 10 activities
-        }
-      : "skip", // Skip query if member data not loaded yet
-  );
+  // Fetch member activity using React Query with pagination
+  const { data: memberActivityData, isLoading: isActivityLoading } = useMemberActivity(memberData?.id);
+
+  // Check if viewing own profile for bookmarks privacy
+  const isOwnProfile = user && memberData && user.id === memberData.id;
 
   // Fetch member bookmarks (only if viewing own profile)
-  // Privacy protection: only show bookmarks to the member themselves
-  const currentMember = useQuery(api.members.getCurrentMember);
-  const isOwnProfile = currentMember && memberData && currentMember._id === memberData._id;
-  const memberBookmarksData = useQuery(
-    api.bookmarks.getUserBookmarks,
-    isOwnProfile
-      ? {
-          paginationOpts: { numItems: 10, cursor: null }, // Get more bookmarks for tab view
-        }
-      : "skip", // Skip for privacy if not own profile
+  const { data: memberBookmarks, isLoading: areBookmarksLoading } = useBookmarksWithDetails(
+    isOwnProfile ? undefined : undefined // Only fetch if own profile
   );
 
   // Member not found (only check this after data has loaded)
-  // null means the query completed but no member was found
-  if (memberData === null) {
-    notFound(); // Trigger Next.js 404 page
+  if (memberData === null && !isMemberLoading) {
+    notFound();
   }
 
-  // Progressive loading states for independent section loading
-  // This allows each section to load independently without blocking others
-  const isMemberLoading = memberData === undefined;
-  const arePostsLoading = memberPostsData === undefined;
-  const isActivityLoading = memberActivityData === undefined;
-  const areBookmarksLoading = memberBookmarksData === undefined;
-
-  // Minimal transformation using server-computed data
-  // Transform Convex data structure to match MemberProfile component interface
+  // Transform member data for MemberProfile component
   const member = memberData
     ? {
-        id: memberData._id, // Convert Convex _id to generic id
+        id: memberData.id,
         firstName: memberData.firstName,
         lastName: memberData.lastName,
         email: memberData.email,
-        status: memberData.status, // Member status: active, churned, or free
-        joinedDate: memberData.joinedDateFormatted, // Use server-formatted date for consistency
+        status: memberData.status || "active",
+        joinedDate: memberData.joinedDate
+          ? new Date(memberData.joinedDate).toLocaleDateString()
+          : undefined,
         country: memberData.country,
-        updatedAt: new Date(memberData.updatedAt).toISOString().split("T")[0], // Convert to YYYY-MM-DD format
+        updatedAt: undefined,
         bio: memberData.bio,
-        lastOnline: memberData.lastOnlineFormatted, // Use server-formatted date
-        initials: memberData.initials, // Use server-computed initials for consistency
+        lastOnline: memberData.lastOnline
+          ? new Date(memberData.lastOnline).toLocaleDateString()
+          : undefined,
+        initials: `${memberData.firstName?.[0] || ""}${memberData.lastName?.[0] || ""}`,
         linkGithub: memberData.linkGithub,
         linkX: memberData.linkX,
         linkYouTube: memberData.linkYouTube,
         location: memberData.location,
-        // Enhanced member profile fields
         avatarUrl: memberData.avatarUrl,
         websiteUrl: memberData.websiteUrl,
         linkedinUrl: memberData.linkedinUrl,
-        skills: memberData.skills || [], // Ensure skills is always an array
-        // Include slug for potential future routing needs
+        skills: memberData.skills || [],
         slug: memberData.slug,
-        // Subscription fields
         tier: memberData.tier,
         subscriptionStatus: memberData.subscriptionStatus,
         subscriptionEndDate: memberData.subscriptionEndDate,
         billingInterval: memberData.billingInterval,
-        // Stats
         postCount: memberData.postCount,
       }
     : null;
 
-  // Transform posts data to match PostCard interface
-  // PostCard expects the standard post structure from the API
-  const memberBookmarks = memberBookmarksData?.page || [];
+  // Flatten paginated posts data
+  const allPosts = memberPostsData?.pages?.flatMap((page) => page.items) || [];
 
-  // Effect to accumulate posts as we paginate
-  React.useEffect(() => {
-    if (memberPostsData?.page) {
-      if (postsCursor === null) {
-        // First page, replace all posts
-        setAllPosts(memberPostsData.page);
-      } else {
-        // Subsequent pages, append to existing posts
-        setAllPosts((prev) => [...prev, ...memberPostsData.page]);
-      }
-    }
-  }, [memberPostsData, postsCursor]);
-
-  // Reset posts when member changes
-  React.useEffect(() => {
-    setPostsCursor(null);
-    setAllPosts([]);
-  }, [slug]);
-
-  // Transform activity data for UI display
-  // Activity represents member engagement (comments, votes, etc.)
+  // Transform activity data
   const memberActivity =
-    memberActivityData?.page?.map((activity) => ({
-      id: activity._id,
-      type: "comment" as const, // Currently only showing comments in activity
-      content: activity.content,
-      timeAgo: activity.timeAgo, // Server-computed relative time
-      postId: activity.postId,
-      postTitle: activity.post?.title || "Unknown Post", // Fallback for deleted posts
-      postSlug: activity.post?.slug,
-      categoryName: activity.post?.categoryName,
-      netVotes: activity.netVotes, // Vote score for the comment
-    })) || [];
+    memberActivityData?.pages?.flatMap((page) =>
+      page.items.map((activity) => ({
+        id: activity.id,
+        type: "comment" as const,
+        content: activity.content,
+        timeAgo: activity.timeAgo || "recently",
+        postId: activity.postId,
+        postTitle: activity.post?.title || "Unknown Post",
+        postSlug: activity.post?.slug,
+        categoryName: activity.post?.categoryName,
+        netVotes: activity.netVotes,
+      }))
+    ) || [];
 
   // Use actual post count from member data
   const postCount = member?.postCount || 0;
@@ -248,26 +201,26 @@ function MemberDetailContent({ slug }: { slug: string }) {
             {/* Posts Tab */}
             <TabsContent value="posts">
               <QueryErrorBoundary context="loading member posts">
-                {arePostsLoading && postsCursor === null ? (
+                {arePostsLoading ? (
                   <PostSkeletonList count={3} />
                 ) : allPosts.length > 0 ? (
                   <>
                     <div className="divide-y divide-border">
                       {allPosts.map((post) => (
-                        <div key={post._id} className="p-4">
+                        <div key={post.id} className="p-4">
                           <PostCard post={post} />
                         </div>
                       ))}
                     </div>
                     {/* Load More Button */}
-                    {memberPostsData && !memberPostsData.isDone && (
+                    {hasMorePosts && (
                       <div className="p-4 text-center border-t border-border">
                         <Button
                           variant="outline"
-                          onClick={() => setPostsCursor(memberPostsData.continueCursor)}
-                          disabled={arePostsLoading}
+                          onClick={() => loadMorePosts()}
+                          disabled={isLoadingMorePosts}
                         >
-                          {arePostsLoading ? "Loading..." : "Load More Posts"}
+                          {isLoadingMorePosts ? "Loading..." : "Load More Posts"}
                         </Button>
                       </div>
                     )}
@@ -303,11 +256,11 @@ function MemberDetailContent({ slug }: { slug: string }) {
                 <QueryErrorBoundary context="loading member bookmarks">
                   {areBookmarksLoading ? (
                     <PostSkeletonList count={3} />
-                  ) : memberBookmarks.length > 0 ? (
+                  ) : memberBookmarks && memberBookmarks.length > 0 ? (
                     <div className="divide-y divide-border">
                       {memberBookmarks.map((bookmark) => (
-                        <div key={bookmark._id} className="p-4">
-                          <PostCard post={bookmark.target} size="small" />
+                        <div key={bookmark.id} className="p-4">
+                          {bookmark.target && <PostCard post={bookmark.target} size="small" />}
                         </div>
                       ))}
                     </div>

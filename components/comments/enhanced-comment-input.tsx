@@ -1,6 +1,5 @@
 "use client";
 
-import { useAction, useConvex } from "convex/react";
 import EmojiPicker from "emoji-picker-react";
 import type React from "react";
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -12,8 +11,7 @@ import { MediaPreviewGrid } from "@/components/posts/media-preview-grid";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useMembers } from "@/hooks/use-members";
 import {
   getFilePreviewUrl,
   revokeFilePreviewUrl,
@@ -63,12 +61,27 @@ interface EnhancedCommentInputProps {
     content: string,
     attachments?: AttachmentType[],
     linkPreviews?: Record<string, LinkPreviewType>,
-    mentions?: Id<"members">[],
+    mentions?: string[],
   ) => void;
   isSubmitting: boolean;
   className?: string;
   initialValue?: string;
   initialAttachments?: AttachmentType[];
+}
+
+// Function to fetch link preview
+async function fetchLinkPreview(url: string): Promise<LinkPreviewType | null> {
+  try {
+    const response = await fetch("/api/link-preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    if (!response.ok) return null;
+    return response.json();
+  } catch {
+    return null;
+  }
 }
 
 export function EnhancedCommentInput({
@@ -88,20 +101,23 @@ export function EnhancedCommentInput({
   const [mentionSearchTerm, setMentionSearchTerm] = useState("");
   const [mentionPosition, setMentionPosition] = useState({ top: 0, left: 0 });
   const [mentionStartIndex, setMentionStartIndex] = useState(-1);
-  const [mentions, setMentions] = useState<Id<"members">[]>([]);
-  const [memberResults, setMemberResults] = useState<
-    Array<{
-      _id: Id<"members">;
-      firstName: string;
-      lastName: string;
-      slug: string;
-    }>
-  >([]);
+  const [mentions, setMentions] = useState<string[]>([]);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const convex = useConvex();
-  const fetchLinkPreview = useAction(api.linkPreviews.fetchLinkPreview);
+
+  // Use the useMembers hook for member search
+  const { data: membersData } = useMembers({
+    search: mentionSearchTerm || undefined,
+    limit: 20
+  });
+
+  const memberResults = (membersData?.items || []).map((m) => ({
+    _id: m.id,
+    firstName: m.firstName,
+    lastName: m.lastName,
+    slug: m.slug,
+  }));
 
   // Initialize attachments from initialAttachments
   useEffect(() => {
@@ -201,7 +217,7 @@ export function EnhancedCommentInput({
       for (const url of urls) {
         if (!linkPreviews[url]) {
           try {
-            const preview = await fetchLinkPreview({ url });
+            const preview = await fetchLinkPreview(url);
             if (preview) {
               setLinkPreviews((prev) => ({ ...prev, [url]: preview }));
             }
@@ -242,11 +258,11 @@ export function EnhancedCommentInput({
         }
       }
     },
-    [fetchLinkPreview, linkPreviews],
+    [linkPreviews],
   );
 
   const handleMentionSelect = useCallback(
-    (member: { _id: Id<"members">; firstName: string; lastName: string; slug: string }) => {
+    (member: { _id: string; firstName: string; lastName: string; slug: string }) => {
       const beforeMention = content.slice(0, mentionStartIndex);
       const afterMention = content.slice(mentionStartIndex + mentionSearchTerm.length + 1);
       const newContent = `${beforeMention}@${member.slug} ${afterMention}`;
@@ -299,8 +315,20 @@ export function EnhancedCommentInput({
       // Upload attachments that have files
       for (const item of attachments) {
         if (item.file) {
-          // This needs upload
-          const uploadResult = await uploadMedia(convex, item.file);
+          // This needs upload - use fetch-based upload
+          const formData = new FormData();
+          formData.append("file", item.file);
+
+          const response = await fetch("/api/upload", {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error("Failed to upload file");
+          }
+
+          const uploadResult = await response.json();
           uploadedAttachments.push({
             id: item.id,
             type: item.type,
@@ -348,7 +376,7 @@ export function EnhancedCommentInput({
       console.error("Failed to upload attachments:", error);
       toast.error("Failed to upload attachments. Please try again.");
     }
-  }, [content, attachments, linkPreviews, mentions, onSubmit, convex]);
+  }, [content, attachments, linkPreviews, mentions, onSubmit]);
 
   // Convert AttachmentItem[] to MediaItem[] for MediaPreviewGrid
   const mediaItems: MediaItem[] = attachments.map((item) => ({
@@ -359,34 +387,6 @@ export function EnhancedCommentInput({
     order: item.order,
     fileSize: item.fileSize,
   }));
-
-  // Fetch members for mention suggestions
-  useEffect(() => {
-    let cancelled = false;
-    const fetchMembers = async () => {
-      if (!showMentionAutocomplete) return;
-      try {
-        // When search term is empty (just "@"), show first 20 members
-        const term = mentionSearchTerm.trim();
-        const results =
-          term.length === 0
-            ? await convex.query(api.members.getAllMembers, {})
-            : await convex.query(api.members.searchMembers, {
-                searchTerm: term,
-                limit: 20,
-              });
-        if (!cancelled) {
-          setMemberResults(results.slice(0, 20));
-        }
-      } catch (error) {
-        console.error("Failed to search members:", error);
-      }
-    };
-    fetchMembers();
-    return () => {
-      cancelled = true;
-    };
-  }, [mentionSearchTerm, showMentionAutocomplete, convex]);
 
   // Handle keyboard shortcuts
   const handleKeyDown = useCallback(

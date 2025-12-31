@@ -1,6 +1,5 @@
 "use client";
 
-import { useMutation } from "convex/react";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -15,11 +14,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useDeletePost } from "@/hooks/use-posts";
 
 interface PostDeleteModalProps {
-  postId: Id<"posts">;
+  postId: string;
   postTitle: string;
   isOpen: boolean;
   onClose: () => void;
@@ -36,15 +34,15 @@ export function PostDeleteModal({
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  // Mutation
-  const deletePost = useMutation(api.posts.deletePost);
+  // React Query mutation
+  const deletePostMutation = useDeletePost();
 
   const handleDelete = async () => {
     setIsDeleting(true);
     setDeleteError(null);
 
     try {
-      await deletePost({ postId });
+      await deletePostMutation.mutateAsync(postId);
 
       toast.success("Post deleted successfully!");
 

@@ -26,7 +26,6 @@
  */
 
 "use client";
-import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -37,7 +36,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { api } from "@/convex/_generated/api";
+import { useTopicByName } from "@/hooks/use-topics";
+import { useCreateResource } from "@/hooks/use-resources";
 
 /**
  * Props interface for the ResourceSubmissionPageClient component
@@ -67,12 +67,6 @@ interface ResourceSubmissionPageClientProps {
  *
  * @param {ResourceSubmissionPageClientProps} props - Component props
  * @returns {JSX.Element} Complete resource submission form interface
- *
- * @example
- * ```tsx
- * // Used via Next.js routing: /educate/react/submit
- * <ResourceSubmissionPageClient params={Promise.resolve({ topic: "react" })} />
- * ```
  */
 export default function ResourceSubmissionPageClient({
   params,
@@ -100,10 +94,10 @@ export default function ResourceSubmissionPageClient({
   }, [params]);
 
   // Query topic data to verify it exists and get metadata
-  const topic = useQuery(api.topics.getTopicByName, topicName ? { name: topicName } : "skip");
+  const { data: topic, isLoading: topicLoading } = useTopicByName(topicName);
 
   // Mutation for creating new resources
-  const createResource = useMutation(api.resources.createResource);
+  const createResource = useCreateResource();
 
   /**
    * Validates if a string is a properly formatted URL
@@ -160,11 +154,11 @@ export default function ResourceSubmissionPageClient({
 
     try {
       // Submit resource to database with sanitized data
-      await createResource({
+      await createResource.mutateAsync({
+        topicSlug: topicName,
         title: formData.title.trim(),
         description: formData.description.trim(),
         url: formData.url.trim(),
-        topicId: topic._id,
         type: "article",
         isPaid: false,
         isFree: true,
@@ -187,7 +181,7 @@ export default function ResourceSubmissionPageClient({
   }
 
   // Loading state while fetching topic data
-  if (topic === undefined) {
+  if (topicLoading) {
     return <div className="max-w-2xl mx-auto px-4 py-6">Loading...</div>;
   }
 
@@ -218,7 +212,7 @@ export default function ResourceSubmissionPageClient({
   return (
     <div className="max-w-2xl mx-auto px-4 py-6">
       <div className="mb-6">
-        <h1 className="text-2xl font-bold">Add {topic.displayName} Resource</h1>
+        <h1 className="text-2xl font-bold">Add {topic?.displayName} Resource</h1>
       </div>
 
       <Card>

@@ -1,6 +1,5 @@
 "use client";
 
-import { useAction, useConvex, useMutation, useQuery } from "convex/react";
 import {
   AlertCircle,
   ArrowLeft,
@@ -21,19 +20,17 @@ import { MediaUploadSection } from "@/components/posts/media-upload-section";
 import { PollCreationInline, type PollData } from "@/components/posts/poll-creation-inline";
 import { PostPreviewToggle } from "@/components/posts/post-preview-toggle";
 import { PreviewGenerationDialog } from "@/components/posts/preview-generation-dialog";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useCategories } from "@/hooks/use-categories";
+import {
+  useCreatePost,
+  useDeletePost,
+  useLinkPreview,
+  useGeneratePostPreview,
+} from "@/hooks/use-posts";
 import { getCharacterCountInfo, type PostFormData, validatePostForm } from "@/lib/form-validation";
 import { revokeFilePreviewUrl, uploadMedia } from "@/lib/upload-media";
 import { cn } from "@/lib/utils";
@@ -44,7 +41,7 @@ const RichTextEditor = lazy(() => import("@/components/posts/rich-text-editor"))
 const PostPreview = lazy(() => import("@/components/posts/post-preview"));
 
 interface PostCreationFormProps {
-  onSuccess?: (postId: Id<"posts">) => void;
+  onSuccess?: (postId: string) => void;
   onCancel?: () => void;
 }
 
@@ -125,7 +122,6 @@ function PublishButton({
 
 export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps) {
   const router = useRouter();
-  const convex = useConvex();
 
   // Form state
   const [formData, setFormData] = useState<ExtendedPostFormData>({
@@ -184,22 +180,14 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
 
   const isFormComplete = formIsValid && isPostTypeValid();
 
-  // Queries and mutations
-  const categories = useQuery(api.categories.getCategories) as
-    | Array<{
-        _id: Id<"categories">;
-        name: string;
-        displayName: string;
-        description: string;
-        icon?: string;
-        postCount: number;
-      }>
-    | undefined;
-  const createPost = useMutation(api.posts.createPost);
-  const createPollPost = useMutation(api.polls.createPollPost);
-  const deletePost = useMutation(api.posts.deletePost);
-  const fetchLinkPreview = useAction(api.linkPreview.fetchLinkPreview);
-  const generatePostPreview = useAction(api.previewGeneration.generatePostPreview);
+  // React Query hooks
+  const { data: categoriesData } = useCategories();
+  const categories = categoriesData?.items;
+
+  const createPostMutation = useCreatePost();
+  const deletePostMutation = useDeletePost();
+  const linkPreviewMutation = useLinkPreview();
+  const generatePreviewMutation = useGeneratePostPreview();
 
   // Character count helpers
   const titleInfo = getCharacterCountInfo(formData.title, 5, 200);
@@ -257,8 +245,6 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
     [mediaPreviewUrl],
   );
 
-  // Old media handling functions removed - now handled by MediaUploadSection
-
   const handleLinkUrlChange = useCallback(
     async (e: React.ChangeEvent<HTMLInputElement>) => {
       const url = e.target.value;
@@ -267,7 +253,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       // Fetch link preview if valid URL
       if (url?.match(/^https?:\/\/.+/)) {
         try {
-          const preview = await fetchLinkPreview({ url });
+          const preview = await linkPreviewMutation.mutateAsync(url);
           if (preview) {
             setFormData((prev) => ({
               ...prev,
@@ -281,7 +267,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
         }
       }
     },
-    [fetchLinkPreview],
+    [linkPreviewMutation],
   );
 
   const handlePollChange = useCallback((pollData: PollData) => {
@@ -293,7 +279,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
     setPreviewError(null);
 
     try {
-      const preview = await generatePostPreview({
+      const preview = await generatePreviewMutation.mutateAsync({
         title: formData.title,
         content: formData.content,
       });
@@ -305,7 +291,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       setPreviewError("Failed to generate preview. Please try again.");
       setIsGeneratingPreview(false);
     }
-  }, [formData.title, formData.content, generatePostPreview]);
+  }, [formData.title, formData.content, generatePreviewMutation]);
 
   // Define handleActualSubmit first before using it in handlePreviewConfirm
   const handleActualSubmit = useCallback(async () => {
@@ -322,7 +308,6 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       // Handle new media items system
       if (formData.type === "media" && formData.mediaItems && formData.mediaItems.length > 0) {
         // For now, use the first media item as the primary media
-        // In the future, you could support multiple media in a single post
         const primaryMedia = formData.mediaItems[0];
 
         // Set the actual media type (image or video) for API
@@ -332,8 +317,6 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
 
         // Check if media needs uploading (local file)
         if (primaryMedia.url.startsWith("blob:") && !primaryMedia.isUploading) {
-          // Media should already be uploaded via onUpload callback
-          // If not, this is an error state
           throw new Error("Media upload incomplete. Please wait for upload to finish.");
         }
 
@@ -350,7 +333,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       // Fallback to old media upload system
       else if (formData.mediaFile && formData.type === "media") {
         try {
-          const uploadResult = await uploadMedia(convex, formData.mediaFile, {
+          const uploadResult = await uploadMedia(formData.mediaFile, {
             onProgress: (progress) => {
               setUploadProgress(progress.percentage);
             },
@@ -366,64 +349,67 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
         }
       }
 
-      let postId;
-      let postSlug;
+      // Prepare attachments from media items
+      const attachments = formData.mediaItems?.map((item, index) => ({
+        id: item.id,
+        type: item.type,
+        url: item.url,
+        thumbnailUrl: item.thumbnailUrl,
+        width: item.width,
+        height: item.height,
+        aspectRatio: item.aspectRatio,
+        order: index,
+        // PDF specific
+        pageCount: item.pageCount,
+        fileSize: item.fileSize,
+        // YouTube specific
+        videoId: item.videoId,
+        title: item.title,
+        duration: item.duration,
+        channelName: item.channelName,
+        // Video specific
+        videoDuration: item.videoDuration,
+        format: item.format,
+        resolution: item.resolution,
+        codec: item.codec,
+      }));
 
-      if (resolvedType === "poll" && formData.pollData) {
-        const result = await createPollPost({
-          title: formData.title.trim(),
-          content: formData.content.trim(),
-          categoryId: formData.categoryId as Id<"categories">,
-          pollOptions: formData.pollData.options,
-          pollDuration: formData.pollData.duration,
-          preview: formData.preview || "",
-        });
-        postId = result.postId;
-        postSlug = result.slug;
-      } else {
-        const result = await createPost({
-          title: formData.title.trim(),
-          content: formData.content.trim(),
-          categoryId: formData.categoryId as Id<"categories">,
-          type: resolvedType as "text" | "image" | "video" | "link",
-          mediaUrl,
-          thumbnailUrl,
-          aspectRatio: formData.aspectRatio,
-          mediaWidth: formData.mediaWidth,
-          mediaHeight: formData.mediaHeight,
-          linkUrl: formData.linkUrl,
-          linkTitle: formData.linkTitle,
-          linkDescription: formData.linkDescription,
-          linkImage: formData.linkImage,
-          preview: formData.preview || "",
-          // Pass all media items as attachments
-          attachments: formData.mediaItems?.map((item, index) => ({
-            id: item.id,
-            type: item.type,
-            url: item.url,
-            thumbnailUrl: item.thumbnailUrl,
-            width: item.width,
-            height: item.height,
-            aspectRatio: item.aspectRatio,
-            order: index,
-            // PDF specific
-            pageCount: item.pageCount,
-            fileSize: item.fileSize,
-            // YouTube specific
-            videoId: item.videoId,
-            title: item.title,
-            duration: item.duration,
-            channelName: item.channelName,
-            // Video specific
-            videoDuration: item.videoDuration,
-            format: item.format,
-            resolution: item.resolution,
-            codec: item.codec,
-          })),
-        });
-        postId = result.postId;
-        postSlug = result.slug;
-      }
+      // Create the post via React Query mutation
+      const result = await createPostMutation.mutateAsync({
+        title: formData.title.trim(),
+        content: formData.content.trim(),
+        categoryId: formData.categoryId,
+        type: resolvedType,
+        mediaUrl,
+        thumbnailUrl,
+        aspectRatio: formData.aspectRatio,
+        mediaWidth: formData.mediaWidth,
+        mediaHeight: formData.mediaHeight,
+        linkUrl: formData.linkUrl,
+        linkTitle: formData.linkTitle,
+        linkDescription: formData.linkDescription,
+        linkImage: formData.linkImage,
+        preview: formData.preview || "",
+        attachments: attachments as CreatePostData["attachments"],
+        // Poll fields - convert PollOption[] to string[]
+        pollOptions: formData.pollData?.options.map((opt) =>
+          typeof opt === "string" ? opt : opt.text
+        ),
+        pollDuration:
+          formData.pollData?.duration === "24h"
+            ? 24
+            : formData.pollData?.duration === "3d"
+              ? 72
+              : formData.pollData?.duration === "7d"
+                ? 168
+                : undefined,
+      });
+
+      const postId = result.postId;
+      const postSlug = result.slug;
+      // Get category name from category object if present
+      const categoryName =
+        "categoryName" in result ? (result.categoryName as string) : result.category?.name;
 
       // Show success toast with undo button
       toast.success("New post created", {
@@ -431,7 +417,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
           label: "Undo",
           onClick: async () => {
             try {
-              await deletePost({ postId });
+              await deletePostMutation.mutateAsync(postId);
               toast.success("Post deleted");
               // Navigate back to the previous page or home
               router.back();
@@ -447,12 +433,8 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       if (onSuccess) {
         onSuccess(postId);
       } else {
-        // Find the category name for the redirect
-        const category = categories?.find((c) => c._id === formData.categoryId);
-        const categoryName = category?.name || "general";
-
-        // Now both post types return slug, so we can always use it
-        router.push(`/${categoryName}/${postSlug}`);
+        // Use the category name from response for the redirect
+        router.push(`/${categoryName || "general"}/${postSlug}`);
       }
     } catch (error) {
       console.error("Failed to create post:", error);
@@ -464,7 +446,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
       setIsSubmitting(false);
       setUploadProgress(null);
     }
-  }, [formData, categories, createPost, createPollPost, deletePost, convex, onSuccess, router]);
+  }, [formData, createPostMutation, deletePostMutation, onSuccess, router]);
 
   const handlePreviewConfirm = useCallback(
     (preview: string) => {
@@ -649,11 +631,11 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
             <CategoryToggleGroup
               categories={
                 categories?.map((cat) => ({
-                  id: cat._id,
+                  id: cat.id,
                   name: cat.name,
                   displayName: cat.displayName,
-                  description: cat.description,
-                  icon: cat.icon,
+                  description: cat.description || "",
+                  icon: cat.icon || undefined,
                   postCount: cat.postCount,
                   isTrending: false,
                 })) || []
@@ -695,7 +677,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                 <Suspense fallback={<PostPreviewSkeleton />}>
                   <PostPreview
                     post={{
-                      _id: "preview" as unknown as Id<"posts">,
+                      id: "preview",
                       title: formData.title || "Untitled Post",
                       content: formData.content || "No content yet...",
                       createdAt: Date.now(),
@@ -705,7 +687,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                       viewCount: 0,
                       type: "text",
                       member: {
-                        _id: "preview" as unknown as Id<"members">,
+                        id: "preview",
                         firstName: "You",
                         lastName: "",
                         username: "you",
@@ -725,13 +707,10 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                 media={formData.mediaItems || []}
                 onMediaChange={(mediaItems) => {
                   setFormData((prev) => ({ ...prev, mediaItems }));
-                  // Preserve the currently selected tab ("image") even when the first media
-                  // item is a video. We still determine the final post type during submission
-                  // based on the media item's type, so no need to update `formData.type` here.
                 }}
                 onUpload={async (file, mediaItem) => {
                   // Handle upload with progress tracking
-                  const result = await uploadMedia(convex, file, {
+                  const result = await uploadMedia(file, {
                     onProgress: (progress) => {
                       // Update the specific media item's progress
                       setFormData((prev) => ({
@@ -904,3 +883,27 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
 }
 
 export default PostCreationForm;
+
+// Type for attachments to match API expectations
+type CreatePostData = {
+  attachments?: Array<{
+    id: string;
+    type: "image" | "video" | "pdf" | "youtube";
+    url: string;
+    thumbnailUrl?: string;
+    width?: number;
+    height?: number;
+    aspectRatio?: number;
+    order: number;
+    pageCount?: number;
+    fileSize?: number;
+    videoId?: string;
+    title?: string;
+    duration?: string;
+    channelName?: string;
+    videoDuration?: string;
+    format?: string;
+    resolution?: string;
+    codec?: string;
+  }>;
+};

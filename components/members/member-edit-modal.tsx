@@ -7,11 +7,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import type { Id } from "@/convex/_generated/dataModel";
 import MemberEditForm from "./member-edit-form";
 
 interface Member {
-  _id: Id<"members">;
+  _id: string;
   firstName: string;
   lastName: string;
   email: string;

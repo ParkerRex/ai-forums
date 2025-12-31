@@ -8,7 +8,7 @@
  *
  * Key Features:
  * - Monthly calendar grid with proper date calculations
- * - Event loading and display with real-time updates
+ * - Event loading and display with React Query
  * - Month navigation with smooth transitions
  * - Event filtering and grouping by date
  * - Interactive date selection and event clicking
@@ -17,26 +17,24 @@
  * - Responsive design for all screen sizes
  *
  * Technical Implementation:
- * - Uses Convex queries for real-time event data
+ * - Uses React Query for event data fetching
  * - Implements proper date arithmetic for calendar layout
  * - Handles month boundaries and leap years correctly
  * - Provides smooth animations using Framer Motion
  * - Optimized for performance with efficient re-renders
  *
  * @author VAI Team
- * @version 1.0.0
+ * @version 2.0.0
  * @since 2024
  */
 
 "use client";
 
-import { useQuery } from "convex/react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
-import type { Doc } from "@/convex/_generated/dataModel";
+import { useEventsByMonth, type Event } from "@/hooks/use-events";
 import { EventCard } from "./event-card";
 
 /**
@@ -80,12 +78,11 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
   // Independent of selectedDate to allow navigation without changing selection
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Fetch events for the current month using Convex query
-  // This provides real-time updates when events are created/modified
-  const events = useQuery(api.events.getEventsByMonth, {
-    year: currentMonth.getFullYear(),
-    month: currentMonth.getMonth(),
-  });
+  // Fetch events for the current month using React Query
+  const { data: events, isLoading } = useEventsByMonth(
+    currentMonth.getFullYear(),
+    currentMonth.getMonth(),
+  );
 
   /**
    * Navigates to the previous or next month
@@ -118,7 +115,7 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
    * @param {Date} date - The date to filter events for
    * @returns {Array} Array of events occurring on the specified date
    */
-  const getEventsForDate = (date: Date) => {
+  const getEventsForDate = (date: Date): Event[] => {
     if (!events) return [];
 
     // Create start of day (00:00:00.000)
@@ -179,6 +176,13 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
         </Button>
       </div>
 
+      {/* Loading indicator */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-4">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
       {/* Calendar grid container */}
       <div className="bg-muted/30 grid grid-cols-7 gap-1 rounded-none p-4">
         {/* Day headers (Sun, Mon, Tue, etc.) */}
@@ -189,7 +193,7 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
         ))}
 
         {/* Calendar date cells */}
-        {/* Generate 42 cells (6 rows × 7 days) to always show complete weeks */}
+        {/* Generate 42 cells (6 rows x 7 days) to always show complete weeks */}
         {Array.from({ length: 42 }, (_, i) => {
           // Calculate the date for this cell
           // Start from the first day of the month
@@ -219,18 +223,37 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
               <div className="space-y-1">
                 <AnimatePresence>
                   {/* Show up to 3 events with staggered animation */}
-                  {dayEvents.slice(0, 3).map((event: Doc<"events">, index: number) => (
+                  {dayEvents.slice(0, 3).map((event: Event, index: number) => (
                     <motion.div
-                      key={event._id}
+                      key={event.id}
                       initial={{ opacity: 0, scale: 0.8 }}
                       animate={{ opacity: 1, scale: 1 }}
                       exit={{ opacity: 0, scale: 0.8 }}
                       transition={{ delay: index * 0.1 }}
                     >
                       <EventCard
-                        event={event}
+                        event={{
+                          _id: event.id,
+                          title: event.title,
+                          description: event.description || "",
+                          startTime: event.startTime,
+                          endTime: event.endTime || event.startTime + 3600000,
+                          type: event.type as "community_call" | "watch_party" | "workshop" | "meetup" | "other",
+                          location: {
+                            type: event.location?.type === "in-person" ? "physical" : "virtual",
+                            details: event.location?.details || "",
+                            platform: event.location?.platform,
+                          },
+                          attendees: event.attendees || [],
+                          maxAttendees: event.maxAttendees || undefined,
+                          requiresRSVP: event.requiresRSVP,
+                          creator: event.creator ? {
+                            firstName: event.creator.firstName,
+                            lastName: event.creator.lastName,
+                          } : null,
+                        }}
                         size="small"
-                        onClick={() => onEventSelect(event._id)}
+                        onClick={() => onEventSelect(event.id)}
                       />
                     </motion.div>
                   ))}

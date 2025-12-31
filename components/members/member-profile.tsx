@@ -1,5 +1,4 @@
 "use client";
-import { useConvexAuth, useQuery } from "convex/react";
 import { CalendarDays, Github, Globe, Linkedin, Youtube } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
@@ -9,13 +8,12 @@ import { MemberProfileFieldModal } from "@/components/members/member-profile-fie
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useAuth } from "@/components/providers/auth-provider";
 import { detectCountryFromLocation, getFlagEmoji } from "@/lib/country-utils";
 
 interface MemberProfileProps {
   member: {
-    id: Id<"members">;
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -43,8 +41,7 @@ interface MemberProfileProps {
 }
 
 export default function MemberProfile({ member }: MemberProfileProps) {
-  const { isAuthenticated } = useConvexAuth();
-  const currentMember = useQuery(api.members.getCurrentMember);
+  const { user, isAuthenticated } = useAuth();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [activeFieldModal, setActiveFieldModal] = useState<
     "bio" | "location" | "github" | "x" | "youtube" | "website" | "avatar" | null
@@ -55,7 +52,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
   const joinedDateFormatted = member.joinedDate;
 
   // Check if the current user can edit this profile
-  const canEdit = isAuthenticated && currentMember?._id === member.id;
+  const canEdit = isAuthenticated && user?.id === member.id;
 
   // Detect country from location or use the country field
   const detectedCountryCode = detectCountryFromLocation(member.location) || member.country;
@@ -63,7 +60,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
 
   // Transform member data for the edit modal
   const memberForEdit = {
-    _id: member.id as Id<"members">,
+    _id: member.id,
     firstName: member.firstName,
     lastName: member.lastName,
     email: member.email,

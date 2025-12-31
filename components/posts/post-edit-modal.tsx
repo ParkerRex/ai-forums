@@ -1,6 +1,5 @@
 "use client";
 
-import { useConvex, useMutation } from "convex/react";
 import { AlertCircle, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -14,18 +13,17 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useUpdatePost } from "@/hooks/use-posts";
 import { type PostFormData, validatePostForm } from "@/lib/form-validation";
 import { uploadMedia } from "@/lib/upload-media";
 import { type ExtendedPostFormData, PostFormFields } from "./post-form-fields";
 
 interface Post {
-  _id: Id<"posts">;
+  _id: string;
   title: string;
   content: string;
   slug: string;
-  categoryId: Id<"categories">;
+  categoryId: string;
   type?: "text" | "image" | "video" | "link" | "poll";
   mediaUrl?: string;
   thumbnailUrl?: string;
@@ -46,7 +44,6 @@ interface PostEditModalProps {
 }
 
 export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModalProps) {
-  const convex = useConvex();
   const router = useRouter();
 
   // Form state
@@ -85,8 +82,8 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
 
   const isFormComplete = formIsValid && isPostTypeValid();
 
-  // Mutations
-  const editPost = useMutation(api.posts.editPost);
+  // React Query mutation
+  const updatePostMutation = useUpdatePost();
 
   // Reset form when post changes
   useEffect(() => {
@@ -135,7 +132,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
       // Upload media if a new file was selected
       if (formData.mediaFile && (formData.type === "image" || formData.type === "video")) {
         try {
-          const uploadResult = await uploadMedia(convex, formData.mediaFile, {
+          const uploadResult = await uploadMedia(formData.mediaFile, {
             onProgress: (progress) => {
               setUploadProgress(progress.percentage);
             },
@@ -148,7 +145,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
         }
       }
 
-      const result = await editPost({
+      const result = await updatePostMutation.mutateAsync({
         postId: post._id,
         title: formData.title.trim(),
         content: formData.content.trim(),
@@ -158,7 +155,7 @@ export function PostEditModal({ post, isOpen, onClose, onSuccess }: PostEditModa
             : (formData.type as "text" | "image" | "video" | "link"),
         mediaUrl,
         thumbnailUrl,
-        categoryId: formData.categoryId as Id<"categories">,
+        categoryId: formData.categoryId !== post.categoryId ? formData.categoryId : undefined,
         linkUrl: formData.linkUrl,
         linkTitle: formData.linkTitle,
         linkDescription: formData.linkDescription,

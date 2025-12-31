@@ -8,6 +8,8 @@ import { getCurrentMember } from "@/lib/auth";
 const updatePostSchema = z.object({
 	title: z.string().min(1).max(255).optional(),
 	content: z.string().min(1).optional(),
+	type: z.enum(["text", "image", "video", "link", "poll"]).optional(),
+	categoryId: z.string().uuid().optional(),
 	editReason: z.string().optional(),
 	attachments: z
 		.array(
@@ -18,10 +20,19 @@ const updatePostSchema = z.object({
 				thumbnailUrl: z.string().optional(),
 				width: z.number().optional(),
 				height: z.number().optional(),
+				aspectRatio: z.number().optional(),
 				order: z.number(),
 			}),
 		)
 		.optional(),
+	// Media fields
+	mediaUrl: z.string().url().optional().nullable(),
+	thumbnailUrl: z.string().url().optional().nullable(),
+	// Link fields
+	linkUrl: z.string().url().optional().nullable(),
+	linkTitle: z.string().optional().nullable(),
+	linkDescription: z.string().optional().nullable(),
+	linkImage: z.string().optional().nullable(),
 	isFree: z.boolean().optional(),
 });
 
@@ -141,8 +152,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
 		if (parsed.data.title) updateData.title = parsed.data.title;
 		if (parsed.data.content) updateData.content = parsed.data.content;
+		if (parsed.data.type) updateData.type = parsed.data.type;
+		if (parsed.data.categoryId) updateData.categoryId = parsed.data.categoryId;
 		if (parsed.data.editReason) updateData.editReason = parsed.data.editReason;
 		if (parsed.data.attachments) updateData.attachments = parsed.data.attachments;
+		if (parsed.data.mediaUrl !== undefined) updateData.mediaUrl = parsed.data.mediaUrl;
+		if (parsed.data.thumbnailUrl !== undefined) updateData.thumbnailUrl = parsed.data.thumbnailUrl;
+		if (parsed.data.linkUrl !== undefined) updateData.linkUrl = parsed.data.linkUrl;
+		if (parsed.data.linkTitle !== undefined) updateData.linkTitle = parsed.data.linkTitle;
+		if (parsed.data.linkDescription !== undefined) updateData.linkDescription = parsed.data.linkDescription;
+		if (parsed.data.linkImage !== undefined) updateData.linkImage = parsed.data.linkImage;
 		if (parsed.data.isFree !== undefined) updateData.isFree = parsed.data.isFree;
 
 		const [updatedPost] = await db
@@ -151,7 +170,17 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 			.where(eq(posts.id, postId))
 			.returning();
 
-		return NextResponse.json(updatedPost);
+		// Get category name for the response
+		const categoryId = parsed.data.categoryId || existingPost.categoryId;
+		const category = await db.query.categories.findFirst({
+			where: eq(categories.id, categoryId),
+		});
+
+		return NextResponse.json({
+			...updatedPost,
+			slug: updatedPost.slug,
+			categoryName: category?.name,
+		});
 	} catch (error) {
 		console.error("Update post error:", error);
 		return NextResponse.json(

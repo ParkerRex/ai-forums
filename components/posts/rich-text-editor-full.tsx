@@ -3,11 +3,9 @@
 import CodeBlock from "@tiptap/extension-code-block";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { useAction, useConvex } from "convex/react";
 import { Bold, Code, Code2, Italic, List, ListOrdered, Quote, Redo, Undo } from "lucide-react";
 import { Markdown } from "tiptap-markdown";
 import { Button } from "@/components/ui/button";
-import { api } from "@/convex/_generated/api";
 import { createMentionSuggestion, LinkBadge, Mention } from "./rich-text/extensions";
 
 interface FullRichTextEditorProps {
@@ -17,34 +15,50 @@ interface FullRichTextEditorProps {
   className?: string;
 }
 
+// Fetch link preview via API
+async function fetchLinkPreviewAPI(url: string) {
+  try {
+    const response = await fetch("/api/link-preview", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url }),
+    });
+    if (!response.ok) return null;
+    return response.json();
+  } catch (error) {
+    console.warn("Failed to fetch link preview:", error);
+    return null;
+  }
+}
+
+// Search members via API
+async function searchMembersAPI(term: string) {
+  try {
+    const params = new URLSearchParams({
+      search: term || "",
+      limit: "20",
+    });
+    const response = await fetch(`/api/members?${params}`);
+    if (!response.ok) return [];
+    const data = await response.json();
+    return (data.members || []).map((m: Record<string, unknown>) => ({
+      _id: m.id,
+      firstName: m.firstName,
+      lastName: m.lastName,
+      slug: m.slug,
+    }));
+  } catch (error) {
+    console.error("Error searching members:", error);
+    return [];
+  }
+}
+
 export function FullRichTextEditor({
   content = "",
   onChange,
   placeholder = "Start writing your post...",
   className = "",
 }: FullRichTextEditorProps) {
-  const fetchLinkPreview = useAction(api.linkPreviews.fetchLinkPreview);
-  const convex = useConvex();
-
-  const searchMembers = async (term: string) => {
-    try {
-      if (!term || term.length === 0) {
-        // Show all active members when no search term (when user just types @)
-        const members = await convex.query(api.members.getAllMembers, {});
-        return members.slice(0, 20); // Limit to first 20 for performance
-      }
-
-      // Search members when user types after @
-      const members = await convex.query(api.members.searchMembers, {
-        searchTerm: term,
-        limit: 20, // Increased from 10 to 20 for better selection
-      });
-      return members || [];
-    } catch (error) {
-      console.error("Error searching members:", error);
-      return [];
-    }
-  };
 
   const editor = useEditor({
     extensions: [
@@ -65,15 +79,7 @@ export function FullRichTextEditor({
         HTMLAttributes: {
           class: "link-badge-mark",
         },
-        fetchPreview: async (url: string) => {
-          try {
-            const preview = await fetchLinkPreview({ url });
-            return preview;
-          } catch (error) {
-            console.warn("Failed to fetch link preview:", error);
-            return null;
-          }
-        },
+        fetchPreview: fetchLinkPreviewAPI,
       }),
       Markdown.configure({
         html: true,
@@ -88,7 +94,7 @@ export function FullRichTextEditor({
         HTMLAttributes: {
           class: "mention",
         },
-        suggestion: createMentionSuggestion(searchMembers),
+        suggestion: createMentionSuggestion(searchMembersAPI),
       }),
     ],
     content,
