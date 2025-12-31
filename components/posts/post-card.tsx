@@ -1,291 +1,278 @@
-import { Authenticated, Unauthenticated, useMutation, useQuery } from "convex/react";
+"use client";
+
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
+import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 import { ArrowBigUpIcon } from "@/components/icons/arrow-big-up";
 import { MessageSquareIcon } from "@/components/icons/message-square";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import PostPreview from "@/components/posts/post-preview";
 import { Button } from "@/components/ui/button";
 import { UploadIcon } from "@/components/ui/upload";
-import { api } from "@/convex/_generated/api";
-import type { Id } from "@/convex/_generated/dataModel";
+import { useVoteOnPost } from "@/hooks/use-posts";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import type { PostData } from "@/lib/post-preview-utils";
 import { cn } from "@/lib/utils";
 
-// Interface to match Convex post data structure
 interface Post extends Omit<PostData, "member" | "author" | "category"> {
-  _id: Id<"posts">;
-  title: string;
-  content: string;
-  preview?: string;
-  isFree?: boolean;
-  slug: string;
-  createdAt: number;
-  updatedAt: number;
-  memberId: Id<"members">;
-  categoryId: Id<"categories">;
-  status: "active" | "deleted" | "hidden" | "archived";
-  upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  commentCount: number;
-  viewCount: number;
-  isPinned?: boolean;
-  isLocked?: boolean;
-  editedAt?: number;
-  editReason?: string;
-  pinScope?: "category" | "global" | "both";
-  pollOptions?: Array<{
-    id: string;
-    text: string;
-    voteCount: number;
-  }>;
-  pollEndsAt?: number;
-  totalPollVotes?: number;
-  member: {
-    _id: Id<"members">;
-    firstName: string;
-    lastName: string;
-    email: string;
-    username: string;
-    slug?: string;
-  } | null;
-  category: {
-    _id: Id<"categories">;
-    name: string;
-    displayName: string;
-    icon?: string;
-  } | null;
+	id: string;
+	title: string;
+	content: string;
+	preview?: string;
+	isFree?: boolean;
+	slug: string;
+	createdAt: string;
+	updatedAt: string;
+	memberId: string;
+	categoryId: string;
+	status: "active" | "deleted" | "hidden" | "archived";
+	upvotes: number;
+	downvotes: number;
+	netVotes: number;
+	commentCount: number;
+	viewCount: number;
+	isPinned?: boolean;
+	isLocked?: boolean;
+	editedAt?: string;
+	editReason?: string;
+	pinScope?: "category" | "global" | "both";
+	pollOptions?: Array<{
+		id: string;
+		text: string;
+		voteCount: number;
+	}>;
+	pollEndsAt?: string;
+	totalPollVotes?: number;
+	member: {
+		id: string;
+		firstName: string;
+		lastName: string;
+		email: string;
+		username: string;
+		slug?: string;
+	} | null;
+	category: {
+		id: string;
+		name: string;
+		displayName: string;
+		icon?: string;
+	} | null;
 }
 
 interface PostCardProps {
-  post: Post;
-  size?: "small" | "medium" | "large";
-  currentCategoryId?: Id<"categories">;
-  userVote?: "upvote" | null;
+	post: Post;
+	size?: "small" | "medium" | "large";
+	currentCategoryId?: string;
+	userVote?: "upvote" | null;
 }
 
 export default function PostCard({
-  post,
-  size = "large",
-  currentCategoryId,
-  userVote,
+	post,
+	size = "large",
+	currentCategoryId,
+	userVote,
 }: PostCardProps) {
-  const router = useRouter();
-  const [isVoting, setIsVoting] = useState(false);
+	const router = useRouter();
+	const [isVoting, setIsVoting] = useState(false);
 
-  const [optimisticNetVotes, setOptimisticNetVotes] = useState(post.netVotes);
-  const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
+	const [optimisticNetVotes, setOptimisticNetVotes] = useState(post.netVotes);
+	const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(
+		null,
+	);
 
-  // Refs for animated icons
-  const upvoteIconRef = useRef<{
-    startAnimation: () => void;
-    stopAnimation: () => void;
-  }>(null);
-  const commentIconRef = useRef<{
-    startAnimation: () => void;
-    stopAnimation: () => void;
-  }>(null);
-  const shareIconRef = useRef<{
-    startAnimation: () => void;
-    stopAnimation: () => void;
-  }>(null);
+	const upvoteIconRef = useRef<{
+		startAnimation: () => void;
+		stopAnimation: () => void;
+	}>(null);
+	const commentIconRef = useRef<{
+		startAnimation: () => void;
+		stopAnimation: () => void;
+	}>(null);
+	const shareIconRef = useRef<{
+		startAnimation: () => void;
+		stopAnimation: () => void;
+	}>(null);
 
-  const voteOnPost = useMutation(api.votes.voteOnPost);
+	const voteOnPost = useVoteOnPost();
 
-  // Only query for user vote if not provided as prop (for standalone usage)
-  const userVoteQuery = useQuery(
-    api.votes.getUserVote,
-    userVote === undefined
-      ? {
-          targetId: post._id,
-          targetType: "post" as const,
-        }
-      : "skip",
-  );
+	const { handleMutationError } = useMutationError();
 
-  const { handleMutationError } = useMutationError();
+	const actualUserVote = userVote !== undefined ? userVote : null;
+	const currentUserVote =
+		optimisticUserVote !== null ? optimisticUserVote : actualUserVote;
 
-  // Use prop if provided, otherwise fall back to query
-  const actualUserVote = userVote !== undefined ? userVote : userVoteQuery;
+	const handleUpvote = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		if (isVoting) return;
+		setIsVoting(true);
 
-  const currentUserVote = optimisticUserVote !== null ? optimisticUserVote : actualUserVote;
+		const voteType = currentUserVote === "upvote" ? "remove" : "upvote";
 
-  const handleUpvote = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (isVoting) return;
-    setIsVoting(true);
+		let newNetVotes = optimisticNetVotes;
+		let newUserVote: string | null = null;
 
-    const voteType = currentUserVote === "upvote" ? "remove" : "upvote";
+		if (voteType === "upvote") {
+			newNetVotes = optimisticNetVotes + (currentUserVote === null ? 1 : 1);
+			newUserVote = "upvote";
+		} else {
+			newNetVotes = optimisticNetVotes - 1;
+			newUserVote = null;
+		}
 
-    let newNetVotes = optimisticNetVotes;
-    let newUserVote: string | null = null;
+		setOptimisticNetVotes(newNetVotes);
+		setOptimisticUserVote(newUserVote);
 
-    if (voteType === "upvote") {
-      newNetVotes = optimisticNetVotes + (currentUserVote === null ? 1 : 1);
-      newUserVote = "upvote";
-    } else {
-      newNetVotes = optimisticNetVotes - 1;
-      newUserVote = null;
-    }
+		try {
+			const result = await voteOnPost.mutateAsync({
+				postId: post.id,
+				voteType,
+			});
 
-    setOptimisticNetVotes(newNetVotes);
-    setOptimisticUserVote(newUserVote);
+			setOptimisticNetVotes(result.netVotes);
+			setOptimisticUserVote(result.newVoteType);
+		} catch (error) {
+			setOptimisticNetVotes(post.netVotes);
+			setOptimisticUserVote(actualUserVote || null);
+			handleMutationError(error, () => handleUpvote(e), {
+				context: "voting on post",
+			});
+		} finally {
+			setIsVoting(false);
+		}
+	};
 
-    try {
-      const result = await voteOnPost({
-        postId: post._id,
-        voteType,
-      });
+	const handleClick = () => {
+		router.push(`/${post.category?.name || "general"}/${post.slug}`);
+	};
 
-      setOptimisticNetVotes(result.netVotes);
-      setOptimisticUserVote(result.newVoteType);
-    } catch (error) {
-      setOptimisticNetVotes(post.netVotes);
-      setOptimisticUserVote(actualUserVote || null);
-      handleMutationError(error, () => handleUpvote(e), {
-        context: "voting on post",
-      });
-    } finally {
-      setIsVoting(false);
-    }
-  };
+	const handleShare = async (e: React.MouseEvent) => {
+		e.stopPropagation();
+		const postUrl = `${window.location.origin}/${post.category?.name || "general"}/${post.slug}`;
 
-  const handleClick = () => {
-    router.push(`/${post.category?.name || "general"}/${post.slug}`);
-  };
+		try {
+			await navigator.clipboard.writeText(postUrl);
+			toast.success("Link copied to clipboard!");
+		} catch {
+			toast.error("Failed to copy link");
+		}
+	};
 
-  const handleShare = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    const postUrl = `${window.location.origin}/${post.category?.name || "general"}/${post.slug}`;
+	return (
+		<div
+			className={cn(
+				"group rounded-none border transition-all duration-200",
+				post.isPinned
+					? "border-orange-200 bg-orange-50 hover:bg-orange-100/50 dark:border-orange-900/30 dark:bg-orange-950/20 dark:hover:bg-orange-950/30"
+					: "bg-card hover:bg-muted/30",
+			)}
+		>
+			<div className="cursor-pointer px-3 py-2" onClick={handleClick}>
+				<PostPreview
+					post={post as unknown as PostData}
+					size={size}
+					showStats={false}
+					showCategory={currentCategoryId !== post.categoryId}
+					showMember={true}
+					className="border-0 p-0 shadow-none hover:shadow-none"
+				/>
 
-    try {
-      await navigator.clipboard.writeText(postUrl);
-      toast.success("Link copied to clipboard!");
-    } catch {
-      toast.error("Failed to copy link");
-    }
-  };
+				<div className="text-muted-foreground mt-2 flex items-center space-x-3 text-xs">
+					<Authenticated>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="hover:bg-muted/50 h-auto rounded-none transition-colors"
+							onClick={(e) => {
+								e.stopPropagation();
+								if (!post.isFree) {
+									handleClick();
+								} else {
+									handleUpvote(e);
+								}
+							}}
+							disabled={isVoting && post.isFree}
+							onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+							onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
+						>
+							<ArrowBigUpIcon
+								ref={upvoteIconRef}
+								size={16}
+								className={`transition-colors ${
+									currentUserVote === "upvote"
+										? "fill-orange-500 text-orange-500"
+										: "text-muted-foreground hover:text-orange-500"
+								}`}
+							/>
+							<span className="font-medium">{optimisticNetVotes}</span>
+						</Button>
+					</Authenticated>
+					<Unauthenticated>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
+							onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+							onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
+						>
+							<ArrowBigUpIcon
+								ref={upvoteIconRef}
+								size={18}
+								className="text-muted-foreground hover:text-orange-500"
+							/>
+							<span className="font-medium">{optimisticNetVotes}</span>
+						</Button>
+					</Unauthenticated>
 
-  return (
-    <div
-      className={cn(
-        "group rounded-none border transition-all duration-200",
-        post.isPinned
-          ? "border-orange-200 bg-orange-50 hover:bg-orange-100/50 dark:border-orange-900/30 dark:bg-orange-950/20 dark:hover:bg-orange-950/30"
-          : "bg-card hover:bg-muted/30",
-      )}
-    >
-      {/* Main content - Reddit style full width */}
-      <div className="cursor-pointer px-3 py-2" onClick={handleClick}>
-        <PostPreview
-          post={post as PostData}
-          size={size}
-          showStats={false}
-          showCategory={currentCategoryId !== post.categoryId}
-          showMember={true}
-          className="border-0 p-0 shadow-none hover:shadow-none"
-        />
+					<Authenticated>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
+							onClick={(e) => {
+								e.stopPropagation();
+								handleClick();
+							}}
+							onMouseEnter={() => commentIconRef.current?.startAnimation()}
+							onMouseLeave={() => commentIconRef.current?.stopAnimation()}
+						>
+							<MessageSquareIcon ref={commentIconRef} size={12} className="mr-1" />
+							<span className="font-mono tracking-tighter">
+								{post.commentCount}
+							</span>
+						</Button>
+					</Authenticated>
+					<Unauthenticated>
+						<Button
+							variant="ghost"
+							size="sm"
+							className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
+							onMouseEnter={() => commentIconRef.current?.startAnimation()}
+							onMouseLeave={() => commentIconRef.current?.stopAnimation()}
+						>
+							<MessageSquareIcon ref={commentIconRef} size={10} className="mr-1" />
+							<span className="font-mono tracking-tighter">
+								{post.commentCount}
+							</span>
+						</Button>
+					</Unauthenticated>
 
-        {/* Actions bar with voting - Reddit style */}
-        <div className="text-muted-foreground mt-2 flex items-center space-x-3 text-xs">
-          {/* Vote button moved here */}
-          <Authenticated>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hover:bg-muted/50 h-auto rounded-none transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                // For paywalled posts, navigate to post page to show paywall
-                if (!post.isFree) {
-                  handleClick();
-                } else {
-                  handleUpvote(e);
-                }
-              }}
-              disabled={isVoting && post.isFree}
-              onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
-              onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
-            >
-              <ArrowBigUpIcon
-                ref={upvoteIconRef}
-                size={16}
-                className={`transition-colors ${
-                  currentUserVote === "upvote"
-                    ? "fill-orange-500 text-orange-500"
-                    : "text-muted-foreground hover:text-orange-500"
-                }`}
-              />
-              <span className="font-medium">{optimisticNetVotes}</span>
-            </Button>
-          </Authenticated>
-          <Unauthenticated>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
-              onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
-              onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
-            >
-              <ArrowBigUpIcon
-                ref={upvoteIconRef}
-                size={18}
-                className="text-muted-foreground hover:text-orange-500"
-              />
-              <span className="font-medium">{optimisticNetVotes}</span>
-            </Button>
-          </Unauthenticated>
-
-          {/* Comments */}
-          <Authenticated>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleClick();
-              }}
-              onMouseEnter={() => commentIconRef.current?.startAnimation()}
-              onMouseLeave={() => commentIconRef.current?.stopAnimation()}
-            >
-              <MessageSquareIcon ref={commentIconRef} size={12} className="mr-1" />
-              <span className="font-mono tracking-tighter">{post.commentCount}</span>
-            </Button>
-          </Authenticated>
-          <Unauthenticated>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hover:bg-muted/50 h-auto rounded-none px-2 py-1 transition-colors"
-              onMouseEnter={() => commentIconRef.current?.startAnimation()}
-              onMouseLeave={() => commentIconRef.current?.stopAnimation()}
-            >
-              <MessageSquareIcon ref={commentIconRef} size={10} className="mr-1" />
-              <span className="font-mono tracking-tighter">{post.commentCount}</span>
-            </Button>
-          </Unauthenticated>
-
-          {/* Bookmark and Share */}
-          <PostBookmarkButton targetId={post._id} targetType="post" size="sm" />
-          <Button
-            variant="ghost"
-            size="sm"
-            className="hover:bg-muted/50 h-auto rounded-none transition-colors"
-            onClick={(e) => {
-              e.stopPropagation();
-              handleShare(e);
-            }}
-            onMouseEnter={() => shareIconRef.current?.startAnimation()}
-            onMouseLeave={() => shareIconRef.current?.stopAnimation()}
-          >
-            <UploadIcon ref={shareIconRef} size={12} className="" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
+					<PostBookmarkButton targetId={post.id} targetType="post" size="sm" />
+					<Button
+						variant="ghost"
+						size="sm"
+						className="hover:bg-muted/50 h-auto rounded-none transition-colors"
+						onClick={(e) => {
+							e.stopPropagation();
+							handleShare(e);
+						}}
+						onMouseEnter={() => shareIconRef.current?.startAnimation()}
+						onMouseLeave={() => shareIconRef.current?.stopAnimation()}
+					>
+						<UploadIcon ref={shareIconRef} size={12} className="" />
+					</Button>
+				</div>
+			</div>
+		</div>
+	);
 }
