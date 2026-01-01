@@ -56,7 +56,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 			...(existingComment.editHistory || []),
 			{
 				content: existingComment.content,
-				attachments: existingComment.attachments,
+				attachments: existingComment.attachments ?? undefined,
 				editedAt: new Date().toISOString(),
 			},
 		];

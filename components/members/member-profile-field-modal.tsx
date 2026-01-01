@@ -22,7 +22,7 @@ import { useNetworkStatus } from "@/hooks/use-network-status";
 interface MemberProfileFieldModalProps {
   memberId: string;
   field: "bio" | "location" | "github" | "x" | "youtube" | "website" | "avatar";
-  currentValue?: string;
+  currentValue?: string | null;
   isOpen: boolean;
   onClose: () => void;
 }

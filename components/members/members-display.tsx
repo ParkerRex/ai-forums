@@ -25,17 +25,17 @@ interface Member {
   firstName: string;
   lastName: string;
   status: "active" | "churned" | "free";
-  joinedDate: string;
-  country: string;
-  bio: string;
-  linkGithub?: string;
-  linkX?: string;
-  linkYouTube?: string;
-  location?: string;
-  avatarUrl?: string;
-  websiteUrl?: string;
-  linkedinUrl?: string;
-  skills?: string[];
+  joinedDate?: string;
+  country?: string | null;
+  bio?: string | null;
+  linkGithub?: string | null;
+  linkX?: string | null;
+  linkYouTube?: string | null;
+  location?: string | null;
+  avatarUrl?: string | null;
+  websiteUrl?: string | null;
+  linkedinUrl?: string | null;
+  skills?: string[] | null;
   postCount?: number;
   commentCount?: number;
   netVoteCount?: number;
@@ -103,8 +103,8 @@ export default function MembersDisplay({ members, isLoading }: MembersDisplayPro
           bValue = `${b.firstName} ${b.lastName}`.toLowerCase();
           break;
         case "joinedDate":
-          aValue = new Date(a.joinedDate).getTime();
-          bValue = new Date(b.joinedDate).getTime();
+          aValue = a.joinedDate ? new Date(a.joinedDate).getTime() : 0;
+          bValue = b.joinedDate ? new Date(b.joinedDate).getTime() : 0;
           break;
         case "posts":
           aValue = a.postCount || 0;

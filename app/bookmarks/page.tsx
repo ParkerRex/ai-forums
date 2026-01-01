@@ -20,7 +20,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { PageErrorBoundary, QueryErrorBoundary } from "@/components/error-boundary";
 import { PostSkeletonList } from "@/components/members/member-skeleton";
-import PostCard from "@/components/posts/post-card";
+import PostPreview from "@/components/posts/post-preview";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useBookmarksWithDetails } from "@/hooks/use-bookmarks";
@@ -83,7 +83,23 @@ function BookmarksContent() {
                   {bookmarks.map((bookmark) => (
                     <div key={bookmark.id} className="relative">
                       {/* Use PostCard component to display bookmark target (post or resource) */}
-                      {bookmark.target && <PostCard post={bookmark.target} />}
+                      {bookmark.target && (
+                        <PostPreview
+                          post={{
+                            id: bookmark.target.id,
+                            title: bookmark.target.title,
+                            content: bookmark.target.content,
+                            createdAt: new Date(bookmark.target.createdAt).getTime(),
+                            upvotes: 0,
+                            downvotes: 0,
+                            commentCount: 0,
+                            viewCount: 0,
+                            member: bookmark.target.member,
+                            category: bookmark.target.category,
+                          }}
+                          size="medium"
+                        />
+                      )}
                       {/* Show when the item was bookmarked */}
                       <div className="absolute top-2 right-2 text-xs text-muted-foreground">
                         Saved {new Date(bookmark.createdAt).toLocaleDateString()}

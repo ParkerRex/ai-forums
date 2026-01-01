@@ -16,27 +16,27 @@ interface MemberProfileProps {
     id: string;
     firstName: string;
     lastName: string;
-    email: string;
-    bio: string;
-    joinedDate: string;
-    location?: string;
-    country: string;
-    status: "active" | "churned";
-    initials: string;
-    linkGithub?: string;
-    linkX?: string;
-    linkYouTube?: string;
-    avatarUrl?: string;
-    websiteUrl?: string;
-    linkedinUrl?: string;
-    skills?: string[];
+    email?: string;
+    bio?: string | null;
+    joinedDate?: string;
+    location?: string | null;
+    country?: string | null;
+    status: "active" | "churned" | "free";
+    initials?: string;
+    linkGithub?: string | null;
+    linkX?: string | null;
+    linkYouTube?: string | null;
+    avatarUrl?: string | null;
+    websiteUrl?: string | null;
+    linkedinUrl?: string | null;
+    skills?: string[] | null;
     slug?: string;
     postCount?: number;
-    // Subscription fields (no free tier - platform operates with zero free users)
-    tier?: "founding_member" | "early_bird" | "member" | "scholarship";
-    subscriptionStatus: "active" | "cancelled" | "past_due" | "expired" | "none";
-    subscriptionEndDate?: number;
-    billingInterval?: "monthly" | "yearly";
+    // Subscription fields
+    tier?: "founding_member" | "early_bird" | "member" | "scholarship" | "free";
+    subscriptionStatus?: "active" | "cancelled" | "past_due" | "expired" | "none";
+    subscriptionEndDate?: number | null;
+    billingInterval?: "monthly" | "yearly" | null;
   };
 }
 
@@ -48,14 +48,14 @@ export default function MemberProfile({ member }: MemberProfileProps) {
   >(null);
   const [isAvatarLightboxOpen, setIsAvatarLightboxOpen] = useState(false);
 
-  const initials = member.initials;
+  const initials = member.initials || `${member.firstName[0]}${member.lastName[0]}`;
   const joinedDateFormatted = member.joinedDate;
 
   // Check if the current user can edit this profile
   const canEdit = isAuthenticated && user?.id === member.id;
 
   // Detect country from location or use the country field
-  const detectedCountryCode = detectCountryFromLocation(member.location) || member.country;
+  const detectedCountryCode = detectCountryFromLocation(member.location ?? undefined) || member.country;
   const flagEmoji = detectedCountryCode ? getFlagEmoji(detectedCountryCode) : null;
 
   // Transform member data for the edit modal
@@ -133,7 +133,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
               </svg>
             )}
           </div>
-          <p className="text-muted-foreground">@{member.slug || member.email.split("@")[0]}</p>
+          <p className="text-muted-foreground">@{member.slug || member.email?.split("@")[0] || ""}</p>
         </div>
 
         {/* Bio */}

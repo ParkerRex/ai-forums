@@ -13,14 +13,14 @@ interface Member {
   id: string;
   firstName: string;
   lastName: string;
-  email: string;
-  bio: string;
-  location?: string;
-  linkGithub?: string;
-  linkX?: string;
-  linkYouTube?: string;
-  avatarUrl?: string;
-  websiteUrl?: string;
+  email?: string;
+  bio?: string | null;
+  location?: string | null;
+  linkGithub?: string | null;
+  linkX?: string | null;
+  linkYouTube?: string | null;
+  avatarUrl?: string | null;
+  websiteUrl?: string | null;
 }
 
 interface MemberEditModalProps {

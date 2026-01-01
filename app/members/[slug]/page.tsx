@@ -37,7 +37,7 @@ import {
   MemberProfileSkeleton,
   PostSkeletonList,
 } from "@/components/members/member-skeleton";
-import PostCard from "@/components/posts/post-card";
+import PostPreview from "@/components/posts/post-preview";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -208,7 +208,21 @@ function MemberDetailContent({ slug }: { slug: string }) {
                     <div className="divide-y divide-border">
                       {allPosts.map((post) => (
                         <div key={post.id} className="p-4">
-                          <PostCard post={post} />
+                          <PostPreview
+                            post={{
+                              id: post.id,
+                              title: post.title,
+                              content: post.content,
+                              createdAt: new Date(post.createdAt).getTime(),
+                              upvotes: post.upvotes || 0,
+                              downvotes: post.downvotes || 0,
+                              commentCount: post.commentCount || 0,
+                              viewCount: post.viewCount || 0,
+                              member: post.member,
+                              category: post.category ? { name: post.category.name, displayName: post.category.displayName, icon: post.category.icon ?? undefined } : undefined,
+                            }}
+                            size="medium"
+                          />
                         </div>
                       ))}
                     </div>
@@ -260,7 +274,23 @@ function MemberDetailContent({ slug }: { slug: string }) {
                     <div className="divide-y divide-border">
                       {memberBookmarks.map((bookmark) => (
                         <div key={bookmark.id} className="p-4">
-                          {bookmark.target && <PostCard post={bookmark.target} size="small" />}
+                          {bookmark.target && (
+                            <PostPreview
+                              post={{
+                                id: bookmark.target.id,
+                                title: bookmark.target.title,
+                                content: bookmark.target.content,
+                                createdAt: new Date(bookmark.target.createdAt).getTime(),
+                                upvotes: 0,
+                                downvotes: 0,
+                                commentCount: 0,
+                                viewCount: 0,
+                                member: bookmark.target.member,
+                                category: bookmark.target.category,
+                              }}
+                              size="small"
+                            />
+                          )}
                         </div>
                       ))}
                     </div>
