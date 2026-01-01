@@ -1,6 +1,7 @@
 "use client";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 type Post = {
   id: string;
@@ -374,7 +375,7 @@ async function generatePostPreview(title: string, content: string): Promise<stri
 
 export function usePosts(options?: { categoryId?: string; sortBy?: string; freeOnly?: boolean }) {
   return useInfiniteQuery({
-    queryKey: ["posts", options],
+    queryKey: queryKeys.posts.list(options),
     queryFn: ({ pageParam }) => fetchPosts({ ...options, cursor: pageParam as string | undefined }),
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: undefined as string | undefined,
@@ -383,7 +384,7 @@ export function usePosts(options?: { categoryId?: string; sortBy?: string; freeO
 
 export function usePost(postId: string) {
   return useQuery({
-    queryKey: ["posts", postId],
+    queryKey: queryKeys.posts.detail(postId),
     queryFn: () => fetchPost(postId),
     enabled: !!postId,
   });
@@ -391,7 +392,7 @@ export function usePost(postId: string) {
 
 export function usePostBySlug(slug: string) {
   return useQuery({
-    queryKey: ["posts", "bySlug", slug],
+    queryKey: queryKeys.posts.bySlug(slug),
     queryFn: () => fetchPostBySlug(slug),
     enabled: !!slug,
   });
@@ -403,8 +404,8 @@ export function useCreatePost() {
   return useMutation({
     mutationFn: createPost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
     },
   });
 }
@@ -415,8 +416,8 @@ export function useUpdatePost() {
   return useMutation({
     mutationFn: updatePost,
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["posts", variables.postId] });
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(variables.postId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
     },
   });
 }
@@ -427,8 +428,8 @@ export function useDeletePost() {
   return useMutation({
     mutationFn: deletePost,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      queryClient.invalidateQueries({ queryKey: ["categories"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.categories.all });
     },
   });
 }
@@ -445,9 +446,9 @@ export function useVoteOnPost() {
       voteType: "upvote" | "downvote" | "remove";
     }) => voteOnPost(postId, voteType),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["posts", variables.postId] });
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
-      queryClient.invalidateQueries({ queryKey: ["userVote", variables.postId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(variables.postId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.votes.userVote(variables.postId) });
     },
   });
 }
@@ -459,8 +460,8 @@ export function usePinPost() {
     mutationFn: ({ postId, scope }: { postId: string; scope: "category" | "global" | "both" }) =>
       pinPost(postId, scope),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["posts", variables.postId] });
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(variables.postId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
     },
   });
 }
@@ -471,15 +472,15 @@ export function useUnpinPost() {
   return useMutation({
     mutationFn: (postId: string) => unpinPost(postId),
     onSuccess: (_, postId) => {
-      queryClient.invalidateQueries({ queryKey: ["posts", postId] });
-      queryClient.invalidateQueries({ queryKey: ["posts"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(postId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.all });
     },
   });
 }
 
 export function useUserVote(postId: string) {
   return useQuery({
-    queryKey: ["userVote", postId],
+    queryKey: queryKeys.votes.userVote(postId),
     queryFn: () => fetchUserVote(postId),
     enabled: !!postId,
   });
@@ -490,7 +491,7 @@ export function useUserVotesBatch(
   targetType: "post" | "comment" | "resource",
 ) {
   return useQuery({
-    queryKey: ["userVotes", targetType, targetIds],
+    queryKey: queryKeys.votes.userVotesBatch(targetType, targetIds),
     queryFn: () => fetchUserVotesBatch(targetIds, targetType),
     enabled: targetIds.length > 0,
   });
@@ -498,7 +499,7 @@ export function useUserVotesBatch(
 
 export function usePostVoters(postId: string) {
   return useQuery({
-    queryKey: ["postVoters", postId],
+    queryKey: queryKeys.posts.voters(postId),
     queryFn: () => fetchPostVoters(postId),
     enabled: !!postId,
   });
@@ -506,7 +507,7 @@ export function usePostVoters(postId: string) {
 
 export function usePostHistory(postId: string) {
   return useQuery({
-    queryKey: ["postHistory", postId],
+    queryKey: queryKeys.posts.history(postId),
     queryFn: () => fetchPostHistory(postId),
     enabled: !!postId,
   });

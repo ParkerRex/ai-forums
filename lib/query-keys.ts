@@ -27,12 +27,12 @@ export const queryKeys = {
     all: ["posts"] as const,
     lists: () => [...queryKeys.posts.all, "list"] as const,
     list: (filters?: { categoryId?: string; sortBy?: string; freeOnly?: boolean }) =>
-      [...queryKeys.posts.lists(), filters] as const,
+      [...queryKeys.posts.all, filters] as const,
     details: () => [...queryKeys.posts.all, "detail"] as const,
-    detail: (id: string) => [...queryKeys.posts.details(), id] as const,
+    detail: (id: string) => [...queryKeys.posts.all, id] as const,
     bySlug: (slug: string) => [...queryKeys.posts.all, "bySlug", slug] as const,
-    history: (id: string) => [...queryKeys.posts.detail(id), "history"] as const,
-    voters: (id: string) => [...queryKeys.posts.detail(id), "voters"] as const,
+    history: (id: string) => ["postHistory", id] as const,
+    voters: (id: string) => ["postVoters", id] as const,
   },
 
   // Members
