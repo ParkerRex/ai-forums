@@ -256,48 +256,53 @@ export const postRepository = {
 
   /**
    * Create a new post
+   * Uses a transaction to ensure atomicity when updating counts
    */
   async create(input: CreatePostInput): Promise<PostWithRelations> {
     const slug = generateSlug(input.title);
 
-    const [newPost] = await db
-      .insert(posts)
-      .values({
-        title: input.title,
-        content: input.content,
-        slug,
-        categoryId: input.categoryId,
-        memberId: input.memberId,
-        type: input.type || "text",
-        attachments: input.attachments || [],
-        mediaUrl: input.mediaUrl,
-        thumbnailUrl: input.thumbnailUrl,
-        aspectRatio: input.aspectRatio,
-        mediaWidth: input.mediaWidth,
-        mediaHeight: input.mediaHeight,
-        linkUrl: input.linkUrl,
-        linkTitle: input.linkTitle,
-        linkDescription: input.linkDescription,
-        linkImage: input.linkImage,
-        pollOptions: input.pollOptions,
-        pollEndsAt: input.pollEndsAt,
-        preview: input.preview,
-        isFree: input.isFree ?? true,
-        status: "active",
-      })
-      .returning();
+    const newPost = await db.transaction(async (tx) => {
+      const [post] = await tx
+        .insert(posts)
+        .values({
+          title: input.title,
+          content: input.content,
+          slug,
+          categoryId: input.categoryId,
+          memberId: input.memberId,
+          type: input.type || "text",
+          attachments: input.attachments || [],
+          mediaUrl: input.mediaUrl,
+          thumbnailUrl: input.thumbnailUrl,
+          aspectRatio: input.aspectRatio,
+          mediaWidth: input.mediaWidth,
+          mediaHeight: input.mediaHeight,
+          linkUrl: input.linkUrl,
+          linkTitle: input.linkTitle,
+          linkDescription: input.linkDescription,
+          linkImage: input.linkImage,
+          pollOptions: input.pollOptions,
+          pollEndsAt: input.pollEndsAt,
+          preview: input.preview,
+          isFree: input.isFree ?? true,
+          status: "active",
+        })
+        .returning();
 
-    // Update category post count
-    await db
-      .update(categories)
-      .set({ postCount: sql`${categories.postCount} + 1` })
-      .where(eq(categories.id, input.categoryId));
+      // Update category post count
+      await tx
+        .update(categories)
+        .set({ postCount: sql`${categories.postCount} + 1` })
+        .where(eq(categories.id, input.categoryId));
 
-    // Update member post count
-    await db
-      .update(members)
-      .set({ postCount: sql`${members.postCount} + 1` })
-      .where(eq(members.id, input.memberId));
+      // Update member post count
+      await tx
+        .update(members)
+        .set({ postCount: sql`${members.postCount} + 1` })
+        .where(eq(members.id, input.memberId));
+
+      return post;
+    });
 
     // Fetch and return with relations
     const result = await this.findById(newPost.id);
@@ -307,6 +312,7 @@ export const postRepository = {
 
   /**
    * Update an existing post, saving version history
+   * Uses a transaction to ensure version history is saved atomically
    */
   async update(
     id: string,
@@ -322,53 +328,55 @@ export const postRepository = {
       throw new Error("Post not found");
     }
 
-    // Get version count for this post
-    const versionCount = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(postVersions)
-      .where(eq(postVersions.postId, id));
+    await db.transaction(async (tx) => {
+      // Get version count for this post
+      const versionCount = await tx
+        .select({ count: sql<number>`count(*)` })
+        .from(postVersions)
+        .where(eq(postVersions.postId, id));
 
-    const nextVersion = (versionCount[0]?.count || 0) + 1;
+      const nextVersion = (versionCount[0]?.count || 0) + 1;
 
-    // Save current version to history
-    await db.insert(postVersions).values({
-      postId: id,
-      version: nextVersion,
-      editorId,
-      title: existingPost.title,
-      content: existingPost.content,
-      editReason: input.editReason,
-      type: existingPost.type,
-      mediaUrl: existingPost.mediaUrl,
-      thumbnailUrl: existingPost.thumbnailUrl,
-      linkUrl: existingPost.linkUrl,
-      linkTitle: existingPost.linkTitle,
-      linkDescription: existingPost.linkDescription,
-      linkImage: existingPost.linkImage,
-      attachments: existingPost.attachments,
+      // Save current version to history
+      await tx.insert(postVersions).values({
+        postId: id,
+        version: nextVersion,
+        editorId,
+        title: existingPost.title,
+        content: existingPost.content,
+        editReason: input.editReason,
+        type: existingPost.type,
+        mediaUrl: existingPost.mediaUrl,
+        thumbnailUrl: existingPost.thumbnailUrl,
+        linkUrl: existingPost.linkUrl,
+        linkTitle: existingPost.linkTitle,
+        linkDescription: existingPost.linkDescription,
+        linkImage: existingPost.linkImage,
+        attachments: existingPost.attachments,
+      });
+
+      // Build update data
+      const updateData: Record<string, unknown> = {
+        updatedAt: new Date(),
+        editedAt: new Date(),
+      };
+
+      if (input.title !== undefined) updateData.title = input.title;
+      if (input.content !== undefined) updateData.content = input.content;
+      if (input.type !== undefined) updateData.type = input.type;
+      if (input.categoryId !== undefined) updateData.categoryId = input.categoryId;
+      if (input.editReason !== undefined) updateData.editReason = input.editReason;
+      if (input.attachments !== undefined) updateData.attachments = input.attachments;
+      if (input.mediaUrl !== undefined) updateData.mediaUrl = input.mediaUrl;
+      if (input.thumbnailUrl !== undefined) updateData.thumbnailUrl = input.thumbnailUrl;
+      if (input.linkUrl !== undefined) updateData.linkUrl = input.linkUrl;
+      if (input.linkTitle !== undefined) updateData.linkTitle = input.linkTitle;
+      if (input.linkDescription !== undefined) updateData.linkDescription = input.linkDescription;
+      if (input.linkImage !== undefined) updateData.linkImage = input.linkImage;
+      if (input.isFree !== undefined) updateData.isFree = input.isFree;
+
+      await tx.update(posts).set(updateData).where(eq(posts.id, id));
     });
-
-    // Build update data
-    const updateData: Record<string, unknown> = {
-      updatedAt: new Date(),
-      editedAt: new Date(),
-    };
-
-    if (input.title !== undefined) updateData.title = input.title;
-    if (input.content !== undefined) updateData.content = input.content;
-    if (input.type !== undefined) updateData.type = input.type;
-    if (input.categoryId !== undefined) updateData.categoryId = input.categoryId;
-    if (input.editReason !== undefined) updateData.editReason = input.editReason;
-    if (input.attachments !== undefined) updateData.attachments = input.attachments;
-    if (input.mediaUrl !== undefined) updateData.mediaUrl = input.mediaUrl;
-    if (input.thumbnailUrl !== undefined) updateData.thumbnailUrl = input.thumbnailUrl;
-    if (input.linkUrl !== undefined) updateData.linkUrl = input.linkUrl;
-    if (input.linkTitle !== undefined) updateData.linkTitle = input.linkTitle;
-    if (input.linkDescription !== undefined) updateData.linkDescription = input.linkDescription;
-    if (input.linkImage !== undefined) updateData.linkImage = input.linkImage;
-    if (input.isFree !== undefined) updateData.isFree = input.isFree;
-
-    await db.update(posts).set(updateData).where(eq(posts.id, id));
 
     // Fetch and return with relations
     const result = await this.findById(id);
@@ -378,6 +386,7 @@ export const postRepository = {
 
   /**
    * Soft delete a post
+   * Uses a transaction to ensure count updates are atomic
    */
   async delete(id: string): Promise<void> {
     const existingPost = await db.query.posts.findFirst({
@@ -388,22 +397,24 @@ export const postRepository = {
       throw new Error("Post not found");
     }
 
-    await db
-      .update(posts)
-      .set({ status: "deleted", updatedAt: new Date() })
-      .where(eq(posts.id, id));
+    await db.transaction(async (tx) => {
+      await tx
+        .update(posts)
+        .set({ status: "deleted", updatedAt: new Date() })
+        .where(eq(posts.id, id));
 
-    // Update category post count
-    await db
-      .update(categories)
-      .set({ postCount: sql`${categories.postCount} - 1` })
-      .where(eq(categories.id, existingPost.categoryId));
+      // Update category post count
+      await tx
+        .update(categories)
+        .set({ postCount: sql`${categories.postCount} - 1` })
+        .where(eq(categories.id, existingPost.categoryId));
 
-    // Update member post count
-    await db
-      .update(members)
-      .set({ postCount: sql`${members.postCount} - 1` })
-      .where(eq(members.id, existingPost.memberId));
+      // Update member post count
+      await tx
+        .update(members)
+        .set({ postCount: sql`${members.postCount} - 1` })
+        .where(eq(members.id, existingPost.memberId));
+    });
   },
 
   /**
