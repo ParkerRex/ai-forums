@@ -1,9 +1,8 @@
-import { eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { db } from "@/db";
-import { categories, members, posts, postVersions } from "@/db/schema";
-import { getCurrentMember } from "@/lib/auth";
+import { withAuth } from "@/lib/api/middleware";
+import { postRepository } from "@/lib/repositories";
+import type { PostAttachment } from "@/db/schema/posts";
 
 const updatePostSchema = z.object({
   title: z.string().min(1).max(255).optional(),
@@ -44,41 +43,13 @@ type RouteParams = {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { postId } = await params;
+    const post = await postRepository.findById(postId);
 
-    const result = await db
-      .select({
-        post: posts,
-        member: {
-          id: members.id,
-          firstName: members.firstName,
-          lastName: members.lastName,
-          slug: members.slug,
-          avatarUrl: members.avatarUrl,
-          bio: members.bio,
-        },
-        category: {
-          id: categories.id,
-          name: categories.name,
-          displayName: categories.displayName,
-          icon: categories.icon,
-        },
-      })
-      .from(posts)
-      .innerJoin(members, eq(posts.memberId, members.id))
-      .innerJoin(categories, eq(posts.categoryId, categories.id))
-      .where(eq(posts.id, postId))
-      .limit(1);
-
-    if (result.length === 0) {
+    if (!post) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    const row = result[0];
-    return NextResponse.json({
-      ...row.post,
-      member: row.member,
-      category: row.category,
-    });
+    return NextResponse.json(post);
   } catch (error) {
     console.error("Get post error:", error);
     return NextResponse.json({ error: "Failed to get post" }, { status: 500 });
@@ -86,13 +57,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 }
 
 // PATCH /api/posts/[postId] - Update a post
-export async function PATCH(request: NextRequest, { params }: RouteParams) {
+export const PATCH = withAuth(async (request, { params }, member) => {
   try {
-    const member = await getCurrentMember();
-    if (!member) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { postId } = await params;
     const body = await request.json();
     const parsed = updatePostSchema.safeParse(body);
@@ -104,134 +70,77 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       );
     }
 
-    // Get existing post
-    const existingPost = await db.query.posts.findFirst({
-      where: eq(posts.id, postId),
-    });
+    // Check permission
+    const { allowed, post: existingPost } = await postRepository.canModify(
+      postId,
+      member.id,
+      member.role
+    );
 
     if (!existingPost) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    // Check ownership or admin
-    if (existingPost.memberId !== member.id && member.role !== "admin") {
+    if (!allowed) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Get version count for this post
-    const versionCount = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(postVersions)
-      .where(eq(postVersions.postId, postId));
-
-    const nextVersion = (versionCount[0]?.count || 0) + 1;
-
-    // Save current version to history
-    await db.insert(postVersions).values({
+    const updatedPost = await postRepository.update(
       postId,
-      version: nextVersion,
-      editorId: member.id,
-      title: existingPost.title,
-      content: existingPost.content,
-      editReason: parsed.data.editReason,
-      type: existingPost.type,
-      mediaUrl: existingPost.mediaUrl,
-      thumbnailUrl: existingPost.thumbnailUrl,
-      linkUrl: existingPost.linkUrl,
-      linkTitle: existingPost.linkTitle,
-      linkDescription: existingPost.linkDescription,
-      linkImage: existingPost.linkImage,
-      attachments: existingPost.attachments,
-    });
-
-    // Update post
-    const updateData: Record<string, unknown> = {
-      updatedAt: new Date(),
-      editedAt: new Date(),
-    };
-
-    if (parsed.data.title) updateData.title = parsed.data.title;
-    if (parsed.data.content) updateData.content = parsed.data.content;
-    if (parsed.data.type) updateData.type = parsed.data.type;
-    if (parsed.data.categoryId) updateData.categoryId = parsed.data.categoryId;
-    if (parsed.data.editReason) updateData.editReason = parsed.data.editReason;
-    if (parsed.data.attachments) updateData.attachments = parsed.data.attachments;
-    if (parsed.data.mediaUrl !== undefined) updateData.mediaUrl = parsed.data.mediaUrl;
-    if (parsed.data.thumbnailUrl !== undefined) updateData.thumbnailUrl = parsed.data.thumbnailUrl;
-    if (parsed.data.linkUrl !== undefined) updateData.linkUrl = parsed.data.linkUrl;
-    if (parsed.data.linkTitle !== undefined) updateData.linkTitle = parsed.data.linkTitle;
-    if (parsed.data.linkDescription !== undefined)
-      updateData.linkDescription = parsed.data.linkDescription;
-    if (parsed.data.linkImage !== undefined) updateData.linkImage = parsed.data.linkImage;
-    if (parsed.data.isFree !== undefined) updateData.isFree = parsed.data.isFree;
-
-    const [updatedPost] = await db
-      .update(posts)
-      .set(updateData)
-      .where(eq(posts.id, postId))
-      .returning();
-
-    // Get category name for the response
-    const categoryId = parsed.data.categoryId || existingPost.categoryId;
-    const category = await db.query.categories.findFirst({
-      where: eq(categories.id, categoryId),
-    });
+      {
+        title: parsed.data.title,
+        content: parsed.data.content,
+        type: parsed.data.type,
+        categoryId: parsed.data.categoryId,
+        editReason: parsed.data.editReason,
+        attachments: parsed.data.attachments as PostAttachment[] | undefined,
+        mediaUrl: parsed.data.mediaUrl,
+        thumbnailUrl: parsed.data.thumbnailUrl,
+        linkUrl: parsed.data.linkUrl,
+        linkTitle: parsed.data.linkTitle,
+        linkDescription: parsed.data.linkDescription,
+        linkImage: parsed.data.linkImage,
+        isFree: parsed.data.isFree,
+      },
+      member.id
+    );
 
     return NextResponse.json({
       ...updatedPost,
       slug: updatedPost.slug,
-      categoryName: category?.name,
+      categoryName: updatedPost.category.name,
     });
   } catch (error) {
     console.error("Update post error:", error);
     return NextResponse.json({ error: "Failed to update post" }, { status: 500 });
   }
-}
+});
 
 // DELETE /api/posts/[postId] - Soft delete a post
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export const DELETE = withAuth(async (_request, { params }, member) => {
   try {
-    const member = await getCurrentMember();
-    if (!member) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const { postId } = await params;
 
-    const existingPost = await db.query.posts.findFirst({
-      where: eq(posts.id, postId),
-    });
+    // Check permission
+    const { allowed, post: existingPost } = await postRepository.canModify(
+      postId,
+      member.id,
+      member.role
+    );
 
     if (!existingPost) {
       return NextResponse.json({ error: "Post not found" }, { status: 404 });
     }
 
-    // Check ownership or admin
-    if (existingPost.memberId !== member.id && member.role !== "admin") {
+    if (!allowed) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Soft delete
-    await db
-      .update(posts)
-      .set({ status: "deleted", updatedAt: new Date() })
-      .where(eq(posts.id, postId));
-
-    // Update category post count
-    await db
-      .update(categories)
-      .set({ postCount: sql`${categories.postCount} - 1` })
-      .where(eq(categories.id, existingPost.categoryId));
-
-    // Update member post count
-    await db
-      .update(members)
-      .set({ postCount: sql`${members.postCount} - 1` })
-      .where(eq(members.id, existingPost.memberId));
+    await postRepository.delete(postId);
 
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Delete post error:", error);
     return NextResponse.json({ error: "Failed to delete post" }, { status: 500 });
   }
-}
+});
