@@ -38,11 +38,11 @@ import {
   PostSkeletonList,
 } from "@/components/members/member-skeleton";
 import PostPreview from "@/components/posts/post-preview";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/components/providers/auth-provider";
-import { useMember, useMemberPosts, useMemberActivity } from "@/hooks/use-members";
 import { useBookmarksWithDetails } from "@/hooks/use-bookmarks";
+import { useMember, useMemberActivity, useMemberPosts } from "@/hooks/use-members";
 
 /**
  * Props interface for the MemberDetailPage component.
@@ -91,14 +91,16 @@ function MemberDetailContent({ slug }: { slug: string }) {
   } = useMemberPosts(memberData?.id);
 
   // Fetch member activity using React Query with pagination
-  const { data: memberActivityData, isLoading: isActivityLoading } = useMemberActivity(memberData?.id);
+  const { data: memberActivityData, isLoading: isActivityLoading } = useMemberActivity(
+    memberData?.id,
+  );
 
   // Check if viewing own profile for bookmarks privacy
   const isOwnProfile = user && memberData && user.id === memberData.id;
 
   // Fetch member bookmarks (only if viewing own profile)
   const { data: memberBookmarks, isLoading: areBookmarksLoading } = useBookmarksWithDetails(
-    isOwnProfile ? undefined : undefined // Only fetch if own profile
+    isOwnProfile ? undefined : undefined, // Only fetch if own profile
   );
 
   // Member not found (only check this after data has loaded)
@@ -157,7 +159,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
         postSlug: activity.post?.slug,
         categoryName: activity.post?.categoryName,
         netVotes: activity.netVotes,
-      }))
+      })),
     ) || [];
 
   // Use actual post count from member data
@@ -219,7 +221,13 @@ function MemberDetailContent({ slug }: { slug: string }) {
                               commentCount: post.commentCount || 0,
                               viewCount: post.viewCount || 0,
                               member: post.member,
-                              category: post.category ? { name: post.category.name, displayName: post.category.displayName, icon: post.category.icon ?? undefined } : undefined,
+                              category: post.category
+                                ? {
+                                    name: post.category.name,
+                                    displayName: post.category.displayName,
+                                    icon: post.category.icon ?? undefined,
+                                  }
+                                : undefined,
                             }}
                             size="medium"
                           />

@@ -36,8 +36,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { useTopicByName } from "@/hooks/use-topics";
 import { useCreateResource } from "@/hooks/use-resources";
+import { useTopicByName } from "@/hooks/use-topics";
 
 /**
  * Props interface for the ResourceSubmissionPageClient component

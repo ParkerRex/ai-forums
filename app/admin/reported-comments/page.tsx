@@ -46,12 +46,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { type EnrichedReport, useReportedComments, useResolveReport } from "@/hooks/use-admin";
 import { useToast } from "@/hooks/use-toast";
-import {
-  useReportedComments,
-  useResolveReport,
-  type EnrichedReport,
-} from "@/hooks/use-admin";
 
 /**
  * Represents the possible states of a comment report
@@ -92,10 +88,7 @@ function ReportedCommentsContent() {
   const isAdmin = user?.role === "admin";
 
   // Fetch reported comments using the admin hook
-  const { data: reports, isLoading: isReportsLoading } = useReportedComments(
-    statusFilter,
-    50,
-  );
+  const { data: reports, isLoading: isReportsLoading } = useReportedComments(statusFilter, 50);
 
   // Resolve report mutation using the admin hook
   const resolveReportMutation = useResolveReport();

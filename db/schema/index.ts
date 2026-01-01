@@ -1,35 +1,28 @@
 // Core tables
-export * from "./members";
-export * from "./sessions";
-export * from "./categories";
-export * from "./posts";
-export * from "./comments";
 
-// Engagement
-export * from "./votes";
 export * from "./bookmarks";
-export * from "./notifications";
-
-// Resources & Topics
-export * from "./topics";
-export * from "./resources";
-
+export * from "./categories";
+// Moderation
+export * from "./comment-reports";
+export * from "./comments";
+export * from "./discord-digest";
 // Events
 export * from "./events";
-
+export * from "./members";
+// News & Discord
+export * from "./news-feed-cache";
+export * from "./notifications";
 // Polls
 export * from "./poll-votes";
-
 // History & Analytics
 export * from "./post-versions";
 export * from "./post-views";
-
-// Moderation
-export * from "./comment-reports";
-
-// News & Discord
-export * from "./news-feed-cache";
-export * from "./discord-digest";
-
+export * from "./posts";
 // Relations (must be last)
 export * from "./relations";
+export * from "./resources";
+export * from "./sessions";
+// Resources & Topics
+export * from "./topics";
+// Engagement
+export * from "./votes";

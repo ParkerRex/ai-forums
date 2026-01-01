@@ -37,11 +37,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the member exists in the database
-    const member = await db
-      .select()
-      .from(members)
-      .where(eq(members.email, email))
-      .limit(1);
+    const member = await db.select().from(members).where(eq(members.email, email)).limit(1);
 
     if (!member || member.length === 0) {
       return NextResponse.json({ error: "Member not found" }, { status: 404 });

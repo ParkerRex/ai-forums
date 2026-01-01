@@ -19,11 +19,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCategories } from "@/hooks/use-categories";
 import { useLinkPreview } from "@/hooks/use-posts";
 import { getCharacterCountInfo, type PostFormData, validatePostForm } from "@/lib/form-validation";
-import {
-  getFilePreviewUrl,
-  revokeFilePreviewUrl,
-  validateMediaFile,
-} from "@/lib/upload-media";
+import { getFilePreviewUrl, revokeFilePreviewUrl, validateMediaFile } from "@/lib/upload-media";
 
 // Lazy load heavy components
 const RichTextEditor = lazy(() => import("@/components/posts/rich-text-editor"));

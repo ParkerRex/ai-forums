@@ -8,15 +8,15 @@ realtimeServer.start(PORT);
 
 // Handle graceful shutdown
 process.on("SIGINT", () => {
-	console.log("\nShutting down WebSocket server...");
-	realtimeServer.stop();
-	process.exit(0);
+  console.log("\nShutting down WebSocket server...");
+  realtimeServer.stop();
+  process.exit(0);
 });
 
 process.on("SIGTERM", () => {
-	console.log("\nShutting down WebSocket server...");
-	realtimeServer.stop();
-	process.exit(0);
+  console.log("\nShutting down WebSocket server...");
+  realtimeServer.stop();
+  process.exit(0);
 });
 
 // Keep the process alive

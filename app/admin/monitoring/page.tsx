@@ -13,7 +13,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useWebhookHealth, useWebhookFailures } from "@/hooks/use-admin";
+import { useWebhookFailures, useWebhookHealth } from "@/hooks/use-admin";
 
 export default function MonitoringPage() {
   const { data: webhookHealth } = useWebhookHealth();

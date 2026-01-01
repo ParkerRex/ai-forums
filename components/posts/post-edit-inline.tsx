@@ -83,10 +83,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
         mediaUrl:
           formData.type === "video" || formData.type === "image" ? formData.mediaUrl : undefined,
         thumbnailUrl: formData.type === "video" ? formData.thumbnailUrl : undefined,
-        categoryId:
-          formData.categoryId !== post.category?.id
-            ? formData.categoryId
-            : undefined,
+        categoryId: formData.categoryId !== post.category?.id ? formData.categoryId : undefined,
       });
 
       // Check if we need to redirect to a new URL

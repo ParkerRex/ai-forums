@@ -26,8 +26,8 @@ import { PostDeleteModal } from "@/components/posts/post-delete-modal";
 import PostDetail from "@/components/posts/post-detail";
 import { PostHistoryModal } from "@/components/posts/post-history-modal";
 import { PostPaywallDirect } from "@/components/posts/post-paywall-direct";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/components/providers/auth-provider";
+import { Badge } from "@/components/ui/badge";
 import { usePostBySlug } from "@/hooks/use-posts";
 
 /**
@@ -87,7 +87,11 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     slug.trim() !== "";
 
   // Query for the post by slug from PostgreSQL database via React Query
-  const { data: post, isLoading: isPostLoading, isError } = usePostBySlug(hasValidParams ? slug : "");
+  const {
+    data: post,
+    isLoading: isPostLoading,
+    isError,
+  } = usePostBySlug(hasValidParams ? slug : "");
 
   // For now, authenticated users can view posts (simplified access check)
   // In a full implementation, this would check subscription status
@@ -270,10 +274,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
             />
 
             {/* Comment section with deep linking support */}
-            <CommentSection
-              postId={post.id}
-              targetCommentId={commentId ?? undefined}
-            />
+            <CommentSection postId={post.id} targetCommentId={commentId ?? undefined} />
 
             {/* Post Management Modals - Only available to authenticated users */}
             {post && (
@@ -346,10 +347,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
               isEditing={isEditing}
               onCancelEdit={handleCancelEdit}
             />
-            <CommentSection
-              postId={post.id}
-              targetCommentId={commentId ?? undefined}
-            />
+            <CommentSection postId={post.id} targetCommentId={commentId ?? undefined} />
           </>
         ) : (
           // Paywalled posts show preview with overlay

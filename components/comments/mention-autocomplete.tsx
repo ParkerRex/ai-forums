@@ -10,12 +10,7 @@ interface MentionAutocompleteProps {
     lastName: string;
     slug: string;
   }>;
-  onSelect: (member: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    slug: string;
-  }) => void;
+  onSelect: (member: { id: string; firstName: string; lastName: string; slug: string }) => void;
   onClose: () => void;
 }
 

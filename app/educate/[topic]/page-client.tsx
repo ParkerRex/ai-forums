@@ -33,15 +33,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useTopicByName } from "@/hooks/use-topics";
-import {
-  useResources,
-  useVoteOnResource,
-  useUserResourceVote,
-  useTrackResourceView,
-  type Resource,
-} from "@/hooks/use-resources";
 import { useCurrentMember } from "@/hooks/use-current-member";
+import {
+  type Resource,
+  useResources,
+  useTrackResourceView,
+  useUserResourceVote,
+  useVoteOnResource,
+} from "@/hooks/use-resources";
+import { useTopicByName } from "@/hooks/use-topics";
 
 /**
  * Props interface for the TopicPageClient component
@@ -432,9 +432,7 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
             )}
           </div>
         ) : (
-          displayResources.map((resource) => (
-            <ResourceCard key={resource.id} resource={resource} />
-          ))
+          displayResources.map((resource) => <ResourceCard key={resource.id} resource={resource} />)
         )}
       </div>
     </div>

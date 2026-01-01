@@ -49,12 +49,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAdminMemberStats, useAdminMembers, useUpdateMemberRole } from "@/hooks/use-admin";
 import { cn } from "@/lib/utils";
-import {
-  useAdminMembers,
-  useAdminMemberStats,
-  useUpdateMemberRole,
-} from "@/hooks/use-admin";
 
 type SortField = "name" | "email" | "joinedAt" | "lastActiveAt" | "tier" | "status" | "revenue";
 type SortOrder = "asc" | "desc";

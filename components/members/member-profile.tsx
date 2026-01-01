@@ -5,10 +5,10 @@ import { useState } from "react";
 import MemberEditModal from "@/components/members/member-edit-modal";
 import { MemberProfileFieldIndicator } from "@/components/members/member-profile-field-indicator";
 import { MemberProfileFieldModal } from "@/components/members/member-profile-field-modal";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { useAuth } from "@/components/providers/auth-provider";
 import { detectCountryFromLocation, getFlagEmoji } from "@/lib/country-utils";
 
 interface MemberProfileProps {
@@ -55,7 +55,8 @@ export default function MemberProfile({ member }: MemberProfileProps) {
   const canEdit = isAuthenticated && user?.id === member.id;
 
   // Detect country from location or use the country field
-  const detectedCountryCode = detectCountryFromLocation(member.location ?? undefined) || member.country;
+  const detectedCountryCode =
+    detectCountryFromLocation(member.location ?? undefined) || member.country;
   const flagEmoji = detectedCountryCode ? getFlagEmoji(detectedCountryCode) : null;
 
   // Transform member data for the edit modal
@@ -133,7 +134,9 @@ export default function MemberProfile({ member }: MemberProfileProps) {
               </svg>
             )}
           </div>
-          <p className="text-muted-foreground">@{member.slug || member.email?.split("@")[0] || ""}</p>
+          <p className="text-muted-foreground">
+            @{member.slug || member.email?.split("@")[0] || ""}
+          </p>
         </div>
 
         {/* Bio */}

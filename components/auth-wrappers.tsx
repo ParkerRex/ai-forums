@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 
 interface AuthWrapperProps {
-	children: ReactNode;
+  children: ReactNode;
 }
 
 /**
@@ -12,13 +12,13 @@ interface AuthWrapperProps {
  * Replacement for Convex's Authenticated component.
  */
 export function Authenticated({ children }: AuthWrapperProps) {
-	const { user, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
-	if (isLoading || !user) {
-		return null;
-	}
+  if (isLoading || !user) {
+    return null;
+  }
 
-	return <>{children}</>;
+  return <>{children}</>;
 }
 
 /**
@@ -26,24 +26,24 @@ export function Authenticated({ children }: AuthWrapperProps) {
  * Replacement for Convex's Unauthenticated component.
  */
 export function Unauthenticated({ children }: AuthWrapperProps) {
-	const { user, isLoading } = useAuth();
+  const { user, isLoading } = useAuth();
 
-	if (isLoading || user) {
-		return null;
-	}
+  if (isLoading || user) {
+    return null;
+  }
 
-	return <>{children}</>;
+  return <>{children}</>;
 }
 
 /**
  * Renders children while auth state is loading.
  */
 export function AuthLoading({ children }: AuthWrapperProps) {
-	const { isLoading } = useAuth();
+  const { isLoading } = useAuth();
 
-	if (!isLoading) {
-		return null;
-	}
+  if (!isLoading) {
+    return null;
+  }
 
-	return <>{children}</>;
+  return <>{children}</>;
 }

@@ -34,7 +34,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { useEventsByMonth, type Event } from "@/hooks/use-events";
+import { type Event, useEventsByMonth } from "@/hooks/use-events";
 import { EventCard } from "./event-card";
 
 /**
@@ -238,7 +238,12 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
                           description: event.description || "",
                           startTime: event.startTime,
                           endTime: event.endTime || event.startTime + 3600000,
-                          type: event.type as "community_call" | "watch_party" | "workshop" | "meetup" | "other",
+                          type: event.type as
+                            | "community_call"
+                            | "watch_party"
+                            | "workshop"
+                            | "meetup"
+                            | "other",
                           location: {
                             type: event.location?.type === "in-person" ? "physical" : "virtual",
                             details: event.location?.details || "",
@@ -247,10 +252,12 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
                           attendees: event.attendees || [],
                           maxAttendees: event.maxAttendees || undefined,
                           requiresRSVP: event.requiresRSVP,
-                          creator: event.creator ? {
-                            firstName: event.creator.firstName,
-                            lastName: event.creator.lastName,
-                          } : null,
+                          creator: event.creator
+                            ? {
+                                firstName: event.creator.firstName,
+                                lastName: event.creator.lastName,
+                              }
+                            : null,
                         }}
                         size="small"
                         onClick={() => onEventSelect(event.id)}

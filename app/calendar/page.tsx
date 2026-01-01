@@ -23,12 +23,12 @@
 
 import { Plus } from "lucide-react";
 import { useState } from "react";
+import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { EventModal } from "@/components/calendar/event-modal";
 import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 
 /**
  * Main calendar page component that renders the VAI community calendar

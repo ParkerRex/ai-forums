@@ -29,7 +29,13 @@ import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { UploadIcon } from "@/components/ui/upload";
-import { useComments, useCreateComment, useDeleteComment, useVoteOnComment, useReorderCommentReplies } from "@/hooks/use-comments";
+import {
+  useComments,
+  useCreateComment,
+  useDeleteComment,
+  useReorderCommentReplies,
+  useVoteOnComment,
+} from "@/hooks/use-comments";
 import { useCurrentMember } from "@/hooks/use-current-member";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useUserVotes } from "@/hooks/use-user-votes";
@@ -202,7 +208,8 @@ function CommentItem({
     }
   };
 
-  const shouldReduceMotion = typeof window !== 'undefined' && window?.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const shouldReduceMotion =
+    typeof window !== "undefined" && window?.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const highlightVariants = {
     initial: {
@@ -630,15 +637,17 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
     createdAt: new Date(c.createdAt).getTime(),
     upvotes: c.upvotes || 0,
     netVotes: c.netVotes || 0,
-    member: c.member ? {
-      id: c.member.id,
-      firstName: c.member.firstName,
-      lastName: c.member.lastName,
-      email: "",
-      username: c.member.slug,
-      slug: c.member.slug,
-      avatarUrl: c.member.avatarUrl,
-    } : null,
+    member: c.member
+      ? {
+          id: c.member.id,
+          firstName: c.member.firstName,
+          lastName: c.member.lastName,
+          email: "",
+          username: c.member.slug,
+          slug: c.member.slug,
+          avatarUrl: c.member.avatarUrl,
+        }
+      : null,
     depth: c.depth || 0,
     replies: [], // Will be populated if we have nested structure
     attachments: c.attachments,
@@ -861,7 +870,11 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
               Members-only discussion. Join VAI Community to participate.
             </p>
             <div className="space-y-2">
-              <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push("/login")}>
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => router.push("/login")}
+              >
                 Sign In (Members Only)
               </Button>
               <Button

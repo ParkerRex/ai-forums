@@ -168,10 +168,7 @@ export function MemberCard({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               {member.role !== "admin" && (
-                <DropdownMenuItem
-                  onClick={() => handleUpdateRole("admin")}
-                  className="text-sm"
-                >
+                <DropdownMenuItem onClick={() => handleUpdateRole("admin")} className="text-sm">
                   <Shield className="mr-2 h-4 w-4" />
                   Make Admin
                 </DropdownMenuItem>

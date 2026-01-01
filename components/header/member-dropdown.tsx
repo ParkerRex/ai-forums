@@ -7,11 +7,11 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { SettingsDialog } from "@/components/settings-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
 /**
@@ -19,107 +19,99 @@ import {
  * and navigation options.
  */
 export function MemberDropdown() {
-	const router = useRouter();
-	const { member: currentMember, logout } = useAuth();
+  const router = useRouter();
+  const { member: currentMember, logout } = useAuth();
 
-	const [isOpen, setIsOpen] = useState(false);
-	const [settingsOpen, setSettingsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
-	const handleProfileClick = () => {
-		if (currentMember?.slug) {
-			router.push(`/members/${currentMember.slug}`);
-		}
-		setIsOpen(false);
-	};
+  const handleProfileClick = () => {
+    if (currentMember?.slug) {
+      router.push(`/members/${currentMember.slug}`);
+    }
+    setIsOpen(false);
+  };
 
-	const handleSettingsClick = () => {
-		setSettingsOpen(true);
-		setIsOpen(false);
-	};
+  const handleSettingsClick = () => {
+    setSettingsOpen(true);
+    setIsOpen(false);
+  };
 
-	const handleLogout = async () => {
-		await logout();
-		setIsOpen(false);
-	};
+  const handleLogout = async () => {
+    await logout();
+    setIsOpen(false);
+  };
 
-	if (!currentMember) {
-		return null;
-	}
+  if (!currentMember) {
+    return null;
+  }
 
-	return (
-		<>
-			<DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
-				<DropdownMenuTrigger asChild>
-					<button
-						className="relative rounded-none outline-none ring-2 ring-transparent hover:ring-muted-foreground/20 transition-all duration-200 focus-visible:ring-ring"
-						aria-label="Open user menu"
-					>
-						<Avatar className="h-8 w-8">
-							<AvatarImage
-								src={currentMember.avatarUrl ?? undefined}
-								alt={currentMember.firstName}
-							/>
-							<AvatarFallback className="text-xs font-medium bg-muted">
-								{currentMember.firstName?.[0]}
-								{currentMember.lastName?.[0]}
-							</AvatarFallback>
-						</Avatar>
-					</button>
-				</DropdownMenuTrigger>
+  return (
+    <>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>
+          <button
+            className="relative rounded-none outline-none ring-2 ring-transparent hover:ring-muted-foreground/20 transition-all duration-200 focus-visible:ring-ring"
+            aria-label="Open user menu"
+          >
+            <Avatar className="h-8 w-8">
+              <AvatarImage
+                src={currentMember.avatarUrl ?? undefined}
+                alt={currentMember.firstName}
+              />
+              <AvatarFallback className="text-xs font-medium bg-muted">
+                {currentMember.firstName?.[0]}
+                {currentMember.lastName?.[0]}
+              </AvatarFallback>
+            </Avatar>
+          </button>
+        </DropdownMenuTrigger>
 
-				<DropdownMenuContent align="end" className="w-64">
-					<div className="flex items-center gap-3 px-2 py-3">
-						<Avatar className="h-10 w-10">
-							<AvatarImage
-								src={currentMember.avatarUrl ?? undefined}
-								alt={currentMember.firstName}
-							/>
-							<AvatarFallback className="text-sm font-medium bg-muted">
-								{currentMember.firstName?.[0]}
-								{currentMember.lastName?.[0]}
-							</AvatarFallback>
-						</Avatar>
-						<div className="flex flex-col space-y-1">
-							<p className="text-sm font-medium leading-none">
-								{currentMember.firstName} {currentMember.lastName}
-							</p>
-							<p className="text-xs text-muted-foreground">
-								{currentMember.email}
-							</p>
-						</div>
-					</div>
+        <DropdownMenuContent align="end" className="w-64">
+          <div className="flex items-center gap-3 px-2 py-3">
+            <Avatar className="h-10 w-10">
+              <AvatarImage
+                src={currentMember.avatarUrl ?? undefined}
+                alt={currentMember.firstName}
+              />
+              <AvatarFallback className="text-sm font-medium bg-muted">
+                {currentMember.firstName?.[0]}
+                {currentMember.lastName?.[0]}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">
+                {currentMember.firstName} {currentMember.lastName}
+              </p>
+              <p className="text-xs text-muted-foreground">{currentMember.email}</p>
+            </div>
+          </div>
 
-					<DropdownMenuSeparator />
+          <DropdownMenuSeparator />
 
-					<DropdownMenuItem
-						onClick={handleProfileClick}
-						className="cursor-pointer"
-					>
-						<User className="mr-2 h-4 w-4" />
-						<span>Profile</span>
-					</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleProfileClick} className="cursor-pointer">
+            <User className="mr-2 h-4 w-4" />
+            <span>Profile</span>
+          </DropdownMenuItem>
 
-					<DropdownMenuItem
-						onClick={handleSettingsClick}
-						className="cursor-pointer"
-					>
-						<Settings className="mr-2 h-4 w-4" />
-						<span>Settings</span>
-					</DropdownMenuItem>
+          <DropdownMenuItem onClick={handleSettingsClick} className="cursor-pointer">
+            <Settings className="mr-2 h-4 w-4" />
+            <span>Settings</span>
+          </DropdownMenuItem>
 
-					<DropdownMenuSeparator />
+          <DropdownMenuSeparator />
 
-					<DropdownMenuItem
-						onClick={handleLogout}
-						className="cursor-pointer text-muted-foreground hover:text-foreground"
-					>
-						<LogOut className="mr-2 h-4 w-4" />
-						<span>Log out</span>
-					</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
+          <DropdownMenuItem
+            onClick={handleLogout}
+            className="cursor-pointer text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="mr-2 h-4 w-4" />
+            <span>Log out</span>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-			<SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
-		</>
-	);
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
+    </>
+  );
 }

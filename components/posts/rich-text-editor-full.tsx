@@ -59,7 +59,6 @@ export function FullRichTextEditor({
   placeholder = "Start writing your post...",
   className = "",
 }: FullRichTextEditorProps) {
-
   const editor = useEditor({
     extensions: [
       StarterKit.configure({

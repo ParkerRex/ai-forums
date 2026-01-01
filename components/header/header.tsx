@@ -10,11 +10,11 @@ import { MemberDropdown } from "@/components/header/member-dropdown";
 import { NotificationDropdown } from "@/components/header/notification-dropdown";
 import { CalendarDaysIcon, type CalendarDaysIconHandle } from "@/components/icons/calendar-days";
 import { SearchIcon, type SearchIconHandle } from "@/components/icons/search";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { UsersIcon, type UsersIconHandle } from "@/components/ui/users";
-import { useAuth } from "@/components/providers/auth-provider";
 // We intentionally do NOT import useSearchHotkey here because we
 // only need to *trigger* the global search dialog. The actual
 // open/close state is maintained inside the GlobalSearch

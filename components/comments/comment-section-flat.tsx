@@ -14,7 +14,12 @@ import { VoteButton } from "@/components/icons/vote-button";
 import { MemberHoverCardWrapper } from "@/components/members/member-hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useComments, useCreateComment, useVoteOnComment, useEditComment } from "@/hooks/use-comments";
+import {
+  useComments,
+  useCreateComment,
+  useEditComment,
+  useVoteOnComment,
+} from "@/hooks/use-comments";
 import { useCurrentMember } from "@/hooks/use-current-member";
 import { useMutationError } from "@/hooks/use-mutation-error";
 import { useUserVotes } from "@/hooks/use-user-votes";
@@ -405,23 +410,27 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
     createdAt: new Date(c.createdAt).getTime(),
     upvotes: c.upvotes || 0,
     netVotes: c.netVotes || 0,
-    member: c.member ? {
-      id: c.member.id,
-      firstName: c.member.firstName,
-      lastName: c.member.lastName,
-      email: "",
-      username: c.member.slug,
-      slug: c.member.slug,
-      avatarUrl: c.member.avatarUrl,
-    } : null,
+    member: c.member
+      ? {
+          id: c.member.id,
+          firstName: c.member.firstName,
+          lastName: c.member.lastName,
+          email: "",
+          username: c.member.slug,
+          slug: c.member.slug,
+          avatarUrl: c.member.avatarUrl,
+        }
+      : null,
     parentCommentId: c.parentCommentId,
-    replyToMember: c.replyToMember ? {
-      id: c.replyToMember.id,
-      firstName: c.replyToMember.firstName,
-      lastName: c.replyToMember.lastName,
-      username: c.replyToMember.slug,
-      slug: c.replyToMember.slug,
-    } : null,
+    replyToMember: c.replyToMember
+      ? {
+          id: c.replyToMember.id,
+          firstName: c.replyToMember.firstName,
+          lastName: c.replyToMember.lastName,
+          username: c.replyToMember.slug,
+          slug: c.replyToMember.slug,
+        }
+      : null,
     attachments: c.attachments,
     linkPreviews: c.linkPreviews,
   })) as FlatComment[] | undefined;
@@ -519,7 +528,11 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
               Members-only discussion. Join VAI Community to participate.
             </p>
             <div className="space-y-2">
-              <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push("/login")}>
+              <Button
+                variant="outline"
+                className="w-full sm:w-auto"
+                onClick={() => router.push("/login")}
+              >
                 Sign In (Members Only)
               </Button>
               <Button

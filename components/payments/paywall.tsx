@@ -26,7 +26,9 @@ export function Paywall({
   tier,
 }: PaywallProps) {
   const previewText = preview || previewContent;
-  const tierText = tier ? `This content requires a ${tier} membership.` : "This content is available exclusively to paying members.";
+  const tierText = tier
+    ? `This content requires a ${tier} membership.`
+    : "This content is available exclusively to paying members.";
   const descriptionText = description || tierText;
 
   return (

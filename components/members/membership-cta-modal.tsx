@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,7 +27,6 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { checkoutAnalytics } from "@/lib/analytics";
 import { formatCurrency } from "@/lib/format";
 import { SignInModal } from "../auth/sign-in-modal";
-import { useAuth } from "@/components/providers/auth-provider";
 
 interface MembershipCTAModalProps {
   /**

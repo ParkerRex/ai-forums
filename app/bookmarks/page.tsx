@@ -71,7 +71,9 @@ function BookmarksContent() {
               ) : isError ? (
                 // Show error state
                 <div className="text-center py-12">
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Error loading bookmarks</h3>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">
+                    Error loading bookmarks
+                  </h3>
                   <p className="text-muted-foreground mb-4">
                     Something went wrong while loading your bookmarks
                   </p>

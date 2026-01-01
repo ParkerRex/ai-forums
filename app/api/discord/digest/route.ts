@@ -104,8 +104,8 @@ export async function POST(request: NextRequest) {
         .where(
           or(
             inArray(discordDigest.channelId, channels),
-            inArray(discordDigest.channelName, channels)
-          )
+            inArray(discordDigest.channelName, channels),
+          ),
         )
         .orderBy(desc(discordDigest.reactionScore))
         .limit(limit || 20);

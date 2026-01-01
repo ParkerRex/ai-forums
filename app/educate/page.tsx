@@ -22,7 +22,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useTopics, type Topic } from "@/hooks/use-topics";
+import { type Topic, useTopics } from "@/hooks/use-topics";
 
 /**
  * Individual topic card component that displays a single learning topic

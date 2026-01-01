@@ -32,10 +32,10 @@ import {
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+  type TimeRange,
+  useAdminChurnAnalysis,
   useAdminMetrics,
   useAdminMRRHistory,
-  useAdminChurnAnalysis,
-  type TimeRange,
 } from "@/hooks/use-admin";
 
 export default function AnalyticsPage() {

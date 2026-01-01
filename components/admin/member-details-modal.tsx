@@ -109,7 +109,10 @@ export function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProp
                     )}
                     <Badge
                       variant="outline"
-                      className={cn("text-xs", memberStatusConfig[status as keyof typeof memberStatusConfig]?.color || "")}
+                      className={cn(
+                        "text-xs",
+                        memberStatusConfig[status as keyof typeof memberStatusConfig]?.color || "",
+                      )}
                     >
                       {memberStatusConfig[status as keyof typeof memberStatusConfig]?.label ||
                         status.charAt(0).toUpperCase() + status.slice(1)}
@@ -201,9 +204,7 @@ export function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProp
                     <p className="text-sm text-gray-500">Posts</p>
                   </div>
                   <div className="text-center">
-                    <p className="text-2xl font-semibold text-gray-900">
-                      {activity.commentCount}
-                    </p>
+                    <p className="text-2xl font-semibold text-gray-900">{activity.commentCount}</p>
                     <p className="text-sm text-gray-500">Comments</p>
                   </div>
                   <div className="text-center">

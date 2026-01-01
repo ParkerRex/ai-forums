@@ -87,7 +87,7 @@ async function fetchDiscordChannels(guildId: string): Promise<DiscordChannel[]> 
 async function fetchChannelMessages(
   channelId: string,
   since: number,
-  limit: number
+  limit: number,
 ): Promise<DiscordMessage[]> {
   const token = process.env.DISCORD_BOT_TOKEN;
   if (!token) {
@@ -100,7 +100,7 @@ async function fetchChannelMessages(
       headers: {
         Authorization: `Bot ${token}`,
       },
-    }
+    },
   );
 
   if (!response.ok) {
@@ -173,7 +173,7 @@ export async function POST(request: NextRequest) {
     // If specific channels requested, filter to those
     if (channels && Array.isArray(channels) && channels.length > 0) {
       targetChannels = targetChannels.filter(
-        (c) => channels.includes(c.id) || channels.includes(c.name)
+        (c) => channels.includes(c.id) || channels.includes(c.name),
       );
     }
 

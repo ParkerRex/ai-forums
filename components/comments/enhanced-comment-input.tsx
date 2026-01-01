@@ -109,7 +109,7 @@ export function EnhancedCommentInput({
   // Use the useMembers hook for member search
   const { data: membersData } = useMembers({
     search: mentionSearchTerm || undefined,
-    limit: 20
+    limit: 20,
   });
 
   const memberResults = (membersData?.items || []).map((m) => ({

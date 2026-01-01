@@ -58,7 +58,11 @@ function MembersPageContent() {
   }, [searchTerm]);
 
   // Fetch members based on search term using React Query
-  const { data: membersData, isLoading, isError } = useMembers({
+  const {
+    data: membersData,
+    isLoading,
+    isError,
+  } = useMembers({
     search: debouncedSearchTerm || undefined,
   });
 

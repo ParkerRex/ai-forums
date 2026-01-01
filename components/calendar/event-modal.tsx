@@ -60,12 +60,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  useEvent,
-  useCreateEvent,
-  useUpdateEvent,
-  useDeleteEvent,
-} from "@/hooks/use-events";
+import { useCreateEvent, useDeleteEvent, useEvent, useUpdateEvent } from "@/hooks/use-events";
 
 /**
  * Props interface for the EventModal component
@@ -163,7 +158,9 @@ export function EventModal({ isOpen, onClose, eventId, selectedDate }: EventModa
         startTime: format(startDate, "yyyy-MM-dd'T'HH:mm"),
         endTime: format(endDate, "yyyy-MM-dd'T'HH:mm"),
         type: event.type as "community_call" | "watch_party" | "workshop" | "meetup" | "other",
-        locationType: (event.location?.type === "in-person" ? "physical" : "virtual") as "virtual" | "physical",
+        locationType: (event.location?.type === "in-person" ? "physical" : "virtual") as
+          | "virtual"
+          | "physical",
         locationDetails: event.location?.details || "",
         platform: event.location?.platform || "",
         maxAttendees: event.maxAttendees?.toString() || "",
@@ -227,7 +224,7 @@ export function EventModal({ isOpen, onClose, eventId, selectedDate }: EventModa
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         type: formData.type,
         location: {
-          type: formData.locationType === "physical" ? "in-person" as const : "online" as const,
+          type: formData.locationType === "physical" ? ("in-person" as const) : ("online" as const),
           details: formData.locationDetails.trim() || undefined,
           // Only include platform if specified
           platform: formData.platform || undefined,
@@ -327,7 +324,9 @@ export function EventModal({ isOpen, onClose, eventId, selectedDate }: EventModa
                 <Textarea
                   id="description"
                   value={formData.description}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, description: e.target.value }))
+                  }
                   placeholder="Describe your event"
                   rows={3}
                 />

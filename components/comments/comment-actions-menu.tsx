@@ -3,6 +3,7 @@
 import { Edit, Flag, Link2, Loader2, MoreHorizontal, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { useAuth } from "@/components/providers/auth-provider";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "@/components/providers/auth-provider";
 import { useDeleteComment, useReportComment } from "@/hooks/use-comments";
 import { COMMENT_EDIT_WINDOW_MS } from "@/lib/constants";
 

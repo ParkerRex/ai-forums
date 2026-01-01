@@ -28,8 +28,8 @@ import { useCategories } from "@/hooks/use-categories";
 import {
   useCreatePost,
   useDeletePost,
-  useLinkPreview,
   useGeneratePostPreview,
+  useLinkPreview,
 } from "@/hooks/use-posts";
 import { getCharacterCountInfo, type PostFormData, validatePostForm } from "@/lib/form-validation";
 import { revokeFilePreviewUrl, uploadMedia } from "@/lib/upload-media";
@@ -393,7 +393,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
         attachments: attachments as CreatePostData["attachments"],
         // Poll fields - convert PollOption[] to string[]
         pollOptions: formData.pollData?.options.map((opt) =>
-          typeof opt === "string" ? opt : opt.text
+          typeof opt === "string" ? opt : opt.text,
         ),
         pollDuration:
           formData.pollData?.duration === "24h"
