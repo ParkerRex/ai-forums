@@ -7,18 +7,18 @@
  * Features:
  * - Dual authentication UI (authenticated vs unauthenticated views)
  * - Modal management (edit, delete, history)
- * - Server-side post data hydration for faster initial load
+ * - Post data loading via React Query
  * - Comment section with deep linking
  * - Navigation with animated back button
  * - Error handling and graceful redirects
  *
- * @see PostPage - Server component that handles SEO and routing
+ * @see PostPage - Client component that handles routing
  */
 
 "use client";
 
 import { notFound, useRouter, useSearchParams } from "next/navigation";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 import CommentSection from "@/components/comments/comment-section-flat";
 import { PostDeleteModal } from "@/components/posts/post-delete-modal";
@@ -30,99 +30,31 @@ import { Badge } from "@/components/ui/badge";
 import { usePostBySlug } from "@/hooks/use-posts";
 
 /**
- * Serialized post type from server component
- */
-type SerializedPost = {
-  id: string;
-  title: string;
-  content: string;
-  slug: string;
-  preview: string | null;
-  type: "text" | "image" | "video" | "link" | "poll";
-  upvotes: number;
-  downvotes: number;
-  netVotes: number;
-  commentCount: number;
-  viewCount: number;
-  createdAt: string;
-  editedAt: string | null;
-  memberId: string;
-  categoryId: string;
-  status: "active" | "deleted" | "hidden" | "archived";
-  isPinned: boolean;
-  pinScope: "category" | "global" | "both" | null;
-  isLocked: boolean;
-  mediaUrl: string | null;
-  thumbnailUrl: string | null;
-  linkUrl: string | null;
-  linkTitle: string | null;
-  linkDescription: string | null;
-  linkImage: string | null;
-  linkPreviews: Record<
-    string,
-    {
-      title?: string;
-      description?: string;
-      image?: string;
-      siteName?: string;
-      url: string;
-    }
-  > | null;
-  pollOptions: Array<{ id: string; text: string; voteCount: number }> | null;
-  pollEndsAt: string | null;
-  totalPollVotes: number | null;
-  attachments: unknown[] | null;
-  isFree: boolean;
-  member: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    slug: string;
-    avatarUrl: string | null;
-  } | null;
-  category: {
-    id: string;
-    name: string;
-    displayName: string;
-    icon: string | null;
-  } | null;
-};
-
-/**
  * Props for the PostPageClient component
  *
  * Contains both category and slug for nested dynamic routing,
- * and optionally server-fetched post data for hydration.
+ * and route params from Next.js.
  */
 interface PostPageClientProps {
-  /** Promise containing the dynamic route parameters */
-  params: Promise<{
-    /** The category name from the URL path */
+  /** Route params provided by Next.js */
+  params: {
     category: string;
-    /** The post slug from the URL path */
     slug: string;
-  }>;
-  /** Pre-fetched post data from server component (optional for backwards compatibility) */
-  serverPost?: SerializedPost;
+  };
 }
 
 /**
  * Post Page Client Component
  *
  * Renders individual post pages with full interactivity and dual authentication states.
- * Uses server-provided post data when available for instant initial render.
- *
  * @param params - Promise containing the dynamic route parameters
- * @param serverPost - Optional pre-fetched post data from server
  * @returns JSX element rendering the post page with authentication-specific content
  */
-export default function PostPageClient({ params, serverPost }: PostPageClientProps) {
+export default function PostPageClient({ params }: PostPageClientProps) {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
 
-  // Unwrap the params promise using React's use() hook (Next.js 15 behavior)
-  const resolvedParams = use(params);
-  const { category, slug } = resolvedParams;
+  const { category, slug } = params;
 
   // Get search params for comment deep linking
   const searchParams = useSearchParams();
@@ -143,20 +75,11 @@ export default function PostPageClient({ params, serverPost }: PostPageClientPro
     typeof slug === "string" &&
     slug.trim() !== "";
 
-  // Use server-provided post data if available, otherwise fall back to React Query
-  // This enables instant initial render when coming from SSR
   const {
-    data: clientPost,
-    isLoading: isClientLoading,
+    data: post,
+    isLoading: isPostLoading,
     isError,
-  } = usePostBySlug(hasValidParams && !serverPost ? slug : "");
-
-  // Use server post if available, otherwise use client-fetched data
-  // Type assertion needed as server and client types are structurally compatible but typed differently
-  const post = (serverPost ?? clientPost) as
-    | (typeof clientPost & { attachments?: unknown[] | null })
-    | undefined;
-  const isPostLoading = !serverPost && isClientLoading;
+  } = usePostBySlug(hasValidParams ? slug : "");
 
   // For now, authenticated users can view posts (simplified access check)
   // In a full implementation, this would check subscription status

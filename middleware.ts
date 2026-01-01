@@ -43,6 +43,26 @@ export async function middleware(request: NextRequest) {
       signInUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(signInUrl);
     }
+
+    // Validate session against the API to avoid accepting forged cookies
+    try {
+      const authResponse = await fetch(new URL("/api/auth/me", request.url), {
+        headers: {
+          cookie: request.headers.get("cookie") ?? "",
+        },
+        cache: "no-store",
+      });
+
+      if (!authResponse.ok) {
+        const signInUrl = new URL("/sign-in", request.url);
+        signInUrl.searchParams.set("redirect", pathname);
+        return NextResponse.redirect(signInUrl);
+      }
+    } catch {
+      const signInUrl = new URL("/sign-in", request.url);
+      signInUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(signInUrl);
+    }
   }
 
   return NextResponse.next();

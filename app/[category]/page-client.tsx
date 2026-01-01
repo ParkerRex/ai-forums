@@ -1,7 +1,7 @@
 "use client";
 
 import { notFound } from "next/navigation";
-import { use, useState } from "react";
+import { useState } from "react";
 import PostHeader from "@/components/posts/post-header";
 import PostList from "@/components/posts/post-list";
 import PostSidebar from "@/components/posts/post-sidebar";
@@ -9,11 +9,11 @@ import { Badge } from "@/components/ui/badge";
 import { useCategoryByName } from "@/hooks/use-categories";
 
 interface CategoryPageClientProps {
-  /** Promise containing the dynamic route parameters */
-  params: Promise<{
+  /** Route params provided by Next.js */
+  params: {
     /** The category name from the URL path */
     category: string;
-  }>;
+  };
 }
 
 /**
@@ -30,10 +30,7 @@ interface CategoryPageClientProps {
  * <CategoryPageClient params={Promise.resolve({ category: "workflows" })} />
  */
 export default function CategoryPageClient({ params }: CategoryPageClientProps) {
-  // Unwrap the params promise using React's use() hook (Next.js 15 behavior)
-  // This allows the component to work with streaming and concurrent features
-  const resolvedParams = use(params);
-  const categoryName = resolvedParams?.category;
+  const categoryName = params?.category;
 
   // Fetch category data by name from PostgreSQL database via React Query
   const { data: category, isLoading, isError } = useCategoryByName(categoryName ?? "");

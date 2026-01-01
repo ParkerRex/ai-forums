@@ -63,8 +63,8 @@ async function createComment(postId: string, data: CreateCommentData): Promise<C
 
 async function voteOnComment(
   commentId: string,
-  voteType: "upvote" | "downvote",
-): Promise<{ upvotes: number; downvotes: number; netVotes: number }> {
+  voteType: "upvote" | "downvote" | "remove",
+): Promise<{ upvotes: number; downvotes: number; netVotes: number; newVoteType?: string | null }> {
   const response = await fetch(`/api/comments/${commentId}/vote`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -107,7 +107,7 @@ export function useVoteOnComment() {
     }: {
       commentId: string;
       voteType: "upvote" | "downvote" | "remove";
-    }) => voteOnComment(commentId, voteType as "upvote" | "downvote"),
+    }) => voteOnComment(commentId, voteType),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: queryKeys.comments.all });
     },

@@ -1,3 +1,4 @@
+import crypto from "node:crypto";
 import { eq } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { type NextRequest, NextResponse } from "next/server";
@@ -5,10 +6,27 @@ import Stripe from "stripe";
 import { db } from "@/db";
 import { members } from "@/db/schema";
 
+const GUEST_SESSION_COOKIE = "guest-session";
+
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY || "", {
     apiVersion: "2025-08-27.basil",
   });
+}
+
+function signPayload(payload: string): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    throw new Error("SESSION_SECRET is not set");
+  }
+
+  return crypto.createHmac("sha256", secret).update(payload).digest("base64url");
+}
+
+function encodeGuestSession(session: { email: string; memberId: string; expiresAt: number }): string {
+  const payload = Buffer.from(JSON.stringify(session)).toString("base64url");
+  const signature = signPayload(payload);
+  return `${payload}.${signature}`;
 }
 
 /**
@@ -50,13 +68,16 @@ export async function POST(request: NextRequest) {
 
     // Set a secure HTTP-only cookie with the guest session
     const cookieStore = await cookies();
+    const expiresAt = Date.now() + 30 * 24 * 60 * 60 * 1000;
+    const cookieValue = encodeGuestSession({
+      email,
+      memberId: member[0].id,
+      expiresAt,
+    });
+
     cookieStore.set({
-      name: "guest-session",
-      value: JSON.stringify({
-        email,
-        memberId: member[0].id,
-        expiresAt: Date.now() + 30 * 24 * 60 * 60 * 1000, // 30 days
-      }),
+      name: GUEST_SESSION_COOKIE,
+      value: cookieValue,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
@@ -76,7 +97,7 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE() {
   const cookieStore = await cookies();
-  cookieStore.delete("guest-session");
+  cookieStore.delete(GUEST_SESSION_COOKIE);
 
   return NextResponse.json({ success: true });
 }

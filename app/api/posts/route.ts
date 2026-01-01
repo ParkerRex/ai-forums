@@ -63,14 +63,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const categoryId = searchParams.get("categoryId") ?? undefined;
     const slug = searchParams.get("slug") ?? undefined;
-    const sortBy = (searchParams.get("sortBy") as "newest" | "popular") || "newest";
+    const sortBy =
+      (searchParams.get("sortBy") as "newest" | "popular" | "trending") || "newest";
     const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50);
+    const cursor = searchParams.get("cursor") ?? undefined;
+    const freeOnly = searchParams.get("freeOnly") === "true";
 
     const result = await postRepository.findMany({
       categoryId,
       slug,
       sortBy,
       limit,
+      cursor,
+      freeOnly,
     });
 
     return NextResponse.json({

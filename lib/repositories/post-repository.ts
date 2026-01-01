@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, members, posts, postVersions } from "@/db/schema";
 import type { PostAttachment, PollOption } from "@/db/schema/posts";
@@ -14,10 +14,11 @@ import type { PostAttachment, PollOption } from "@/db/schema/posts";
 export interface PostQueryOptions {
   categoryId?: string;
   slug?: string;
-  sortBy?: "newest" | "popular";
+  sortBy?: "newest" | "popular" | "trending";
   limit?: number;
   cursor?: string;
   status?: string;
+  freeOnly?: boolean;
 }
 
 export interface CreatePostInput {
@@ -129,11 +130,61 @@ export const postRepository = {
   async findMany(
     options: PostQueryOptions = {}
   ): Promise<{ items: PostWithRelations[]; nextCursor: string | null; hasMore: boolean }> {
-    const { categoryId, slug, sortBy = "newest", limit = 20, status = "active" } = options;
+    const {
+      categoryId,
+      slug,
+      sortBy = "newest",
+      limit = 20,
+      status = "active",
+      cursor,
+      freeOnly = false,
+    } = options;
 
     const conditions = [eq(posts.status, status)];
     if (categoryId) conditions.push(eq(posts.categoryId, categoryId));
     if (slug) conditions.push(eq(posts.slug, slug));
+    if (freeOnly) conditions.push(eq(posts.isFree, true));
+
+    if (cursor) {
+      const [cursorPost] = await db
+        .select({
+          id: posts.id,
+          createdAt: posts.createdAt,
+          netVotes: posts.netVotes,
+        })
+        .from(posts)
+        .where(eq(posts.id, cursor))
+        .limit(1);
+
+      if (cursorPost) {
+        if (sortBy === "popular" || sortBy === "trending") {
+          conditions.push(
+            or(
+              lt(posts.netVotes, cursorPost.netVotes),
+              and(
+                eq(posts.netVotes, cursorPost.netVotes),
+                lt(posts.createdAt, cursorPost.createdAt),
+              ),
+              and(
+                eq(posts.netVotes, cursorPost.netVotes),
+                eq(posts.createdAt, cursorPost.createdAt),
+                lt(posts.id, cursorPost.id),
+              ),
+            ),
+          );
+        } else {
+          conditions.push(
+            or(
+              lt(posts.createdAt, cursorPost.createdAt),
+              and(
+                eq(posts.createdAt, cursorPost.createdAt),
+                lt(posts.id, cursorPost.id),
+              ),
+            ),
+          );
+        }
+      }
+    }
 
     const query = db
       .select({
@@ -157,7 +208,7 @@ export const postRepository = {
       .innerJoin(categories, eq(posts.categoryId, categories.id))
       .where(and(...conditions));
 
-    const result = await (sortBy === "popular"
+    const result = await (sortBy === "popular" || sortBy === "trending"
       ? query.orderBy(desc(posts.netVotes), desc(posts.createdAt)).limit(limit + 1)
       : query.orderBy(desc(posts.createdAt)).limit(limit + 1));
 

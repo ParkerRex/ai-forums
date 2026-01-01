@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { members } from "@/db/schema/members";
@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
     const voters = votersResult.slice(0, limit);
 
     // Get total count
-    const totalResult = await db
-      .select({ count: votes.id })
+    const [totalResult] = await db
+      .select({ count: sql<number>`count(*)` })
       .from(votes)
       .where(
         and(
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
         ),
       );
 
-    const total = totalResult.length;
+    const total = Number(totalResult?.count ?? 0);
 
     return NextResponse.json({
       voters: voters.map((v) => ({

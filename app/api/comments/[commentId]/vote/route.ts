@@ -6,7 +6,7 @@ import { comments, members, votes } from "@/db/schema";
 import { getCurrentMember } from "@/lib/auth";
 
 const voteSchema = z.object({
-  voteType: z.enum(["upvote", "downvote"]),
+  voteType: z.enum(["upvote", "downvote", "remove"]),
 });
 
 type RouteParams = {
@@ -56,10 +56,12 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     let downvoteDelta = 0;
 
     if (existingVote) {
-      if (existingVote.voteType === voteType) {
+      if (voteType === "remove" || existingVote.voteType === voteType) {
         // Remove vote
         await db.delete(votes).where(eq(votes.id, existingVote.id));
         if (voteType === "upvote") upvoteDelta = -1;
+        else if (voteType === "downvote") downvoteDelta = -1;
+        else if (existingVote.voteType === "upvote") upvoteDelta = -1;
         else downvoteDelta = -1;
       } else {
         // Change vote
@@ -76,15 +78,17 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         }
       }
     } else {
-      // Create new vote
-      await db.insert(votes).values({
-        userId: member.id,
-        targetId: commentId,
-        targetType: "comment",
-        voteType,
-      });
-      if (voteType === "upvote") upvoteDelta = 1;
-      else downvoteDelta = 1;
+      if (voteType !== "remove") {
+        // Create new vote
+        await db.insert(votes).values({
+          userId: member.id,
+          targetId: commentId,
+          targetType: "comment",
+          voteType,
+        });
+        if (voteType === "upvote") upvoteDelta = 1;
+        else downvoteDelta = 1;
+      }
     }
 
     // Update comment vote counts
@@ -110,11 +114,19 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       })
       .where(eq(members.id, comment.memberId));
 
+    const newVoteType =
+      voteType === "remove"
+        ? null
+        : existingVote?.voteType === voteType
+          ? null
+          : voteType;
+
     return NextResponse.json({
       upvotes: updatedComment.upvotes,
       downvotes: updatedComment.downvotes,
       netVotes: updatedComment.netVotes,
-      userVote: existingVote?.voteType === voteType ? null : voteType,
+      userVote: newVoteType,
+      newVoteType,
     });
   } catch (error) {
     console.error("Vote error:", error);
