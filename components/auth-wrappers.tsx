@@ -9,7 +9,6 @@ interface AuthWrapperProps {
 
 /**
  * Renders children only when user is authenticated.
- * Replacement for Convex's Authenticated component.
  */
 export function Authenticated({ children }: AuthWrapperProps) {
   const { user, isLoading } = useAuth();
@@ -23,7 +22,6 @@ export function Authenticated({ children }: AuthWrapperProps) {
 
 /**
  * Renders children only when user is NOT authenticated.
- * Replacement for Convex's Unauthenticated component.
  */
 export function Unauthenticated({ children }: AuthWrapperProps) {
   const { user, isLoading } = useAuth();

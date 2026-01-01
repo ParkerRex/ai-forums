@@ -12,7 +12,6 @@ export async function GET() {
     environment: process.env.NODE_ENV,
     hasStripeSecret: !!process.env.STRIPE_SECRET_KEY,
     hasWebhookSecret: !!process.env.STRIPE_WEBHOOK_SECRET,
-    convexUrl: process.env.NEXT_PUBLIC_CONVEX_URL,
   });
 }
 

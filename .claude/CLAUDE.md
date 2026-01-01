@@ -6,10 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Core Development
 ```bash
-npm run dev              # Start both frontend (Next.js) and backend (Convex) in parallel
-npm run dev:frontend     # Start only Next.js dev server
-npm run dev:backend      # Start only Convex dev server
-npm run predev           # Run Convex dev until success (runs automatically before dev)
+npm run dev              # Start Next.js dev server
+npm run ws:server        # Start WebSocket server for real-time features
+npm run docker:up        # Start PostgreSQL and Redis containers
+npm run docker:down      # Stop containers
 ```
 
 ### Quality Assurance Sequence
@@ -18,6 +18,14 @@ After completing work, run in this order:
 npm run test             # Run Bun tests
 npm run lint             # Biome - loop until fixed
 npx tsc --noEmit         # Type check after lint passes
+```
+
+### Database Commands
+```bash
+npm run db:generate      # Generate Drizzle migrations
+npm run db:migrate       # Run migrations
+npm run db:push          # Push schema changes directly
+npm run db:studio        # Open Drizzle Studio GUI
 ```
 
 ### Additional Commands
@@ -31,8 +39,11 @@ npm run lint:theme       # Audit theme consistency
 
 ### Tech Stack
 - **Frontend**: Next.js 15 (App Router) + React 19 + TypeScript
-- **Backend**: Convex (real-time database + serverless functions)
-- **Auth**: Clerk
+- **Backend**: Drizzle ORM + PostgreSQL + API Route Handlers
+- **Auth**: Custom session-based auth (bcrypt + cookies)
+- **Data Fetching**: TanStack Query (React Query)
+- **Real-time**: WebSocket server + Redis pub/sub
+- **Job Queue**: BullMQ + Redis
 - **Payments**: Stripe (5-tier membership: founding_member, early_bird, member, scholarship)
 - **Storage**: Cloudflare R2 (S3-compatible)
 - **UI**: Tailwind CSS + shadcn/ui (Radix primitives)
@@ -42,28 +53,27 @@ npm run lint:theme       # Audit theme consistency
 ### Project Structure
 ```
 ├── app/                 # Next.js App Router pages
+│   ├── api/             # API route handlers
 │   ├── [category]/      # Category-based posts
 │   ├── admin/           # Admin dashboard
 │   ├── blog/            # Marketing blog (MDX)
 │   ├── members/         # Member profiles & directory
 │   ├── membership/      # Subscription management
 │   └── pricing/         # Pricing & checkout
-├── convex/              # Convex backend (queries, mutations, actions)
-│   ├── schema.ts        # Database schema definition
-│   ├── auth.ts          # Authentication logic
-│   ├── posts.ts         # Post CRUD operations
-│   ├── comments.ts      # Comment system with threading
-│   ├── payments.ts      # Stripe integration
-│   └── crons/           # Scheduled jobs
+├── db/                  # Database configuration
+│   ├── schema/          # Drizzle schema definitions
+│   ├── migrations/      # SQL migrations
+│   ├── index.ts         # Database client export
+│   └── drizzle.config.ts
 ├── components/          # React components (shadcn/ui based)
 ├── features/            # Feature-specific modules
 │   └── news/            # News aggregation feature
 ├── lib/                 # Utility functions & helpers
-├── hooks/               # Custom React hooks
+├── hooks/               # Custom React hooks (TanStack Query)
 └── content/             # MDX blog content
 ```
 
-## Database Architecture (Convex)
+## Database Architecture (Drizzle + PostgreSQL)
 
 ### Core Tables
 - **members**: User profiles, auth data, subscription status, cached metrics
@@ -72,58 +82,75 @@ npm run lint:theme       # Audit theme consistency
 - **categories**: Post organization (active/inactive/private states)
 - **votes**: Upvote/downvote tracking for posts, comments, resources
 - **bookmarks**: Personal content curation
-- **notifications**: Real-time user engagement alerts
+- **notifications**: User engagement alerts
 - **resources**: Educational content library with topics
 - **events**: Community event management with RSVP
 - **subscriptions**: Stripe subscription lifecycle tracking
 - **payments**: Transaction history and payment records
 
 ### Key Design Patterns
-- **Real-time by default**: All queries are reactive via Convex
-- **Optimistic updates**: UI updates before server confirmation
+- **API Route Handlers**: All data operations go through `/app/api/` routes
+- **TanStack Query**: Client-side data fetching with caching and revalidation
+- **Optimistic updates**: UI updates before server confirmation via TanStack Query
 - **Cached aggregations**: Post/comment counts stored on parent entities
 - **Soft deletes**: Status fields instead of hard deletes (active/deleted/hidden)
-- **Multi-index queries**: Efficient filtering by status, date, votes, etc.
-- **Full-text search**: Search indexes on posts, comments, members, categories
+- **Database indexes**: Efficient filtering by status, date, votes, etc.
 
-## Convex Development Guidelines
+## Drizzle Development Guidelines
 
-### Function Types
-- Use new function syntax with explicit args/returns validators
-- **Public functions**: `query`, `mutation`, `action` (exposed to client)
-- **Internal functions**: `internalQuery`, `internalMutation`, `internalAction` (server-only)
-- Always include `returns` validator (use `v.null()` if no return value)
+### Schema Definition
+- Define schemas in `db/schema/` directory
+- Use `pgTable()` to define tables
+- Use proper column types: `text()`, `integer()`, `boolean()`, `timestamp()`, `jsonb()`
+- Define relations using `relations()` helper
 
-### Database Queries
-- **DO NOT** use `.filter()` - define indexes in schema and use `.withIndex()`
-- Use `.unique()` for single document queries (throws on multiple matches)
-- Use `.order('desc')` or `.order('asc')` for sorting
-- Use `.take(n)` to limit results or `paginate()` for pagination
-- For deletion: `.collect()` then iterate with `ctx.db.delete(row._id)`
+### Query Patterns
+```typescript
+import { db } from "@/db";
+import { posts, members } from "@/db/schema";
+import { eq, and, desc } from "drizzle-orm";
 
-### Best Practices
-- Index fields must be queried in definition order
-- System fields `_id` and `_creationTime` auto-added to all documents
-- Use `Id<'tableName'>` TypeScript type for document IDs
-- Validators: `v.id('tableName')`, `v.string()`, `v.number()`, `v.boolean()`, `v.array()`, `v.object()`, `v.union()`, `v.optional()`, `v.null()`
-- HTTP endpoints in `convex/http.ts` use `httpAction` with `httpRouter`
-- Cron jobs in `convex/crons.ts` use `cronJobs()` with `interval()` or `cron()` methods
+// Simple query
+const post = await db.query.posts.findFirst({
+  where: eq(posts.id, postId),
+  with: { author: true }
+});
 
-### Convex MCP Integration
-Use Convex MCP tools for database work:
-- `status`: Query available deployments
-- `tables`: List table schemas (declared + inferred)
-- `data`: Paginate through table documents
-- `runOneoffQuery`: Write sandboxed queries for data exploration
-- `functionSpec`: View all deployed functions with types
-- `run`: Execute deployed functions
-- `envList/envGet/envSet/envRemove`: Manage environment variables
+// Complex query with joins
+const results = await db
+  .select()
+  .from(posts)
+  .leftJoin(members, eq(posts.authorId, members.id))
+  .where(and(eq(posts.status, 'active'), eq(posts.categoryId, categoryId)))
+  .orderBy(desc(posts.createdAt))
+  .limit(20);
+```
+
+### API Route Pattern
+```typescript
+// app/api/posts/route.ts
+import { db } from "@/db";
+import { posts } from "@/db/schema";
+import { getSession } from "@/lib/auth";
+
+export async function GET(request: Request) {
+  const session = await getSession();
+  const data = await db.query.posts.findMany({ ... });
+  return Response.json(data);
+}
+
+export async function POST(request: Request) {
+  const session = await getSession();
+  if (!session) return Response.json({ error: "Unauthorized" }, { status: 401 });
+  // ... create post
+}
+```
 
 ## Error Handling Strategy
 
 ### Query Errors (Deterministic)
 - Wrap with React Error Boundaries (`PageErrorBoundary`, `QueryErrorBoundary`)
-- Provide page reload option (queries always fail with same args)
+- Provide page reload option
 - Never retry automatically
 
 ### Mutation Errors (Non-Deterministic)
@@ -140,7 +167,7 @@ Use Convex MCP tools for database work:
 - Process errors through `lib/error-utils.ts`
 
 ### Error Classification (lib/error-utils.ts)
-- **ConvexError**: Structured application errors with `error.data`
+- **API Error**: Structured application errors from API routes
 - **Network Error**: Connectivity, timeouts, fetch failures
 - **Server Error**: Backend/database errors
 - **Unknown Error**: Generic fallback
@@ -173,13 +200,13 @@ Use Convex MCP tools for database work:
 4. **scholarship**: Free tier via Stripe coupons (no separate "free" tier)
 
 ### Payment Flow
-- Checkout creates Stripe session → redirects to Stripe → webhook updates DB
+- Checkout creates Stripe session -> redirects to Stripe -> webhook updates DB
 - Subscription status tracked in both `members` and `subscriptions` tables
 - Payment history in `payments` table with transaction details
-- Webhook events tracked in `stripeWebhookEvents` for idempotency
+- Webhook events tracked in `stripe_webhook_events` for idempotency
 
 ### Important Files
-- `convex/payments.ts`: Stripe integration logic
+- `app/api/stripe/`: Stripe API routes (checkout, webhook, portal)
 - `lib/payment-error-utils.ts`: Payment error handling
 - `app/membership/`: Subscription management UI
 
@@ -210,12 +237,19 @@ Use Convex MCP tools for database work:
 
 ## Authentication & Authorization
 
-### Clerk Integration
-- `externalId` field in members table stores Clerk user ID
-- Middleware in `middleware.ts` handles auth
-- Public routes: blog, pricing, about
+### Custom Auth System
+- Session-based authentication with secure cookies (`vai_session`)
+- Password hashing with bcrypt
+- Session storage in Redis for fast lookups
+- Middleware in `middleware.ts` handles route protection
+- Public routes: blog, pricing, about, sign-in, sign-up
 - Protected routes: everything else
 - Admin role check via `role` field in members table
+
+### Auth Utilities
+- `lib/auth.ts`: Session management (getSession, createSession, destroySession)
+- `hooks/use-current-member.ts`: React hook for current user
+- `components/providers/auth-provider.tsx`: Auth context provider
 
 ### Member Status
 - **active**: Paying or engaged member
@@ -227,7 +261,6 @@ Use Convex MCP tools for database work:
 
 ### Unit Tests (Bun)
 - Test files with `.test.ts` or `.test.tsx` extension
-- Convex functions testable with `convex-test`
 - Run with `bun test`
 - Bun provides built-in test runner with Jest-compatible API
 
@@ -236,8 +269,7 @@ Use Convex MCP tools for database work:
 ### News Aggregation
 - Feature in `features/news/`
 - Aggregates from GitHub repos, RSS feeds, Discord
-- Cached in `newsFeedCache` table
-- Discord digest in `discordDigest` table (daily archive)
+- Cached in database
 - User preferences in `members.newsPreferences`
 
 ### Blog System
@@ -258,18 +290,17 @@ Use Convex MCP tools for database work:
 Full-featured agent for automating Skool.com interactions using cookie-based authentication:
 
 **Capabilities:**
-- ✅ Content Management: Create, edit, delete posts
-- ✅ Engagement: Like/unlike posts, comment, reply
-- ✅ Social: Send DMs, follow/unfollow users
-- ✅ Discovery: Search posts/users, get notifications
-- ✅ Monitoring: Track agent stats and activity
-- ✅ Integrations: GitHub webhooks, Discord automation
+- Content Management: Create, edit, delete posts
+- Engagement: Like/unlike posts, comment, reply
+- Social: Send DMs, follow/unfollow users
+- Discovery: Search posts/users, get notifications
+- Monitoring: Track agent stats and activity
+- Integrations: GitHub webhooks, Discord automation
 
 **Core Files:**
 - `lib/skool-agent.ts`: Complete automation agent class
 - `lib/skool-poster.ts`: Core posting + rate limiting
-- `convex/skoolAutomation.ts`: Convex actions
-- `convex/githubWebhooks.ts`: GitHub webhook handlers
+- `app/api/skool/`: Skool automation API routes
 - `scripts/skool-api-discover.ts`: Interactive API discovery tool
 - `docs/SKOOL_API_SPEC.md`: Complete API specification
 - `docs/SKOOL_POSTING_GUIDE.md`: Technical guide
@@ -310,26 +341,23 @@ const stats = agent.getStats();
 1. Run `bun scripts/skool-api-discover.ts` for complete API mapping
 2. Extract cookies from browser DevTools
 3. Add to `.env.local`: `SKOOL_AUTH_TOKEN`, `SKOOL_CLIENT_ID`, etc.
-4. Test: `api.skoolAutomation.testPost()` in Convex dashboard
-5. Setup webhooks: `/github/release` for automation
+4. Test via the Skool API routes
+5. Setup webhooks: `/api/github/release` for automation
 
 **Rate Limiting:**
 - Posts: 60/hour, Likes: 120/hour, Comments: 80/hour
 - DMs: 30/hour, Follows: 50/hour
 - Automatic enforcement in `SkoolRateLimiter`
-- Monitor: `api.skoolAutomation.getRateLimitStatus()`
 
 **Integration Points:**
-- GitHub releases → Auto-post to Skool
-- Discord messages (5+ reactions) → Share to Skool
-- Custom triggers via Convex actions
+- GitHub releases -> Auto-post to Skool
+- Discord messages (5+ reactions) -> Share to Skool
+- Custom triggers via API routes
 
 ## Important Notes
 
 - **No sleep commands**: Never use `sleep` command (will sleep laptop)
 - **Use bun for execution**: Always use bun, not npm/pnpm for running scripts
-- **Convex dev must succeed**: `predev` script ensures Convex is ready before frontend starts
-- **Real-time updates**: Most UI automatically updates via Convex subscriptions
-- **Optimistic UI**: Many mutations update UI immediately before server confirmation
+- **Docker required**: PostgreSQL and Redis run in Docker containers
 - **Type safety**: TypeScript strict mode enabled, must pass `npx tsc --noEmit`
 - **Skool tokens**: Check expiration regularly, refresh before 7 days remaining

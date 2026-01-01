@@ -67,7 +67,7 @@ export async function fetchItems(source: NewsSource): Promise<RawItem[]> {
 }
 
 /**
- * Fetches Discord digest from database archive via Convex API
+ * Fetches Discord digest from database archive via API
  */
 async function fetchDiscordDigestFromArchive(args: {
   guildId: string;
@@ -105,7 +105,7 @@ async function fetchDiscordDigestFromArchive(args: {
 
 /**
  * Fetches Discord messages using the Discord API (PRESERVED for scheduled processing)
- * This function will be moved to the scheduled processing in convex/discord.ts
+ * This function will be moved to a scheduled job
  */
 async function _fetchDiscordMessages(args: {
   guildId: string;

@@ -18,7 +18,6 @@ interface ErrorBoundaryState {
 
 /**
  * React Error Boundary component for catching errors in component trees
- * Recommended by Convex for handling query errors
  */
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
