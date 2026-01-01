@@ -63,13 +63,13 @@ interface CommentSectionProps {
 }
 
 type CommentWithReplies = {
-  _id: string;
+  id: string;
   content: string;
   createdAt: number;
   upvotes: number;
   netVotes: number;
   member: {
-    _id: string;
+    id: string;
     firstName: string;
     lastName: string;
     email: string;
@@ -188,7 +188,7 @@ function CommentItem({
 
     try {
       await voteOnCommentMutation.mutateAsync({
-        commentId: comment._id,
+        commentId: comment.id,
         voteType,
       });
     } catch (error) {
@@ -217,7 +217,7 @@ function CommentItem({
   return (
     <CommentThreadContainer depth={comment.depth} isLastChild={isLastChild} className="space-y-3">
       <motion.div
-        id={`comment-${comment._id}`}
+        id={`comment-${comment.id}`}
         className="py-4 transition-all duration-300"
         variants={highlightVariants}
         initial={isNewlyCreated ? "initial" : false}
@@ -244,7 +244,7 @@ function CommentItem({
                     <Link
                       href={memberProfileUrl({
                         slug: comment.member.slug,
-                        _id: comment.member._id,
+                        _id: comment.member.id,
                       })}
                       className="text-foreground font-medium hover:underline"
                       data-testid="member-link"
@@ -285,7 +285,7 @@ function CommentItem({
                   onSubmit={async (content, attachments) => {
                     try {
                       // Use the edit comment mutation from the hook
-                      const response = await fetch(`/api/comments/${comment._id}`, {
+                      const response = await fetch(`/api/comments/${comment.id}`, {
                         method: "PATCH",
                         headers: { "Content-Type": "application/json" },
                         body: JSON.stringify({ content: content.trim(), attachments }),
@@ -368,7 +368,7 @@ function CommentItem({
             <div className="-ml-1 mt-1 flex items-center space-x-3">
               {/* Vote Button - First */}
               <VoteButton
-                targetId={comment._id}
+                targetId={comment.id}
                 targetType="comment"
                 voteCount={optimisticNetVotes}
                 isVoted={currentUserVote === "upvote"}
@@ -383,7 +383,7 @@ function CommentItem({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onReply(comment._id)}
+                  onClick={() => onReply(comment.id)}
                   className="text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 group h-auto cursor-pointer px-2 py-1 text-xs"
                   onMouseEnter={() => replyIconRef.current?.startAnimation()}
                   onMouseLeave={() => replyIconRef.current?.stopAnimation()}
@@ -403,7 +403,7 @@ function CommentItem({
                 size="sm"
                 className="text-muted-foreground hover:text-foreground hover:bg-accent dark:hover:bg-accent/30 group h-auto cursor-pointer px-2 py-1 text-xs"
                 onClick={async () => {
-                  const commentUrl = `${window.location.origin}${window.location.pathname}?commentId=${comment._id}`;
+                  const commentUrl = `${window.location.origin}${window.location.pathname}?commentId=${comment.id}`;
                   try {
                     await navigator.clipboard.writeText(commentUrl);
                     toast.success("Comment link copied!");
@@ -440,8 +440,8 @@ function CommentItem({
               {comment.member && (
                 <Authenticated>
                   <CommentActionsMenu
-                    commentId={comment._id}
-                    authorId={comment.member._id}
+                    commentId={comment.id}
+                    authorId={comment.member.id}
                     postSlug={postSlug}
                     categoryName={categoryName}
                     onEditClick={() => setIsEditing(true)}
@@ -455,12 +455,12 @@ function CommentItem({
         </div>
 
         {/* Reply form */}
-        {replyingTo === comment._id && (
+        {replyingTo === comment.id && (
           <div className="ml-11 mt-4 space-y-3">
             <EnhancedCommentInput
               placeholder={`Reply to ${comment.member?.firstName || "this comment"}...`}
               onSubmit={(content, attachments, linkPreviews, mentions) =>
-                onSubmitReply(comment._id, content, attachments, linkPreviews, mentions)
+                onSubmitReply(comment.id, content, attachments, linkPreviews, mentions)
               }
               isSubmitting={isSubmittingReply}
               className="mb-3"
@@ -475,7 +475,7 @@ function CommentItem({
       {/* Nested replies */}
       {hasReplies && isExpanded && (
         <ReplyDragContext
-          parentCommentId={comment._id}
+          parentCommentId={comment.id}
           replies={comment.replies}
           onReply={onReply}
           replyingTo={replyingTo}
@@ -539,7 +539,7 @@ function ReplyDragContext({
     const { active, over } = event;
 
     if (active.id !== over?.id) {
-      const newIndex = replies.findIndex((reply) => reply._id === over?.id);
+      const newIndex = replies.findIndex((reply) => reply.id === over?.id);
 
       try {
         await reorderRepliesMutation.mutateAsync({
@@ -554,26 +554,26 @@ function ReplyDragContext({
   };
 
   const canReorder =
-    currentMember && (isAdmin || replies.some((r) => r.member?._id === currentMember.id));
+    currentMember && (isAdmin || replies.some((r) => r.member?.id === currentMember.id));
 
   if (!canReorder) {
     return (
       <div className="space-y-3">
         {replies.map((reply, index) => (
           <CommentItem
-            key={reply._id}
+            key={reply.id}
             comment={reply}
             onReply={onReply}
             replyingTo={replyingTo}
             onSubmitReply={onSubmitReply}
             isSubmittingReply={isSubmittingReply}
-            isNewlyCreated={newlyCreatedCommentIds?.has(reply._id) || false}
+            isNewlyCreated={newlyCreatedCommentIds?.has(reply.id) || false}
             newlyCreatedCommentIds={newlyCreatedCommentIds}
             postSlug={postSlug}
             categoryName={categoryName}
             isAdmin={isAdmin}
             isLastChild={isLastChildComment(index, replies.length)}
-            userVote={userVotes[reply._id] || null}
+            userVote={userVotes[reply.id] || null}
           />
         ))}
       </div>
@@ -582,23 +582,23 @@ function ReplyDragContext({
 
   return (
     <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-      <SortableContext items={replies.map((r) => r._id)} strategy={verticalListSortingStrategy}>
+      <SortableContext items={replies.map((r) => r.id)} strategy={verticalListSortingStrategy}>
         <div className="space-y-3">
           {replies.map((reply, index) => (
-            <SortableCommentItem key={reply._id} comment={reply} disabled={!canReorder}>
+            <SortableCommentItem key={reply.id} comment={reply} disabled={!canReorder}>
               <CommentItem
                 comment={reply}
                 onReply={onReply}
                 replyingTo={replyingTo}
                 onSubmitReply={onSubmitReply}
                 isSubmittingReply={isSubmittingReply}
-                isNewlyCreated={newlyCreatedCommentIds?.has(reply._id) || false}
+                isNewlyCreated={newlyCreatedCommentIds?.has(reply.id) || false}
                 newlyCreatedCommentIds={newlyCreatedCommentIds}
                 postSlug={postSlug}
                 categoryName={categoryName}
                 isAdmin={isAdmin}
                 isLastChild={isLastChildComment(index, replies.length)}
-                userVote={userVotes[reply._id] || null}
+                userVote={userVotes[reply.id] || null}
               />
             </SortableCommentItem>
           ))}
@@ -625,13 +625,13 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
 
   // Transform the flat comments response into a nested structure
   const comments = commentsData?.items?.map((c: any) => ({
-    _id: c.id,
+    id: c.id,
     content: c.content,
     createdAt: new Date(c.createdAt).getTime(),
     upvotes: c.upvotes || 0,
     netVotes: c.netVotes || 0,
     member: c.member ? {
-      _id: c.member.id,
+      id: c.member.id,
       firstName: c.member.firstName,
       lastName: c.member.lastName,
       email: "",
@@ -658,7 +658,7 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
     const ids: string[] = [];
     const traverse = (commentList: CommentWithReplies[]) => {
       for (const comment of commentList) {
-        ids.push(comment._id);
+        ids.push(comment.id);
         if (comment.replies && comment.replies.length > 0) {
           traverse(comment.replies);
         }
@@ -903,19 +903,19 @@ export default function CommentSection({ postId, targetCommentId }: CommentSecti
             <div className="space-y-4">
               {comments?.map((comment: CommentWithReplies, index: number) => (
                 <CommentItem
-                  key={comment._id}
+                  key={comment.id}
                   comment={comment}
                   onReply={handleReply}
                   replyingTo={replyingTo}
                   onSubmitReply={handleSubmitReply}
                   isSubmittingReply={isSubmittingReply}
-                  isNewlyCreated={newlyCreatedCommentIds.has(comment._id)}
+                  isNewlyCreated={newlyCreatedCommentIds.has(comment.id)}
                   newlyCreatedCommentIds={newlyCreatedCommentIds}
                   postSlug={postSlug}
                   categoryName={categoryName}
                   isAdmin={isAdmin}
                   isLastChild={isLastChildComment(index, comments?.length || 0)}
-                  userVote={userVotes[comment._id] || null}
+                  userVote={userVotes[comment.id] || null}
                   userVotes={userVotes}
                 />
               ))}

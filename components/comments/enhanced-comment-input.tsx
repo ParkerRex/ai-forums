@@ -113,7 +113,7 @@ export function EnhancedCommentInput({
   });
 
   const memberResults = (membersData?.items || []).map((m) => ({
-    _id: m.id,
+    id: m.id,
     firstName: m.firstName,
     lastName: m.lastName,
     slug: m.slug,
@@ -262,13 +262,13 @@ export function EnhancedCommentInput({
   );
 
   const handleMentionSelect = useCallback(
-    (member: { _id: string; firstName: string; lastName: string; slug: string }) => {
+    (member: { id: string; firstName: string; lastName: string; slug: string }) => {
       const beforeMention = content.slice(0, mentionStartIndex);
       const afterMention = content.slice(mentionStartIndex + mentionSearchTerm.length + 1);
       const newContent = `${beforeMention}@${member.slug} ${afterMention}`;
 
       setContent(newContent);
-      setMentions((prev) => [...prev, member._id]);
+      setMentions((prev) => [...prev, member.id]);
       setShowMentionAutocomplete(false);
       setMentionSearchTerm("");
       setMentionStartIndex(-1);

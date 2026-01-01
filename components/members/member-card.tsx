@@ -93,7 +93,7 @@ export default function MemberCard({ member }: MemberCardProps) {
   // Generate member profile URL using slug
   const memberUrl = memberProfileUrl({
     slug: member.slug!,
-    _id: member.id,
+    id: member.id,
   });
 
   return (

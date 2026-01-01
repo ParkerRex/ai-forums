@@ -196,7 +196,7 @@ export default function MembersDisplay({ members, isLoading }: MembersDisplayPro
                 const initials = `${member.firstName[0]}${member.lastName[0]}`.toUpperCase();
                 const memberUrl = memberProfileUrl({
                   slug: member.slug!,
-                  _id: member.id,
+                  id: member.id,
                 });
 
                 return (
@@ -215,7 +215,7 @@ export default function MembersDisplay({ members, isLoading }: MembersDisplayPro
                       <div className="flex items-center gap-3">
                         <MemberHoverCardWrapper
                           member={{
-                            _id: member.id,
+                            id: member.id,
                             firstName: member.firstName,
                             lastName: member.lastName,
                             slug: member.slug,

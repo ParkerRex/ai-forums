@@ -10,7 +10,7 @@ import {
 import MemberEditForm from "./member-edit-form";
 
 interface Member {
-  _id: string;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;

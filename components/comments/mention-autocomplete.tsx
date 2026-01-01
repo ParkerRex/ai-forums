@@ -5,13 +5,13 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface MentionAutocompleteProps {
   items: Array<{
-    _id: string;
+    id: string;
     firstName: string;
     lastName: string;
     slug: string;
   }>;
   onSelect: (member: {
-    _id: string;
+    id: string;
     firstName: string;
     lastName: string;
     slug: string;
@@ -90,7 +90,7 @@ export function MentionAutocomplete({ items, onSelect, onClose }: MentionAutocom
       <div className="max-h-64 overflow-y-auto">
         {items.map((member, index) => (
           <div
-            key={member._id}
+            key={member.id}
             className={`flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-accent ${
               index === selectedIndex ? "bg-accent" : ""
             }`}

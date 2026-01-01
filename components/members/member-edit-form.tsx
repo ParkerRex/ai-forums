@@ -13,7 +13,7 @@ import { useMutationError } from "@/hooks/use-mutation-error";
 import { useNetworkStatus } from "@/hooks/use-network-status";
 
 interface Member {
-  _id: string;
+  id: string;
   firstName: string;
   lastName: string;
   email: string;
@@ -129,14 +129,14 @@ export default function MemberEditForm({ member, onSuccess, onCancel }: MemberEd
     };
 
     try {
-      await updateMemberMutation.mutateAsync({ memberId: member._id, data: updateData });
+      await updateMemberMutation.mutateAsync({ memberId: member.id, data: updateData });
       handleMutationSuccess("Profile updated successfully!");
       onSuccess();
     } catch (error) {
       handleMutationError(
         error,
         async () => {
-          await updateMemberMutation.mutateAsync({ memberId: member._id, data: updateData });
+          await updateMemberMutation.mutateAsync({ memberId: member.id, data: updateData });
         },
         {
           context: "updating profile",

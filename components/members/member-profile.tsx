@@ -60,7 +60,7 @@ export default function MemberProfile({ member }: MemberProfileProps) {
 
   // Transform member data for the edit modal
   const memberForEdit = {
-    _id: member.id,
+    id: member.id,
     firstName: member.firstName,
     lastName: member.lastName,
     email: member.email,
