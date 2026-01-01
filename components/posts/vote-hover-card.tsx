@@ -32,10 +32,10 @@ export const VoteHoverCard: React.FC<VoteHoverCardProps> = ({ postId, voteCount,
 								if (!voter) return null;
 								return (
 									<Link
-										key={voter._id}
+										key={voter.id}
 										href={memberProfileUrl({
 											slug: voter.slug,
-											_id: voter._id,
+											id: voter.id,
 										})}
 										className="flex items-center space-x-2 hover:bg-muted/50 rounded p-1 -m-1 transition-colors"
 									>

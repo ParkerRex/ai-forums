@@ -118,7 +118,7 @@ function CommentItemFlat({
   const [optimisticUserVote, setOptimisticUserVote] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
 
-  const isHighlighted = targetCommentId === comment._id;
+  const isHighlighted = targetCommentId === comment.id;
 
   const voteOnCommentMutation = useVoteOnComment();
   const editCommentMutation = useEditComment();
@@ -147,7 +147,7 @@ function CommentItemFlat({
 
     try {
       await voteOnCommentMutation.mutateAsync({
-        commentId: comment._id,
+        commentId: comment.id,
         voteType,
       });
     } catch (error) {
@@ -161,7 +161,7 @@ function CommentItemFlat({
 
   return (
     <motion.div
-      id={`comment-${comment._id}`}
+      id={`comment-${comment.id}`}
       initial={isNewlyCreated ? { opacity: 0, y: 20 } : false}
       animate={isNewlyCreated ? { opacity: 1, y: 0 } : false}
       transition={{ duration: 0.3 }}
@@ -255,7 +255,7 @@ function CommentItemFlat({
                 onSubmit={async (content, attachments) => {
                   try {
                     await editCommentMutation.mutateAsync({
-                      commentId: comment._id,
+                      commentId: comment.id,
                       content: content.trim(),
                       attachments,
                     });
@@ -337,7 +337,7 @@ function CommentItemFlat({
           <div className="mt-4 flex items-center justify-between border-t pt-3">
             <div className="flex items-center gap-4">
               <VoteButton
-                targetId={comment._id}
+                targetId={comment.id}
                 targetType="comment"
                 voteCount={optimisticNetVotes}
                 isVoted={currentUserVote === "upvote"}
@@ -351,7 +351,7 @@ function CommentItemFlat({
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onReply(comment._id, comment.member?.username || "someone")}
+                  onClick={() => onReply(comment.id, comment.member?.username || "someone")}
                   className="h-auto px-3 py-1 text-sm"
                 >
                   Reply
@@ -364,7 +364,7 @@ function CommentItemFlat({
               size="sm"
               className="h-auto px-2 py-1"
               onClick={async () => {
-                const commentUrl = `${window.location.origin}${window.location.pathname}?commentId=${comment._id}`;
+                const commentUrl = `${window.location.origin}${window.location.pathname}?commentId=${comment.id}`;
                 try {
                   await navigator.clipboard.writeText(commentUrl);
                   toast.success("Comment link copied!");
@@ -564,18 +564,18 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
 
               {comments?.map((comment: FlatComment, index) => (
                 <div
-                  key={comment._id}
+                  key={comment.id}
                   className={cn("relative", index === comments.length - 1 && "pb-0")}
                 >
                   <CommentItemFlat
                     comment={comment}
                     onReply={handleReply}
-                    isNewlyCreated={newlyCreatedCommentIds.has(comment._id)}
+                    isNewlyCreated={newlyCreatedCommentIds.has(comment.id)}
                     postSlug={postSlug}
                     categoryName={categoryName}
                     isAdmin={isAdmin}
                     targetCommentId={targetCommentId}
-                    userVote={userVotes[comment._id] || null}
+                    userVote={userVotes[comment.id] || null}
                   />
                 </div>
               ))}

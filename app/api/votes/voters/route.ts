@@ -61,7 +61,7 @@ export async function GET(request: NextRequest) {
 
 		return NextResponse.json({
 			voters: voters.map((v) => ({
-				_id: v.id,
+				id: v.id,
 				firstName: v.firstName,
 				lastName: v.lastName,
 				avatarUrl: v.avatarUrl,

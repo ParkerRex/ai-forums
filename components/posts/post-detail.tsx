@@ -351,7 +351,7 @@ export default function PostDetail({
 													post.member
 														? memberProfileUrl({
 																slug: post.member!.slug!,
-																_id: post.member!.id,
+																id: post.member!.id,
 															})
 														: "#"
 												}
