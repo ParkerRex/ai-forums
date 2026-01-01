@@ -8,7 +8,7 @@ type RouteContext = {
 };
 
 // GET /api/topics/[topicSlug] - Get a single topic by name or id
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { topicSlug } = await context.params;
 

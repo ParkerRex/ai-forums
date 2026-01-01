@@ -1,4 +1,4 @@
-import { and, count, desc, eq, like, or, sql } from "drizzle-orm";
+import { and, desc, eq, like, or } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { members } from "@/db/schema";
@@ -15,8 +15,8 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const search = searchParams.get("search");
     const status = searchParams.get("status");
-    const tier = searchParams.get("tier");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+    const _tier = searchParams.get("tier");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10), 100);
 
     const conditions = [];
 

@@ -19,7 +19,7 @@ type RouteParams = {
 };
 
 // GET /api/categories/[categoryId] - Get a single category
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { categoryId } = await params;
 
@@ -90,7 +90,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/categories/[categoryId] - Soft delete a category (admin only)
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const member = await getCurrentMember();
     if (!member) {

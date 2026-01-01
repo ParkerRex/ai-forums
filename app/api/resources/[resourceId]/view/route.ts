@@ -2,14 +2,13 @@ import { eq, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { resources } from "@/db/schema";
-import { getCurrentMember } from "@/lib/auth";
 
 type RouteContext = {
   params: Promise<{ resourceId: string }>;
 };
 
 // POST /api/resources/[resourceId]/view - Track a resource view
-export async function POST(request: NextRequest, context: RouteContext) {
+export async function POST(_request: NextRequest, context: RouteContext) {
   try {
     const { resourceId } = await context.params;
 

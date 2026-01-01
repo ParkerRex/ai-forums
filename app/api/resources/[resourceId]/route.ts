@@ -20,7 +20,7 @@ const updateResourceSchema = z.object({
 });
 
 // GET /api/resources/[resourceId] - Get a single resource
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const { resourceId } = await context.params;
 
@@ -112,7 +112,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 }
 
 // DELETE /api/resources/[resourceId] - Delete a resource
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(_request: NextRequest, context: RouteContext) {
   try {
     const member = await getCurrentMember();
     if (!member) {

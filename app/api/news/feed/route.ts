@@ -1,4 +1,4 @@
-import { eq, gt } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { newsFeedCache } from "@/db/schema";
@@ -97,7 +97,7 @@ async function fetchNewsArticles(sources: NewsFeedSource[]): Promise<NewsFeedArt
 }
 
 // GET /api/news/feed - Get aggregated news feed
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
   try {
     const member = await getCurrentMember();
     const cacheKey = member ? `user:${member.id}` : "global";
@@ -157,7 +157,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/news/feed - Force refresh news feed
-export async function POST(request: NextRequest) {
+export async function POST(_request: NextRequest) {
   try {
     const member = await getCurrentMember();
     const cacheKey = member ? `user:${member.id}` : "global";

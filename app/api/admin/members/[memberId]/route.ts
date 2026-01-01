@@ -1,4 +1,4 @@
-import { count, desc, eq } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
 import { comments, members, posts } from "@/db/schema";
@@ -7,7 +7,7 @@ import { forbiddenResponse, requireAdmin } from "@/lib/auth";
 type RouteParams = { params: Promise<{ memberId: string }> };
 
 // GET /api/admin/members/[memberId] - Get detailed member info for admin
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   const admin = await requireAdmin();
   if (!admin) {
     return forbiddenResponse();

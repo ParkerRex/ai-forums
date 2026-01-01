@@ -2,7 +2,7 @@ import { and, desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
-import { bookmarks, posts, resources } from "@/db/schema";
+import { bookmarks } from "@/db/schema";
 import { getCurrentMember } from "@/lib/auth";
 
 const toggleBookmarkSchema = z.object({

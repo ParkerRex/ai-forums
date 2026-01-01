@@ -208,8 +208,7 @@ function CommentItem({
     }
   };
 
-  const shouldReduceMotion =
-    typeof window !== "undefined" && window?.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const shouldReduceMotion = window?.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const highlightVariants = {
     initial: {

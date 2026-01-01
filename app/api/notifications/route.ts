@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = request.nextUrl;
     const unreadOnly = searchParams.get("unread") === "true";
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10), 100);
 
     const conditions = [eq(notifications.recipientId, member.id)];
     if (unreadOnly) {

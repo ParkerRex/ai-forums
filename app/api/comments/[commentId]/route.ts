@@ -78,7 +78,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/comments/[commentId] - Soft delete a comment
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const member = await getCurrentMember();
     if (!member) {

@@ -14,7 +14,7 @@ const voteSchema = z.object({
 });
 
 // GET /api/resources/[resourceId]/vote - Get current user's vote
-export async function GET(request: NextRequest, context: RouteContext) {
+export async function GET(_request: NextRequest, context: RouteContext) {
   try {
     const member = await getCurrentMember();
     if (!member) {

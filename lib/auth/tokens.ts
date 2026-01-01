@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { and, eq, gt, isNull } from "drizzle-orm";
 import { db } from "@/db";
 import { members, passwordResetTokens } from "@/db/schema";

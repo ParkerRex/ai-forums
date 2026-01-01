@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl;
     const search = searchParams.get("search");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50);
     const status = searchParams.get("status") || "active";
 
     const conditions = [eq(members.status, status)];

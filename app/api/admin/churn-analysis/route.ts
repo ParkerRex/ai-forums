@@ -1,4 +1,4 @@
-import { and, count, eq, gte, sql } from "drizzle-orm";
+import { count, eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { members } from "@/db/schema";
@@ -30,7 +30,7 @@ export async function GET() {
     // Calculate rates
     const totalMembers = totalResult.count || 1; // Avoid division by zero
     const churnedMembers = churnedResult.count;
-    const activeMembers = activeResult.count;
+    const _activeMembers = activeResult.count;
 
     // Monthly churn rate (simplified - would need subscription data for accuracy)
     const monthlyChurnRate = totalMembers > 0 ? (churnedMembers / totalMembers) * 100 : 0;

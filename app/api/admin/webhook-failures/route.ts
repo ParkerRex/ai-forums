@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   try {
     const { searchParams } = request.nextUrl;
-    const limit = Math.min(parseInt(searchParams.get("limit") || "10"), 50);
+    const _limit = Math.min(parseInt(searchParams.get("limit") || "10", 10), 50);
 
     // Note: This would need a webhook events table to track actual failures
     // For now, return empty array

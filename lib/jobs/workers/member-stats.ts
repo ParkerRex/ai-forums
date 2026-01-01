@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "@/db";
-import { comments, members, posts, votes } from "@/db/schema";
+import { comments, members, posts } from "@/db/schema";
 
 export async function recalculateMemberStats() {
   // Get all active members

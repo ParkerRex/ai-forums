@@ -11,7 +11,6 @@ import { SquareStackIcon } from "@/components/icons/square-stack";
 import PostHeaderSkeleton from "@/components/posts/post-header-skeleton";
 import { SortPopover } from "@/components/posts/sort-popover";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useCategories } from "@/hooks/use-categories";
 
 interface PostHeaderProps {

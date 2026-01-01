@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl;
     const status = searchParams.get("status");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10), 100);
 
     const conditions = [];
 

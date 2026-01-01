@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, lte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, lte } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
@@ -45,15 +45,15 @@ export async function GET(request: NextRequest) {
     const month = searchParams.get("month");
     const status = searchParams.get("status");
     const type = searchParams.get("type");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10), 100);
 
     // Build conditions array
     const conditions = [];
 
     // Filter by month/year if provided
     if (year && month) {
-      const yearNum = parseInt(year);
-      const monthNum = parseInt(month);
+      const yearNum = parseInt(year, 10);
+      const monthNum = parseInt(month, 10);
       const startOfMonth = new Date(yearNum, monthNum, 1);
       const endOfMonth = new Date(yearNum, monthNum + 1, 0, 23, 59, 59, 999);
 

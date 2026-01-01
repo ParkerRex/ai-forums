@@ -10,7 +10,7 @@ const previewSchema = z.object({
  * Generate a preview snippet from post content.
  * This creates a short summary suitable for displaying in post lists.
  */
-function generatePreview(title: string, content: string): string {
+function generatePreview(_title: string, content: string): string {
   // Strip HTML tags and get plain text
   const plainText = content
     .replace(/<[^>]+>/g, " ")
@@ -29,7 +29,7 @@ function generatePreview(title: string, content: string): string {
       preview += (preview ? ". " : "") + trimmed;
     } else if (!preview) {
       // If even the first sentence is too long, truncate it
-      preview = trimmed.substring(0, 297) + "...";
+      preview = `${trimmed.substring(0, 297)}...`;
       break;
     } else {
       break;

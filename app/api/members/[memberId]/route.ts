@@ -25,7 +25,7 @@ type RouteParams = {
 };
 
 // GET /api/members/[memberId] - Get a single member
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { memberId } = await params;
 

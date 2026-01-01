@@ -1,4 +1,4 @@
-import crypto from "crypto";
+import crypto from "node:crypto";
 import { and, eq, gt, lt } from "drizzle-orm";
 import { cookies } from "next/headers";
 import { db } from "@/db";

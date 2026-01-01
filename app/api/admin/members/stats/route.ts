@@ -1,4 +1,4 @@
-import { count, eq, sql } from "drizzle-orm";
+import { count } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { db } from "@/db";
 import { members } from "@/db/schema";

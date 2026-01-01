@@ -44,7 +44,7 @@ type RouteParams = {
 };
 
 // GET /api/events/[eventId] - Get a single event
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { eventId } = await params;
 
@@ -156,7 +156,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/events/[eventId] - Delete an event (or cancel it)
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const member = await getCurrentMember();
     if (!member) {

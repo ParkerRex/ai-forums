@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const targetId = searchParams.get("targetId");
     const targetType = searchParams.get("targetType") || "post";
-    const limit = Math.min(parseInt(searchParams.get("limit") || "10"), 50);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "10", 10), 50);
 
     if (!targetId) {
       return NextResponse.json({ error: "targetId is required" }, { status: 400 });

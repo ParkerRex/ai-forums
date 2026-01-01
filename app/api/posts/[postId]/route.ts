@@ -41,7 +41,7 @@ type RouteParams = {
 };
 
 // GET /api/posts/[postId] - Get a single post
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { postId } = await params;
 
@@ -189,7 +189,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/posts/[postId] - Soft delete a post
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const member = await getCurrentMember();
     if (!member) {

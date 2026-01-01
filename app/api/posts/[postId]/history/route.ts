@@ -8,7 +8,7 @@ type RouteParams = {
 };
 
 // GET /api/posts/[postId]/history - Get post edit history
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { postId } = await params;
 

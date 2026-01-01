@@ -1,7 +1,7 @@
 import { and, desc, eq, like, or } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { categories, comments, members, posts } from "@/db/schema";
+import { categories, members, posts } from "@/db/schema";
 
 // GET /api/search - Search across content
 export async function GET(request: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = request.nextUrl;
     const query = searchParams.get("q");
     const type = searchParams.get("type"); // 'posts' | 'members' | 'all'
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
+    const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50);
 
     if (!query || query.length < 2) {
       return NextResponse.json(

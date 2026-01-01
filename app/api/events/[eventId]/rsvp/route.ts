@@ -127,7 +127,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 }
 
 // GET /api/events/[eventId]/rsvp - Get current user's RSVP status
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const member = await getCurrentMember();
     if (!member) {

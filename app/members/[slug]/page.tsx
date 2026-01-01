@@ -28,7 +28,7 @@
 
 import { ArrowLeft, Bookmark } from "lucide-react";
 import { notFound, useRouter } from "next/navigation";
-import React, { use } from "react";
+import { use } from "react";
 import { PageErrorBoundary, QueryErrorBoundary } from "@/components/error-boundary";
 import MemberActivityCard from "@/components/members/member-activity-card";
 import MemberProfile from "@/components/members/member-profile";

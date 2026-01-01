@@ -12,12 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { useMembers } from "@/hooks/use-members";
-import {
-  getFilePreviewUrl,
-  revokeFilePreviewUrl,
-  uploadMedia,
-  validateMediaFile,
-} from "@/lib/upload-media";
+import { getFilePreviewUrl, revokeFilePreviewUrl, validateMediaFile } from "@/lib/upload-media";
 import type { MediaItem } from "@/types";
 import { GifPicker } from "./gif-picker";
 import { MentionAutocomplete } from "./mention-autocomplete";

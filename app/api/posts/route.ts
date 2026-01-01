@@ -75,8 +75,8 @@ export async function GET(request: NextRequest) {
     const categoryId = searchParams.get("categoryId");
     const slug = searchParams.get("slug");
     const sortBy = searchParams.get("sortBy") || "newest";
-    const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 50);
-    const cursor = searchParams.get("cursor");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50);
+    const _cursor = searchParams.get("cursor");
 
     // Build conditions array
     const conditions = [eq(posts.status, "active")];

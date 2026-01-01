@@ -2,7 +2,7 @@ import { desc, eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
-import { categories, members } from "@/db/schema";
+import { categories } from "@/db/schema";
 import { getCurrentMember } from "@/lib/auth";
 
 const createCategorySchema = z.object({

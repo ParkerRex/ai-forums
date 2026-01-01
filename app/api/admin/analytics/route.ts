@@ -1,7 +1,7 @@
-import { and, count, gte, sql } from "drizzle-orm";
+import { count, gte, sql } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { db } from "@/db";
-import { comments, members, posts } from "@/db/schema";
+import { members } from "@/db/schema";
 import { forbiddenResponse, requireAdmin } from "@/lib/auth";
 
 // GET /api/admin/analytics - Get analytics dashboard data

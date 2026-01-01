@@ -9,7 +9,7 @@ type RouteContext = {
 };
 
 // PATCH /api/notifications/[notificationId] - Mark a single notification as read
-export async function PATCH(request: NextRequest, context: RouteContext) {
+export async function PATCH(_request: NextRequest, context: RouteContext) {
   try {
     const member = await getCurrentMember();
     if (!member) {
@@ -31,7 +31,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 }
 
 // DELETE /api/notifications/[notificationId] - Delete a notification
-export async function DELETE(request: NextRequest, context: RouteContext) {
+export async function DELETE(_request: NextRequest, context: RouteContext) {
   try {
     const member = await getCurrentMember();
     if (!member) {

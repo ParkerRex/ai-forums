@@ -9,7 +9,7 @@ type RouteParams = {
 };
 
 // GET /api/polls/[pollId] - Get poll results with current user's vote
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { pollId } = await params;
     const member = await getCurrentMember();
