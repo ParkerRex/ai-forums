@@ -8,7 +8,7 @@ type Post = {
 	content: string;
 	slug: string;
 	preview: string | null;
-	type: string;
+	type: "text" | "image" | "video" | "link" | "poll";
 	upvotes: number;
 	downvotes: number;
 	netVotes: number;
@@ -18,7 +18,7 @@ type Post = {
 	editedAt?: string | null;
 	memberId: string;
 	categoryId: string;
-	status: string;
+	status: "active" | "deleted" | "hidden" | "archived";
 	isPinned?: boolean;
 	pinScope?: "category" | "global" | "both";
 	isLocked?: boolean;
@@ -39,7 +39,7 @@ type Post = {
 		}
 	> | null;
 	pollOptions?: Array<{ id: string; text: string; voteCount: number }> | null;
-	pollEndsAt?: string | null;
+	pollEndsAt?: number | string | null;
 	totalPollVotes?: number | null;
 	attachments?: Array<{
 		id: string;

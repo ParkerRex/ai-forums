@@ -108,7 +108,7 @@ export default function PostList({
 						id: post.id,
 						title: post.title,
 						content: post.content,
-						preview: post.preview,
+						preview: post.preview ?? undefined,
 						isFree: post.isFree,
 						slug: post.slug,
 						createdAt: new Date(post.createdAt).getTime(),

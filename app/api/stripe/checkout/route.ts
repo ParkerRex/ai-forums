@@ -3,7 +3,7 @@ import Stripe from "stripe";
 import { getCurrentMember } from "@/lib/auth";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-	apiVersion: "2024-12-18.acacia",
+	apiVersion: "2025-08-27.basil",
 });
 
 // Pricing configuration
@@ -32,7 +32,8 @@ export async function POST(request: NextRequest) {
 		}
 
 		const body = await request.json();
-		const { tier = "member", billingInterval = "yearly" } = body;
+		const tier = (body.tier ?? "member") as keyof typeof PRICING;
+		const billingInterval = (body.billingInterval ?? "yearly") as "monthly" | "yearly";
 
 		// Validate tier and billing interval
 		if (tier !== "member") {

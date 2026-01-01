@@ -67,7 +67,7 @@ export default function NewsSourcesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <DiscordSettings userId={member._id} />
+          <DiscordSettings userId={member.id} />
         </CardContent>
       </Card>
 

@@ -107,7 +107,7 @@ export default function PostPreview({
     }
   };
 
-  const postUrl = `/post/${post._id}`;
+  const postUrl = `/post/${post.id}`;
 
   // For media-heavy posts, use expanded layout
   const hasLargeMedia =

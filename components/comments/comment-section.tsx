@@ -244,7 +244,7 @@ function CommentItem({
                     <Link
                       href={memberProfileUrl({
                         slug: comment.member.slug,
-                        _id: comment.member.id,
+                        id: comment.member.id,
                       })}
                       className="text-foreground font-medium hover:underline"
                       data-testid="member-link"

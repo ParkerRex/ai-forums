@@ -88,8 +88,8 @@ export function useIsBookmarked(
 	targetType: "post" | "comment" | "resource",
 ) {
 	const { data: bookmarks } = useBookmarks();
-	return bookmarks?.some(
-		(b) => b.targetId === targetId && b.targetType === targetType,
+	return bookmarks?.items?.some(
+		(b: Bookmark) => b.targetId === targetId && b.targetType === targetType,
 	);
 }
 

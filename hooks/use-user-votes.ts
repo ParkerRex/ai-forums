@@ -64,7 +64,7 @@ export function useUserVotes(
 }
 
 type Voter = {
-	_id: string;
+	id: string;
 	firstName: string;
 	lastName: string;
 	avatarUrl?: string;

@@ -89,7 +89,7 @@ export async function GET(request: NextRequest) {
 			conditions.push(eq(posts.slug, slug));
 		}
 
-		let query = db
+		const baseQuery = db
 			.select({
 				post: posts,
 				member: {
@@ -109,16 +109,11 @@ export async function GET(request: NextRequest) {
 			.from(posts)
 			.innerJoin(members, eq(posts.memberId, members.id))
 			.innerJoin(categories, eq(posts.categoryId, categories.id))
-			.where(and(...conditions))
-			.limit(limit + 1);
+			.where(and(...conditions));
 
-		if (sortBy === "popular") {
-			query = query.orderBy(desc(posts.netVotes), desc(posts.createdAt));
-		} else {
-			query = query.orderBy(desc(posts.createdAt));
-		}
-
-		const result = await query;
+		const result = await (sortBy === "popular"
+			? baseQuery.orderBy(desc(posts.netVotes), desc(posts.createdAt)).limit(limit + 1)
+			: baseQuery.orderBy(desc(posts.createdAt)).limit(limit + 1));
 
 		const hasMore = result.length > limit;
 		const items = hasMore ? result.slice(0, -1) : result;

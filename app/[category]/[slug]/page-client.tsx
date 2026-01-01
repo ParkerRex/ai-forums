@@ -233,7 +233,7 @@ export default function PostPageClient({ params }: PostPageClientProps) {
   // If the post no longer exists (e.g., it was just deleted), redirect the
   // user to the home page instead of showing a 404. We still show a 404 for
   // mismatched categories (malformed URL).
-  if (post === null || isError) {
+  if (!post || isError) {
     // The redirection will run in the effect; render nothing meanwhile.
     return null;
   }

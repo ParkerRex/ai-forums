@@ -13,10 +13,13 @@ type User = {
 	bio: string | null;
 	role: string;
 	status: string;
+	tier?: string;
 };
 
 type AuthContextType = {
 	user: User | null;
+	/** @deprecated Use `user` instead */
+	member: User | null;
 	isLoading: boolean;
 	isAuthenticated: boolean;
 	login: (email: string, password: string) => Promise<User>;
@@ -141,6 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		<AuthContext.Provider
 			value={{
 				user: user ?? null,
+				member: user ?? null, // Alias for backward compatibility
 				isLoading,
 				isAuthenticated: !!user,
 				login,

@@ -67,8 +67,8 @@ export default function CategoryPageClient({ params }: CategoryPageClientProps) 
   }
 
   // Handle invalid category or missing category name
-  // null from API means the category doesn't exist in the database
-  if (category === null || !categoryName || isError) {
+  // null/undefined from API means the category doesn't exist in the database
+  if (!category || !categoryName || isError) {
     notFound();
   }
 

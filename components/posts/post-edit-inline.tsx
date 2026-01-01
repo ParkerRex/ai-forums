@@ -11,20 +11,20 @@ import { cn } from "@/lib/utils";
 
 interface PostEditInlineProps {
   post: {
-    _id: string;
+    id: string;
     title: string;
     content: string;
     type?: "text" | "image" | "video" | "link" | "poll";
-    linkUrl?: string;
-    linkTitle?: string;
-    linkDescription?: string;
-    linkImage?: string;
-    mediaUrl?: string;
-    thumbnailUrl?: string;
-    pollOptions?: Array<{ id: string; text: string }>;
-    pollEndsAt?: number;
+    linkUrl?: string | null;
+    linkTitle?: string | null;
+    linkDescription?: string | null;
+    linkImage?: string | null;
+    mediaUrl?: string | null;
+    thumbnailUrl?: string | null;
+    pollOptions?: Array<{ id: string; text: string; voteCount?: number }> | null;
+    pollEndsAt?: number | string | null;
     category?: {
-      _id?: string;
+      id?: string;
       name: string;
       displayName?: string;
     } | null;
@@ -49,7 +49,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
     linkImage: post.linkImage || "",
     mediaUrl: post.mediaUrl || "",
     thumbnailUrl: post.thumbnailUrl || "",
-    categoryId: post.category?._id || "uncategorized",
+    categoryId: post.category?.id || "uncategorized",
   });
 
   const handleFormDataChange = (data: Partial<ExtendedPostFormData>) => {
@@ -72,7 +72,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
 
     try {
       const result = await updatePostMutation.mutateAsync({
-        postId: post._id,
+        postId: post.id,
         title: formData.title.trim(),
         content: formData.content,
         type: formData.type === "poll" ? undefined : formData.type,
@@ -84,7 +84,7 @@ export function PostEditInline({ post, onCancel, className }: PostEditInlineProp
           formData.type === "video" || formData.type === "image" ? formData.mediaUrl : undefined,
         thumbnailUrl: formData.type === "video" ? formData.thumbnailUrl : undefined,
         categoryId:
-          formData.categoryId !== post.category?._id
+          formData.categoryId !== post.category?.id
             ? formData.categoryId
             : undefined,
       });

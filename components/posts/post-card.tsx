@@ -22,8 +22,8 @@ interface Post extends Omit<PostData, "member" | "author" | "category"> {
 	preview?: string;
 	isFree?: boolean;
 	slug: string;
-	createdAt: string;
-	updatedAt: string;
+	createdAt: number;
+	updatedAt: number;
 	memberId: string;
 	categoryId: string;
 	status: "active" | "deleted" | "hidden" | "archived";
@@ -34,7 +34,7 @@ interface Post extends Omit<PostData, "member" | "author" | "category"> {
 	viewCount: number;
 	isPinned?: boolean;
 	isLocked?: boolean;
-	editedAt?: string;
+	editedAt?: number;
 	editReason?: string;
 	pinScope?: "category" | "global" | "both";
 	pollOptions?: Array<{
@@ -42,8 +42,21 @@ interface Post extends Omit<PostData, "member" | "author" | "category"> {
 		text: string;
 		voteCount: number;
 	}>;
-	pollEndsAt?: string;
+	pollEndsAt?: number;
 	totalPollVotes?: number;
+	attachments?: Array<{
+		type: string;
+		url: string;
+		name?: string;
+		size?: number;
+	}>;
+	mediaUrl?: string;
+	thumbnailUrl?: string;
+	linkUrl?: string;
+	linkTitle?: string;
+	linkDescription?: string;
+	linkImage?: string;
+	type?: "text" | "image" | "video" | "link" | "poll";
 	member: {
 		id: string;
 		firstName: string;
