@@ -1,9 +1,10 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { db } from "@/db";
-import { categories, members, posts } from "@/db/schema";
-import { getCurrentMember } from "@/lib/auth";
+import { categories } from "@/db/schema";
+import { withAuth } from "@/lib/api/middleware";
+import { postRepository } from "@/lib/repositories";
 
 const createPostSchema = z.object({
   title: z.string().min(1).max(255),
@@ -56,75 +57,25 @@ const createPostSchema = z.object({
   isFree: z.boolean().default(true),
 });
 
-function generateSlug(title: string): string {
-  const base = title
-    .toLowerCase()
-    .replace(/[^a-z0-9-\s]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "")
-    .substring(0, 100);
-  const suffix = Math.random().toString(36).substring(2, 8);
-  return `${base}-${suffix}`;
-}
-
 // GET /api/posts - List posts with pagination
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl;
-    const categoryId = searchParams.get("categoryId");
-    const slug = searchParams.get("slug");
-    const sortBy = searchParams.get("sortBy") || "newest";
+    const categoryId = searchParams.get("categoryId") ?? undefined;
+    const slug = searchParams.get("slug") ?? undefined;
+    const sortBy = (searchParams.get("sortBy") as "newest" | "popular") || "newest";
     const limit = Math.min(parseInt(searchParams.get("limit") || "20", 10), 50);
-    const _cursor = searchParams.get("cursor");
 
-    // Build conditions array
-    const conditions = [eq(posts.status, "active")];
-
-    if (categoryId) {
-      conditions.push(eq(posts.categoryId, categoryId));
-    }
-
-    if (slug) {
-      conditions.push(eq(posts.slug, slug));
-    }
-
-    const baseQuery = db
-      .select({
-        post: posts,
-        member: {
-          id: members.id,
-          firstName: members.firstName,
-          lastName: members.lastName,
-          slug: members.slug,
-          avatarUrl: members.avatarUrl,
-        },
-        category: {
-          id: categories.id,
-          name: categories.name,
-          displayName: categories.displayName,
-          icon: categories.icon,
-        },
-      })
-      .from(posts)
-      .innerJoin(members, eq(posts.memberId, members.id))
-      .innerJoin(categories, eq(posts.categoryId, categories.id))
-      .where(and(...conditions));
-
-    const result = await (sortBy === "popular"
-      ? baseQuery.orderBy(desc(posts.netVotes), desc(posts.createdAt)).limit(limit + 1)
-      : baseQuery.orderBy(desc(posts.createdAt)).limit(limit + 1));
-
-    const hasMore = result.length > limit;
-    const items = hasMore ? result.slice(0, -1) : result;
+    const result = await postRepository.findMany({
+      categoryId,
+      slug,
+      sortBy,
+      limit,
+    });
 
     return NextResponse.json({
-      items: items.map((row) => ({
-        ...row.post,
-        member: row.member,
-        category: row.category,
-      })),
-      nextCursor: hasMore ? items[items.length - 1].post.id : null,
+      items: result.items,
+      nextCursor: result.nextCursor,
     });
   } catch (error) {
     console.error("Get posts error:", error);
@@ -133,13 +84,8 @@ export async function GET(request: NextRequest) {
 }
 
 // POST /api/posts - Create a new post
-export async function POST(request: NextRequest) {
+export const POST = withAuth(async (request, _context, member) => {
   try {
-    const member = await getCurrentMember();
-    if (!member) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
     const body = await request.json();
     const parsed = createPostSchema.safeParse(body);
 
@@ -180,8 +126,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Category not found" }, { status: 404 });
     }
 
-    const slug = generateSlug(title);
-
     // Convert poll options to proper format if it's a poll post
     let formattedPollOptions: Array<{ id: string; text: string; votes: number }> | undefined;
     let pollEndsAt: Date | undefined;
@@ -197,44 +141,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const [newPost] = await db
-      .insert(posts)
-      .values({
-        title,
-        content,
-        slug,
-        categoryId,
-        memberId: member.id,
-        type,
-        attachments: attachments || [],
-        mediaUrl,
-        thumbnailUrl,
-        aspectRatio,
-        mediaWidth,
-        mediaHeight,
-        linkUrl,
-        linkTitle,
-        linkDescription,
-        linkImage,
-        pollOptions: formattedPollOptions,
-        pollEndsAt,
-        preview,
-        isFree,
-        status: "active",
-      })
-      .returning();
-
-    // Update category post count
-    await db
-      .update(categories)
-      .set({ postCount: sql`${categories.postCount} + 1` })
-      .where(eq(categories.id, categoryId));
-
-    // Update member post count
-    await db
-      .update(members)
-      .set({ postCount: sql`${members.postCount} + 1` })
-      .where(eq(members.id, member.id));
+    const newPost = await postRepository.create({
+      title,
+      content,
+      categoryId,
+      memberId: member.id,
+      type,
+      attachments: attachments as Parameters<typeof postRepository.create>[0]["attachments"],
+      mediaUrl,
+      thumbnailUrl,
+      aspectRatio,
+      mediaWidth,
+      mediaHeight,
+      linkUrl,
+      linkTitle,
+      linkDescription,
+      linkImage,
+      pollOptions: formattedPollOptions,
+      pollEndsAt,
+      preview,
+      isFree,
+    });
 
     return NextResponse.json(
       {
@@ -248,4 +175,4 @@ export async function POST(request: NextRequest) {
     console.error("Create post error:", error);
     return NextResponse.json({ error: "Failed to create post" }, { status: 500 });
   }
-}
+});
