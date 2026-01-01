@@ -7,10 +7,9 @@
  * Features:
  * - Dual authentication UI (authenticated vs unauthenticated views)
  * - Modal management (edit, delete, history)
- * - Post validation and category matching
+ * - Server-side post data hydration for faster initial load
  * - Comment section with deep linking
  * - Navigation with animated back button
- * - Responsive loading states
  * - Error handling and graceful redirects
  *
  * @see PostPage - Server component that handles SEO and routing
@@ -31,10 +30,69 @@ import { Badge } from "@/components/ui/badge";
 import { usePostBySlug } from "@/hooks/use-posts";
 
 /**
+ * Serialized post type from server component
+ */
+type SerializedPost = {
+  id: string;
+  title: string;
+  content: string;
+  slug: string;
+  preview: string | null;
+  type: "text" | "image" | "video" | "link" | "poll";
+  upvotes: number;
+  downvotes: number;
+  netVotes: number;
+  commentCount: number;
+  viewCount: number;
+  createdAt: string;
+  editedAt: string | null;
+  memberId: string;
+  categoryId: string;
+  status: "active" | "deleted" | "hidden" | "archived";
+  isPinned: boolean;
+  pinScope: "category" | "global" | "both" | null;
+  isLocked: boolean;
+  mediaUrl: string | null;
+  thumbnailUrl: string | null;
+  linkUrl: string | null;
+  linkTitle: string | null;
+  linkDescription: string | null;
+  linkImage: string | null;
+  linkPreviews: Record<
+    string,
+    {
+      title?: string;
+      description?: string;
+      image?: string;
+      siteName?: string;
+      url: string;
+    }
+  > | null;
+  pollOptions: Array<{ id: string; text: string; voteCount: number }> | null;
+  pollEndsAt: string | null;
+  totalPollVotes: number | null;
+  attachments: unknown[] | null;
+  isFree: boolean;
+  member: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    slug: string;
+    avatarUrl: string | null;
+  } | null;
+  category: {
+    id: string;
+    name: string;
+    displayName: string;
+    icon: string | null;
+  } | null;
+};
+
+/**
  * Props for the PostPageClient component
  *
- * Contains both category and slug for nested dynamic routing
- * and post validation against the URL structure.
+ * Contains both category and slug for nested dynamic routing,
+ * and optionally server-fetched post data for hydration.
  */
 interface PostPageClientProps {
   /** Promise containing the dynamic route parameters */
@@ -44,22 +102,21 @@ interface PostPageClientProps {
     /** The post slug from the URL path */
     slug: string;
   }>;
+  /** Pre-fetched post data from server component (optional for backwards compatibility) */
+  serverPost?: SerializedPost;
 }
 
 /**
  * Post Page Client Component
  *
  * Renders individual post pages with full interactivity and dual authentication states.
- * Handles complex post validation, modal management, and comment deep linking.
+ * Uses server-provided post data when available for instant initial render.
  *
  * @param params - Promise containing the dynamic route parameters
+ * @param serverPost - Optional pre-fetched post data from server
  * @returns JSX element rendering the post page with authentication-specific content
- *
- * @example
- * // Used by server component:
- * <PostPageClient params={Promise.resolve({ category: "workflows", slug: "automate-content" })} />
  */
-export default function PostPageClient({ params }: PostPageClientProps) {
+export default function PostPageClient({ params, serverPost }: PostPageClientProps) {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
 
@@ -86,26 +143,24 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     typeof slug === "string" &&
     slug.trim() !== "";
 
-  // Query for the post by slug from PostgreSQL database via React Query
+  // Use server-provided post data if available, otherwise fall back to React Query
+  // This enables instant initial render when coming from SSR
   const {
-    data: post,
-    isLoading: isPostLoading,
+    data: clientPost,
+    isLoading: isClientLoading,
     isError,
-  } = usePostBySlug(hasValidParams ? slug : "");
+  } = usePostBySlug(hasValidParams && !serverPost ? slug : "");
+
+  // Use server post if available, otherwise use client-fetched data
+  // Type assertion needed as server and client types are structurally compatible but typed differently
+  const post = (serverPost ?? clientPost) as
+    | (typeof clientPost & { attachments?: unknown[] | null })
+    | undefined;
+  const isPostLoading = !serverPost && isClientLoading;
 
   // For now, authenticated users can view posts (simplified access check)
   // In a full implementation, this would check subscription status
   const canViewPost = user ? true : (post?.isFree ?? true);
-
-  // Debug logging for development (consider removing in production)
-  console.log(
-    "PostPageClient - category:",
-    category,
-    "slug:",
-    slug,
-    "hasValidParams:",
-    hasValidParams,
-  );
 
   // Modal event handlers for post management actions
 

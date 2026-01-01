@@ -7,13 +7,17 @@
  * Features:
  * - Dynamic nested route handling with Next.js 15 Promise-based params
  * - SEO metadata generation with Open Graph support
- * - Server-side rendering with client component delegation
- * - Slug-based post identification for clean URLs
+ * - Server-side data fetching for faster initial load
+ * - Streaming with Suspense for progressive loading
  *
  * @see PostPageClient - Client component handling post display and interactions
  */
 
 import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { Suspense } from "react";
+import { PostDetailSkeleton } from "@/components/posts/post-skeletons";
+import { getPostBySlug, serializePost, validatePostCategory } from "@/lib/server/posts";
 import PostPageClient from "./page-client";
 
 /**
@@ -35,32 +39,41 @@ interface PostPageProps {
 /**
  * Generate SEO metadata for individual post pages
  *
- * Creates dynamic metadata for posts based on category and slug.
- * Since we can't easily fetch post data in the metadata function,
- * we generate a readable title from the slug for SEO purposes.
+ * Fetches actual post data to generate accurate metadata.
+ * Uses React's cache() function to avoid duplicate database queries.
  *
  * @param params - The route parameters containing category and slug
  * @returns Promise resolving to Next.js Metadata object with Open Graph support
- *
- * @example
- * // For URL: /workflows/automate-content-creation
- * // Returns: { title: "Automate Content Creation - workflows - VAI Community" }
  */
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { category, slug } = await params;
 
-  // Transform slug into a readable title for SEO
-  // We can't easily fetch post data here due to server/client architecture,
-  // so we generate basic SEO from the URL structure
-  const title = slug.replace(/-/g, " ").replace(/\b\w/g, (l) => l.toUpperCase());
+  // Fetch actual post data for accurate SEO
+  const post = await getPostBySlug(slug);
+
+  if (!post || post.category?.name !== category) {
+    return {
+      title: "Post Not Found - VAI Community",
+      description: "The requested post could not be found.",
+    };
+  }
+
+  const authorName = post.member
+    ? `${post.member.firstName} ${post.member.lastName}`
+    : "VAI Community";
 
   return {
-    title: `${title} - ${category} - VAI Community`,
-    description: `Read this ${category} post from the VAI community. Join the discussion about AI workflows, prompts, and insights.`,
+    title: `${post.title} - ${post.category?.displayName || category} - VAI Community`,
+    description:
+      post.preview || `Read this ${category} post from ${authorName} in the VAI community.`,
     openGraph: {
-      title: `${title} - VAI Community`,
-      description: `A post in the ${category} category from the VAI community`,
+      title: `${post.title} - VAI Community`,
+      description:
+        post.preview || `A post in the ${post.category?.displayName || category} category`,
       type: "article",
+      authors: [authorName],
+      publishedTime: post.createdAt.toISOString(),
+      modifiedTime: post.editedAt?.toISOString(),
     },
   };
 }
@@ -68,13 +81,39 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 /**
  * Post Page Server Component
  *
- * Server component that delegates rendering to the client component.
- * This separation allows for server-side metadata generation while
- * maintaining client-side features like authentication, comments, and modals.
+ * Fetches post data on the server and passes it to the client component.
+ * Uses Suspense for streaming to show content progressively.
  *
  * @param params - Promise containing the dynamic route parameters
  * @returns JSX element rendering the post page
  */
-export default function PostPage({ params }: PostPageProps) {
-  return <PostPageClient params={params} />;
+export default async function PostPage({ params }: PostPageProps) {
+  const { category, slug } = await params;
+
+  // Validate params
+  if (!category || !slug || typeof category !== "string" || typeof slug !== "string") {
+    notFound();
+  }
+
+  // Fetch post data on the server
+  const post = await getPostBySlug(slug);
+
+  // Post not found
+  if (!post) {
+    notFound();
+  }
+
+  // Category mismatch - wrong URL
+  if (!validatePostCategory(post, category)) {
+    notFound();
+  }
+
+  // Serialize dates for client component
+  const serializedPost = serializePost(post);
+
+  return (
+    <Suspense fallback={<PostDetailSkeleton />}>
+      <PostPageClient params={params} serverPost={serializedPost} />
+    </Suspense>
+  );
 }
