@@ -36,7 +36,7 @@ import { Calendar, Clock, MapPin, Users } from "lucide-react";
  * Event interface representing the structure of calendar events
  *
  * @interface Event
- * @property {string} _id - Unique identifier for the event
+ * @property {string} id - Unique identifier for the event
  * @property {string} title - Display title of the event
  * @property {string} description - Detailed description of the event
  * @property {number} startTime - Unix timestamp for event start
@@ -49,7 +49,7 @@ import { Calendar, Clock, MapPin, Users } from "lucide-react";
  * @property {Object} creator - Event creator information (optional)
  */
 interface Event {
-  _id: string;
+  id: string;
   title: string;
   description: string;
   startTime: number;

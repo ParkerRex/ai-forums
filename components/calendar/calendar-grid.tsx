@@ -233,7 +233,7 @@ export function CalendarGrid({ selectedDate, onDateSelect, onEventSelect }: Cale
                     >
                       <EventCard
                         event={{
-                          _id: event.id,
+                          id: event.id,
                           title: event.title,
                           description: event.description || "",
                           startTime: event.startTime,

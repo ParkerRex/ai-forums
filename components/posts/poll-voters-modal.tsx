@@ -65,7 +65,7 @@ export function PollVotersModal({ isOpen, onClose, pollId, pollOptions }: PollVo
 												key={voter.memberId}
 												href={memberProfileUrl({
 													slug: voter.slug,
-													_id: voter.memberId,
+													id: voter.memberId,
 												})}
 												className="hover:bg-muted flex items-center gap-3 rounded-none p-2 transition-colors"
 											>

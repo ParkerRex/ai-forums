@@ -5,7 +5,7 @@ import { CSS } from "@dnd-kit/utilities";
 import React from "react";
 
 interface SortableCommentItemProps {
-  comment: { _id: string };
+  comment: { id: string };
   children: React.ReactNode;
   disabled?: boolean;
 }
@@ -16,7 +16,7 @@ export function SortableCommentItem({
   disabled = false,
 }: SortableCommentItemProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
-    id: comment._id,
+    id: comment.id,
     disabled,
   });
 

@@ -36,8 +36,7 @@ import { cn } from "@/lib/utils";
 
 interface MemberCardProps {
   member: {
-    _id: string;
-    id?: string;
+    id: string;
     email: string;
     firstName?: string;
     lastName?: string;
@@ -67,7 +66,7 @@ export function MemberCard({
 }: MemberCardProps) {
   const updateRoleMutation = useUpdateMemberRole();
 
-  const memberId = member._id || member.id || "";
+  const memberId = member.id;
   const fullName = getMemberDisplayName(member);
   const initials = getMemberInitials(member);
   const status = getMemberStatus(member);
