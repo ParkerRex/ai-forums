@@ -80,7 +80,7 @@ export const queryKeys = {
   // Bookmarks
   bookmarks: {
     all: ["bookmarks"] as const,
-    list: () => [...queryKeys.bookmarks.all, "list"] as const,
+    list: (targetType?: string) => [...queryKeys.bookmarks.all, "list", targetType] as const,
     check: (targetType: string, targetId: string) =>
       [...queryKeys.bookmarks.all, "check", targetType, targetId] as const,
   },
@@ -88,7 +88,8 @@ export const queryKeys = {
   // Notifications
   notifications: {
     all: ["notifications"] as const,
-    list: () => [...queryKeys.notifications.all, "list"] as const,
+    list: (options?: { limit?: number; unreadOnly?: boolean }) =>
+      [...queryKeys.notifications.all, "list", options] as const,
     unreadCount: () => [...queryKeys.notifications.all, "unread"] as const,
   },
 
@@ -118,7 +119,7 @@ export const queryKeys = {
   // Topics
   topics: {
     all: ["topics"] as const,
-    list: () => [...queryKeys.topics.all, "list"] as const,
+    list: (searchTerm?: string) => [...queryKeys.topics.all, "list", searchTerm] as const,
     detail: (slug: string) => [...queryKeys.topics.all, "detail", slug] as const,
   },
 

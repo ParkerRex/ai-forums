@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 interface Bookmark {
   id: string;
@@ -73,14 +74,14 @@ async function toggleBookmark(data: {
 
 export function useBookmarks(targetType?: "post" | "resource") {
   return useQuery({
-    queryKey: ["bookmarks", targetType],
+    queryKey: queryKeys.bookmarks.list(targetType),
     queryFn: () => getBookmarks(targetType),
   });
 }
 
 export function useBookmarksWithDetails(targetType?: "post" | "resource") {
   return useQuery({
-    queryKey: ["bookmarks", "withDetails", targetType],
+    queryKey: queryKeys.bookmarks.check(targetType || "post", "details"),
     queryFn: () => getBookmarksWithDetails(targetType),
   });
 }
@@ -98,7 +99,7 @@ export function useToggleBookmark() {
   return useMutation({
     mutationFn: toggleBookmark,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.bookmarks.all });
     },
   });
 }

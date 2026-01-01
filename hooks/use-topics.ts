@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 export type Topic = {
   id: string;
@@ -44,7 +45,7 @@ async function fetchTopic(topicSlug: string): Promise<Topic | null> {
  */
 export function useTopics(searchTerm?: string) {
   return useQuery({
-    queryKey: ["topics", searchTerm],
+    queryKey: queryKeys.topics.list(searchTerm),
     queryFn: () => fetchTopics(searchTerm),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -55,7 +56,7 @@ export function useTopics(searchTerm?: string) {
  */
 export function useTopic(topicSlug: string) {
   return useQuery({
-    queryKey: ["topics", topicSlug],
+    queryKey: queryKeys.topics.detail(topicSlug),
     queryFn: () => fetchTopic(topicSlug),
     enabled: !!topicSlug,
   });

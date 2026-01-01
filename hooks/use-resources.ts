@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 export type Resource = {
   id: string;
@@ -176,7 +177,7 @@ export function useResources(options: {
   searchTerm?: string;
 }) {
   return useQuery({
-    queryKey: ["resources", options],
+    queryKey: queryKeys.resources.list(options),
     queryFn: () => fetchResources(options),
     enabled: !!options.topicSlug,
   });
@@ -187,7 +188,7 @@ export function useResources(options: {
  */
 export function useResource(resourceId: string) {
   return useQuery({
-    queryKey: ["resources", resourceId],
+    queryKey: queryKeys.resources.detail(resourceId),
     queryFn: () => fetchResource(resourceId),
     enabled: !!resourceId,
   });
@@ -202,9 +203,9 @@ export function useCreateResource() {
   return useMutation({
     mutationFn: createResource,
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
-      queryClient.invalidateQueries({ queryKey: ["topics", variables.topicSlug] });
-      queryClient.invalidateQueries({ queryKey: ["topics"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.resources.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.topics.detail(variables.topicSlug) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.topics.all });
     },
   });
 }
@@ -218,8 +219,8 @@ export function useUpdateResource() {
   return useMutation({
     mutationFn: updateResource,
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["resources", variables.resourceId] });
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.resources.detail(variables.resourceId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.resources.all });
     },
   });
 }
@@ -233,8 +234,8 @@ export function useDeleteResource() {
   return useMutation({
     mutationFn: deleteResource,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
-      queryClient.invalidateQueries({ queryKey: ["topics"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.resources.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.topics.all });
     },
   });
 }
@@ -254,9 +255,9 @@ export function useVoteOnResource() {
       voteType: "upvote" | "downvote" | "remove";
     }) => voteOnResource(resourceId, voteType),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: ["resources", variables.resourceId] });
-      queryClient.invalidateQueries({ queryKey: ["resources"] });
-      queryClient.invalidateQueries({ queryKey: ["userVote", "resource", variables.resourceId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.resources.detail(variables.resourceId) });
+      queryClient.invalidateQueries({ queryKey: queryKeys.resources.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.votes.user("resource", variables.resourceId) });
     },
   });
 }
@@ -266,7 +267,7 @@ export function useVoteOnResource() {
  */
 export function useUserResourceVote(resourceId: string) {
   return useQuery({
-    queryKey: ["userVote", "resource", resourceId],
+    queryKey: queryKeys.votes.user("resource", resourceId),
     queryFn: () => fetchUserVote(resourceId),
     enabled: !!resourceId,
   });

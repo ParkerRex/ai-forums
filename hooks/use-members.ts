@@ -1,6 +1,7 @@
 "use client";
 
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 type Member = {
   id: string;
@@ -109,7 +110,7 @@ async function updateMember(memberId: string, data: UpdateMemberData): Promise<M
  */
 export function useMembers(options?: { limit?: number; search?: string; status?: string }) {
   return useQuery({
-    queryKey: ["members", options],
+    queryKey: queryKeys.members.list(options),
     queryFn: () => fetchMembers(options),
   });
 }
@@ -119,7 +120,7 @@ export function useMembers(options?: { limit?: number; search?: string; status?:
  */
 export function useMember(memberId: string | undefined) {
   return useQuery({
-    queryKey: ["members", memberId],
+    queryKey: queryKeys.members.detail(memberId!),
     queryFn: () => fetchMember(memberId!),
     enabled: !!memberId,
   });
@@ -130,7 +131,7 @@ export function useMember(memberId: string | undefined) {
  */
 export function useOnlineMembers() {
   return useQuery({
-    queryKey: ["members", "online"],
+    queryKey: queryKeys.members.online(),
     queryFn: fetchOnlineMembers,
     refetchInterval: 60000, // Refetch every minute
   });
@@ -147,11 +148,11 @@ export function useUpdateMember() {
       updateMember(memberId, data),
     onSuccess: (updatedMember, variables) => {
       // Update the specific member in cache
-      queryClient.setQueryData(["members", variables.memberId], updatedMember);
+      queryClient.setQueryData(queryKeys.members.detail(variables.memberId), updatedMember);
       // Invalidate member list queries
-      queryClient.invalidateQueries({ queryKey: ["members"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.members.all });
       // Also invalidate auth cache since the current user might have been updated
-      queryClient.invalidateQueries({ queryKey: ["auth", "me"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.auth.me() });
     },
   });
 }
@@ -238,7 +239,7 @@ async function fetchMemberActivity(
  */
 export function useMemberPosts(memberId: string | undefined) {
   return useInfiniteQuery({
-    queryKey: ["memberPosts", memberId],
+    queryKey: queryKeys.members.posts(memberId!),
     queryFn: ({ pageParam }) => fetchMemberPosts(memberId!, pageParam as string | undefined),
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: undefined as string | undefined,
@@ -251,7 +252,7 @@ export function useMemberPosts(memberId: string | undefined) {
  */
 export function useMemberActivity(memberId: string | undefined) {
   return useInfiniteQuery({
-    queryKey: ["memberActivity", memberId],
+    queryKey: queryKeys.members.activity(memberId!),
     queryFn: ({ pageParam }) => fetchMemberActivity(memberId!, pageParam as string | undefined),
     getNextPageParam: (lastPage) => lastPage.nextCursor,
     initialPageParam: undefined as string | undefined,

@@ -1,6 +1,7 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 type Category = {
   id: string;
@@ -33,7 +34,7 @@ async function fetchCategory(categoryId: string): Promise<Category | null> {
 
 export function useCategories() {
   return useQuery({
-    queryKey: ["categories"],
+    queryKey: queryKeys.categories.list(),
     queryFn: fetchCategories,
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -41,7 +42,7 @@ export function useCategories() {
 
 export function useCategory(categoryId: string) {
   return useQuery({
-    queryKey: ["categories", categoryId],
+    queryKey: queryKeys.categories.detail(categoryId),
     queryFn: () => fetchCategory(categoryId),
     enabled: !!categoryId,
   });
@@ -52,7 +53,7 @@ export function useCategory(categoryId: string) {
  */
 export function useCategoryByName(categoryName: string) {
   return useQuery({
-    queryKey: ["categories", "byName", categoryName],
+    queryKey: queryKeys.categories.byName(categoryName),
     queryFn: () => fetchCategory(categoryName),
     enabled: !!categoryName,
   });

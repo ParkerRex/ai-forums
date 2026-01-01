@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 type Comment = {
   id: string;
@@ -78,7 +79,7 @@ async function voteOnComment(
 
 export function useComments(postId: string, options?: { sortBy?: string; flat?: boolean }) {
   return useQuery({
-    queryKey: ["comments", postId, options],
+    queryKey: queryKeys.comments.byPost(postId, options),
     queryFn: () => fetchComments(postId, options),
     enabled: !!postId,
   });
@@ -90,8 +91,8 @@ export function useCreateComment(postId: string) {
   return useMutation({
     mutationFn: (data: CreateCommentData) => createComment(postId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments", postId] });
-      queryClient.invalidateQueries({ queryKey: ["posts", postId] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.comments.all });
+      queryClient.invalidateQueries({ queryKey: queryKeys.posts.detail(postId) });
     },
   });
 }
@@ -108,7 +109,7 @@ export function useVoteOnComment() {
       voteType: "upvote" | "downvote" | "remove";
     }) => voteOnComment(commentId, voteType as "upvote" | "downvote"),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.comments.all });
     },
   });
 }
@@ -144,7 +145,7 @@ export function useEditComment() {
       attachments?: AttachmentType[];
     }) => editComment(commentId, { content, attachments }),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.comments.all });
     },
   });
 }
@@ -166,7 +167,7 @@ export function useDeleteComment() {
   return useMutation({
     mutationFn: (commentId: string) => deleteComment(commentId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.comments.all });
     },
   });
 }
@@ -232,7 +233,7 @@ export function useReorderCommentReplies() {
       newOrder: number;
     }) => reorderCommentReplies(parentCommentId, commentId, newOrder),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["comments"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.comments.all });
     },
   });
 }

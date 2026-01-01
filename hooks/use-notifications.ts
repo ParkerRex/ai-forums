@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@/lib/query-keys";
 
 export type NotificationType =
   | "mention"
@@ -101,7 +102,7 @@ async function deleteNotification(notificationId: string): Promise<void> {
 
 export function useNotifications(options?: NotificationsOptions) {
   const query = useQuery({
-    queryKey: ["notifications", options],
+    queryKey: queryKeys.notifications.list(options),
     queryFn: () => fetchNotifications(options),
     refetchInterval: 30000, // Poll every 30 seconds for real-time feel
     staleTime: 10000, // Consider data stale after 10 seconds
@@ -117,7 +118,7 @@ export function useNotifications(options?: NotificationsOptions) {
 
 export function useUnreadNotificationCount() {
   return useQuery({
-    queryKey: ["notifications", "unreadCount"],
+    queryKey: queryKeys.notifications.unreadCount(),
     queryFn: fetchUnreadCount,
     refetchInterval: 30000, // Poll every 30 seconds
     staleTime: 10000,
@@ -131,7 +132,7 @@ export function useMarkNotificationsRead() {
     mutationFn: ({ notificationIds, markAll }: { notificationIds?: string[]; markAll?: boolean }) =>
       markNotificationsRead(notificationIds, markAll),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }
@@ -142,7 +143,7 @@ export function useMarkAllNotificationsRead() {
   return useMutation({
     mutationFn: markAllNotificationsRead,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }
@@ -153,7 +154,7 @@ export function useDeleteNotification() {
   return useMutation({
     mutationFn: deleteNotification,
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["notifications"] });
+      queryClient.invalidateQueries({ queryKey: queryKeys.notifications.all });
     },
   });
 }
