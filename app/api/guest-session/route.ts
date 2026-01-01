@@ -5,7 +5,11 @@ import Stripe from "stripe";
 import { db } from "@/db";
 import { members } from "@/db/schema";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+    apiVersion: "2025-08-27.basil",
+  });
+}
 
 /**
  * API endpoint to set a guest session after successful checkout
@@ -20,6 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the session with Stripe and get the guest member's email
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (!session || session.payment_status !== "paid") {

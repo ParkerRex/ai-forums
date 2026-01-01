@@ -2,9 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getCurrentMember } from "@/lib/auth";
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-  apiVersion: "2025-08-27.basil",
-});
+function getStripe() {
+  return new Stripe(process.env.STRIPE_SECRET_KEY || "", {
+    apiVersion: "2025-08-27.basil",
+  });
+}
 
 /**
  * POST /api/stripe/direct-checkout
@@ -28,6 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create checkout session
+    const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       payment_method_types: ["card"],

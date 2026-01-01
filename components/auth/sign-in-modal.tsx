@@ -1,7 +1,7 @@
 "use client";
 
-import { SignInButton } from "@clerk/nextjs";
 import { LogIn } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -33,12 +33,12 @@ export function SignInModal({
         </DialogHeader>
 
         <div className="mt-6 space-y-4">
-          <SignInButton mode="modal">
+          <Link href="/login" onClick={onClose}>
             <Button className="w-full" size="lg">
               <LogIn className="w-4 h-4 mr-2" />
               Sign In
             </Button>
-          </SignInButton>
+          </Link>
         </div>
       </DialogContent>
     </Dialog>

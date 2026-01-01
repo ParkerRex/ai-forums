@@ -1,11 +1,11 @@
 "use client";
 
-import { SignInButton } from "@clerk/nextjs";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
 export function AuthButton() {
   return (
-    <SignInButton mode="modal">
+    <Link href="/login">
       <Button
         variant="default"
         size="default"
@@ -13,6 +13,6 @@ export function AuthButton() {
       >
         MEMBERS
       </Button>
-    </SignInButton>
+    </Link>
   );
 }

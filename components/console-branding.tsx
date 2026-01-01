@@ -1,11 +1,11 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { useConsoleLogger } from "@/hooks/use-console-branding";
 
 export function ConsoleBranding() {
-  const { isSignedIn, user } = useUser();
+  const { isAuthenticated, user } = useAuth();
   const { logBranding, logAuthEvent } = useConsoleLogger();
 
   // Display branding once on mount
@@ -14,15 +14,15 @@ export function ConsoleBranding() {
 
     // Log initial auth state
     logAuthEvent("session_initialized", {
-      isSignedIn: !!isSignedIn,
+      isSignedIn: isAuthenticated,
       userId: user?.id,
       timestamp: new Date().toISOString(),
     });
-  }, [logBranding, logAuthEvent, isSignedIn, user?.id]);
+  }, [logBranding, logAuthEvent, isAuthenticated, user?.id]);
 
   // Log auth state changes
   useEffect(() => {
-    if (isSignedIn) {
+    if (isAuthenticated) {
       logAuthEvent("user_signed_in", {
         isSignedIn: true,
         userId: user?.id,
@@ -34,7 +34,7 @@ export function ConsoleBranding() {
         timestamp: new Date().toISOString(),
       });
     }
-  }, [isSignedIn, user?.id, logAuthEvent]);
+  }, [isAuthenticated, user?.id, logAuthEvent]);
 
   // This component only handles console output
   return null;
