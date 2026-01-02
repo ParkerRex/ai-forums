@@ -94,7 +94,7 @@ export function SortPopover({ sortBy = "newest", onSortChange, className }: Sort
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
-      <TooltipProvider>
+      <TooltipProvider delayDuration={100} skipDelayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
             <PopoverTrigger asChild>

@@ -38,7 +38,7 @@ export function LastPushTag() {
   }
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={100} skipDelayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-1.5 text-xs text-muted-foreground select-none cursor-default font-mono uppercase tracking-tighter">

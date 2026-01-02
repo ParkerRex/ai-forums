@@ -14,7 +14,7 @@ export function DiscordStatus() {
   }
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={100} skipDelayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <div className="flex items-center gap-2 text-xs text-muted-foreground select-none">

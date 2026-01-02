@@ -7,5 +7,9 @@ interface HeaderProviderProps {
 }
 
 export const HeaderProvider = ({ children }: HeaderProviderProps) => {
-  return <TooltipProvider>{children}</TooltipProvider>;
+  return (
+    <TooltipProvider delayDuration={100} skipDelayDuration={0}>
+      {children}
+    </TooltipProvider>
+  );
 };
