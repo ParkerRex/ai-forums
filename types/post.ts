@@ -89,9 +89,6 @@ export interface Post {
   pollEndsAt?: number | string | null;
   totalPollVotes?: number | null;
   attachments?: PostAttachment[] | null;
-  isFree?: boolean;
-  isPaywalled?: boolean;
-  fullContentRequiresTier?: string;
   member: PostAuthor;
   category: PostCategory;
 }
@@ -112,7 +109,6 @@ export interface CreatePostInput {
   mediaWidth?: number;
   mediaHeight?: number;
   preview?: string;
-  isFree?: boolean;
   pollOptions?: string[];
   pollDuration?: number;
 }
@@ -131,7 +127,6 @@ export interface UpdatePostInput {
   mediaUrl?: string;
   thumbnailUrl?: string;
   editReason?: string;
-  isFree?: boolean;
 }
 
 export interface PostVoteResult {

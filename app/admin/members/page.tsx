@@ -52,23 +52,19 @@ import { cn } from "@/lib/utils";
 type SortField = "name" | "email" | "joinedAt" | "lastActiveAt" | "tier" | "status";
 type SortOrder = "asc" | "desc";
 
-// Note: No free tier - platform operates with zero free users
-// Scholarships handled via Stripe coupons with early_bird tier
+// Legacy tier badges for founding members and early adopters
 const tierConfig = {
   founding_member: {
     label: "Founding",
     color: "bg-chart-4/10 text-chart-4 border-chart-4/20",
-    price: "$39",
   },
   early_bird: {
     label: "Early Bird",
     color: "bg-chart-1/10 text-chart-1 border-chart-1/20",
-    price: "$50",
   },
   member: {
     label: "Member",
     color: "bg-chart-2/10 text-chart-2 border-chart-2/20",
-    price: "$99",
   },
 };
 
@@ -202,9 +198,7 @@ export default function AdminMembersPage() {
       email: m.email,
       tier: m.tier,
       status: m.status,
-      billing: m.billingInterval,
       joined: m.joinedDate ? format(new Date(m.joinedDate), "yyyy-MM-dd") : "",
-      lastActive: "", // No lastActive field in schema
     }));
 
     const csv = [
@@ -578,18 +572,11 @@ export default function AdminMembersPage() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="space-y-1">
-                      {tierInfo && (
-                        <Badge variant="outline" className={cn("text-xs", tierInfo.color)}>
-                          {tierInfo.label}
-                        </Badge>
-                      )}
-                      {member.billingInterval && (
-                        <div className="text-muted-foreground text-xs">
-                          {tierInfo?.price}/{member.billingInterval === "monthly" ? "mo" : "yr"}
-                        </div>
-                      )}
-                    </div>
+                    {tierInfo && (
+                      <Badge variant="outline" className={cn("text-xs", tierInfo.color)}>
+                        {tierInfo.label}
+                      </Badge>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>

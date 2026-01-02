@@ -71,8 +71,6 @@ export interface Post {
   pollOptions?: PostPollOption[] | null;
   pollEndsAt?: string | number | null;
   totalPollVotes?: number | null;
-  isPaywalled?: boolean;
-  fullContentRequiresTier?: string;
   member?: PostAuthor | null;
   category?: PostCategory | null;
   isPinned?: boolean;

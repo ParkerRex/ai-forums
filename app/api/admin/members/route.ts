@@ -70,12 +70,8 @@ export async function GET(request: NextRequest) {
       // Convert timestamps to numbers for client
       joinedDate: m.joinedDate ? new Date(m.joinedDate).getTime() : null,
       lastOnline: m.lastOnline ? new Date(m.lastOnline).getTime() : null,
-      // Add placeholder subscription fields (would need joins in real implementation)
+      // Legacy tier field (founding_member, early_bird, member)
       tier: null as string | null,
-      billingInterval: null as string | null,
-      subscriptionStatus: null as string | null,
-      subscriptionEndDate: null as number | null,
-      amountCents: null as number | null,
     }));
 
     return NextResponse.json(membersWithStatus);

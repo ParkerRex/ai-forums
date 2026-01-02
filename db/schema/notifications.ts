@@ -9,7 +9,7 @@ export const notifications = pgTable(
       .notNull()
       .references(() => members.id, { onDelete: "cascade" }),
     actorId: uuid("actor_id").references(() => members.id),
-    type: varchar("type", { length: 50 }).notNull(), // 'mention' | 'reply' | 'upvote' | 'follow' | 'comment_report' | 'payment_reminder'
+    type: varchar("type", { length: 50 }).notNull(), // 'mention' | 'reply' | 'upvote' | 'follow' | 'comment_report'
     entityType: varchar("entity_type", { length: 20 }), // 'post' | 'comment'
     entityId: uuid("entity_id"),
     message: text("message"),

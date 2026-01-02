@@ -25,8 +25,6 @@ export interface Member {
 // Extended member type for admin list views with additional fields
 export interface MemberWithStatus extends Member {
   _id: string;
-  billingInterval?: "monthly" | "yearly" | null;
-  subscriptionEndDate?: number | string | null;
 }
 
 // Activity item types

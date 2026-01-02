@@ -20,11 +20,8 @@ type Member = {
   lastOnline: string | null;
   role: string;
   email?: string;
-  status: "active" | "churned" | "free";
-  tier?: "free" | "scholarship" | "founding_member" | "early_bird" | "member";
-  subscriptionStatus?: "active" | "cancelled" | "past_due" | "expired" | "none";
-  subscriptionEndDate?: number | null;
-  billingInterval?: "monthly" | "yearly" | null;
+  status: "active" | "churned";
+  tier?: "founding_member" | "early_bird" | "member";
   linkGithub?: string | null;
   linkX?: string | null;
   linkYouTube?: string | null;
