@@ -3,11 +3,15 @@ import { type NextRequest, NextResponse } from "next/server";
 /** GitHub API base URL for all GitHub API requests */
 const GITHUB_API_URL = "https://api.github.com";
 
-/** GitHub repository owner/organization name */
-const OWNER = "joinvai";
+function getRepoConfig() {
+  const repoSlug = process.env.GITHUB_REPO?.trim();
+  const [repoOwner, repoName] = repoSlug ? repoSlug.split("/") : [];
 
-/** GitHub repository name from which to fetch issues */
-const REPO = "VAI";
+  return {
+    owner: process.env.GITHUB_OWNER?.trim() || repoOwner || "ParkerRex",
+    repo: process.env.GITHUB_REPO_NAME?.trim() || repoName || "ai-forums",
+  };
+}
 
 /**
  * Fetches open GitHub issues from the VAI repository.
@@ -31,8 +35,10 @@ export async function GET(request: NextRequest) {
     const page = searchParams.get("page") || "1";
     const perPage = searchParams.get("per_page") || "10";
 
+    const { owner, repo } = getRepoConfig();
+
     // Construct GitHub API URL with pagination and filter for open issues only
-    const url = `${GITHUB_API_URL}/repos/${OWNER}/${REPO}/issues?state=open&per_page=${perPage}&page=${page}`;
+    const url = `${GITHUB_API_URL}/repos/${owner}/${repo}/issues?state=open&per_page=${perPage}&page=${page}`;
 
     // Fetch issues from GitHub API with proper authentication headers
     const response = await fetch(url, {
@@ -40,6 +46,7 @@ export async function GET(request: NextRequest) {
         Authorization: `Bearer ${token}`,
         Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "vai-forums",
       },
     });
 
@@ -53,14 +60,14 @@ export async function GET(request: NextRequest) {
 
     // Transform full GitHub issue objects into simplified objects for the UI
     // This reduces payload size and only includes necessary information
-    const simplifiedIssues = issues.map(
-      (issue: { id: number; number: number; title: string; html_url: string }) => ({
+    const simplifiedIssues = issues
+      .filter((issue: { pull_request?: unknown }) => !issue.pull_request)
+      .map((issue: { id: number; number: number; title: string; html_url: string }) => ({
         id: issue.id, // Unique GitHub issue ID
         number: issue.number, // Human-readable issue number
         title: issue.title, // Issue title for display
         html_url: issue.html_url, // Direct link to the issue on GitHub
-      }),
-    );
+      }));
 
     // Return simplified issues with appropriate caching headers
     return NextResponse.json(simplifiedIssues, {

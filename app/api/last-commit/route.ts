@@ -40,11 +40,15 @@ import { NextResponse } from "next/server";
 /** GitHub API base URL for all GitHub API requests */
 const GITHUB_API_URL = "https://api.github.com";
 
-/** GitHub repository owner/organization name */
-const OWNER = "joinvai";
+function getRepoConfig() {
+  const repoSlug = process.env.GITHUB_REPO?.trim();
+  const [repoOwner, repoName] = repoSlug ? repoSlug.split("/") : [];
 
-/** GitHub repository name from which to fetch commit information */
-const REPO = "VAI";
+  return {
+    owner: process.env.GITHUB_OWNER?.trim() || repoOwner || "ParkerRex",
+    repo: process.env.GITHUB_REPO_NAME?.trim() || repoName || "ai-forums",
+  };
+}
 
 /**
  * Fetches information about the most recent commit from the VAI repository.
@@ -85,13 +89,16 @@ export async function GET() {
       return NextResponse.json({ error: "GitHub token not configured" }, { status: 500 });
     }
 
+    const { owner, repo } = getRepoConfig();
+
     // Fetch the most recent commit from the repository
     // Using per_page=1 to get only the latest commit for efficiency
-    const response = await fetch(`${GITHUB_API_URL}/repos/${OWNER}/${REPO}/commits?per_page=1`, {
+    const response = await fetch(`${GITHUB_API_URL}/repos/${owner}/${repo}/commits?per_page=1`, {
       headers: {
         Authorization: `Bearer ${githubToken}`,
         Accept: "application/vnd.github+json",
         "X-GitHub-Api-Version": "2022-11-28",
+        "User-Agent": "vai-forums",
       },
     });
 
