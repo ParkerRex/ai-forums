@@ -1,7 +1,7 @@
 import { and, desc, eq, lt, or, sql } from "drizzle-orm";
 import { db } from "@/db";
 import { categories, members, posts, postVersions } from "@/db/schema";
-import type { PostAttachment, PollOption } from "@/db/schema/posts";
+import type { PollOption, PostAttachment } from "@/db/schema/posts";
 
 /**
  * Post Repository
@@ -128,7 +128,7 @@ export const postRepository = {
    * Find multiple posts with filters and pagination
    */
   async findMany(
-    options: PostQueryOptions = {}
+    options: PostQueryOptions = {},
   ): Promise<{ items: PostWithRelations[]; nextCursor: string | null; hasMore: boolean }> {
     const {
       categoryId,
@@ -170,17 +170,14 @@ export const postRepository = {
                 eq(posts.createdAt, cursorPost.createdAt),
                 lt(posts.id, cursorPost.id),
               ),
-            ),
+            )!,
           );
         } else {
           conditions.push(
             or(
               lt(posts.createdAt, cursorPost.createdAt),
-              and(
-                eq(posts.createdAt, cursorPost.createdAt),
-                lt(posts.id, cursorPost.id),
-              ),
-            ),
+              and(eq(posts.createdAt, cursorPost.createdAt), lt(posts.id, cursorPost.id)),
+            )!,
           );
         }
       }
@@ -365,11 +362,7 @@ export const postRepository = {
    * Update an existing post, saving version history
    * Uses a transaction to ensure version history is saved atomically
    */
-  async update(
-    id: string,
-    input: UpdatePostInput,
-    editorId: string
-  ): Promise<PostWithRelations> {
+  async update(id: string, input: UpdatePostInput, editorId: string): Promise<PostWithRelations> {
     // Get existing post for version history
     const existingPost = await db.query.posts.findFirst({
       where: eq(posts.id, id),
@@ -484,7 +477,7 @@ export const postRepository = {
   async canModify(
     postId: string,
     memberId: string,
-    memberRole: string
+    memberRole: string,
   ): Promise<{ allowed: boolean; post: typeof posts.$inferSelect | null }> {
     const post = await db.query.posts.findFirst({
       where: eq(posts.id, postId),

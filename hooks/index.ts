@@ -10,41 +10,20 @@
  *   import { useCurrentMember } from "@/hooks/members"
  */
 
-// Posts hooks
-export * from "./posts";
-
-// Member hooks
-export * from "./members";
-
 // Comment hooks
 export * from "./comments";
-
 // Common/utility hooks (excluding duplicates)
 export { useOptimisticVote } from "./common/use-optimistic-vote";
-export {
-  useBookmarks,
-  useBookmarksWithDetails,
-  useIsBookmarked,
-  useToggleBookmark,
-} from "./use-bookmarks";
-export {
-  useDeleteNotification,
-  useMarkAllNotificationsRead,
-  useMarkNotificationsRead,
-  useNotifications,
-  useUnreadNotificationCount,
-  type Notification,
-  type NotificationEntityType,
-  type NotificationType,
-} from "./use-notifications";
-export { useUserVotes } from "./use-user-votes";
-
+// Member hooks
+export * from "./members";
+// Posts hooks
+export * from "./posts";
 // Admin hooks (excluding useUpdateMember which conflicts with members)
 export {
   useAdminChurnAnalysis,
   useAdminMemberDetails,
-  useAdminMembers,
   useAdminMemberStats,
+  useAdminMembers,
   useAdminMetrics,
   useAdminMRRHistory,
   useReportedComments,
@@ -53,21 +32,37 @@ export {
   useWebhookFailures,
   useWebhookHealth,
 } from "./use-admin";
+export {
+  useBookmarks,
+  useBookmarksWithDetails,
+  useIsBookmarked,
+  useToggleBookmark,
+} from "./use-bookmarks";
 export * from "./use-categories";
-export * from "./use-events";
-export * from "./use-polls";
-export * from "./use-realtime";
-export * from "./use-resources";
-export * from "./use-search";
-export * from "./use-topics";
-export * from "./use-discord-digest";
-
 // Utility hooks
 export * from "./use-console-branding";
+export * from "./use-discord-digest";
+export * from "./use-events";
 export * from "./use-intersection-prefetch";
 export * from "./use-mobile";
 export * from "./use-mutation-error";
 export * from "./use-network-status";
+export {
+  type Notification,
+  type NotificationEntityType,
+  type NotificationType,
+  useDeleteNotification,
+  useMarkAllNotificationsRead,
+  useMarkNotificationsRead,
+  useNotifications,
+  useUnreadNotificationCount,
+} from "./use-notifications";
+export * from "./use-polls";
+export * from "./use-realtime";
+export * from "./use-resources";
+export * from "./use-search";
 export * from "./use-search-hotkey";
 export * from "./use-sort-hotkey";
 export * from "./use-toast";
+export * from "./use-topics";
+export { useUserVotes } from "./use-user-votes";

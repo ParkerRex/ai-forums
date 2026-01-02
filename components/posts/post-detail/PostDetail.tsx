@@ -60,7 +60,7 @@ export default function PostDetail({
 
   // Check if current user owns this post
   const isMemberPost = Boolean(
-    currentMember && post.member && currentMember.id === post.member?.id
+    currentMember && post.member && currentMember.id === post.member?.id,
   );
 
   // Check if current user is an admin

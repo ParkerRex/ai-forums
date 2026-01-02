@@ -218,6 +218,39 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
     setSubmitError(null);
   }, []);
 
+  const hasEvidence =
+    Boolean(formData.linkUrl?.trim()) ||
+    Boolean(formData.mediaItems && formData.mediaItems.length > 0) ||
+    /https?:\/\/\S+/i.test(formData.content);
+
+  const signalChecks = [
+    {
+      label: "Specific title",
+      detail: "10+ chars",
+      ok: formData.title.trim().length >= 10,
+    },
+    {
+      label: "Category chosen",
+      detail: "Target audience",
+      ok: formData.categoryId.trim().length > 0,
+    },
+    {
+      label: "Context included",
+      detail: "120+ chars",
+      ok: formData.content.trim().length >= 120,
+    },
+    {
+      label: "Evidence attached",
+      detail: "Link or media",
+      ok: hasEvidence,
+    },
+  ];
+
+  const signalScore = signalChecks.filter((check) => check.ok).length;
+  const signalPercent = Math.round((signalScore / signalChecks.length) * 100);
+  const signalLabel =
+    signalPercent >= 85 ? "High signal" : signalPercent >= 60 ? "Solid" : "Needs depth";
+
   const handleTypeChange = useCallback(
     (type: string) => {
       setFormData((prev) => ({
@@ -550,29 +583,49 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
   ];
 
   return (
-    <div className="mx-auto w-full max-w-4xl">
+    <div className="mx-auto w-full max-w-5xl">
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between border-b pb-6">
-          <div className="flex items-center gap-4">
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={handleCancel}
-              className="rounded-full"
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <h1 className="text-2xl font-semibold">Create post</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <DraftsModal>
-              <Button type="button" variant="ghost" disabled={isSubmitting} size="sm">
-                <FileText className="mr-2 h-4 w-4" />
-                Drafts
+        <div className="relative overflow-hidden rounded-none border bg-card/80 p-5 shadow-xs backdrop-blur-sm">
+          <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(15,23,42,0.10),_transparent_55%)]" />
+          <div className="relative flex flex-wrap items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                onClick={handleCancel}
+                className="rounded-full border border-border/60"
+              >
+                <ArrowLeft className="h-4 w-4" />
               </Button>
-            </DraftsModal>
+              <div>
+                <div className="text-muted-foreground text-xs font-semibold uppercase tracking-[0.25em]">
+                  Compose
+                </div>
+                <h1 className="text-2xl font-semibold">Create post</h1>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="text-muted-foreground hidden items-center gap-2 text-xs sm:flex">
+                <span className="bg-muted/60 rounded-full px-2 py-1 font-mono text-[11px]">
+                  ⌘/Ctrl + Enter
+                </span>
+                <span>Publish fast</span>
+              </div>
+              <DraftsModal>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  disabled={isSubmitting}
+                  size="sm"
+                  className="border border-border/60"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  Drafts
+                </Button>
+              </DraftsModal>
+            </div>
           </div>
         </div>
 
@@ -584,283 +637,352 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
           </Alert>
         )}
 
-        {/* Post Type Selection */}
-        <div className="bg-muted flex w-fit items-center gap-2 rounded-none p-1">
-          {typeButtons.map(({ value, icon: Icon, label }) => (
-            <button
-              key={value}
-              type="button"
-              onClick={() => handleTypeChange(value)}
-              className={cn(
-                "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-                formData.type === value
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              <Icon className="h-4 w-4" />
-              {label}
-            </button>
-          ))}
-        </div>
-
-        {/* Main Content Area */}
-        <div className="space-y-6">
-          {/* Title */}
-          <div className="space-y-2">
-            <Input
-              id="title"
-              type="text"
-              value={formData.title}
-              onChange={handleTitleChange}
-              placeholder="Post title"
-              className="h-auto py-3 text-2xl font-medium"
-              disabled={isSubmitting}
-              autoFocus
-            />
-            <div className="flex items-center justify-end">
-              <div className={cn("text-xs tabular-nums", "text-muted-foreground")}>
-                {titleInfo.length}
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+          <div className="space-y-6">
+            {/* Post Type Selection */}
+            <div className="rounded-none border bg-card/70 p-3 shadow-xs">
+              <div className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-[0.25em]">
+                Post type
+              </div>
+              <div className="bg-muted/60 flex w-fit items-center gap-2 rounded-none p-1">
+                {typeButtons.map(({ value, icon: Icon, label }) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => handleTypeChange(value)}
+                    className={cn(
+                      "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-all",
+                      formData.type === value
+                        ? "bg-background text-foreground shadow-xs"
+                        : "text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </button>
+                ))}
               </div>
             </div>
-          </div>
 
-          {/* Category Selection */}
-          <div className="space-y-2">
-            <Label className="pr-4 text-sm font-medium">Category</Label>
-            <CategoryToggleGroup
-              categories={
-                categories?.map((cat) => ({
-                  id: cat.id,
-                  name: cat.name,
-                  displayName: cat.displayName,
-                  description: cat.description || "",
-                  icon: cat.icon || undefined,
-                  postCount: cat.postCount,
-                  isTrending: false,
-                })) || []
-              }
-              value={formData.categoryId}
-              onChange={handleCategoryChange}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* Type-specific content */}
-          {formData.type === "text" && (
-            <div className="space-y-4">
-              {/* Consistent toggle placement at the top */}
-              <div className="flex items-center justify-between">
-                <PostPreviewToggle value={contentTab} onValueChange={setContentTab} />
-                <div className={cn("text-xs tabular-nums", "text-muted-foreground")}>
-                  {contentInfo.length}
-                </div>
-              </div>
-
-              {contentTab === "edit" ? (
-                <div className="space-y-2">
-                  <Suspense fallback={<RichTextEditorSkeleton />}>
-                    <RichTextEditor
-                      content={formData.content}
-                      onChange={handleContentChange}
-                      placeholder="Write your post..."
-                      className="min-h-[300px]"
-                    />
-                  </Suspense>
-                  <PublishButton
-                    isFormComplete={isFormComplete}
-                    isSubmitting={isSubmitting}
-                    uploadProgress={uploadProgress}
-                  />
-                </div>
-              ) : (
-                <Suspense fallback={<PostPreviewSkeleton />}>
-                  <PostPreview
-                    post={{
-                      id: "preview",
-                      title: formData.title || "Untitled Post",
-                      content: formData.content || "No content yet...",
-                      createdAt: Date.now(),
-                      upvotes: 0,
-                      downvotes: 0,
-                      commentCount: 0,
-                      viewCount: 0,
-                      type: "text",
-                      member: {
-                        id: "preview",
-                        firstName: "You",
-                        lastName: "",
-                        username: "you",
-                        slug: "you",
-                      },
-                    }}
-                    showMember={false}
-                  />
-                </Suspense>
-              )}
-            </div>
-          )}
-
-          {formData.type === "media" && (
+            {/* Main Content Area */}
             <div className="space-y-6">
-              <MediaUploadSection
-                media={formData.mediaItems || []}
-                onMediaChange={(mediaItems) => {
-                  setFormData((prev) => ({ ...prev, mediaItems }));
-                }}
-                onUpload={async (file, mediaItem) => {
-                  // Handle upload with progress tracking
-                  const result = await uploadMedia(file, {
-                    onProgress: (progress) => {
-                      // Update the specific media item's progress
+              {/* Title */}
+              <div className="rounded-none border bg-card/70 p-4 shadow-xs">
+                <div className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-[0.25em]">
+                  Title
+                </div>
+                <Input
+                  id="title"
+                  type="text"
+                  value={formData.title}
+                  onChange={handleTitleChange}
+                  placeholder="Make it specific and technical"
+                  className="h-auto border-0 bg-transparent px-0 py-2 text-2xl font-semibold focus-visible:ring-0"
+                  disabled={isSubmitting}
+                  autoFocus
+                />
+                <div className="flex items-center justify-end">
+                  <div className={cn("text-xs tabular-nums", "text-muted-foreground")}>
+                    {titleInfo.length}
+                  </div>
+                </div>
+              </div>
+
+              {/* Category Selection */}
+              <div className="rounded-none border bg-card/70 p-4 shadow-xs">
+                <div className="text-muted-foreground mb-3 text-xs font-semibold uppercase tracking-[0.25em]">
+                  Category
+                </div>
+                <Label className="sr-only">Category</Label>
+                <CategoryToggleGroup
+                  categories={
+                    categories?.map((cat) => ({
+                      id: cat.id,
+                      name: cat.name,
+                      displayName: cat.displayName,
+                      description: cat.description || "",
+                      icon: cat.icon || undefined,
+                      postCount: cat.postCount,
+                      isTrending: false,
+                    })) || []
+                  }
+                  value={formData.categoryId}
+                  onChange={handleCategoryChange}
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              {/* Type-specific content */}
+              {formData.type === "text" && (
+                <div className="rounded-none border bg-card/70 p-4 shadow-xs">
+                  <div className="mb-4 flex items-center justify-between">
+                    <div className="text-muted-foreground text-xs font-semibold uppercase tracking-[0.25em]">
+                      Body
+                    </div>
+                    <div className={cn("text-xs tabular-nums", "text-muted-foreground")}>
+                      {contentInfo.length}
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <PostPreviewToggle value={contentTab} onValueChange={setContentTab} />
+                  </div>
+
+                  {contentTab === "edit" ? (
+                    <div className="mt-4 space-y-2">
+                      <Suspense fallback={<RichTextEditorSkeleton />}>
+                        <RichTextEditor
+                          content={formData.content}
+                          onChange={handleContentChange}
+                          placeholder="Share the why, the method, and the results. Links welcome."
+                          className="min-h-[320px]"
+                        />
+                      </Suspense>
+                      <PublishButton
+                        isFormComplete={isFormComplete}
+                        isSubmitting={isSubmitting}
+                        uploadProgress={uploadProgress}
+                      />
+                    </div>
+                  ) : (
+                    <div className="mt-4">
+                      <Suspense fallback={<PostPreviewSkeleton />}>
+                        <PostPreview
+                          post={{
+                            id: "preview",
+                            title: formData.title || "Untitled Post",
+                            content: formData.content || "No content yet...",
+                            createdAt: Date.now(),
+                            upvotes: 0,
+                            downvotes: 0,
+                            commentCount: 0,
+                            viewCount: 0,
+                            type: "text",
+                            member: {
+                              id: "preview",
+                              firstName: "You",
+                              lastName: "",
+                              username: "you",
+                              slug: "you",
+                            },
+                          }}
+                          showMember={false}
+                        />
+                      </Suspense>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {formData.type === "media" && (
+                <div className="space-y-6 rounded-none border bg-card/70 p-4 shadow-xs">
+                  <MediaUploadSection
+                    media={formData.mediaItems || []}
+                    onMediaChange={(mediaItems) => {
+                      setFormData((prev) => ({ ...prev, mediaItems }));
+                    }}
+                    onUpload={async (file, mediaItem) => {
+                      // Handle upload with progress tracking
+                      const result = await uploadMedia(file, {
+                        onProgress: (progress) => {
+                          // Update the specific media item's progress
+                          setFormData((prev) => ({
+                            ...prev,
+                            mediaItems:
+                              prev.mediaItems?.map((item) =>
+                                item.id === mediaItem.id
+                                  ? { ...item, uploadProgress: progress.percentage }
+                                  : item,
+                              ) || [],
+                          }));
+                        },
+                      });
+
+                      // Update media item with uploaded URL
                       setFormData((prev) => ({
                         ...prev,
                         mediaItems:
                           prev.mediaItems?.map((item) =>
                             item.id === mediaItem.id
-                              ? { ...item, uploadProgress: progress.percentage }
+                              ? {
+                                  ...item,
+                                  url: result.url,
+                                  thumbnailUrl: result.thumbnailUrl,
+                                  isUploading: false,
+                                  uploadProgress: 100,
+                                }
                               : item,
                           ) || [],
                       }));
-                    },
-                  });
-
-                  // Update media item with uploaded URL
-                  setFormData((prev) => ({
-                    ...prev,
-                    mediaItems:
-                      prev.mediaItems?.map((item) =>
-                        item.id === mediaItem.id
-                          ? {
-                              ...item,
-                              url: result.url,
-                              thumbnailUrl: result.thumbnailUrl,
-                              isUploading: false,
-                              uploadProgress: 100,
-                            }
-                          : item,
-                      ) || [],
-                  }));
-                }}
-                disabled={isSubmitting}
-              />
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Description (optional)</Label>
-                <Suspense fallback={<RichTextEditorSkeleton />}>
-                  <RichTextEditor
-                    content={formData.content}
-                    onChange={handleContentChange}
-                    placeholder="Add a description..."
-                    className="min-h-[150px]"
+                    }}
+                    disabled={isSubmitting}
                   />
-                </Suspense>
-                <div className="text-muted-foreground text-right text-xs">
-                  {contentInfo.length}/10,000
-                </div>
-                <PublishButton
-                  isFormComplete={isFormComplete}
-                  isSubmitting={isSubmitting}
-                  uploadProgress={uploadProgress}
-                />
-              </div>
-            </div>
-          )}
 
-          {formData.type === "link" && (
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">URL</Label>
-                <Input
-                  id="link-url"
-                  type="url"
-                  value={formData.linkUrl || ""}
-                  onChange={handleLinkUrlChange}
-                  placeholder="https://example.com"
-                  disabled={isSubmitting}
-                />
-                {formData.linkUrl && formData.linkTitle && (
-                  <div className="mt-4 rounded-none border p-4">
-                    <div className="flex gap-4">
-                      {formData.linkImage && (
-                        <Image
-                          src={formData.linkImage}
-                          alt="Link preview"
-                          width={96}
-                          height={96}
-                          className="h-24 w-24 rounded-sm object-cover"
-                          unoptimized={true}
-                        />
-                      )}
-                      <div className="min-w-0 flex-1">
-                        <h4 className="truncate font-medium">{formData.linkTitle}</h4>
-                        {formData.linkDescription && (
-                          <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
-                            {formData.linkDescription}
-                          </p>
-                        )}
-                        <p className="text-muted-foreground mt-2 text-xs">
-                          {new URL(formData.linkUrl).hostname}
-                        </p>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Description (optional)</Label>
+                    <Suspense fallback={<RichTextEditorSkeleton />}>
+                      <RichTextEditor
+                        content={formData.content}
+                        onChange={handleContentChange}
+                        placeholder="Add a description..."
+                        className="min-h-[150px]"
+                      />
+                    </Suspense>
+                    <div className="text-muted-foreground text-right text-xs">
+                      {contentInfo.length}/10,000
+                    </div>
+                    <PublishButton
+                      isFormComplete={isFormComplete}
+                      isSubmitting={isSubmitting}
+                      uploadProgress={uploadProgress}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {formData.type === "link" && (
+                <div className="space-y-6 rounded-none border bg-card/70 p-4 shadow-xs">
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">URL</Label>
+                    <Input
+                      id="link-url"
+                      type="url"
+                      value={formData.linkUrl || ""}
+                      onChange={handleLinkUrlChange}
+                      placeholder="https://example.com"
+                      disabled={isSubmitting}
+                    />
+                    {formData.linkUrl && formData.linkTitle && (
+                      <div className="mt-4 rounded-none border p-4">
+                        <div className="flex gap-4">
+                          {formData.linkImage && (
+                            <Image
+                              src={formData.linkImage}
+                              alt="Link preview"
+                              width={96}
+                              height={96}
+                              className="h-24 w-24 rounded-sm object-cover"
+                              unoptimized={true}
+                            />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <h4 className="truncate font-medium">{formData.linkTitle}</h4>
+                            {formData.linkDescription && (
+                              <p className="text-muted-foreground mt-1 line-clamp-2 text-sm">
+                                {formData.linkDescription}
+                              </p>
+                            )}
+                            <p className="text-muted-foreground mt-2 text-xs">
+                              {new URL(formData.linkUrl).hostname}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Description</Label>
+                    <Suspense fallback={<RichTextEditorSkeleton />}>
+                      <RichTextEditor
+                        content={formData.content}
+                        onChange={handleContentChange}
+                        placeholder="Share your thoughts about this link..."
+                        className="min-h-[150px]"
+                      />
+                    </Suspense>
+                    <div className="flex items-center justify-end">
+                      <div className={cn("text-xs tabular-nums", "text-muted-foreground")}>
+                        {contentInfo.length}/10,000
                       </div>
                     </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Description</Label>
-                <Suspense fallback={<RichTextEditorSkeleton />}>
-                  <RichTextEditor
-                    content={formData.content}
-                    onChange={handleContentChange}
-                    placeholder="Share your thoughts about this link..."
-                    className="min-h-[150px]"
-                  />
-                </Suspense>
-                <div className="flex items-center justify-end">
-                  <div className={cn("text-xs tabular-nums", "text-muted-foreground")}>
-                    {contentInfo.length}/10,000
+                    <PublishButton
+                      isFormComplete={isFormComplete}
+                      isSubmitting={isSubmitting}
+                      uploadProgress={uploadProgress}
+                    />
                   </div>
                 </div>
-                <PublishButton
-                  isFormComplete={isFormComplete}
-                  isSubmitting={isSubmitting}
-                  uploadProgress={uploadProgress}
-                />
-              </div>
-            </div>
-          )}
+              )}
 
-          {formData.type === "poll" && (
-            <div className="space-y-6">
-              <PollCreationInline
-                pollData={formData.pollData}
-                onChange={handlePollChange}
-                disabled={isSubmitting}
-              />
-
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Description (optional)</Label>
-                <Suspense fallback={<RichTextEditorSkeleton />}>
-                  <RichTextEditor
-                    content={formData.content}
-                    onChange={handleContentChange}
-                    placeholder="Add context about your poll..."
-                    className="min-h-[150px]"
+              {formData.type === "poll" && (
+                <div className="space-y-6 rounded-none border bg-card/70 p-4 shadow-xs">
+                  <PollCreationInline
+                    pollData={formData.pollData}
+                    onChange={handlePollChange}
+                    disabled={isSubmitting}
                   />
-                </Suspense>
-                <div className="text-muted-foreground text-right text-xs">
-                  {contentInfo.length}/10,000
+
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Description (optional)</Label>
+                    <Suspense fallback={<RichTextEditorSkeleton />}>
+                      <RichTextEditor
+                        content={formData.content}
+                        onChange={handleContentChange}
+                        placeholder="Add context about your poll..."
+                        className="min-h-[150px]"
+                      />
+                    </Suspense>
+                    <div className="text-muted-foreground text-right text-xs">
+                      {contentInfo.length}/10,000
+                    </div>
+                    <PublishButton
+                      isFormComplete={isFormComplete}
+                      isSubmitting={isSubmitting}
+                      uploadProgress={uploadProgress}
+                    />
+                  </div>
                 </div>
-                <PublishButton
-                  isFormComplete={isFormComplete}
-                  isSubmitting={isSubmitting}
-                  uploadProgress={uploadProgress}
-                />
+              )}
+            </div>
+          </div>
+
+          <aside className="space-y-4">
+            <div className="sticky top-24 space-y-4">
+              <div className="rounded-none border bg-card/80 p-4 shadow-xs">
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-muted-foreground text-xs font-semibold uppercase tracking-[0.25em]">
+                    Signal meter
+                  </div>
+                  <div className="text-xs font-medium">{signalLabel}</div>
+                </div>
+                <div className="bg-muted/70 h-1.5 w-full overflow-hidden rounded-full">
+                  <div
+                    className="h-full rounded-full bg-foreground transition-all"
+                    style={{ width: `${signalPercent}%` }}
+                  />
+                </div>
+                <div className="text-muted-foreground mt-2 text-xs">
+                  {signalPercent}% signal strength
+                </div>
+                <div className="mt-4 space-y-2 text-sm">
+                  {signalChecks.map((check) => (
+                    <div
+                      key={check.label}
+                      className={cn(
+                        "flex items-center justify-between rounded-none border px-3 py-2 text-xs",
+                        check.ok ? "border-border/60" : "border-border/30 text-muted-foreground",
+                      )}
+                    >
+                      <span className="font-medium">{check.label}</span>
+                      <span className="text-muted-foreground">{check.detail}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="rounded-none border bg-card/80 p-4 text-xs shadow-xs">
+                <div className="text-muted-foreground mb-2 text-xs font-semibold uppercase tracking-[0.25em]">
+                  High-signal checklist
+                </div>
+                <ul className="text-muted-foreground space-y-2 leading-relaxed">
+                  <li>State the claim + context.</li>
+                  <li>Add evidence (repo, benchmark, paper).</li>
+                  <li>Explain tradeoffs or failure modes.</li>
+                  <li>Keep it tight. No fluff.</li>
+                </ul>
               </div>
             </div>
-          )}
+          </aside>
         </div>
       </form>
 

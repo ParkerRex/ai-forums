@@ -86,14 +86,24 @@ export default function CreatePostPage() {
   const { user, isLoading } = useAuth();
 
   return (
-    <div className="bg-background text-foreground min-h-screen">
-      {isLoading ? (
-        <LoadingContent />
-      ) : user ? (
-        <AuthenticatedContent />
-      ) : (
-        <UnauthenticatedContent />
-      )}
+    <div className="bg-background text-foreground relative min-h-screen overflow-hidden">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,_rgba(59,130,246,0.12),_transparent_55%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(transparent_0,_rgba(15,23,42,0.05)_1px),linear-gradient(90deg,transparent_0,_rgba(15,23,42,0.05)_1px)] bg-[length:32px_32px]"
+      />
+      <div className="relative">
+        {isLoading ? (
+          <LoadingContent />
+        ) : user ? (
+          <AuthenticatedContent />
+        ) : (
+          <UnauthenticatedContent />
+        )}
+      </div>
     </div>
   );
 }

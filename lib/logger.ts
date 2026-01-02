@@ -119,18 +119,16 @@ class Logger {
 
     if (process.env.NODE_ENV === "production") {
       // JSON output for production log aggregation
-      const consoleMethod = level === "error" ? console.error : level === "warn" ? console.warn : console.log;
+      const consoleMethod =
+        level === "error" ? console.error : level === "warn" ? console.warn : console.log;
       consoleMethod(JSON.stringify(entry));
     } else {
       // Pretty output for development
       const color = this.getColor(level);
       const prefix = `[${entry.timestamp.split("T")[1].split(".")[0]}] ${level.toUpperCase().padEnd(5)}`;
-      const contextStr = Object.keys(this.context).length > 0
-        ? ` ${JSON.stringify(this.context)}`
-        : "";
-      const dataStr = data && Object.keys(data).length > 0
-        ? ` ${JSON.stringify(data)}`
-        : "";
+      const contextStr =
+        Object.keys(this.context).length > 0 ? ` ${JSON.stringify(this.context)}` : "";
+      const dataStr = data && Object.keys(data).length > 0 ? ` ${JSON.stringify(data)}` : "";
 
       if (level === "error") {
         console.error(`${color}${prefix}\x1b[0m ${message}${contextStr}${dataStr}`);

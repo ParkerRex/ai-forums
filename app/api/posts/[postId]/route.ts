@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import type { PostAttachment } from "@/db/schema/posts";
 import { withAuth } from "@/lib/api/middleware";
 import { postRepository } from "@/lib/repositories";
-import type { PostAttachment } from "@/db/schema/posts";
 
 const updatePostSchema = z.object({
   title: z.string().min(1).max(255).optional(),
@@ -74,7 +74,7 @@ export const PATCH = withAuth(async (request, { params }, member) => {
     const { allowed, post: existingPost } = await postRepository.canModify(
       postId,
       member.id,
-      member.role
+      member.role,
     );
 
     if (!existingPost) {
@@ -102,7 +102,7 @@ export const PATCH = withAuth(async (request, { params }, member) => {
         linkImage: parsed.data.linkImage,
         isFree: parsed.data.isFree,
       },
-      member.id
+      member.id,
     );
 
     return NextResponse.json({
@@ -125,7 +125,7 @@ export const DELETE = withAuth(async (_request, { params }, member) => {
     const { allowed, post: existingPost } = await postRepository.canModify(
       postId,
       member.id,
-      member.role
+      member.role,
     );
 
     if (!existingPost) {

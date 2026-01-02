@@ -14,10 +14,10 @@
  * ```
  */
 
-export { postRepository } from "./post-repository";
 export type {
   CreatePostInput,
   PostQueryOptions,
   PostWithRelations,
   UpdatePostInput,
 } from "./post-repository";
+export { postRepository } from "./post-repository";

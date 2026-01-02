@@ -115,11 +115,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       .where(eq(members.id, comment.memberId));
 
     const newVoteType =
-      voteType === "remove"
-        ? null
-        : existingVote?.voteType === voteType
-          ? null
-          : voteType;
+      voteType === "remove" ? null : existingVote?.voteType === voteType ? null : voteType;
 
     return NextResponse.json({
       upvotes: updatedComment.upvotes,

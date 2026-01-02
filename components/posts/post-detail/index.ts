@@ -13,9 +13,9 @@
  * ```
  */
 
+export { PostActionsMenu } from "./PostActionsMenu";
 export { default } from "./PostDetail";
 export { PostHeader } from "./PostHeader";
 export { PostMedia } from "./PostMedia";
-export { PostActionsMenu } from "./PostActionsMenu";
+export type { Post, PostAttachment, PostAuthor, PostCategory, PostDetailProps } from "./types";
 export { getTimeAgo } from "./utils";
-export type { Post, PostDetailProps, PostAttachment, PostAuthor, PostCategory } from "./types";

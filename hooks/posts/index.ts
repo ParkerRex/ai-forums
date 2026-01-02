@@ -4,7 +4,11 @@
  * Re-exports all post hooks from the original files for backwards compatibility.
  */
 
+export { usePostAnalytics } from "../use-post-analytics";
 export {
+  type CreatePostData,
+  type Post,
+  type UpdatePostData,
   useCreatePost,
   useDeletePost,
   useGeneratePostPreview,
@@ -13,16 +17,11 @@ export {
   usePost,
   usePostBySlug,
   usePostHistory,
-  usePostVoters,
   usePosts,
+  usePostVoters,
   useUnpinPost,
   useUpdatePost,
   useUserVote,
   useUserVotesBatch,
   useVoteOnPost,
-  type CreatePostData,
-  type Post,
-  type UpdatePostData,
 } from "../use-posts";
-
-export { usePostAnalytics } from "../use-post-analytics";

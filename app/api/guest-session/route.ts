@@ -10,7 +10,7 @@ const GUEST_SESSION_COOKIE = "guest-session";
 
 function getStripe() {
   return new Stripe(process.env.STRIPE_SECRET_KEY || "", {
-    apiVersion: "2025-08-27.basil",
+    apiVersion: "2025-12-15.clover",
   });
 }
 
@@ -23,7 +23,11 @@ function signPayload(payload: string): string {
   return crypto.createHmac("sha256", secret).update(payload).digest("base64url");
 }
 
-function encodeGuestSession(session: { email: string; memberId: string; expiresAt: number }): string {
+function encodeGuestSession(session: {
+  email: string;
+  memberId: string;
+  expiresAt: number;
+}): string {
   const payload = Buffer.from(JSON.stringify(session)).toString("base64url");
   const signature = signPayload(payload);
   return `${payload}.${signature}`;

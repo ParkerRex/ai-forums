@@ -164,7 +164,11 @@ class ApiClient {
   /**
    * Make a GET request
    */
-  get<T>(path: string, params?: RequestParams, options?: Omit<RequestOptions, "params" | "body">): Promise<T> {
+  get<T>(
+    path: string,
+    params?: RequestParams,
+    options?: Omit<RequestOptions, "params" | "body">,
+  ): Promise<T> {
     return this.request<T>("GET", path, { ...options, params });
   }
 
@@ -225,7 +229,10 @@ export const api = new ApiClient();
  * const data = await externalApi.get<Data>("/endpoint");
  * ```
  */
-export function createApiClient(baseUrl?: string, defaultHeaders?: Record<string, string>): ApiClient {
+export function createApiClient(
+  baseUrl?: string,
+  defaultHeaders?: Record<string, string>,
+): ApiClient {
   return new ApiClient(baseUrl, defaultHeaders);
 }
 

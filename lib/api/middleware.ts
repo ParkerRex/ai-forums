@@ -12,7 +12,7 @@ type RouteContext = { params: Promise<Record<string, string>> };
 type AuthenticatedHandler = (
   request: NextRequest,
   context: RouteContext,
-  member: SessionMember
+  member: SessionMember,
 ) => Promise<NextResponse>;
 
 /**
@@ -21,7 +21,7 @@ type AuthenticatedHandler = (
 type OptionalAuthHandler = (
   request: NextRequest,
   context: RouteContext,
-  member: SessionMember | null
+  member: SessionMember | null,
 ) => Promise<NextResponse>;
 
 /**
@@ -73,10 +73,7 @@ export function withAdmin(handler: AuthenticatedHandler) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     if (member.role !== "admin") {
-      return NextResponse.json(
-        { error: "Forbidden: Admin access required" },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
     return handler(request, context, member);
   };

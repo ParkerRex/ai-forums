@@ -20,14 +20,10 @@ const serverEnvSchema = z.object({
   REDIS_URL: z.string().min(1, "REDIS_URL is required"),
 
   // Auth (Required)
-  SESSION_SECRET: z
-    .string()
-    .min(32, "SESSION_SECRET must be at least 32 characters"),
+  SESSION_SECRET: z.string().min(32, "SESSION_SECRET must be at least 32 characters"),
 
   // Node environment
-  NODE_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
 
   // WebSocket
   WS_PORT: z.string().optional(),
@@ -92,8 +88,7 @@ function validateEnv(): Env {
     const clientResult = clientEnvSchema.safeParse({
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
       NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY:
-        process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
+      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
       NEXT_PUBLIC_DISCORD_INVITE_URL: process.env.NEXT_PUBLIC_DISCORD_INVITE_URL,
       NEXT_PUBLIC_R2_HOSTNAME: process.env.NEXT_PUBLIC_R2_HOSTNAME,
     });
@@ -157,18 +152,11 @@ export const features = {
   },
   get skool(): boolean {
     return Boolean(
-      env.SKOOL_AUTH_TOKEN &&
-        env.SKOOL_CLIENT_ID &&
-        env.SKOOL_GROUP_ID &&
-        env.SKOOL_GROUP_NAME
+      env.SKOOL_AUTH_TOKEN && env.SKOOL_CLIENT_ID && env.SKOOL_GROUP_ID && env.SKOOL_GROUP_NAME,
     );
   },
   get storage(): boolean {
-    return Boolean(
-      env.AWS_ACCESS_KEY_ID &&
-        env.AWS_SECRET_ACCESS_KEY &&
-        env.AWS_S3_BUCKET
-    );
+    return Boolean(env.AWS_ACCESS_KEY_ID && env.AWS_SECRET_ACCESS_KEY && env.AWS_S3_BUCKET);
   },
   get openai(): boolean {
     return Boolean(env.OPENAI_API_KEY);

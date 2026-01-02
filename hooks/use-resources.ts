@@ -257,7 +257,9 @@ export function useVoteOnResource() {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: queryKeys.resources.detail(variables.resourceId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.resources.all });
-      queryClient.invalidateQueries({ queryKey: queryKeys.votes.user("resource", variables.resourceId) });
+      queryClient.invalidateQueries({
+        queryKey: queryKeys.votes.user("resource", variables.resourceId),
+      });
     },
   });
 }

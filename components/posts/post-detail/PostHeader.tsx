@@ -59,9 +59,7 @@ export function PostHeader({
               className="text-foreground font-semibold hover:underline"
               data-testid="member-link"
             >
-              {post.member
-                ? `${post.member.firstName} ${post.member.lastName}`
-                : "unknown"}
+              {post.member ? `${post.member.firstName} ${post.member.lastName}` : "unknown"}
             </Link>
           </MemberHoverCardWrapper>
           <span className="text-gray-400 dark:text-gray-600">•</span>

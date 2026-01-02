@@ -4,6 +4,7 @@
  * Re-exports all member hooks from the original files for backwards compatibility.
  */
 
+export { useCurrentMember } from "../use-current-member";
 export {
   useMember,
   useMemberActivity,
@@ -12,5 +13,3 @@ export {
   useOnlineMembers,
   useUpdateMember,
 } from "../use-members";
-
-export { useCurrentMember } from "../use-current-member";

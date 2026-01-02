@@ -8,6 +8,13 @@
   "files": {
     "ignoreUnknown": false
   },
+  "overrides": [
+    {
+      "includes": ["**/*.css"],
+      "linter": { "enabled": false },
+      "formatter": { "enabled": false }
+    }
+  ],
   "assist": {
     "enabled": true,
     "actions": {
@@ -50,7 +57,8 @@
         "noUnknownAtRules": "off",
         "noDuplicateCustomProperties": "off",
         "useIterableCallbackReturn": "off",
-        "noImplicitAnyLet": "off"
+        "noImplicitAnyLet": "off",
+        "noDocumentCookie": "off"
       },
       "performance": {
         "noImgElement": "off"
@@ -73,6 +81,12 @@
       "quoteStyle": "double",
       "trailingCommas": "all",
       "semicolons": "always"
+    }
+  },
+  "css": {
+    "parser": {
+      "cssModules": true,
+      "tailwindDirectives": true
     }
   }
 }

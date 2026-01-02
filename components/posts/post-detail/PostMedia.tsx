@@ -120,13 +120,9 @@ export function PostMedia({ post }: PostMediaProps) {
             </div>
           )}
           <CardContent className="p-4">
-            <h3 className="mb-1 text-base font-semibold">
-              {post.linkTitle || post.linkUrl}
-            </h3>
+            <h3 className="mb-1 text-base font-semibold">{post.linkTitle || post.linkUrl}</h3>
             {post.linkDescription && (
-              <p className="text-muted-foreground line-clamp-2 text-sm">
-                {post.linkDescription}
-              </p>
+              <p className="text-muted-foreground line-clamp-2 text-sm">{post.linkDescription}</p>
             )}
             <div className="text-muted-foreground mt-2 flex items-center gap-2 text-xs">
               <ExternalLink className="h-3 w-3" />
