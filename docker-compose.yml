@@ -1,9 +1,10 @@
+name: vai-forums
 version: '3.8'
 
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: vai-postgres
+    container_name: vai-forums-postgres
     environment:
       POSTGRES_USER: vai_user
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
@@ -11,7 +12,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - vai-forums-postgres-data:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U vai_user -d vai_db"]
       interval: 5s
@@ -20,13 +21,13 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: vai-redis
+    container_name: vai-forums-redis
     ports:
-      - "6379:6379"
+      - "6381:6379"
     volumes:
-      - redis_data:/data
+      - vai-forums-redis-data:/data
     command: redis-server --appendonly yes
 
 volumes:
-  postgres_data:
-  redis_data:
+  vai-forums-postgres-data:
+  vai-forums-redis-data:
