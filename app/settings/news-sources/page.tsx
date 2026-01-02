@@ -19,9 +19,9 @@ export default function NewsSourcesPage() {
     return (
       <div className="container max-w-4xl py-8">
         <div className="animate-pulse">
-          <div className="h-8 bg-muted rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-muted rounded w-2/3 mb-8"></div>
-          <div className="h-32 bg-muted rounded"></div>
+          <div className="h-8 bg-muted rounded-sm w-1/3 mb-2"></div>
+          <div className="h-4 bg-muted rounded-sm w-2/3 mb-8"></div>
+          <div className="h-32 bg-muted rounded-sm"></div>
         </div>
       </div>
     );

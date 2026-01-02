@@ -69,19 +69,19 @@ function TopicCardSkeleton() {
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             {/* Placeholder for topic icon */}
-            <div className="w-8 h-8 bg-muted rounded animate-pulse" />
+            <div className="w-8 h-8 bg-muted rounded-sm animate-pulse" />
             {/* Placeholder for topic name */}
-            <div className="h-5 bg-muted rounded w-24 animate-pulse" />
+            <div className="h-5 bg-muted rounded-sm w-24 animate-pulse" />
           </div>
           {/* Placeholder for resource count */}
-          <div className="h-4 bg-muted rounded w-16 animate-pulse" />
+          <div className="h-4 bg-muted rounded-sm w-16 animate-pulse" />
         </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
           {/* Placeholder for topic description */}
-          <div className="h-4 bg-muted rounded w-full animate-pulse" />
-          <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+          <div className="h-4 bg-muted rounded-sm w-full animate-pulse" />
+          <div className="h-4 bg-muted rounded-sm w-3/4 animate-pulse" />
         </div>
       </CardContent>
     </Card>
@@ -124,15 +124,15 @@ export default function EducatePage() {
         <div className="mb-8">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <div className="h-9 bg-muted rounded w-64 animate-pulse mb-2" />
-              <div className="h-5 bg-muted rounded w-96 animate-pulse" />
+              <div className="h-9 bg-muted rounded-sm w-64 animate-pulse mb-2" />
+              <div className="h-5 bg-muted rounded-sm w-96 animate-pulse" />
             </div>
-            <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+            <div className="w-32 h-10 bg-muted rounded-sm animate-pulse" />
           </div>
 
           {/* Search input skeleton */}
           <div className="max-w-md">
-            <div className="h-10 bg-muted rounded animate-pulse" />
+            <div className="h-10 bg-muted rounded-sm animate-pulse" />
           </div>
         </div>
 
@@ -148,11 +148,11 @@ export default function EducatePage() {
           {Array.from({ length: 3 }, (_, i) => (
             <Card key={i}>
               <CardHeader>
-                <div className="h-5 bg-muted rounded w-32 animate-pulse" />
+                <div className="h-5 bg-muted rounded-sm w-32 animate-pulse" />
               </CardHeader>
               <CardContent>
-                <div className="h-8 bg-muted rounded w-16 animate-pulse mb-2" />
-                <div className="h-4 bg-muted rounded w-24 animate-pulse" />
+                <div className="h-8 bg-muted rounded-sm w-16 animate-pulse mb-2" />
+                <div className="h-4 bg-muted rounded-sm w-24 animate-pulse" />
               </CardContent>
             </Card>
           ))}

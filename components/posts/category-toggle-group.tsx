@@ -42,7 +42,7 @@ export function CategoryToggleGroup({
             {selectedCategory ? (
               <>
                 {selectedCategory.icon && (
-                  <span className="text-base flex-shrink-0">{selectedCategory.icon}</span>
+                  <span className="text-base shrink-0">{selectedCategory.icon}</span>
                 )}
                 <div className="min-w-0 flex-1">
                   <div className="font-medium text-sm truncate">{selectedCategory.displayName}</div>
@@ -55,7 +55,7 @@ export function CategoryToggleGroup({
               <span>Select a category...</span>
             )}
           </div>
-          <ChevronDown className="h-4 w-4 flex-shrink-0 ml-2" />
+          <ChevronDown className="h-4 w-4 shrink-0 ml-2" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)] max-w-sm max-h-[300px] overflow-y-auto">
@@ -69,7 +69,7 @@ export function CategoryToggleGroup({
               className="flex items-center space-x-3 p-3 cursor-pointer"
             >
               {/* Icon */}
-              {category.icon && <span className="text-base flex-shrink-0">{category.icon}</span>}
+              {category.icon && <span className="text-base shrink-0">{category.icon}</span>}
 
               {/* Name and Description */}
               <div className="flex-1 min-w-0">
@@ -91,7 +91,7 @@ export function CategoryToggleGroup({
               </div>
 
               {/* Post Count and Selection */}
-              <div className="flex items-center space-x-2 flex-shrink-0">
+              <div className="flex items-center space-x-2 shrink-0">
                 <span className="text-xs text-muted-foreground">
                   {category.postCount.toLocaleString()}
                 </span>

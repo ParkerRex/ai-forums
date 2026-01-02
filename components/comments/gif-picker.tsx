@@ -80,7 +80,7 @@ export function GifPicker({ onGifSelect }: GifPickerProps) {
               alt={gif.title}
               width={150}
               height={150}
-              className="cursor-pointer rounded hover:opacity-80"
+              className="cursor-pointer rounded-sm hover:opacity-80"
               onClick={() => onGifSelect(gif.images.original.url)}
             />
           ))

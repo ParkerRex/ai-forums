@@ -50,7 +50,7 @@ const SortItem = React.memo(function SortItem({
     <button
       onClick={onClick}
       className={cn(
-        "flex w-full items-center justify-between px-2 py-1.5 text-sm transition-colors focus:outline-none",
+        "flex w-full items-center justify-between px-2 py-1.5 text-sm transition-colors focus:outline-hidden",
         !isSelected &&
           "hover:bg-accent/50 hover:text-accent-foreground focus:bg-accent/50 focus:text-accent-foreground",
         isSelected && "bg-accent text-accent-foreground font-medium",
@@ -118,7 +118,7 @@ export function SortPopover({ sortBy = "newest", onSortChange, className }: Sort
           </TooltipTrigger>
           <TooltipContent side="bottom" className="flex items-center gap-2">
             <span>Sort posts</span>
-            <kbd className="bg-primary/10 rounded px-1.5 py-0.5 font-mono text-xs">S</kbd>
+            <kbd className="bg-primary/10 rounded-sm px-1.5 py-0.5 font-mono text-xs">S</kbd>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>

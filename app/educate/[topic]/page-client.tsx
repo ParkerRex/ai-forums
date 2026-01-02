@@ -204,17 +204,17 @@ function ResourceCardSkeleton() {
           <div className="flex-1">
             {/* Placeholder for badges and resource type */}
             <div className="flex items-center space-x-2 mb-2">
-              <div className="w-6 h-6 bg-muted rounded animate-pulse" />
-              <div className="w-16 h-5 bg-muted rounded animate-pulse" />
-              <div className="w-20 h-5 bg-muted rounded animate-pulse" />
+              <div className="w-6 h-6 bg-muted rounded-sm animate-pulse" />
+              <div className="w-16 h-5 bg-muted rounded-sm animate-pulse" />
+              <div className="w-20 h-5 bg-muted rounded-sm animate-pulse" />
             </div>
             {/* Placeholder for resource title */}
-            <div className="h-6 bg-muted rounded w-3/4 animate-pulse" />
+            <div className="h-6 bg-muted rounded-sm w-3/4 animate-pulse" />
           </div>
           {/* Placeholder for voting section */}
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-muted rounded animate-pulse" />
-            <div className="w-6 h-4 bg-muted rounded animate-pulse" />
+            <div className="w-8 h-8 bg-muted rounded-sm animate-pulse" />
+            <div className="w-6 h-4 bg-muted rounded-sm animate-pulse" />
           </div>
         </div>
       </CardHeader>
@@ -222,19 +222,19 @@ function ResourceCardSkeleton() {
         <div className="space-y-4">
           {/* Placeholder for resource description */}
           <div className="space-y-2">
-            <div className="h-4 bg-muted rounded w-full animate-pulse" />
-            <div className="h-4 bg-muted rounded w-3/4 animate-pulse" />
+            <div className="h-4 bg-muted rounded-sm w-full animate-pulse" />
+            <div className="h-4 bg-muted rounded-sm w-3/4 animate-pulse" />
           </div>
           {/* Placeholder for metadata and action buttons */}
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
-              <div className="h-3 bg-muted rounded w-16 animate-pulse" />
-              <div className="h-3 bg-muted rounded w-12 animate-pulse" />
-              <div className="h-3 bg-muted rounded w-20 animate-pulse" />
+              <div className="h-3 bg-muted rounded-sm w-16 animate-pulse" />
+              <div className="h-3 bg-muted rounded-sm w-12 animate-pulse" />
+              <div className="h-3 bg-muted rounded-sm w-20 animate-pulse" />
             </div>
             <div className="flex items-center space-x-2">
-              <div className="w-6 h-6 bg-muted rounded animate-pulse" />
-              <div className="w-6 h-6 bg-muted rounded animate-pulse" />
+              <div className="w-6 h-6 bg-muted rounded-sm animate-pulse" />
+              <div className="w-6 h-6 bg-muted rounded-sm animate-pulse" />
             </div>
           </div>
         </div>
@@ -291,29 +291,29 @@ export default function TopicPageClient({ params }: TopicPageClientProps) {
             <div className="flex-1">
               {/* Topic title skeleton */}
               <div className="flex items-center mb-2">
-                <div className="w-12 h-12 bg-muted rounded animate-pulse mr-3" />
-                <div className="h-9 bg-muted rounded w-64 animate-pulse" />
+                <div className="w-12 h-12 bg-muted rounded-sm animate-pulse mr-3" />
+                <div className="h-9 bg-muted rounded-sm w-64 animate-pulse" />
               </div>
               {/* Description skeleton */}
-              <div className="h-5 bg-muted rounded w-96 animate-pulse mb-2" />
+              <div className="h-5 bg-muted rounded-sm w-96 animate-pulse mb-2" />
               {/* Resource count skeleton */}
-              <div className="h-4 bg-muted rounded w-32 animate-pulse mt-2" />
+              <div className="h-4 bg-muted rounded-sm w-32 animate-pulse mt-2" />
             </div>
             {/* Add resource button skeleton */}
-            <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+            <div className="w-32 h-10 bg-muted rounded-sm animate-pulse" />
           </div>
 
           {/* Search and filters skeleton */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             {/* Search input skeleton */}
-            <div className="flex-1 h-10 bg-muted rounded animate-pulse" />
+            <div className="flex-1 h-10 bg-muted rounded-sm animate-pulse" />
 
             {/* Filter controls skeleton */}
             <div className="flex items-center space-x-2">
-              <div className="w-32 h-10 bg-muted rounded animate-pulse" />
-              <div className="w-32 h-10 bg-muted rounded animate-pulse" />
-              <div className="w-32 h-10 bg-muted rounded animate-pulse" />
-              <div className="w-32 h-10 bg-muted rounded animate-pulse" />
+              <div className="w-32 h-10 bg-muted rounded-sm animate-pulse" />
+              <div className="w-32 h-10 bg-muted rounded-sm animate-pulse" />
+              <div className="w-32 h-10 bg-muted rounded-sm animate-pulse" />
+              <div className="w-32 h-10 bg-muted rounded-sm animate-pulse" />
             </div>
           </div>
         </div>

@@ -63,7 +63,7 @@ export function PostActionsMenu({
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 flex-shrink-0"
+          className="h-8 w-8 shrink-0"
           data-testid="post-more-menu"
         >
           <MoreHorizontal className="h-4 w-4" />

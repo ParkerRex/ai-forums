@@ -17,40 +17,40 @@ export function MemberCardSkeleton() {
         <div className="flex items-center space-x-3">
           <div className="bg-muted h-12 w-12 rounded-full"></div>
           <div className="flex-1 space-y-2">
-            <div className="bg-muted h-4 w-3/4 rounded"></div>
-            <div className="bg-muted h-3 w-1/2 rounded"></div>
+            <div className="bg-muted h-4 w-3/4 rounded-sm"></div>
+            <div className="bg-muted h-3 w-1/2 rounded-sm"></div>
           </div>
         </div>
 
         {/* Status badge */}
-        <div className="bg-muted h-5 w-16 rounded"></div>
+        <div className="bg-muted h-5 w-16 rounded-sm"></div>
 
         {/* Bio */}
         <div className="space-y-2">
-          <div className="bg-muted h-3 w-full rounded"></div>
-          <div className="bg-muted h-3 w-5/6 rounded"></div>
-          <div className="bg-muted h-3 w-4/6 rounded"></div>
+          <div className="bg-muted h-3 w-full rounded-sm"></div>
+          <div className="bg-muted h-3 w-5/6 rounded-sm"></div>
+          <div className="bg-muted h-3 w-4/6 rounded-sm"></div>
         </div>
 
         {/* Skills */}
         <div className="space-y-2">
-          <div className="bg-muted h-3 w-16 rounded"></div>
+          <div className="bg-muted h-3 w-16 rounded-sm"></div>
           <div className="flex flex-wrap gap-1">
-            <div className="bg-muted h-6 w-12 rounded"></div>
-            <div className="bg-muted h-6 w-16 rounded"></div>
-            <div className="bg-muted h-6 w-14 rounded"></div>
+            <div className="bg-muted h-6 w-12 rounded-sm"></div>
+            <div className="bg-muted h-6 w-16 rounded-sm"></div>
+            <div className="bg-muted h-6 w-14 rounded-sm"></div>
           </div>
         </div>
 
         {/* Social links */}
         <div className="flex space-x-2">
-          <div className="bg-muted h-6 w-6 rounded"></div>
-          <div className="bg-muted h-6 w-6 rounded"></div>
-          <div className="bg-muted h-6 w-6 rounded"></div>
+          <div className="bg-muted h-6 w-6 rounded-sm"></div>
+          <div className="bg-muted h-6 w-6 rounded-sm"></div>
+          <div className="bg-muted h-6 w-6 rounded-sm"></div>
         </div>
 
         {/* Member since */}
-        <div className="bg-muted h-3 w-24 rounded"></div>
+        <div className="bg-muted h-3 w-24 rounded-sm"></div>
       </div>
     </div>
   );
@@ -69,43 +69,43 @@ export function MemberProfileSkeleton() {
           <div className="flex items-center space-x-6">
             <div className="bg-muted h-24 w-24 rounded-full"></div>
             <div className="space-y-3">
-              <div className="bg-muted h-6 w-48 rounded"></div>
-              <div className="bg-muted h-4 w-32 rounded"></div>
-              <div className="bg-muted h-5 w-20 rounded"></div>
+              <div className="bg-muted h-6 w-48 rounded-sm"></div>
+              <div className="bg-muted h-4 w-32 rounded-sm"></div>
+              <div className="bg-muted h-5 w-20 rounded-sm"></div>
             </div>
           </div>
-          <div className="bg-muted h-10 w-24 rounded"></div>
+          <div className="bg-muted h-10 w-24 rounded-sm"></div>
         </div>
 
         {/* Bio */}
         <div className="mb-8">
-          <div className="bg-muted mb-3 h-5 w-16 rounded"></div>
+          <div className="bg-muted mb-3 h-5 w-16 rounded-sm"></div>
           <div className="space-y-2">
-            <div className="bg-muted h-4 w-full rounded"></div>
-            <div className="bg-muted h-4 w-5/6 rounded"></div>
-            <div className="bg-muted h-4 w-4/6 rounded"></div>
+            <div className="bg-muted h-4 w-full rounded-sm"></div>
+            <div className="bg-muted h-4 w-5/6 rounded-sm"></div>
+            <div className="bg-muted h-4 w-4/6 rounded-sm"></div>
           </div>
         </div>
 
         {/* Skills */}
         <div className="mb-8">
-          <div className="bg-muted mb-3 h-5 w-16 rounded"></div>
+          <div className="bg-muted mb-3 h-5 w-16 rounded-sm"></div>
           <div className="flex flex-wrap gap-2">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="bg-muted h-7 w-16 rounded"></div>
+              <div key={i} className="bg-muted h-7 w-16 rounded-sm"></div>
             ))}
           </div>
         </div>
 
         {/* Experience */}
         <div className="mb-8">
-          <div className="bg-muted mb-3 h-5 w-24 rounded"></div>
+          <div className="bg-muted mb-3 h-5 w-24 rounded-sm"></div>
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
               <div key={i} className="space-y-2">
-                <div className="bg-muted h-4 w-3/4 rounded"></div>
-                <div className="bg-muted h-3 w-1/2 rounded"></div>
-                <div className="bg-muted h-3 w-full rounded"></div>
+                <div className="bg-muted h-4 w-3/4 rounded-sm"></div>
+                <div className="bg-muted h-3 w-1/2 rounded-sm"></div>
+                <div className="bg-muted h-3 w-full rounded-sm"></div>
               </div>
             ))}
           </div>
@@ -113,11 +113,11 @@ export function MemberProfileSkeleton() {
 
         {/* Contact */}
         <div>
-          <div className="bg-muted mb-3 h-5 w-20 rounded"></div>
+          <div className="bg-muted mb-3 h-5 w-20 rounded-sm"></div>
           <div className="flex space-x-4">
-            <div className="bg-muted h-10 w-10 rounded"></div>
-            <div className="bg-muted h-10 w-10 rounded"></div>
-            <div className="bg-muted h-10 w-10 rounded"></div>
+            <div className="bg-muted h-10 w-10 rounded-sm"></div>
+            <div className="bg-muted h-10 w-10 rounded-sm"></div>
+            <div className="bg-muted h-10 w-10 rounded-sm"></div>
           </div>
         </div>
       </div>
@@ -371,31 +371,31 @@ export function MemberEditFormSkeleton() {
   return (
     <div className="bg-card border-border/50 rounded-md border">
       <div className="border-border/50 border-b p-4">
-        <div className="bg-muted h-5 w-32 rounded"></div>
+        <div className="bg-muted h-5 w-32 rounded-sm"></div>
       </div>
       <div className="space-y-4 p-4">
         {/* Basic Info */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div className="space-y-2">
-            <div className="bg-muted h-4 w-20 rounded"></div>
-            <div className="bg-muted h-10 rounded"></div>
+            <div className="bg-muted h-4 w-20 rounded-sm"></div>
+            <div className="bg-muted h-10 rounded-sm"></div>
           </div>
           <div className="space-y-2">
-            <div className="bg-muted h-4 w-20 rounded"></div>
-            <div className="bg-muted h-10 rounded"></div>
+            <div className="bg-muted h-4 w-20 rounded-sm"></div>
+            <div className="bg-muted h-10 rounded-sm"></div>
           </div>
         </div>
 
         {/* Bio */}
         <div className="space-y-2">
-          <div className="bg-muted h-4 w-16 rounded"></div>
-          <div className="bg-muted h-24 rounded"></div>
+          <div className="bg-muted h-4 w-16 rounded-sm"></div>
+          <div className="bg-muted h-24 rounded-sm"></div>
         </div>
 
         {/* Skills */}
         <div className="space-y-2">
-          <div className="bg-muted h-4 w-16 rounded"></div>
-          <div className="bg-muted h-10 rounded"></div>
+          <div className="bg-muted h-4 w-16 rounded-sm"></div>
+          <div className="bg-muted h-10 rounded-sm"></div>
         </div>
 
         {/* Social Links */}
@@ -410,8 +410,8 @@ export function MemberEditFormSkeleton() {
 
         {/* Buttons */}
         <div className="flex justify-end space-x-3">
-          <div className="bg-muted h-10 w-20 rounded"></div>
-          <div className="bg-muted h-10 w-24 rounded"></div>
+          <div className="bg-muted h-10 w-20 rounded-sm"></div>
+          <div className="bg-muted h-10 w-24 rounded-sm"></div>
         </div>
       </div>
     </div>
@@ -432,9 +432,9 @@ export function MemberStatsCardSkeleton() {
   return (
     <div className="bg-muted/50 border-border/50 rounded-md border p-3">
       <div className="animate-pulse space-y-2">
-        <div className="bg-muted h-3 w-20 rounded"></div>
-        <div className="bg-muted h-6 w-14 rounded"></div>
-        <div className="bg-muted h-3 w-28 rounded"></div>
+        <div className="bg-muted h-3 w-20 rounded-sm"></div>
+        <div className="bg-muted h-6 w-14 rounded-sm"></div>
+        <div className="bg-muted h-3 w-28 rounded-sm"></div>
       </div>
     </div>
   );

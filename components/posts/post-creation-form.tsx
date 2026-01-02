@@ -68,9 +68,9 @@ interface ExtendedPostFormData extends PostFormData {
 function RichTextEditorSkeleton() {
   return (
     <div className="animate-pulse space-y-3">
-      <div className="bg-muted h-4 w-3/4 rounded" />
-      <div className="bg-muted h-4 w-1/2 rounded" />
-      <div className="bg-muted h-4 w-5/6 rounded" />
+      <div className="bg-muted h-4 w-3/4 rounded-sm" />
+      <div className="bg-muted h-4 w-1/2 rounded-sm" />
+      <div className="bg-muted h-4 w-5/6 rounded-sm" />
     </div>
   );
 }
@@ -80,11 +80,11 @@ function PostPreviewSkeleton() {
   return (
     <div className="rounded-none border p-6">
       <div className="animate-pulse space-y-4">
-        <div className="bg-muted h-8 w-3/4 rounded" />
+        <div className="bg-muted h-8 w-3/4 rounded-sm" />
         <div className="space-y-3">
-          <div className="bg-muted h-4 w-full rounded" />
-          <div className="bg-muted h-4 w-5/6 rounded" />
-          <div className="bg-muted h-4 w-4/6 rounded" />
+          <div className="bg-muted h-4 w-full rounded-sm" />
+          <div className="bg-muted h-4 w-5/6 rounded-sm" />
+          <div className="bg-muted h-4 w-4/6 rounded-sm" />
         </div>
       </div>
     </div>
@@ -534,8 +534,8 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
     return (
       <div className="mx-auto w-full max-w-4xl">
         <div className="animate-pulse space-y-4">
-          <div className="bg-muted h-8 w-1/4 rounded" />
-          <div className="bg-muted h-96 rounded" />
+          <div className="bg-muted h-8 w-1/4 rounded-sm" />
+          <div className="bg-muted h-96 rounded-sm" />
         </div>
       </div>
     );
@@ -594,7 +594,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
               className={cn(
                 "flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
                 formData.type === value
-                  ? "bg-background text-foreground shadow-sm"
+                  ? "bg-background text-foreground shadow-xs"
                   : "text-muted-foreground hover:text-foreground",
               )}
             >
@@ -788,7 +788,7 @@ export function PostCreationForm({ onSuccess, onCancel }: PostCreationFormProps)
                           alt="Link preview"
                           width={96}
                           height={96}
-                          className="h-24 w-24 rounded object-cover"
+                          className="h-24 w-24 rounded-sm object-cover"
                           unoptimized={true}
                         />
                       )}

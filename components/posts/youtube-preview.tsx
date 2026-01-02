@@ -32,7 +32,7 @@ export function YouTubePreview({ media }: YouTubePreviewProps) {
 
       {/* Play Button Overlay */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <div className="bg-black/30 rounded-full p-4 backdrop-blur-sm">
+        <div className="bg-black/30 rounded-full p-4 backdrop-blur-xs">
           <Play className="h-8 w-8 text-primary-foreground fill-primary-foreground" />
         </div>
       </div>
@@ -50,7 +50,7 @@ export function YouTubePreview({ media }: YouTubePreviewProps) {
 
       {/* YouTube Badge */}
       <div className="absolute top-2 right-2">
-        <div className="bg-red-600 text-primary-foreground px-2 py-1 rounded text-xs font-medium flex items-center gap-1">
+        <div className="bg-red-600 text-primary-foreground px-2 py-1 rounded-sm text-xs font-medium flex items-center gap-1">
           <Youtube className="h-3 w-3" />
           YouTube
         </div>

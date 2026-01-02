@@ -61,12 +61,12 @@ export function NewsFeedWidget() {
           {[...Array(5)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="mb-1 flex items-start justify-between gap-2">
-                <div className="bg-muted h-3 flex-1 rounded"></div>
-                <div className="bg-muted h-3 w-12 rounded"></div>
+                <div className="bg-muted h-3 flex-1 rounded-sm"></div>
+                <div className="bg-muted h-3 w-12 rounded-sm"></div>
               </div>
               <div className="flex items-center gap-2">
-                <div className="bg-muted h-2 w-10 rounded"></div>
-                <div className="bg-muted h-2 w-24 rounded"></div>
+                <div className="bg-muted h-2 w-10 rounded-sm"></div>
+                <div className="bg-muted h-2 w-24 rounded-sm"></div>
               </div>
             </div>
           ))}
@@ -91,7 +91,7 @@ export function NewsFeedWidget() {
           />
         </Button>
       </div>
-      <div className={`space-y-1 text-xs transition-all ${refreshing ? "opacity-50 blur-sm" : ""}`}>
+      <div className={`space-y-1 text-xs transition-all ${refreshing ? "opacity-50 blur-xs" : ""}`}>
         {news.slice(0, 5).map((item: NewsItem, index: number) => {
           return (
             <div key={index} className="group">
@@ -103,7 +103,7 @@ export function NewsFeedWidget() {
               >
                 <div className="flex items-start justify-between gap-2">
                   <span className="flex-1 leading-tight">{item.title}</span>
-                  <span className="text-muted-foreground flex-shrink-0 whitespace-nowrap">
+                  <span className="text-muted-foreground shrink-0 whitespace-nowrap">
                     {formatTimeAgo(item.publishedDate)}
                   </span>
                 </div>

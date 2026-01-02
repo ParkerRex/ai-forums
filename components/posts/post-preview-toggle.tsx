@@ -57,7 +57,7 @@ export function PostPreviewToggle({ value, onValueChange, className }: PostPrevi
         className={cn(
           "rounded-r-none border-0 border-r border-input",
           value === "edit"
-            ? "bg-muted text-foreground shadow-sm"
+            ? "bg-muted text-foreground shadow-xs"
             : "bg-transparent hover:bg-muted/50",
         )}
         onMouseEnter={handleEditMouseEnter}
@@ -76,7 +76,7 @@ export function PostPreviewToggle({ value, onValueChange, className }: PostPrevi
         className={cn(
           "rounded-l-none border-0",
           value === "preview"
-            ? "bg-muted text-foreground shadow-sm"
+            ? "bg-muted text-foreground shadow-xs"
             : "bg-transparent hover:bg-muted/50",
         )}
         onMouseEnter={handlePreviewMouseEnter}

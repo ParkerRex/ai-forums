@@ -42,15 +42,15 @@ export default function PostList({
     return (
       <div className="space-y-2">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="bg-card border-border/50 rounded border p-3">
+          <div key={i} className="bg-card border-border/50 rounded-sm border p-3">
             <div className="animate-pulse">
               <div className="flex space-x-4">
                 <div className="bg-muted h-10 w-10 rounded-full"></div>
                 <div className="flex-1 space-y-2 py-1">
-                  <div className="bg-muted h-4 w-3/4 rounded"></div>
+                  <div className="bg-muted h-4 w-3/4 rounded-sm"></div>
                   <div className="space-y-2">
-                    <div className="bg-muted h-4 rounded"></div>
-                    <div className="bg-muted h-4 w-5/6 rounded"></div>
+                    <div className="bg-muted h-4 rounded-sm"></div>
+                    <div className="bg-muted h-4 w-5/6 rounded-sm"></div>
                   </div>
                 </div>
               </div>
@@ -65,7 +65,7 @@ export default function PostList({
   if (status === "error") {
     return (
       <div className="space-y-2">
-        <div className="bg-destructive/10 border-destructive/20 rounded border p-6 text-center">
+        <div className="bg-destructive/10 border-destructive/20 rounded-sm border p-6 text-center">
           <p className="text-destructive-foreground">
             Something went wrong while loading posts. Please try again later.
           </p>

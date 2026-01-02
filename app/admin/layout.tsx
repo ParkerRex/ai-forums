@@ -74,7 +74,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <p className="text-gray-600 mb-6">You don&apos;t have permission to access this area.</p>
           <Link
             href="/"
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-gray-900 hover:bg-gray-800"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-xs text-sm font-medium text-white bg-gray-900 hover:bg-gray-800"
           >
             <ChevronLeft className="w-4 h-4 mr-1" />
             Back to Home
@@ -87,7 +87,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
-      <div className="w-64 bg-white shadow-sm">
+      <div className="w-64 bg-white shadow-xs">
         <div className="h-full flex flex-col">
           {/* Admin Header */}
           <div className="px-6 py-4 border-b">
@@ -116,7 +116,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 >
                   <Icon
                     className={cn(
-                      "flex-shrink-0 w-5 h-5 mr-3 mt-0.5",
+                      "shrink-0 w-5 h-5 mr-3 mt-0.5",
                       isActive ? "text-gray-900" : "text-gray-400 group-hover:text-gray-500",
                     )}
                   />

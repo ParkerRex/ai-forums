@@ -284,7 +284,7 @@ function CommentItemFlat({
           {comment.attachments && comment.attachments.length > 0 && (
             <div className="mt-3 space-y-2">
               {comment.attachments.map((attachment) => (
-                <div key={attachment.id} className="bg-muted/30 rounded p-2">
+                <div key={attachment.id} className="bg-muted/30 rounded-sm p-2">
                   {attachment.type === "image" || attachment.type === "gif" ? (
                     <div className="relative">
                       <Image
@@ -292,10 +292,10 @@ function CommentItemFlat({
                         alt={attachment.fileName}
                         width={400}
                         height={256}
-                        className="h-auto max-h-64 max-w-full rounded"
+                        className="h-auto max-h-64 max-w-full rounded-sm"
                       />
                       {attachment.type === "gif" && (
-                        <div className="text-foreground absolute left-2 top-2 rounded bg-black/50 px-2 py-1 text-xs">
+                        <div className="text-foreground absolute left-2 top-2 rounded-sm bg-black/50 px-2 py-1 text-xs">
                           GIF
                         </div>
                       )}
@@ -324,7 +324,7 @@ function CommentItemFlat({
           {/* Link previews */}
           {comment.linkPreviews &&
             Object.entries(comment.linkPreviews).map(([url, preview]) => (
-              <div key={url} className="bg-muted/50 mt-3 rounded p-3">
+              <div key={url} className="bg-muted/50 mt-3 rounded-sm p-3">
                 <div className="text-sm font-medium">{preview.title}</div>
                 <div className="text-muted-foreground text-xs">{preview.description}</div>
                 <a
@@ -554,11 +554,11 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
                   <div className="animate-pulse space-y-3">
                     <div className="flex items-center space-x-3">
                       <div className="bg-muted h-10 w-10 rounded-full"></div>
-                      <div className="bg-muted h-4 w-24 rounded"></div>
+                      <div className="bg-muted h-4 w-24 rounded-sm"></div>
                     </div>
                     <div className="space-y-2">
-                      <div className="bg-muted h-4 rounded"></div>
-                      <div className="bg-muted h-4 w-3/4 rounded"></div>
+                      <div className="bg-muted h-4 rounded-sm"></div>
+                      <div className="bg-muted h-4 w-3/4 rounded-sm"></div>
                     </div>
                   </div>
                 </div>

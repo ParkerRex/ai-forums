@@ -83,7 +83,7 @@ export function VideoPreview({ media }: VideoPreviewProps) {
             type="button"
             size="icon"
             variant="secondary"
-            className="w-16 h-16 rounded-full bg-background/20 backdrop-blur-sm hover:bg-background/30"
+            className="w-16 h-16 rounded-full bg-background/20 backdrop-blur-xs hover:bg-background/30"
             onClick={togglePlay}
           >
             {isPlaying ? (
@@ -114,7 +114,7 @@ export function VideoPreview({ media }: VideoPreviewProps) {
               )}
             </div>
             {media.resolution && (
-              <span className="bg-background/20 px-1.5 py-0.5 rounded text-xs">
+              <span className="bg-background/20 px-1.5 py-0.5 rounded-sm text-xs">
                 {media.resolution}
               </span>
             )}
@@ -124,7 +124,7 @@ export function VideoPreview({ media }: VideoPreviewProps) {
 
       {/* Video Info */}
       {!showControls && (
-        <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/50 px-2 py-1 rounded">
+        <div className="absolute top-2 left-2 flex items-center gap-1 bg-black/50 px-2 py-1 rounded-sm">
           <Video className="h-3 w-3 text-primary-foreground" />
           <span className="text-xs text-primary-foreground">
             {media.format?.toUpperCase() || "VIDEO"}

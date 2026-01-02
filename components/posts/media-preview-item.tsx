@@ -65,7 +65,7 @@ export function MediaPreviewItem({
         "bg-card group relative overflow-hidden rounded-none border",
         "transition-all duration-200",
         isSortableDragging || isDragging ? "opacity-50" : "",
-        isDragOverlay ? "shadow-2xl" : "shadow-sm hover:shadow-md",
+        isDragOverlay ? "shadow-2xl" : "shadow-xs hover:shadow-md",
         media.error ? "border-red-500" : "",
       )}
     >
@@ -101,7 +101,7 @@ export function MediaPreviewItem({
               {!disabled && (
                 <button
                   type="button"
-                  className="bg-background/90 cursor-grab rounded p-1 active:cursor-grabbing"
+                  className="bg-background/90 cursor-grab rounded-sm p-1 active:cursor-grabbing"
                   {...attributes}
                   {...listeners}
                 >

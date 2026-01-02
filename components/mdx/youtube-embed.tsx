@@ -53,7 +53,7 @@ export function YouTubeEmbed({
   return (
     <div className="my-8">
       <div
-        className="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-sm dark:border-zinc-800 dark:bg-zinc-950"
+        className="relative overflow-hidden rounded-lg border border-gray-200 bg-gray-50 shadow-xs dark:border-zinc-800 dark:bg-zinc-950"
         style={{ paddingBottom: getPaddingBottom() }}
       >
         <iframe

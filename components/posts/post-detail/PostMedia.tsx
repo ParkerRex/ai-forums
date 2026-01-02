@@ -86,7 +86,7 @@ export function PostMedia({ post }: PostMediaProps) {
             className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/30"
             onClick={handleVideoPlay}
           >
-            <div className="rounded-full bg-white/80 p-3 backdrop-blur-sm transition-colors hover:bg-white">
+            <div className="rounded-full bg-white/80 p-3 backdrop-blur-xs transition-colors hover:bg-white">
               <Play className="h-10 w-10 fill-black text-black" />
             </div>
           </div>

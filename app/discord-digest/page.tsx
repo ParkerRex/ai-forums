@@ -81,9 +81,9 @@ export default function DiscordDigestPage() {
               <Card key={i}>
                 <CardContent className="p-6">
                   <div className="animate-pulse">
-                    <div className="h-6 bg-muted rounded mb-3"></div>
-                    <div className="h-4 bg-muted rounded mb-2"></div>
-                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-6 bg-muted rounded-sm mb-3"></div>
+                    <div className="h-4 bg-muted rounded-sm mb-2"></div>
+                    <div className="h-4 bg-muted rounded-sm w-3/4"></div>
                   </div>
                 </CardContent>
               </Card>
@@ -166,10 +166,10 @@ export default function DiscordDigestPage() {
               <Card key={i}>
                 <CardContent className="p-6">
                   <div className="animate-pulse">
-                    <div className="h-6 bg-muted rounded mb-3"></div>
-                    <div className="h-4 bg-muted rounded mb-2"></div>
-                    <div className="h-4 bg-muted rounded w-3/4 mb-2"></div>
-                    <div className="h-3 bg-muted rounded w-1/2"></div>
+                    <div className="h-6 bg-muted rounded-sm mb-3"></div>
+                    <div className="h-4 bg-muted rounded-sm mb-2"></div>
+                    <div className="h-4 bg-muted rounded-sm w-3/4 mb-2"></div>
+                    <div className="h-3 bg-muted rounded-sm w-1/2"></div>
                   </div>
                 </CardContent>
               </Card>

@@ -52,18 +52,18 @@ function RichTextEditorSkeleton() {
     <div className="rounded-none border">
       <div className="bg-muted rounded-t-lg border-b p-2">
         <div className="flex flex-wrap gap-1">
-          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
-          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
-          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
-          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
-          <div className="bg-muted h-8 w-8 animate-pulse rounded opacity-50" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded-sm opacity-50" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded-sm opacity-50" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded-sm opacity-50" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded-sm opacity-50" />
+          <div className="bg-muted h-8 w-8 animate-pulse rounded-sm opacity-50" />
         </div>
       </div>
       <div className="min-h-[200px] p-4">
         <div className="animate-pulse space-y-2">
-          <div className="bg-muted h-4 w-3/4 rounded opacity-50" />
-          <div className="bg-muted h-4 w-1/2 rounded opacity-50" />
-          <div className="bg-muted h-4 w-5/6 rounded opacity-50" />
+          <div className="bg-muted h-4 w-3/4 rounded-sm opacity-50" />
+          <div className="bg-muted h-4 w-1/2 rounded-sm opacity-50" />
+          <div className="bg-muted h-4 w-5/6 rounded-sm opacity-50" />
         </div>
       </div>
     </div>
@@ -76,10 +76,10 @@ function PostPreviewSkeleton() {
     <Card className="w-full">
       <CardContent className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="bg-muted h-6 w-3/4 rounded opacity-50" />
-          <div className="bg-muted h-4 w-full rounded opacity-50" />
-          <div className="bg-muted h-4 w-5/6 rounded opacity-50" />
-          <div className="bg-muted h-4 w-4/6 rounded opacity-50" />
+          <div className="bg-muted h-6 w-3/4 rounded-sm opacity-50" />
+          <div className="bg-muted h-4 w-full rounded-sm opacity-50" />
+          <div className="bg-muted h-4 w-5/6 rounded-sm opacity-50" />
+          <div className="bg-muted h-4 w-4/6 rounded-sm opacity-50" />
         </div>
       </CardContent>
     </Card>
@@ -241,11 +241,11 @@ export function PostFormFields({
     return (
       <div className="space-y-6">
         <div className="animate-pulse space-y-4">
-          <div className="bg-muted h-4 w-1/4 rounded opacity-50" />
-          <div className="bg-muted h-10 rounded opacity-50" />
-          <div className="bg-muted h-4 w-1/4 rounded opacity-50" />
-          <div className="bg-muted h-10 rounded opacity-50" />
-          <div className="bg-muted h-32 rounded opacity-50" />
+          <div className="bg-muted h-4 w-1/4 rounded-sm opacity-50" />
+          <div className="bg-muted h-10 rounded-sm opacity-50" />
+          <div className="bg-muted h-4 w-1/4 rounded-sm opacity-50" />
+          <div className="bg-muted h-10 rounded-sm opacity-50" />
+          <div className="bg-muted h-32 rounded-sm opacity-50" />
         </div>
       </div>
     );
@@ -555,7 +555,7 @@ export function PostFormFields({
                       alt="Link preview image"
                       width={200}
                       height={128}
-                      className="mt-2 h-auto max-h-32 max-w-full rounded object-cover"
+                      className="mt-2 h-auto max-h-32 max-w-full rounded-sm object-cover"
                       unoptimized={true}
                     />
                   )}

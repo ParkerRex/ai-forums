@@ -376,10 +376,10 @@ export function BugReportModal({ isOpen, onClose }: BugReportModalProps) {
                           alt={file.name}
                           width={80}
                           height={80}
-                          className="h-20 w-20 rounded border object-cover"
+                          className="h-20 w-20 rounded-sm border object-cover"
                         />
                       ) : (
-                        <div className="bg-muted flex h-20 w-20 flex-col items-center justify-center rounded border p-2">
+                        <div className="bg-muted flex h-20 w-20 flex-col items-center justify-center rounded-sm border p-2">
                           {file.type === "application/pdf" ? (
                             <FileText className="text-muted-foreground mb-1 h-8 w-8" />
                           ) : file.type === "application/msword" ||

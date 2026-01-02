@@ -99,9 +99,9 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
     return (
       <div className="space-y-4">
         <div className="animate-pulse">
-          <div className="bg-muted mb-2 h-6 w-1/3 rounded"></div>
-          <div className="bg-muted mb-4 h-4 w-2/3 rounded"></div>
-          <div className="bg-muted h-10 w-full rounded"></div>
+          <div className="bg-muted mb-2 h-6 w-1/3 rounded-sm"></div>
+          <div className="bg-muted mb-4 h-4 w-2/3 rounded-sm"></div>
+          <div className="bg-muted h-10 w-full rounded-sm"></div>
         </div>
       </div>
     );
@@ -169,7 +169,7 @@ export function DiscordSettings({ userId }: DiscordSettingsProps) {
         {/* Information Section */}
         <div className="bg-muted/50 rounded-none p-4">
           <div className="flex items-start gap-2">
-            <AlertCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-blue-500" />
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
             <div className="text-sm">
               <p className="text-foreground mb-1 font-medium">How it works</p>
               <ul className="text-muted-foreground space-y-1">

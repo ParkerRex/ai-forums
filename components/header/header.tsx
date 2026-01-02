@@ -39,7 +39,7 @@ export default function Header() {
 
   return (
     <HeaderProvider>
-      <header className="bg-background/95 sticky top-0 z-50 border-b backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <header className="bg-background/95 sticky top-0 z-50 border-b backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">
         <div className="mx-auto max-w-7xl px-4">
           <div className="flex h-16 items-center justify-between">
             <div className="flex items-center space-x-8">

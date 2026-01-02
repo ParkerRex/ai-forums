@@ -74,7 +74,7 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
 
       const button = document.createElement("button");
       button.className =
-        "copy-button absolute right-2 top-2 rounded-md border border-zinc-200 bg-white/80 p-2 text-zinc-600 opacity-0 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 group-hover:opacity-100 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white";
+        "copy-button absolute right-2 top-2 rounded-md border border-zinc-200 bg-white/80 p-2 text-zinc-600 opacity-0 backdrop-blur-xs transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 group-hover:opacity-100 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white";
       button.innerHTML = `<svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
       </svg>`;
@@ -106,9 +106,9 @@ export function MarkdownRenderer({ content, className }: MarkdownRendererProps) 
   if (isProcessing) {
     return (
       <div className={cn("animate-pulse", className)}>
-        <div className="mb-2 h-4 w-3/4 rounded bg-gray-200"></div>
-        <div className="mb-2 h-4 w-1/2 rounded bg-gray-200"></div>
-        <div className="h-4 w-5/6 rounded bg-gray-200"></div>
+        <div className="mb-2 h-4 w-3/4 rounded-sm bg-gray-200"></div>
+        <div className="mb-2 h-4 w-1/2 rounded-sm bg-gray-200"></div>
+        <div className="h-4 w-5/6 rounded-sm bg-gray-200"></div>
       </div>
     );
   }

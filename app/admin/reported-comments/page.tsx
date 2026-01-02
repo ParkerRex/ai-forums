@@ -269,11 +269,11 @@ function ReportedCommentsContent() {
               <div className="animate-pulse space-y-3">
                 {/* Skeleton elements mimic the structure of actual report cards */}
                 <div className="flex items-center space-x-3">
-                  <div className="bg-muted h-4 w-24 rounded"></div>
-                  <div className="bg-muted h-4 w-32 rounded"></div>
+                  <div className="bg-muted h-4 w-24 rounded-sm"></div>
+                  <div className="bg-muted h-4 w-32 rounded-sm"></div>
                 </div>
-                <div className="bg-muted h-4 w-full rounded"></div>
-                <div className="bg-muted h-4 w-3/4 rounded"></div>
+                <div className="bg-muted h-4 w-full rounded-sm"></div>
+                <div className="bg-muted h-4 w-3/4 rounded-sm"></div>
               </div>
             </div>
           ))}

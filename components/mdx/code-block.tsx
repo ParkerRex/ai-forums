@@ -50,7 +50,7 @@ export function CodeBlock({ children, className, ...props }: CodeBlockProps) {
       </pre>
       <button
         onClick={handleCopy}
-        className="absolute right-2 top-2 rounded-md border border-zinc-200 bg-white/80 p-2 text-zinc-600 opacity-0 backdrop-blur-sm transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 group-hover:opacity-100 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
+        className="absolute right-2 top-2 rounded-md border border-zinc-200 bg-white/80 p-2 text-zinc-600 opacity-0 backdrop-blur-xs transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-900 group-hover:opacity-100 dark:border-zinc-700 dark:bg-zinc-800/80 dark:text-zinc-300 dark:hover:bg-zinc-700 dark:hover:text-white"
         aria-label="Copy code"
       >
         {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

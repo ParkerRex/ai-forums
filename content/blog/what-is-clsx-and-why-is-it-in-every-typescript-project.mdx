@@ -152,7 +152,7 @@ function Input({ error, success, warning, ...props }) {
     <input
       className={clsx(
         'px-4 py-2 border rounded-lg transition-colors',
-        'focus:outline-none focus:ring-2',
+        'focus:outline-hidden focus:ring-2',
         {
           'border-red-500 focus:ring-red-200': error,
           'border-green-500 focus:ring-green-200': success,
@@ -211,7 +211,7 @@ function Card({ variant = 'default', elevated, children }) {
         
         // Elevation
         'shadow-lg': elevated,
-        'shadow-sm': !elevated
+        'shadow-xs': !elevated
       }
     )}>
       {children}

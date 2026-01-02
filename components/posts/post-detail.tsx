@@ -327,7 +327,7 @@ export default function PostDetail({
           </div>
         </div>
 
-        <Card className="w-full overflow-hidden shadow-sm">
+        <Card className="w-full overflow-hidden shadow-xs">
           <div className="flex">
             <div className="bg-muted/50 hidden flex-col items-center p-2 sm:flex dark:bg-black">
               <VoteButton
@@ -385,7 +385,7 @@ export default function PostDetail({
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-8 w-8 flex-shrink-0"
+                        className="h-8 w-8 shrink-0"
                         data-testid="post-more-menu"
                       >
                         <MoreHorizontal className="h-4 w-4" />
@@ -502,7 +502,7 @@ export default function PostDetail({
                             className="absolute inset-0 flex cursor-pointer items-center justify-center bg-black/30"
                             onClick={handleVideoPlay}
                           >
-                            <div className="rounded-full bg-white/80 p-3 backdrop-blur-sm transition-colors hover:bg-white">
+                            <div className="rounded-full bg-white/80 p-3 backdrop-blur-xs transition-colors hover:bg-white">
                               <Play className="h-10 w-10 fill-black text-black" />
                             </div>
                           </div>

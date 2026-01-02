@@ -67,16 +67,16 @@ function TableSkeleton() {
               <div className="flex items-center gap-3">
                 <div className="bg-muted h-8 w-8 animate-pulse rounded-full" />
                 <div className="space-y-1">
-                  <div className="bg-muted h-4 w-32 animate-pulse rounded" />
-                  <div className="bg-muted h-3 w-24 animate-pulse rounded" />
+                  <div className="bg-muted h-4 w-32 animate-pulse rounded-sm" />
+                  <div className="bg-muted h-3 w-24 animate-pulse rounded-sm" />
                 </div>
               </div>
             </TableCell>
             <TableCell>
-              <div className="bg-muted h-5 w-20 animate-pulse rounded" />
+              <div className="bg-muted h-5 w-20 animate-pulse rounded-sm" />
             </TableCell>
             <TableCell>
-              <div className="bg-muted h-4 w-12 animate-pulse rounded" />
+              <div className="bg-muted h-4 w-12 animate-pulse rounded-sm" />
             </TableCell>
           </TableRow>
         ))}

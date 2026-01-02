@@ -250,10 +250,10 @@ export default function AdminMembersPage() {
         <div className="mb-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="bg-muted mb-2 h-8 w-32 animate-pulse rounded" />
-              <div className="bg-muted h-5 w-64 animate-pulse rounded" />
+              <div className="bg-muted mb-2 h-8 w-32 animate-pulse rounded-sm" />
+              <div className="bg-muted h-5 w-64 animate-pulse rounded-sm" />
             </div>
-            <div className="bg-muted h-10 w-24 animate-pulse rounded" />
+            <div className="bg-muted h-10 w-24 animate-pulse rounded-sm" />
           </div>
         </div>
 
@@ -263,8 +263,8 @@ export default function AdminMembersPage() {
             <div key={i} className="bg-card border-border rounded-none border p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="bg-muted mb-2 h-4 w-24 animate-pulse rounded" />
-                  <div className="bg-muted h-8 w-16 animate-pulse rounded" />
+                  <div className="bg-muted mb-2 h-4 w-24 animate-pulse rounded-sm" />
+                  <div className="bg-muted h-8 w-16 animate-pulse rounded-sm" />
                 </div>
                 <div className="bg-muted h-12 w-12 animate-pulse rounded-none" />
               </div>
@@ -273,13 +273,13 @@ export default function AdminMembersPage() {
         </div>
 
         {/* Search and filters skeleton */}
-        <div className="bg-card mb-6 rounded-none shadow-sm">
+        <div className="bg-card mb-6 rounded-none shadow-xs">
           <div className="border-b p-4">
             <div className="flex flex-col gap-4 sm:flex-row">
-              <div className="bg-muted h-10 flex-1 animate-pulse rounded" />
+              <div className="bg-muted h-10 flex-1 animate-pulse rounded-sm" />
               <div className="flex gap-2">
-                <div className="bg-muted h-10 w-32 animate-pulse rounded" />
-                <div className="bg-muted h-10 w-32 animate-pulse rounded" />
+                <div className="bg-muted h-10 w-32 animate-pulse rounded-sm" />
+                <div className="bg-muted h-10 w-32 animate-pulse rounded-sm" />
               </div>
             </div>
           </div>
@@ -291,7 +291,7 @@ export default function AdminMembersPage() {
                 <tr>
                   {Array.from({ length: 6 }).map((_, i) => (
                     <th key={i} className="px-6 py-3">
-                      <div className="bg-muted h-4 animate-pulse rounded" />
+                      <div className="bg-muted h-4 animate-pulse rounded-sm" />
                     </th>
                   ))}
                 </tr>
@@ -303,14 +303,14 @@ export default function AdminMembersPage() {
                       <div className="flex items-center">
                         <div className="bg-muted mr-3 h-10 w-10 animate-pulse rounded-full" />
                         <div className="flex-1">
-                          <div className="bg-muted mb-1 h-4 w-32 animate-pulse rounded" />
-                          <div className="bg-muted h-3 w-24 animate-pulse rounded" />
+                          <div className="bg-muted mb-1 h-4 w-32 animate-pulse rounded-sm" />
+                          <div className="bg-muted h-3 w-24 animate-pulse rounded-sm" />
                         </div>
                       </div>
                     </td>
                     {Array.from({ length: 5 }).map((_, j) => (
                       <td key={j} className="whitespace-nowrap px-6 py-4">
-                        <div className="bg-muted h-4 w-20 animate-pulse rounded" />
+                        <div className="bg-muted h-4 w-20 animate-pulse rounded-sm" />
                       </td>
                     ))}
                   </tr>
@@ -595,7 +595,7 @@ export default function AdminMembersPage() {
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <div className="bg-muted text-muted-foreground flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-medium">
+                      <div className="bg-muted text-muted-foreground flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-sm font-medium">
                         {member.avatarUrl ? (
                           <Image
                             src={member.avatarUrl}

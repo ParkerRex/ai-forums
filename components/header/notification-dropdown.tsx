@@ -113,7 +113,7 @@ export function NotificationDropdown() {
                   href={getNotificationLink(notification)}
                   className="hover:bg-accent flex w-full items-start gap-3 rounded-none p-3"
                 >
-                  <Avatar className="h-8 w-8 flex-shrink-0">
+                  <Avatar className="h-8 w-8 shrink-0">
                     <AvatarFallback className="bg-muted text-muted-foreground text-xs">
                       {notification.actor?.firstName?.[0] || "U"}
                       {notification.actor?.lastName?.[0] || ""}

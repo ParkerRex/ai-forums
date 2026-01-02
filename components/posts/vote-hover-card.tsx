@@ -37,7 +37,7 @@ export const VoteHoverCard: React.FC<VoteHoverCardProps> = ({ postId, voteCount,
                       slug: voter.slug,
                       id: voter.id,
                     })}
-                    className="flex items-center space-x-2 hover:bg-muted/50 rounded p-1 -m-1 transition-colors"
+                    className="flex items-center space-x-2 hover:bg-muted/50 rounded-sm p-1 -m-1 transition-colors"
                   >
                     <Avatar className="h-6 w-6">
                       <AvatarImage src={voter.avatarUrl || ""} />

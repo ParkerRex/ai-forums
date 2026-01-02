@@ -61,10 +61,10 @@ export default function AnalyticsPage() {
     return (
       <div className="p-6">
         <div className="animate-pulse space-y-4">
-          <div className="bg-muted h-8 w-1/4 rounded"></div>
+          <div className="bg-muted h-8 w-1/4 rounded-sm"></div>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="bg-muted h-32 rounded"></div>
+              <div key={i} className="bg-muted h-32 rounded-sm"></div>
             ))}
           </div>
         </div>

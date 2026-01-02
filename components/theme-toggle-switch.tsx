@@ -40,21 +40,21 @@ export function ThemeToggleSwitch({ className }: { className?: string }) {
       <ToggleGroupItem
         value="light"
         aria-label="Light theme"
-        className="data-[state=on]:bg-background h-full w-7 p-0 data-[state=on]:shadow-sm"
+        className="data-[state=on]:bg-background h-full w-7 p-0 data-[state=on]:shadow-xs"
       >
         <SunIcon size={12} />
       </ToggleGroupItem>
       <ToggleGroupItem
         value="system"
         aria-label="System theme"
-        className="data-[state=on]:bg-background h-full w-7 p-0 data-[state=on]:shadow-sm"
+        className="data-[state=on]:bg-background h-full w-7 p-0 data-[state=on]:shadow-xs"
       >
         <LaptopMinimalCheckIcon size={12} />
       </ToggleGroupItem>
       <ToggleGroupItem
         value="dark"
         aria-label="Dark theme"
-        className="data-[state=on]:bg-background h-full w-7 p-0 data-[state=on]:shadow-sm"
+        className="data-[state=on]:bg-background h-full w-7 p-0 data-[state=on]:shadow-xs"
       >
         <MoonIcon size={12} />
       </ToggleGroupItem>

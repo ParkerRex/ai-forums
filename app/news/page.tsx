@@ -97,11 +97,11 @@ export default function NewsPage() {
                   {/* Animated skeleton content mimicking article structure */}
                   <div className="animate-pulse">
                     {/* Skeleton for article title */}
-                    <div className="h-6 bg-muted rounded mb-3"></div>
+                    <div className="h-6 bg-muted rounded-sm mb-3"></div>
                     {/* Skeleton for article summary line 1 */}
-                    <div className="h-4 bg-muted rounded mb-2"></div>
+                    <div className="h-4 bg-muted rounded-sm mb-2"></div>
                     {/* Skeleton for article summary line 2 (shorter) */}
-                    <div className="h-4 bg-muted rounded w-3/4"></div>
+                    <div className="h-4 bg-muted rounded-sm w-3/4"></div>
                   </div>
                 </CardContent>
               </Card>

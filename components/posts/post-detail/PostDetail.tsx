@@ -152,7 +152,7 @@ export default function PostDetail({
           </div>
         </div>
 
-        <Card className="w-full overflow-hidden shadow-sm">
+        <Card className="w-full overflow-hidden shadow-xs">
           <div className="flex">
             {/* Desktop vote column */}
             <div className="bg-muted/50 hidden flex-col items-center p-2 sm:flex dark:bg-black">

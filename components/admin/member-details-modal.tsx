@@ -64,7 +64,7 @@ export function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProp
   return (
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="flex max-h-[90vh] max-w-4xl flex-col overflow-hidden">
-        <DialogHeader className="flex-shrink-0">
+        <DialogHeader className="shrink-0">
           <DialogTitle className="text-xl font-semibold">Member Details</DialogTitle>
         </DialogHeader>
 

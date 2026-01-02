@@ -167,7 +167,7 @@ export function EventCard({ event, size = "medium", onClick }: EventCardProps) {
   if (size === "small") {
     return (
       <motion.div
-        className={` ${colorClass} text-primary-foreground cursor-pointer rounded p-1 text-xs transition-opacity hover:opacity-80`}
+        className={` ${colorClass} text-primary-foreground cursor-pointer rounded-sm p-1 text-xs transition-opacity hover:opacity-80`}
         onClick={(e) => {
           // Prevent event bubbling to parent date cell
           e.stopPropagation();

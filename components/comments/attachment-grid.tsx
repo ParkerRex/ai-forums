@@ -65,7 +65,7 @@ function AttachmentItem({ attachment }: { attachment: AttachmentGridProps["attac
     <div
       className={cn(
         "bg-card group relative overflow-hidden rounded-none border",
-        "cursor-pointer shadow-sm transition-all duration-200 hover:shadow-md",
+        "cursor-pointer shadow-xs transition-all duration-200 hover:shadow-md",
       )}
     >
       <div className="relative aspect-square">

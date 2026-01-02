@@ -304,7 +304,7 @@ export function MembershipCTAModal({
                       {billingInterval === "yearly" && (
                         <Badge
                           variant="secondary"
-                          className="absolute -right-2 -top-2 bg-green-500 px-2 py-0.5 text-xs text-white shadow-sm hover:bg-green-500"
+                          className="absolute -right-2 -top-2 bg-green-500 px-2 py-0.5 text-xs text-white shadow-xs hover:bg-green-500"
                         >
                           Save {yearlySavingsPercent}%
                         </Badge>
@@ -383,7 +383,7 @@ export function MembershipCTAModal({
                     key={index}
                     className="border-border/50 hover:border-primary/20 flex items-start gap-3 rounded-none border bg-gradient-to-br p-3 transition-all duration-300"
                   >
-                    <div className="text-primary flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-none bg-gradient-to-br">
+                    <div className="text-primary flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-gradient-to-br">
                       {feature.icon}
                     </div>
                     <div className="space-y-0.5">

@@ -295,7 +295,7 @@ export default function PostPreview({
                   />
                   {!isVideoPlaying && (
                     <div className="bg-background/10 group-hover:bg-background/20 absolute inset-0 flex items-center justify-center transition-colors">
-                      <div className="bg-background/90 transform rounded-none p-4 shadow-lg backdrop-blur-sm transition-transform group-hover:scale-110">
+                      <div className="bg-background/90 transform rounded-none p-4 shadow-lg backdrop-blur-xs transition-transform group-hover:scale-110">
                         <Play className="text-foreground fill-foreground ml-0.5 h-8 w-8" />
                       </div>
                     </div>
@@ -312,7 +312,7 @@ export default function PostPreview({
                         <iframe
                           src={`https://www.youtube.com/embed/${extractYouTubeVideoId(post.linkUrl)}`}
                           title={post.linkTitle || "YouTube video"}
-                          className="absolute inset-0 h-full w-full rounded"
+                          className="absolute inset-0 h-full w-full rounded-sm"
                           frameBorder="0"
                           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                           allowFullScreen
@@ -501,7 +501,7 @@ export default function PostPreview({
 
         {/* Media thumbnail - right column for compact posts */}
         {(hasMedia(post) || isLinkPost(post) || isPollPost(post)) && (
-          <div className="w-24 flex-shrink-0">
+          <div className="w-24 shrink-0">
             <div
               className={cn(
                 "bg-muted border-border relative h-16 w-24 overflow-hidden border",

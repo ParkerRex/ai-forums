@@ -61,13 +61,13 @@ function SimpleDiff({ oldText, newText }: { oldText: string; newText: string }) 
     <div className="grid grid-cols-2 gap-4">
       <div>
         <h4 className="text-sm font-medium mb-2 text-muted-foreground">Previous Version</h4>
-        <div className="bg-muted/50 p-3 rounded text-sm">
+        <div className="bg-muted/50 p-3 rounded-sm text-sm">
           <pre className="whitespace-pre-wrap font-sans">{oldText}</pre>
         </div>
       </div>
       <div>
         <h4 className="text-sm font-medium mb-2 text-muted-foreground">Current Version</h4>
-        <div className="bg-muted/50 p-3 rounded text-sm">
+        <div className="bg-muted/50 p-3 rounded-sm text-sm">
           <pre className="whitespace-pre-wrap font-sans">{newText}</pre>
         </div>
       </div>

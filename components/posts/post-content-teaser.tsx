@@ -47,7 +47,7 @@ export function PostContentTeaser({ content, className }: PostContentTeaserProps
         transition={{ duration: 0.5 }}
         className="relative"
       >
-        {/* Content with progressive blur */}
+        {/* Content with progressive blur-xs */}
         <div className="relative">
           <div className="prose prose-lg dark:prose-invert max-w-none post-content">
             {getTeaserContent()
@@ -102,7 +102,7 @@ export function PostContentTeaser({ content, className }: PostContentTeaserProps
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.5 }}
-          className="px-3 py-1 bg-primary/10 backdrop-blur-sm rounded-full border border-primary/20"
+          className="px-3 py-1 bg-primary/10 backdrop-blur-xs rounded-full border border-primary/20"
         >
           <span className="text-xs font-medium text-primary">Preview</span>
         </motion.div>

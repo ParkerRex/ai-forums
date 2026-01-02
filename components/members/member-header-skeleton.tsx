@@ -5,7 +5,7 @@ export default function MemberHeaderSkeleton() {
     <div className="bg-card border border-border/50 rounded-md p-6">
       <div className="flex flex-col md:flex-row items-start">
         {/* Avatar skeleton */}
-        <Skeleton className="h-24 w-24 rounded-full mr-6 mb-4 md:mb-0 flex-shrink-0" />
+        <Skeleton className="h-24 w-24 rounded-full mr-6 mb-4 md:mb-0 shrink-0" />
 
         <div className="flex-1 w-full">
           {/* Name and badges skeleton */}

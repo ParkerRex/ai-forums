@@ -55,7 +55,7 @@ User Action → useNewsFeed Hook → localStorage Check (30min) →
 
 **Widget Refresh:**
 - ⏱️ Rate limited to 30 seconds between refreshes
-- 🎨 Visual feedback with spinning icon and blur effect
+- 🎨 Visual feedback with spinning icon and blur-xs effect
 - 🚨 Toast notifications for rate limit violations
 
 **Full Page Refresh:**

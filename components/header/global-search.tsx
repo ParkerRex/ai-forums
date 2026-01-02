@@ -65,7 +65,7 @@ function highlightMatch(text: string, searchTerm: string): React.ReactNode {
     regex.test(part) ? (
       <mark
         key={index}
-        className="bg-muted/50 dark:bg-muted/30 text-foreground font-medium rounded px-0.5"
+        className="bg-muted/50 dark:bg-muted/30 text-foreground font-medium rounded-sm px-0.5"
       >
         {part}
       </mark>
@@ -188,11 +188,11 @@ function SearchResultItem({
       onSelect={handleSelect}
       className={`flex items-center gap-3 p-3 data-[selected=true]:bg-muted data-[selected=true]:text-foreground ${result.restricted ? "opacity-60" : ""}`}
     >
-      <div className="flex-shrink-0">{getIcon(result.type)}</div>
+      <div className="shrink-0">{getIcon(result.type)}</div>
 
       {renderContent()}
 
-      <div className="flex items-center gap-2 flex-shrink-0">
+      <div className="flex items-center gap-2 shrink-0">
         {result.restricted && <Lock className="w-4 h-4 text-muted-foreground" />}
         <Badge variant={getBadgeVariant(result.type)}>
           {result.restricted && result.type !== "link"

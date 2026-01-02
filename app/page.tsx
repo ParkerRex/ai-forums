@@ -37,17 +37,17 @@ export default function Home() {
           <div className="space-y-2 lg:col-span-1">
             {/* News feed skeleton */}
             <div className="bg-card rounded-none border p-4">
-              <div className="bg-muted mb-3 h-5 w-24 animate-pulse rounded" />
+              <div className="bg-muted mb-3 h-5 w-24 animate-pulse rounded-sm" />
               <div className="space-y-2">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="bg-muted h-12 animate-pulse rounded" />
+                  <div key={i} className="bg-muted h-12 animate-pulse rounded-sm" />
                 ))}
               </div>
             </div>
 
             {/* Online users skeleton */}
             <div className="bg-card rounded-none border p-4">
-              <div className="bg-muted mb-3 h-5 w-28 animate-pulse rounded" />
+              <div className="bg-muted mb-3 h-5 w-28 animate-pulse rounded-sm" />
               <div className="flex -space-x-2">
                 {Array.from({ length: 5 }).map((_, i) => (
                   <div key={i} className="bg-muted h-8 w-8 animate-pulse rounded-full" />
@@ -57,11 +57,11 @@ export default function Home() {
 
             {/* About VAI skeleton */}
             <div className="bg-card rounded-none border p-4">
-              <div className="bg-muted mb-3 h-5 w-20 animate-pulse rounded" />
+              <div className="bg-muted mb-3 h-5 w-20 animate-pulse rounded-sm" />
               <div className="space-y-2">
-                <div className="bg-muted h-3 animate-pulse rounded" />
-                <div className="bg-muted h-3 animate-pulse rounded" />
-                <div className="bg-muted h-3 w-3/4 animate-pulse rounded" />
+                <div className="bg-muted h-3 animate-pulse rounded-sm" />
+                <div className="bg-muted h-3 animate-pulse rounded-sm" />
+                <div className="bg-muted h-3 w-3/4 animate-pulse rounded-sm" />
               </div>
             </div>
           </div>

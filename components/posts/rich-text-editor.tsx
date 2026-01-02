@@ -27,8 +27,8 @@ function RichEditorSkeleton() {
       </div>
       <div className="min-h-[200px] p-4">
         <div className="animate-pulse space-y-2">
-          <div className="bg-muted h-4 w-3/4 rounded opacity-50" />
-          <div className="bg-muted h-4 w-1/2 rounded opacity-50" />
+          <div className="bg-muted h-4 w-3/4 rounded-sm opacity-50" />
+          <div className="bg-muted h-4 w-1/2 rounded-sm opacity-50" />
         </div>
       </div>
     </div>

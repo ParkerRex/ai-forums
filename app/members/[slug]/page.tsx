@@ -170,7 +170,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
     <div className="w-full max-w-4xl mx-auto bg-background text-foreground">
       <div className="border-x border-b border-border">
         {/* Twitter-style sticky header */}
-        <header className="flex items-center justify-between p-2 px-4 border-b border-border sticky top-0 bg-background/80 backdrop-blur-sm z-10">
+        <header className="flex items-center justify-between p-2 px-4 border-b border-border sticky top-0 bg-background/80 backdrop-blur-xs z-10">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="icon" onClick={() => router.back()}>
               <ArrowLeft className="w-5 h-5" />

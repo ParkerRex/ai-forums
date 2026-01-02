@@ -446,7 +446,7 @@ export function EnhancedCommentInput({
       )}
 
       {Object.entries(linkPreviews).map(([url, preview]) => (
-        <div key={url} className="bg-muted/50 rounded border p-3">
+        <div key={url} className="bg-muted/50 rounded-sm border p-3">
           <div className="text-sm font-medium">{preview.title}</div>
           <div className="text-muted-foreground text-xs">{preview.description}</div>
           <div className="text-xs text-blue-600">{url}</div>

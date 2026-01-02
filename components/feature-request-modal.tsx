@@ -268,10 +268,10 @@ export function FeatureRequestModal({ isOpen, onClose }: FeatureRequestModalProp
                           alt={file.name}
                           width={80}
                           height={80}
-                          className="w-20 h-20 object-cover rounded border"
+                          className="w-20 h-20 object-cover rounded-sm border"
                         />
                       ) : (
-                        <div className="w-20 h-20 bg-muted rounded border flex flex-col items-center justify-center p-2">
+                        <div className="w-20 h-20 bg-muted rounded-sm border flex flex-col items-center justify-center p-2">
                           {file.type === "application/pdf" ? (
                             <FileText className="w-8 h-8 text-muted-foreground mb-1" />
                           ) : (

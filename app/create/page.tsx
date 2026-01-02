@@ -15,16 +15,16 @@ function CreatePostSkeleton() {
       <CardContent>
         <div className="space-y-6">
           <div className="space-y-2">
-            <div className="bg-muted h-4 w-1/4 rounded" />
-            <div className="bg-muted h-10 rounded" />
-            <div className="bg-muted h-4 w-1/4 rounded" />
-            <div className="bg-muted h-10 rounded" />
-            <div className="bg-muted h-32 rounded" />
+            <div className="bg-muted h-4 w-1/4 rounded-sm" />
+            <div className="bg-muted h-10 rounded-sm" />
+            <div className="bg-muted h-4 w-1/4 rounded-sm" />
+            <div className="bg-muted h-10 rounded-sm" />
+            <div className="bg-muted h-32 rounded-sm" />
           </div>
           <div className="flex space-x-4">
-            <div className="bg-muted h-10 w-20 rounded" />
-            <div className="bg-muted h-10 w-20 rounded" />
-            <div className="bg-muted h-10 w-24 rounded" />
+            <div className="bg-muted h-10 w-20 rounded-sm" />
+            <div className="bg-muted h-10 w-20 rounded-sm" />
+            <div className="bg-muted h-10 w-24 rounded-sm" />
           </div>
         </div>
       </CardContent>
@@ -46,7 +46,7 @@ function UnauthenticatedContent() {
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">
       <div className="mx-auto max-w-md">
-        <div className="bg-card border-border rounded-none border p-8 text-center shadow-sm">
+        <div className="bg-card border-border rounded-none border p-8 text-center shadow-xs">
           <h1 className="text-foreground mb-4 text-2xl font-bold">Members Only</h1>
           <p className="text-muted-foreground mb-6">
             VAI Community is an exclusive platform for engineers from top companies to share AI
