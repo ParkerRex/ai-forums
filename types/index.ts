@@ -61,14 +61,12 @@ export type {
 } from "./comment";
 // Member types
 export type {
-  BillingInterval,
   Member,
   MemberActivity,
   MemberPost,
   MemberRole,
   MemberStatus,
   MemberTier,
-  SubscriptionStatus,
   UpdateMemberInput,
 } from "./member";
 // Notification types

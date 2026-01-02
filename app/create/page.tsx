@@ -63,9 +63,9 @@ function UnauthenticatedContent() {
             <Button
               variant="outline"
               className="w-full"
-              onClick={() => (window.location.href = "/pricing")}
+              onClick={() => (window.location.href = "/sign-up")}
             >
-              Become a Member
+              Sign Up Free
             </Button>
           </div>
         </div>

@@ -9,16 +9,14 @@ const publicRoutes = [
   "/",
   "/sign-in",
   "/sign-up",
-  "/pricing",
   "/blog",
   "/api/auth",
-  "/api/stripe/webhook",
   "/forgot-password",
   "/reset-password",
 ];
 
 // Routes that should bypass all middleware
-const bypassRoutes = ["/api/stripe/webhook", "/api/health"];
+const bypassRoutes = ["/api/health"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

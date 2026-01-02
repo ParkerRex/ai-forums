@@ -41,7 +41,7 @@ export async function GET() {
       }
     }
 
-    // Note: Tier stats and revenue would need a subscriptions table
+    // Note: Tier stats would need a subscriptions table
     // For now, return placeholder values
     const stats: MembershipStats = {
       totalMembers: totalResult.count,
@@ -51,14 +51,6 @@ export async function GET() {
         member: 0,
       },
       statusStats,
-      revenue: {
-        mrr: 0,
-        monthlyRevenue: 0,
-        yearlyRevenue: 0,
-        formattedMrr: "$0",
-        formattedMonthly: "$0",
-        formattedYearly: "$0",
-      },
     };
 
     return NextResponse.json(stats);

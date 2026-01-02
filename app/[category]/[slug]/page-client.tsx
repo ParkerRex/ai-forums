@@ -24,8 +24,6 @@ import CommentSection from "@/components/comments/comment-section-flat";
 import { PostDeleteModal } from "@/components/posts/post-delete-modal";
 import PostDetail from "@/components/posts/post-detail";
 import { PostHistoryModal } from "@/components/posts/post-history-modal";
-import { PostPaywallDirect } from "@/components/posts/post-paywall-direct";
-import { useAuth } from "@/components/providers/auth-provider";
 import { Badge } from "@/components/ui/badge";
 import { usePostBySlug } from "@/hooks/use-posts";
 
@@ -52,8 +50,6 @@ interface PostPageClientProps {
  */
 export default function PostPageClient({ params }: PostPageClientProps) {
   const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
-
   const { category, slug } = params;
 
   // Get search params for comment deep linking
@@ -80,10 +76,6 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     isLoading: isPostLoading,
     isError,
   } = usePostBySlug(hasValidParams ? slug : "");
-
-  // For now, authenticated users can view posts (simplified access check)
-  // In a full implementation, this would check subscription status
-  const canViewPost = user ? true : (post?.isFree ?? true);
 
   // Modal event handlers for post management actions
 
@@ -231,140 +223,78 @@ export default function PostPageClient({ params }: PostPageClientProps) {
     <div className="mx-auto max-w-4xl space-y-8 px-4 py-8">
       {/* Authenticated User Experience */}
       <Authenticated>
-        {isAuthLoading ? (
-          // Loading state while checking access
-          <div className="animate-pulse space-y-4">
-            <div className="bg-muted h-8 w-3/4 rounded-sm" />
-            <div className="bg-muted h-4 w-full rounded-sm" />
-            <div className="bg-muted h-4 w-full rounded-sm" />
-            <div className="bg-muted h-4 w-2/3 rounded-sm" />
-          </div>
-        ) : canViewPost ? (
+        {/* Full post detail with all interactive features */}
+        <PostDetail
+          post={post}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onViewHistory={handleViewHistory}
+          isEditing={isEditing}
+          onCancelEdit={handleCancelEdit}
+        />
+
+        {/* Comment section with deep linking support */}
+        <CommentSection postId={post.id} targetCommentId={commentId ?? undefined} />
+
+        {/* Post Management Modals - Only available to authenticated users */}
+        {post && (
           <>
-            {/* Full post detail with all interactive features */}
-            <PostDetail
-              post={post}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onViewHistory={handleViewHistory}
-              isEditing={isEditing}
-              onCancelEdit={handleCancelEdit}
+            <PostDeleteModal
+              postId={post.id}
+              postTitle={post.title}
+              isOpen={isDeleteModalOpen}
+              onClose={() => setIsDeleteModalOpen(false)}
+              onSuccess={handleDeleteSuccess}
             />
-
-            {/* Comment section with deep linking support */}
-            <CommentSection postId={post.id} targetCommentId={commentId ?? undefined} />
-
-            {/* Post Management Modals - Only available to authenticated users */}
-            {post && (
-              <>
-                <PostDeleteModal
-                  postId={post.id}
-                  postTitle={post.title}
-                  isOpen={isDeleteModalOpen}
-                  onClose={() => setIsDeleteModalOpen(false)}
-                  onSuccess={handleDeleteSuccess}
-                />
-                <PostHistoryModal
-                  postId={post.id}
-                  isOpen={isHistoryModalOpen}
-                  onClose={() => setIsHistoryModalOpen(false)}
-                />
-              </>
-            )}
+            <PostHistoryModal
+              postId={post.id}
+              isOpen={isHistoryModalOpen}
+              onClose={() => setIsHistoryModalOpen(false)}
+            />
           </>
-        ) : (
-          // Authenticated user without access - show paywall
-          <div className="space-y-6">
-            {/* Post Header */}
-            <div className="border-b pb-6">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    {post.category?.displayName || "General"}
-                  </Badge>
-                </div>
-              </div>
-              <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
-              <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                <span>
-                  by {post.member?.firstName} {post.member?.lastName}
-                </span>
-                <span>-</span>
-                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                <span>-</span>
-                <span>{post.upvotes} upvotes</span>
-              </div>
-            </div>
-
-            {/* Preview Content with Paywall */}
-            <div className="relative">
-              <div className="prose prose-lg post-content max-w-none">
-                <div className="text-foreground leading-relaxed">
-                  {/* Show preview if available, otherwise fallback to truncated content */}
-                  {post.preview || `${post.content?.substring(0, 200)}...`}
-                </div>
-              </div>
-
-              {/* Direct Paywall */}
-              <PostPaywallDirect postId={post.id} postTitle={post.title} />
-            </div>
-          </div>
         )}
       </Authenticated>
 
-      {/* Unauthenticated User Experience - Preview with membership CTA */}
+      {/* Unauthenticated User Experience - Prompt to sign in */}
       <Unauthenticated>
-        {post.isFree ? (
-          // Free posts show full content for everyone
-          <>
-            <PostDetail
-              post={post}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onViewHistory={handleViewHistory}
-              isEditing={isEditing}
-              onCancelEdit={handleCancelEdit}
-            />
-            <CommentSection postId={post.id} targetCommentId={commentId ?? undefined} />
-          </>
-        ) : (
-          // Paywalled posts show preview with overlay
-          <div className="space-y-6">
-            {/* Post Header - Same as authenticated but no interaction */}
-            <div className="border-b pb-6">
-              <div className="mb-4 flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Badge variant="secondary" className="bg-primary/10 text-primary">
-                    {post.category?.displayName || "General"}
-                  </Badge>
-                </div>
-              </div>
-              <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
-              <div className="text-muted-foreground flex items-center space-x-4 text-sm">
-                <span>
-                  by {post.member?.firstName} {post.member?.lastName}
-                </span>
-                <span>-</span>
-                <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                <span>-</span>
-                <span>{post.upvotes} upvotes</span>
-              </div>
+        <div className="space-y-6">
+          {/* Post Header Preview */}
+          <div className="border-b pb-6">
+            <div className="mb-4 flex items-center space-x-2">
+              <Badge variant="secondary" className="bg-primary/10 text-primary">
+                {post.category?.displayName || "General"}
+              </Badge>
             </div>
-
-            {/* Preview Content with Overlay */}
-            <div className="relative">
-              <div className="prose prose-lg post-content max-w-none">
-                <div className="text-foreground leading-relaxed">
-                  {/* Show preview if available, otherwise fallback to truncated content */}
-                  {post.preview || `${post.content?.substring(0, 200)}...`}
-                </div>
-              </div>
-
-              {/* Direct Paywall */}
-              <PostPaywallDirect postId={post.id} postTitle={post.title} />
+            <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
+            <div className="text-muted-foreground flex items-center space-x-4 text-sm">
+              <span>
+                by {post.member?.firstName} {post.member?.lastName}
+              </span>
+              <span>-</span>
+              <span>{new Date(post.createdAt).toLocaleDateString()}</span>
             </div>
           </div>
-        )}
+
+          {/* Sign In Prompt */}
+          <div className="rounded-lg border bg-muted/50 p-8 text-center">
+            <h2 className="mb-2 text-xl font-semibold">Sign in to view this post</h2>
+            <p className="text-muted-foreground mb-4">
+              Join our community to access all content and discussions.
+            </p>
+            <a
+              href="/sign-in"
+              className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-10 items-center justify-center rounded-md px-8 text-sm font-medium"
+            >
+              Sign In
+            </a>
+            <p className="text-muted-foreground mt-4 text-sm">
+              Don&apos;t have an account?{" "}
+              <a href="/sign-up" className="text-primary hover:underline">
+                Sign up for free
+              </a>
+            </p>
+          </div>
+        </div>
       </Unauthenticated>
     </div>
   );

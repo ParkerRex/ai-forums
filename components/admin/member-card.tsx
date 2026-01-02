@@ -1,7 +1,7 @@
 "use client";
 
 import { format } from "date-fns";
-import { DollarSign, Eye, Gift, Mail, MoreVertical, Shield, UserX } from "lucide-react";
+import { Eye, Mail, MoreVertical, Shield } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,15 +23,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useUpdateMemberRole } from "@/hooks/use-admin";
-import { memberStatusConfig, tierConfig } from "@/lib/admin-config";
-import {
-  formatTierPrice,
-  getMemberDisplayName,
-  getMemberInitials,
-  getMemberStatus,
-  isScholarshipMember,
-  shouldShowBilling,
-} from "@/lib/admin-utils";
+import { tierConfig } from "@/lib/admin-config";
+import { getMemberDisplayName, getMemberInitials } from "@/lib/admin-utils";
 import { cn } from "@/lib/utils";
 
 interface MemberCardProps {
@@ -43,12 +36,8 @@ interface MemberCardProps {
     avatarUrl?: string;
     role?: "user" | "admin";
     tier?: "founding_member" | "early_bird" | "member";
-    billingInterval?: "monthly" | "yearly";
-    status?: "active" | "cancelled" | "churned" | "duplicate";
-    subscriptionStatus?: "active" | "cancelled" | "past_due" | "expired";
-    subscriptionEndDate?: number;
+    status?: "active" | "churned";
     joinedDate?: number;
-    amountCents?: number;
     bio?: string;
   };
   isSelected?: boolean;
@@ -69,13 +58,8 @@ export function MemberCard({
   const memberId = member.id;
   const fullName = getMemberDisplayName(member);
   const initials = getMemberInitials(member);
-  const status = getMemberStatus(member);
-
-  const isScholarship = isScholarshipMember(member);
 
   const tierInfo = member.tier ? tierConfig[member.tier as keyof typeof tierConfig] : null;
-
-  const statusInfo = memberStatusConfig[status as keyof typeof memberStatusConfig];
 
   const handleUpdateRole = (role: "admin" | "user") => {
     updateRoleMutation.mutate({ memberId, role });
@@ -98,12 +82,6 @@ export function MemberCard({
           {tierInfo && (
             <Badge variant="outline" className={cn("text-xs", tierInfo.color)}>
               {tierInfo.label}
-            </Badge>
-          )}
-          {statusInfo && (
-            <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
-              <statusInfo.icon className="mr-1 h-3 w-3" />
-              {statusInfo.label}
             </Badge>
           )}
         </div>
@@ -150,18 +128,6 @@ export function MemberCard({
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuLabel>Quick Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {!isScholarship && (
-                <DropdownMenuItem className="text-sm">
-                  <Gift className="mr-2 h-4 w-4" />
-                  Grant Scholarship
-                </DropdownMenuItem>
-              )}
-              {isScholarship && (
-                <DropdownMenuItem className="text-sm">
-                  <UserX className="mr-2 h-4 w-4" />
-                  Revoke Scholarship
-                </DropdownMenuItem>
-              )}
               <DropdownMenuItem className="text-sm">
                 <Mail className="mr-2 h-4 w-4" />
                 Send Email
@@ -191,38 +157,12 @@ export function MemberCard({
         {member.bio && <p className="mb-4 line-clamp-2 text-sm text-gray-600">{member.bio}</p>}
 
         <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">Membership</span>
-            <div className="flex items-center gap-2">
-              {tierInfo && (
-                <Badge variant="outline" className={cn("text-xs", tierInfo.color)}>
-                  {tierInfo.label}
-                </Badge>
-              )}
-              {statusInfo && (
-                <Badge variant="outline" className={cn("text-xs", statusInfo.color)}>
-                  <statusInfo.icon className="mr-1 h-3 w-3" />
-                  {statusInfo.label}
-                </Badge>
-              )}
-            </div>
-          </div>
-
-          {shouldShowBilling(member) && member.tier && member.billingInterval && (
+          {tierInfo && (
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Billing</span>
-              <span className="text-sm font-medium">
-                {formatTierPrice(member.tier, member.billingInterval, member.amountCents)}
-              </span>
-            </div>
-          )}
-
-          {member.status === "cancelled" && member.subscriptionEndDate && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">Ends</span>
-              <span className="text-sm font-medium">
-                {format(new Date(member.subscriptionEndDate), "MMM d, yyyy")}
-              </span>
+              <span className="text-sm text-gray-500">Membership</span>
+              <Badge variant="outline" className={cn("text-xs", tierInfo.color)}>
+                {tierInfo.label}
+              </Badge>
             </div>
           )}
 
@@ -232,19 +172,6 @@ export function MemberCard({
               {member.joinedDate ? format(new Date(member.joinedDate), "MMM d, yyyy") : "Unknown"}
             </span>
           </div>
-
-          {member.amountCents && member.amountCents > 0 && (
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">
-                <DollarSign className="mr-1 inline h-3 w-3" />
-                Revenue
-              </span>
-              <span className="text-sm font-medium">
-                ${(member.amountCents / 100).toFixed(0)}/
-                {member.billingInterval === "monthly" ? "mo" : "yr"}
-              </span>
-            </div>
-          )}
         </div>
       </CardContent>
 

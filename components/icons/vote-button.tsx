@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import React from "react";
 import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 import { ArrowBigUpIcon } from "@/components/icons/arrow-big-up";
-import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 import { VoteHoverCard } from "@/components/posts/vote-hover-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -93,29 +93,24 @@ export const VoteButton: React.FC<VoteButtonProps> = ({
       </Authenticated>
 
       <Unauthenticated>
-        <MembershipCTAModal
-          title="Upvote Great Content"
-          description="Join VAI to upvote posts and help surface the best content in the community"
-        >
-          <div className={cn("inline-flex items-center", className)}>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hover:bg-muted/50 dark:hover:bg-muted/20 group h-auto rounded-none px-1.5 py-0.5"
-              onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
-              onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
-            >
-              <ArrowBigUpIcon
-                ref={upvoteIconRef}
-                size={size === "sm" ? 12 : 16}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              />
-            </Button>
-            <span className="text-muted-foreground ml-0.5 select-none text-xs font-medium">
-              {voteCount}
-            </span>
-          </div>
-        </MembershipCTAModal>
+        <Link href="/sign-in" className={cn("inline-flex items-center", className)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="hover:bg-muted/50 dark:hover:bg-muted/20 group h-auto rounded-none px-1.5 py-0.5"
+            onMouseEnter={() => upvoteIconRef.current?.startAnimation()}
+            onMouseLeave={() => upvoteIconRef.current?.stopAnimation()}
+          >
+            <ArrowBigUpIcon
+              ref={upvoteIconRef}
+              size={size === "sm" ? 12 : 16}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            />
+          </Button>
+          <span className="text-muted-foreground ml-0.5 select-none text-xs font-medium">
+            {voteCount}
+          </span>
+        </Link>
       </Unauthenticated>
     </>
   );

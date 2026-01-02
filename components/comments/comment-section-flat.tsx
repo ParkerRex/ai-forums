@@ -538,9 +538,9 @@ export default function CommentSectionFlat({ postId, targetCommentId }: CommentS
               <Button
                 variant="ghost"
                 className="w-full sm:w-auto"
-                onClick={() => (window.location.href = "/pricing")}
+                onClick={() => (window.location.href = "/sign-up")}
               >
-                Become a Member
+                Sign Up Free
               </Button>
             </div>
           </div>

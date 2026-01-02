@@ -43,10 +43,6 @@ const serverEnvSchema = z.object({
   DISCORD_BOT_TOKEN: z.string().optional(),
   DISCORD_CHANNEL_ID: z.string().optional(),
 
-  // Stripe (Optional - for payments)
-  STRIPE_SECRET_KEY: z.string().optional(),
-  STRIPE_WEBHOOK_SECRET: z.string().optional(),
-
   // Skool Automation (Optional)
   SKOOL_AUTH_TOKEN: z.string().optional(),
   SKOOL_CLIENT_ID: z.string().optional(),
@@ -65,7 +61,6 @@ const serverEnvSchema = z.object({
 const clientEnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url("NEXT_PUBLIC_APP_URL must be a valid URL"),
   NEXT_PUBLIC_WS_URL: z.string().optional(),
-  NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: z.string().optional(),
   NEXT_PUBLIC_DISCORD_INVITE_URL: z.string().optional(),
   NEXT_PUBLIC_R2_HOSTNAME: z.string().optional(),
 });
@@ -88,7 +83,6 @@ function validateEnv(): Env {
     const clientResult = clientEnvSchema.safeParse({
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
       NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
-      NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY,
       NEXT_PUBLIC_DISCORD_INVITE_URL: process.env.NEXT_PUBLIC_DISCORD_INVITE_URL,
       NEXT_PUBLIC_R2_HOSTNAME: process.env.NEXT_PUBLIC_R2_HOSTNAME,
     });
@@ -144,9 +138,6 @@ export const env = validateEnv();
  * Type guard to check if a feature is enabled based on env vars
  */
 export const features = {
-  get stripe(): boolean {
-    return Boolean(env.STRIPE_SECRET_KEY);
-  },
   get discord(): boolean {
     return Boolean(env.DISCORD_BOT_TOKEN && env.DISCORD_CHANNEL_ID);
   },

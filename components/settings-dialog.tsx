@@ -1,9 +1,7 @@
 "use client";
 
-import { Bell, CreditCard, ExternalLink, User } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { Bell, User } from "lucide-react";
 import * as React from "react";
-import { useAuth } from "@/components/providers/auth-provider";
 import { Badge } from "@/components/ui/badge";
 import {
   Breadcrumb,
@@ -13,7 +11,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import {
   Sidebar,
@@ -25,12 +22,9 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from "@/components/ui/sidebar";
-import { subscriptionAnalytics } from "@/lib/analytics";
-import { formatTierName } from "@/lib/format";
 
 const settingsNav = [
   { name: "Notifications", icon: Bell },
-  { name: "Billing", icon: CreditCard },
   { name: "Account", icon: User },
 ];
 
@@ -41,9 +35,6 @@ interface SettingsDialogProps {
 
 export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
   const [activeSection, setActiveSection] = React.useState("Notifications");
-  const [isSubscriptionLoading, setIsSubscriptionLoading] = React.useState(false);
-  const router = useRouter();
-  const { member } = useAuth();
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -108,69 +99,30 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               </div>
             </header>
             <div className="flex flex-1 flex-col p-4 pt-0">
-              {activeSection === "Billing" && member && member.tier ? (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="mb-2 text-lg font-medium">Subscription</h3>
-                    <p className="text-muted-foreground mb-4 text-sm">
-                      You are currently on the{" "}
-                      <span className="font-medium">{formatTierName(member.tier || "member")}</span>{" "}
-                      plan.
+              <div className="flex flex-1 items-center justify-center">
+                <div className="space-y-4 text-center">
+                  <div className="bg-muted mx-auto flex h-16 w-16 items-center justify-center rounded-full">
+                    {activeSection === "Notifications" && (
+                      <Bell className="text-muted-foreground h-8 w-8" />
+                    )}
+                    {activeSection === "Account" && (
+                      <User className="text-muted-foreground h-8 w-8" />
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <h3 className="text-lg font-medium">{activeSection}</h3>
+                    <Badge variant="secondary" className="text-xs">
+                      Coming soon
+                    </Badge>
+                    <p className="text-muted-foreground max-w-sm text-sm">
+                      {activeSection === "Notifications" &&
+                        "Customize how and when you receive notifications."}
+                      {activeSection === "Account" &&
+                        "Update your account information and preferences."}
                     </p>
-                    <Button
-                      onClick={() => {
-                        subscriptionAnalytics.manageClicked(member.tier || "free");
-                        setIsSubscriptionLoading(true);
-                        onOpenChange(false);
-                        router.push("/settings/billing");
-                      }}
-                      disabled={isSubscriptionLoading}
-                    >
-                      <CreditCard className="mr-2 h-4 w-4" />
-                      Manage Subscription
-                      <ExternalLink className="ml-2 h-3 w-3" />
-                    </Button>
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-1 items-center justify-center">
-                  <div className="space-y-4 text-center">
-                    <div className="bg-muted mx-auto flex h-16 w-16 items-center justify-center rounded-full">
-                      {activeSection === "Notifications" && (
-                        <Bell className="text-muted-foreground h-8 w-8" />
-                      )}
-                      {activeSection === "Billing" && (
-                        <CreditCard className="text-muted-foreground h-8 w-8" />
-                      )}
-                      {activeSection === "Account" && (
-                        <User className="text-muted-foreground h-8 w-8" />
-                      )}
-                    </div>
-                    <div className="space-y-2">
-                      <h3 className="text-lg font-medium">{activeSection}</h3>
-                      {activeSection === "Billing" && !member?.tier ? (
-                        <p className="text-muted-foreground max-w-sm text-sm">
-                          No subscription tier assigned. Contact support for assistance.
-                        </p>
-                      ) : (
-                        <>
-                          <Badge variant="secondary" className="text-xs">
-                            Coming soon
-                          </Badge>
-                          <p className="text-muted-foreground max-w-sm text-sm">
-                            {activeSection === "Notifications" &&
-                              "Customize how and when you receive notifications."}
-                            {activeSection === "Billing" &&
-                              "Manage your subscription and payment methods."}
-                            {activeSection === "Account" &&
-                              "Update your account information and preferences."}
-                          </p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              )}
+              </div>
             </div>
           </main>
         </SidebarProvider>

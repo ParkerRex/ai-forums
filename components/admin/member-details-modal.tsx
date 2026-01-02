@@ -1,17 +1,7 @@
 "use client";
 
 import { format, formatDistanceToNow } from "date-fns";
-import {
-  AlertCircle,
-  CreditCard,
-  DollarSign,
-  ExternalLink,
-  FileText,
-  Mail,
-  MessageSquare,
-  MoreVertical,
-  Shield,
-} from "lucide-react";
+import { ExternalLink, FileText, Mail, MessageSquare, MoreVertical, Shield } from "lucide-react";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,19 +12,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAdminMemberDetails } from "@/hooks/use-admin";
 import { memberStatusConfig, tierConfig } from "@/lib/admin-config";
 import { getMemberDisplayName, getMemberInitials } from "@/lib/admin-utils";
-import { formatCentsAsCurrency } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 interface MemberDetailsModalProps {
@@ -57,7 +38,7 @@ export function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProp
     );
   }
 
-  const { member, subscription, payments, activity, status } = memberDetails;
+  const { member, activity, status } = memberDetails;
   const fullName = getMemberDisplayName(member);
   const initials = getMemberInitials(member);
 
@@ -133,10 +114,6 @@ export function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProp
                     Send Email
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <CreditCard className="mr-2 h-4 w-4" />
-                    Manage Subscription
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
                     <Shield className="mr-2 h-4 w-4" />
                     Change Role
                   </DropdownMenuItem>
@@ -148,10 +125,6 @@ export function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProp
           <Tabs defaultValue="overview" className="space-y-4">
             <TabsList>
               <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="subscription">Subscription</TabsTrigger>
-              <TabsTrigger value="payments">
-                Payments {payments.length > 0 && `(${payments.length})`}
-              </TabsTrigger>
               <TabsTrigger value="activity">Activity</TabsTrigger>
             </TabsList>
 
@@ -215,114 +188,6 @@ export function MemberDetailsModal({ memberId, onClose }: MemberDetailsModalProp
                   </div>
                 </div>
               </div>
-            </TabsContent>
-
-            <TabsContent value="subscription" className="space-y-4">
-              {subscription ? (
-                <>
-                  <div className="rounded-none bg-gray-50 p-4">
-                    <h3 className="mb-3 font-medium text-gray-900">Current Subscription</h3>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-gray-500">Tier</p>
-                        <p className="text-sm font-medium">
-                          {tierConfig[subscription.tier as keyof typeof tierConfig]?.label ||
-                            subscription.tier}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Billing</p>
-                        <p className="text-sm font-medium capitalize">
-                          {subscription.billingInterval}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Status</p>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "text-xs",
-                            memberStatusConfig[
-                              subscription.status as keyof typeof memberStatusConfig
-                            ]?.color || "",
-                          )}
-                        >
-                          {memberStatusConfig[
-                            subscription.status as keyof typeof memberStatusConfig
-                          ]?.label || subscription.status}
-                        </Badge>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Next Billing</p>
-                        <p className="text-sm">
-                          {format(new Date(subscription.currentPeriodEnd), "MMM d, yyyy")}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-none bg-gray-50 p-4">
-                    <h3 className="mb-3 font-medium text-gray-900">Stripe Information</h3>
-                    <div className="space-y-2">
-                      <div>
-                        <p className="text-sm text-gray-500">Customer ID</p>
-                        <p className="font-mono text-sm">{subscription.stripeCustomerId}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-gray-500">Subscription ID</p>
-                        <p className="font-mono text-sm">{subscription.stripeSubscriptionId}</p>
-                      </div>
-                    </div>
-                  </div>
-                </>
-              ) : (
-                <div className="rounded-none bg-gray-50 p-8 text-center">
-                  <AlertCircle className="mx-auto mb-3 h-12 w-12 text-gray-400" />
-                  <p className="text-gray-600">No active subscription</p>
-                </div>
-              )}
-            </TabsContent>
-
-            <TabsContent value="payments" className="space-y-4">
-              {payments.length > 0 ? (
-                <div className="rounded-none border bg-white">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Date</TableHead>
-                        <TableHead>Amount</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead>Description</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {payments.map((payment) => (
-                        <TableRow key={payment.id || payment._id}>
-                          <TableCell>
-                            {format(new Date(payment.createdAt), "MMM d, yyyy")}
-                          </TableCell>
-                          <TableCell className="font-medium">
-                            {formatCentsAsCurrency(payment.amount)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="outline" className="text-xs">
-                              {payment.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell className="text-sm text-gray-600">
-                            {payment.description || "-"}
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              ) : (
-                <div className="rounded-none bg-gray-50 p-8 text-center">
-                  <DollarSign className="mx-auto mb-3 h-12 w-12 text-gray-400" />
-                  <p className="text-gray-600">No payment history</p>
-                </div>
-              )}
             </TabsContent>
 
             <TabsContent value="activity" className="space-y-4">

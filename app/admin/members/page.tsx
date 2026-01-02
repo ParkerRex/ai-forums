@@ -2,11 +2,8 @@
 
 import { format } from "date-fns";
 import {
-  Calendar,
   ChevronDown,
   ChevronUp,
-  CreditCard,
-  DollarSign,
   Download,
   Eye,
   Filter,
@@ -52,7 +49,7 @@ import {
 import { useAdminMemberStats, useAdminMembers, useUpdateMemberRole } from "@/hooks/use-admin";
 import { cn } from "@/lib/utils";
 
-type SortField = "name" | "email" | "joinedAt" | "lastActiveAt" | "tier" | "status" | "revenue";
+type SortField = "name" | "email" | "joinedAt" | "lastActiveAt" | "tier" | "status";
 type SortOrder = "asc" | "desc";
 
 // Note: No free tier - platform operates with zero free users
@@ -81,11 +78,6 @@ const statusConfig = {
     color: "bg-chart-2/10 text-chart-2 border-chart-2/20",
     icon: UserCheck,
   },
-  cancelled: {
-    label: "Cancelled",
-    color: "bg-chart-4/10 text-chart-4 border-chart-4/20",
-    icon: Calendar,
-  },
   churned: {
     label: "Churned",
     color: "bg-destructive/10 text-destructive border-destructive/20",
@@ -95,9 +87,7 @@ const statusConfig = {
 
 export default function AdminMembersPage() {
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "cancelled" | "churned">(
-    "all",
-  );
+  const [statusFilter, setStatusFilter] = useState<"all" | "active" | "churned">("all");
   const [tierFilter, setTierFilter] = useState<string>("all");
   const [sortField, setSortField] = useState<SortField>("joinedAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -157,10 +147,6 @@ export default function AdminMembersPage() {
         case "status":
           aVal = a.status;
           bVal = b.status;
-          break;
-        case "revenue":
-          aVal = a.amountCents || 0;
-          bVal = b.amountCents || 0;
           break;
         default:
           return 0;
@@ -356,29 +342,14 @@ export default function AdminMembersPage() {
         <div className="bg-card border-border rounded-none border p-4">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-muted-foreground text-sm font-medium">Active Subscribers</p>
+              <p className="text-muted-foreground text-sm font-medium">Active Members</p>
               <p className="text-chart-2 mt-1 text-2xl font-bold">{stats.statusStats.active}</p>
               <p className="text-muted-foreground mt-1 text-xs">
                 {((stats.statusStats.active / stats.totalMembers) * 100).toFixed(1)}% of total
               </p>
             </div>
             <div className="bg-chart-2/10 flex h-12 w-12 items-center justify-center rounded-none">
-              <CreditCard className="text-chart-2 h-6 w-6" />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-card border-border rounded-none border p-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-muted-foreground text-sm font-medium">Monthly Revenue</p>
-              <p className="text-foreground mt-1 text-2xl font-bold">
-                {stats.revenue.formattedMrr}
-              </p>
-              <p className="text-muted-foreground mt-1 text-xs">Recurring monthly</p>
-            </div>
-            <div className="bg-chart-1/10 flex h-12 w-12 items-center justify-center rounded-none">
-              <DollarSign className="text-chart-1 h-6 w-6" />
+              <UserCheck className="text-chart-2 h-6 w-6" />
             </div>
           </div>
         </div>
@@ -423,9 +394,7 @@ export default function AdminMembersPage() {
             {/* Status Filter */}
             <Select
               value={statusFilter}
-              onValueChange={(value) =>
-                setStatusFilter(value as "all" | "active" | "cancelled" | "churned")
-              }
+              onValueChange={(value) => setStatusFilter(value as "all" | "active" | "churned")}
             >
               <SelectTrigger className="w-[140px]">
                 <Filter className="mr-2 h-4 w-4" />
@@ -434,7 +403,6 @@ export default function AdminMembersPage() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
                 <SelectItem value="churned">Churned</SelectItem>
               </SelectContent>
             </Select>
@@ -446,8 +414,6 @@ export default function AdminMembersPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Tiers</SelectItem>
-                <SelectItem value="free">Free</SelectItem>
-                <SelectItem value="scholarship">Scholarship</SelectItem>
                 <SelectItem value="founding_member">Founding</SelectItem>
                 <SelectItem value="early_bird">Early Bird</SelectItem>
                 <SelectItem value="member">Member</SelectItem>
@@ -559,15 +525,6 @@ export default function AdminMembersPage() {
                   <SortIcon field="joinedAt" />
                 </div>
               </TableHead>
-              <TableHead
-                className="hover:bg-muted cursor-pointer"
-                onClick={() => handleSort("revenue")}
-              >
-                <div className="flex items-center gap-1 font-medium">
-                  Revenue
-                  <SortIcon field="revenue" />
-                </div>
-              </TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -639,11 +596,6 @@ export default function AdminMembersPage() {
                       <statusInfo.icon className="mr-1 h-3 w-3" />
                       {statusInfo.label}
                     </Badge>
-                    {member.status === "cancelled" && member.subscriptionEndDate && (
-                      <div className="text-muted-foreground mt-1 text-xs">
-                        Ends {format(new Date(member.subscriptionEndDate), "MMM d")}
-                      </div>
-                    )}
                   </TableCell>
                   <TableCell>
                     <div className="text-sm">
@@ -651,17 +603,6 @@ export default function AdminMembersPage() {
                         ? format(new Date(member.joinedDate), "MMM d, yyyy")
                         : "Unknown"}
                     </div>
-                    {/* No lastActive field in schema */}
-                  </TableCell>
-                  <TableCell>
-                    {member.amountCents ? (
-                      <div className="text-sm font-medium">
-                        ${(member.amountCents / 100).toFixed(0)}/
-                        {member.billingInterval === "monthly" ? "mo" : "yr"}
-                      </div>
-                    ) : (
-                      <span className="text-muted-foreground text-sm">-</span>
-                    )}
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-1">

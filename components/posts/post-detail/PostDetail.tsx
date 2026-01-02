@@ -7,7 +7,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { AttachmentGrid } from "@/components/comments/attachment-grid";
 import { VoteButton } from "@/components/icons/vote-button";
-import { Paywall } from "@/components/payments/paywall";
 import { PollDisplay } from "@/components/posts/poll-display";
 import { PostBookmarkButton } from "@/components/posts/post-bookmark-button";
 import { PostEditInline } from "@/components/posts/post-edit-inline";
@@ -211,14 +210,7 @@ export default function PostDetail({
                       className="prose prose-gray dark:prose-invert text-foreground max-w-none"
                       data-testid="post-content"
                     >
-                      {post.isPaywalled ? (
-                        <Paywall
-                          previewContent={post.content}
-                          tier={post.fullContentRequiresTier}
-                        />
-                      ) : (
-                        <RenderTipTapContent content={post.content} />
-                      )}
+                      <RenderTipTapContent content={post.content} />
                     </div>
                   )}
 

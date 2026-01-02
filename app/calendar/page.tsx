@@ -22,11 +22,11 @@
 "use client";
 
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useState } from "react";
 import { Authenticated, Unauthenticated } from "@/components/auth-wrappers";
 import { CalendarGrid } from "@/components/calendar/calendar-grid";
 import { EventModal } from "@/components/calendar/event-modal";
-import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 
@@ -78,18 +78,14 @@ export default function CalendarPage() {
           </Button>
         </Authenticated>
 
-        {/* Membership CTA for unauthenticated users */}
-        {/* Shows same button but opens membership modal instead of event creation */}
+        {/* Sign in CTA for unauthenticated users */}
         <Unauthenticated>
-          <MembershipCTAModal
-            title="Create Community Events"
-            description="Join VAI to create and manage community events"
-          >
-            <Button>
+          <Button asChild>
+            <Link href="/sign-in">
               <Plus className="w-4 h-4 mr-2" />
               Create Event
-            </Button>
-          </MembershipCTAModal>
+            </Link>
+          </Button>
         </Unauthenticated>
       </div>
 

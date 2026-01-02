@@ -21,7 +21,7 @@ interface MemberProfileProps {
     joinedDate?: string;
     location?: string | null;
     country?: string | null;
-    status: "active" | "churned" | "free";
+    status: "active" | "churned";
     initials?: string;
     linkGithub?: string | null;
     linkX?: string | null;
@@ -32,11 +32,8 @@ interface MemberProfileProps {
     skills?: string[] | null;
     slug?: string;
     postCount?: number;
-    // Subscription fields
-    tier?: "founding_member" | "early_bird" | "member" | "scholarship" | "free";
-    subscriptionStatus?: "active" | "cancelled" | "past_due" | "expired" | "none";
-    subscriptionEndDate?: number | null;
-    billingInterval?: "monthly" | "yearly" | null;
+    // Legacy tier for display only
+    tier?: "founding_member" | "early_bird" | "member";
   };
 }
 

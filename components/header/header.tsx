@@ -132,7 +132,7 @@ export default function Header() {
                     variant="cta"
                     size="default"
                     className="h-[24px] shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)]"
-                    onClick={() => (window.location.href = "/pricing")}
+                    onClick={() => (window.location.href = "/sign-up")}
                   >
                     Join VAI
                   </Button>

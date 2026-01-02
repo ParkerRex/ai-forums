@@ -1,9 +1,7 @@
 // Member-related type definitions
 
-export type MemberStatus = "active" | "churned" | "free";
-export type MemberTier = "free" | "scholarship" | "founding_member" | "early_bird" | "member";
-export type SubscriptionStatus = "active" | "cancelled" | "past_due" | "expired" | "none";
-export type BillingInterval = "monthly" | "yearly";
+export type MemberStatus = "active" | "churned";
+export type MemberTier = "founding_member" | "early_bird" | "member";
 export type MemberRole = "user" | "admin";
 
 export interface Member {
@@ -25,9 +23,6 @@ export interface Member {
   email?: string;
   status: MemberStatus;
   tier?: MemberTier;
-  subscriptionStatus?: SubscriptionStatus;
-  subscriptionEndDate?: number | null;
-  billingInterval?: BillingInterval | null;
   linkGithub?: string | null;
   linkX?: string | null;
   linkYouTube?: string | null;

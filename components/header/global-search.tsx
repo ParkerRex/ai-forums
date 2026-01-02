@@ -4,7 +4,6 @@ import { ExternalLink, FileText, Lock, MessageSquare, Search } from "lucide-reac
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { MembershipCTAModal } from "@/components/members/membership-cta-modal";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -206,17 +205,6 @@ function SearchResultItem({
       </div>
     </CommandItem>
   );
-
-  if (result.restricted) {
-    return (
-      <MembershipCTAModal
-        title="Join to Access Private Content"
-        description="This content is available to community members only."
-      >
-        {item}
-      </MembershipCTAModal>
-    );
-  }
 
   return item;
 }

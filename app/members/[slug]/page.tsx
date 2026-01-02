@@ -115,7 +115,7 @@ function MemberDetailContent({ slug }: { slug: string }) {
         firstName: memberData.firstName,
         lastName: memberData.lastName,
         email: memberData.email,
-        status: memberData.status || "active",
+        status: (memberData.status === "churned" ? "churned" : "active") as "active" | "churned",
         joinedDate: memberData.joinedDate
           ? new Date(memberData.joinedDate).toLocaleDateString()
           : undefined,
@@ -135,10 +135,9 @@ function MemberDetailContent({ slug }: { slug: string }) {
         linkedinUrl: memberData.linkedinUrl,
         skills: memberData.skills || [],
         slug: memberData.slug,
-        tier: memberData.tier,
-        subscriptionStatus: memberData.subscriptionStatus,
-        subscriptionEndDate: memberData.subscriptionEndDate,
-        billingInterval: memberData.billingInterval,
+        tier: (["founding_member", "early_bird", "member"].includes(memberData.tier || "")
+          ? memberData.tier
+          : undefined) as "founding_member" | "early_bird" | "member" | undefined,
         postCount: memberData.postCount,
       }
     : null;
