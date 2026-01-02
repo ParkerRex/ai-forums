@@ -44,7 +44,7 @@ npm run lint:theme       # Audit theme consistency
 - **Data Fetching**: TanStack Query (React Query)
 - **Real-time**: WebSocket server + Redis pub/sub
 - **Job Queue**: BullMQ + Redis
-- **Payments**: Stripe (5-tier membership: founding_member, early_bird, member, scholarship)
+- **Membership**: Free access with legacy tier badges (founding_member, early_bird, member)
 - **Storage**: Cloudflare R2 (S3-compatible)
 - **UI**: Tailwind CSS + shadcn/ui (Radix primitives)
 - **Rich Text**: TipTap (markdown-based)
@@ -57,9 +57,7 @@ npm run lint:theme       # Audit theme consistency
 │   ├── [category]/      # Category-based posts
 │   ├── admin/           # Admin dashboard
 │   ├── blog/            # Marketing blog (MDX)
-│   ├── members/         # Member profiles & directory
-│   ├── membership/      # Subscription management
-│   └── pricing/         # Pricing & checkout
+│   └── members/         # Member profiles & directory
 ├── db/                  # Database configuration
 │   ├── schema/          # Drizzle schema definitions
 │   ├── migrations/      # SQL migrations
@@ -76,8 +74,8 @@ npm run lint:theme       # Audit theme consistency
 ## Database Architecture (Drizzle + PostgreSQL)
 
 ### Core Tables
-- **members**: User profiles, auth data, subscription status, cached metrics
-- **posts**: Main content with attachments, voting, categories, paywalls
+- **members**: User profiles, auth data, tier badges, cached metrics
+- **posts**: Main content with attachments, voting, categories
 - **comments**: Threaded discussions with GitHub-style flat display option
 - **categories**: Post organization (active/inactive/private states)
 - **votes**: Upvote/downvote tracking for posts, comments, resources
@@ -85,8 +83,6 @@ npm run lint:theme       # Audit theme consistency
 - **notifications**: User engagement alerts
 - **resources**: Educational content library with topics
 - **events**: Community event management with RSVP
-- **subscriptions**: Stripe subscription lifecycle tracking
-- **payments**: Transaction history and payment records
 
 ### Key Design Patterns
 - **API Route Handlers**: All data operations go through `/app/api/` routes
@@ -191,33 +187,12 @@ export async function POST(request: Request) {
 - Validation schemas in `lib/form-validation.ts`
 - Input components with built-in error states
 
-## Payment System (Stripe)
-
-### Membership Tiers
-1. **founding_member**: Early supporters with legacy pricing
-2. **early_bird**: Discounted early access
-3. **member**: Standard pricing
-4. **scholarship**: Free tier via Stripe coupons (no separate "free" tier)
-
-### Payment Flow
-- Checkout creates Stripe session -> redirects to Stripe -> webhook updates DB
-- Subscription status tracked in both `members` and `subscriptions` tables
-- Payment history in `payments` table with transaction details
-- Webhook events tracked in `stripe_webhook_events` for idempotency
-
-### Important Files
-- `app/api/stripe/`: Stripe API routes (checkout, webhook, portal)
-- `lib/payment-error-utils.ts`: Payment error handling
-- `app/membership/`: Subscription management UI
-
 ## Content Management
 
 ### Post System
 - Multi-attachment support (images, videos, PDFs, YouTube embeds)
 - Rich text editing with TipTap (markdown-based)
 - Link previews auto-generated
-- Content paywalls for premium posts (`isFree` field)
-- Auto-generated previews for free users (2-3 lines)
 - Pinning system (category-level, global, or both)
 - Edit history tracking in `post_versions` table
 
@@ -242,7 +217,7 @@ export async function POST(request: Request) {
 - Password hashing with bcrypt
 - Session storage in Redis for fast lookups
 - Middleware in `middleware.ts` handles route protection
-- Public routes: blog, pricing, about, sign-in, sign-up
+- Public routes: blog, about, sign-in, sign-up
 - Protected routes: everything else
 - Admin role check via `role` field in members table
 
@@ -252,10 +227,8 @@ export async function POST(request: Request) {
 - `components/providers/auth-provider.tsx`: Auth context provider
 
 ### Member Status
-- **active**: Paying or engaged member
-- **cancelled**: Subscription cancelled (grace period)
+- **active**: Engaged community member
 - **churned**: Previously active, now inactive
-- **duplicate**: Marked for cleanup/merge
 
 ## Testing Strategy
 

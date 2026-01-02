@@ -48,7 +48,7 @@ See `.env.example`. Critical vars:
 Optional integrations:
 - GitHub: `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO_NAME`, `GITHUB_REPO`
 - S3/R2: `AWS_*`
-- Discord, Stripe, OpenAI: set only if used
+- Discord, OpenAI: set only if used
 
 ## Scripts
 ```bash
