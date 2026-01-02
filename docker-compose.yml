@@ -1,5 +1,4 @@
 name: vai-forums
-version: '3.8'
 
 services:
   postgres:
