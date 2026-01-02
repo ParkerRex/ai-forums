@@ -2,21 +2,22 @@ import crypto from "node:crypto";
 import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
-// S3/R2 Client Configuration
+// S3/MinIO Client Configuration
 const s3Client = new S3Client({
-  region: process.env.AWS_REGION || "auto",
+  region: process.env.AWS_REGION || "us-east-1",
   endpoint: process.env.AWS_S3_ENDPOINT,
   credentials: {
     accessKeyId: process.env.AWS_ACCESS_KEY_ID || "",
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || "",
   },
+  forcePathStyle: true, // Required for MinIO
 });
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET || "";
+const BUCKET_NAME = process.env.AWS_S3_BUCKET || "vai-uploads";
 
-// Public URL base (for Cloudflare R2 public access)
+// Public URL base for accessing uploaded files
 function getPublicUrl(objectKey: string): string {
-  // If using R2 with public access
+  // Use configured public URL if available
   if (process.env.AWS_S3_PUBLIC_URL) {
     return `${process.env.AWS_S3_PUBLIC_URL}/${objectKey}`;
   }

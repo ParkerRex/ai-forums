@@ -28,11 +28,11 @@ const serverEnvSchema = z.object({
   // WebSocket
   WS_PORT: z.string().optional(),
 
-  // AWS S3 / Cloudflare R2 (Optional - for media storage)
+  // AWS S3 / MinIO (Optional - for media storage)
   AWS_ACCESS_KEY_ID: z.string().optional(),
   AWS_SECRET_ACCESS_KEY: z.string().optional(),
-  AWS_REGION: z.string().default("auto"),
-  AWS_S3_BUCKET: z.string().optional(),
+  AWS_REGION: z.string().default("us-east-1"),
+  AWS_S3_BUCKET: z.string().default("vai-uploads"),
   AWS_S3_ENDPOINT: z.string().optional(),
   AWS_S3_PUBLIC_URL: z.string().optional(),
 
@@ -62,7 +62,7 @@ const clientEnvSchema = z.object({
   NEXT_PUBLIC_APP_URL: z.string().url("NEXT_PUBLIC_APP_URL must be a valid URL"),
   NEXT_PUBLIC_WS_URL: z.string().optional(),
   NEXT_PUBLIC_DISCORD_INVITE_URL: z.string().optional(),
-  NEXT_PUBLIC_R2_HOSTNAME: z.string().optional(),
+  NEXT_PUBLIC_STORAGE_HOSTNAME: z.string().optional(),
 });
 
 // Combined schema
@@ -84,7 +84,7 @@ function validateEnv(): Env {
       NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
       NEXT_PUBLIC_WS_URL: process.env.NEXT_PUBLIC_WS_URL,
       NEXT_PUBLIC_DISCORD_INVITE_URL: process.env.NEXT_PUBLIC_DISCORD_INVITE_URL,
-      NEXT_PUBLIC_R2_HOSTNAME: process.env.NEXT_PUBLIC_R2_HOSTNAME,
+      NEXT_PUBLIC_STORAGE_HOSTNAME: process.env.NEXT_PUBLIC_STORAGE_HOSTNAME,
     });
 
     if (!clientResult.success) {

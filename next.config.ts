@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 import rehypePrettyCode from "rehype-pretty-code";
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   pageExtensions: ["js", "jsx", "ts", "tsx", "md", "mdx"],
   webpack: (config, { isServer }) => {
     // Handle canvas module for react-pdf
@@ -20,26 +21,24 @@ const nextConfig: NextConfig = {
   },
   images: {
     remotePatterns: [
-      // Primary public bucket hostname (configurable)
-      ...(process.env.NEXT_PUBLIC_R2_HOSTNAME
+      // MinIO/Self-hosted storage (configurable)
+      ...(process.env.NEXT_PUBLIC_STORAGE_HOSTNAME
         ? [
             {
-              protocol: "https" as const,
-              hostname: process.env.NEXT_PUBLIC_R2_HOSTNAME,
+              protocol: (process.env.NODE_ENV === "production" ? "https" : "http") as
+                | "http"
+                | "https",
+              hostname: process.env.NEXT_PUBLIC_STORAGE_HOSTNAME,
+              port: process.env.NODE_ENV === "production" ? "" : "9000",
               pathname: "/**",
             },
           ]
         : []),
-      // Legacy Cloudflare R2 S3-style endpoint for existing objects
+      // Localhost for development
       {
-        protocol: "https",
-        hostname: "14d1d4528aaefcc1f32912faf86ca612.r2.cloudflarestorage.com",
-        pathname: "/**",
-      },
-      // Public R2 bucket hostname
-      {
-        protocol: "https",
-        hostname: "pub-118afec7cb16482aa1157fc863f4911a.r2.dev",
+        protocol: "http" as const,
+        hostname: "localhost",
+        port: "9000",
         pathname: "/**",
       },
       // Giphy media domains

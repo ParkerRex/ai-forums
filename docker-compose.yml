@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-devpassword}
       POSTGRES_DB: vai_db
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5433}:5432"
     volumes:
       - vai-forums-postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -17,6 +17,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - vai-network
 
   redis:
     image: redis:7-alpine
@@ -26,7 +28,49 @@ services:
     volumes:
       - vai-forums-redis-data:/data
     command: redis-server --appendonly yes
+    networks:
+      - vai-network
+
+  minio:
+    image: minio/minio:latest
+    container_name: vai-forums-minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - vai-forums-minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - vai-network
+
+  minio-init:
+    image: minio/mc:latest
+    container_name: vai-forums-minio-init
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    volumes:
+      - ./scripts/init-minio.sh:/init-minio.sh:ro
+    entrypoint: ["/bin/sh", "/init-minio.sh"]
+    networks:
+      - vai-network
 
 volumes:
   vai-forums-postgres-data:
   vai-forums-redis-data:
+  vai-forums-minio-data:
+
+networks:
+  vai-network:
+    driver: bridge

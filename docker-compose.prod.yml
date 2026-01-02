@@ -1,0 +1,96 @@
+# Production Docker Compose
+# Usage: docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+
+name: vai-forums-prod
+
+services:
+  postgres:
+    restart: unless-stopped
+    ports: !override []  # No external port exposure in production
+
+  redis:
+    restart: unless-stopped
+    ports: !override []  # No external port exposure in production
+
+  minio:
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BROWSER: "off"  # Disable console in production
+    ports: !override []
+    networks:
+      - vai-network
+
+  minio-init:
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    networks:
+      - vai-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: vai-forums-app
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      # Use DATABASE_URL directly from .env (must be URL-encoded)
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: redis://redis:6379
+      SESSION_SECRET: ${SESSION_SECRET}
+      NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://www.joinvai.com}
+      NEXT_PUBLIC_WS_URL: ${NEXT_PUBLIC_WS_URL:-wss://www.joinvai.com/ws}
+      NEXT_PUBLIC_STORAGE_HOSTNAME: ${NEXT_PUBLIC_STORAGE_HOSTNAME:-storage.joinvai.com}
+      # Storage (MinIO)
+      AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID}
+      AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY}
+      AWS_REGION: ${AWS_REGION:-us-east-1}
+      AWS_S3_BUCKET: ${AWS_S3_BUCKET:-vai-uploads}
+      AWS_S3_ENDPOINT: http://minio:9000
+      AWS_S3_PUBLIC_URL: ${AWS_S3_PUBLIC_URL:-https://storage.joinvai.com/vai-uploads}
+      # GitHub
+      GITHUB_TOKEN: ${GITHUB_TOKEN}
+      GITHUB_OWNER: ${GITHUB_OWNER}
+      GITHUB_REPO_NAME: ${GITHUB_REPO_NAME}
+      GITHUB_REPO: ${GITHUB_REPO}
+    networks:
+      - vai-network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_healthy
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: vai-forums-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"  # HTTP/3
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    environment:
+      STORAGE_DOMAIN: ${STORAGE_DOMAIN:-storage.joinvai.com}
+      APP_DOMAIN: ${APP_DOMAIN:-www.joinvai.com}
+    networks:
+      - vai-network
+    depends_on:
+      - app
+      - minio
+
+networks:
+  vai-network:
+    driver: bridge
+
+volumes:
+  caddy-data:
+  caddy-config:

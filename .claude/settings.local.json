@@ -48,7 +48,13 @@
       "Bash(docker network:*)",
       "Bash(docker rm:*)",
       "Bash(lsof:*)",
-      "Bash(echo:*)"
+      "Bash(echo:*)",
+      "Bash(ssh netcup-vps:*)",
+      "Bash(scp:*)",
+      "Bash(curl -sI https://storage.joinvai.com/vai-uploads/)",
+      "Bash(rsync:*)",
+      "Bash(curl:*)",
+      "Bash(git -C \"/Users/parkerrex/Developer/Old Dev Projects/vai-skool-clone\" add:*)"
     ],
     "deny": []
   }

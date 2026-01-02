@@ -1,13 +1,12 @@
-"use client";
-
 import CategoryPageClient from "./page-client";
 
 interface CategoryPageProps {
-  params: {
+  params: Promise<{
     category: string;
-  };
+  }>;
 }
 
-export default function CategoryPage({ params }: CategoryPageProps) {
-  return <CategoryPageClient params={params} />;
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const resolvedParams = await params;
+  return <CategoryPageClient params={resolvedParams} />;
 }

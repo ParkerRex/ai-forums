@@ -4,11 +4,12 @@
 
 /**
  * Get a safe avatar URL with fallback handling
+ * Image resizing is handled by Next.js Image component instead of CDN
  * @param avatarUrl - The avatar URL from the database
- * @param size - Optional size parameter for Cloudflare image resizing
+ * @param _size - Deprecated: size is now handled by Next.js Image component
  * @returns A safe avatar URL or undefined
  */
-export function getAvatarUrl(avatarUrl?: string | null, size?: number): string | undefined {
+export function getAvatarUrl(avatarUrl?: string | null, _size?: number): string | undefined {
   if (!avatarUrl) return undefined;
 
   // Validate URL format
@@ -17,30 +18,13 @@ export function getAvatarUrl(avatarUrl?: string | null, size?: number): string |
     return undefined;
   }
 
-  // If no size specified, return original URL
-  if (!size) return avatarUrl;
-
-  // If it's a Cloudflare R2 URL and we want to resize
-  if (avatarUrl.includes(".r2.") || avatarUrl.includes("cloudflarestorage.com")) {
-    // Cloudflare Images resize syntax (if Cloudflare Images is enabled)
-    // This will only work if you have Cloudflare Images configured
-    // Otherwise, it will return the original URL
-    try {
-      const url = new URL(avatarUrl);
-      // Add Cloudflare image resizing parameters
-      return `${url.origin}/cdn-cgi/image/width=${size},height=${size},fit=cover,format=webp${url.pathname}`;
-    } catch (error) {
-      console.error("Failed to parse avatar URL:", error);
-      return avatarUrl;
-    }
-  }
-
+  // Return original URL - Next.js Image handles optimization
   return avatarUrl;
 }
 
 /**
- * Extract object key from R2 URL
- * @param url - The full R2 URL
+ * Extract object key from storage URL
+ * @param url - The full storage URL
  * @returns The object key or null if invalid
  */
 export function extractObjectKey(url: string): string | null {
