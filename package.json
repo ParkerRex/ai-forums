@@ -4,7 +4,9 @@
   "private": true,
   "packageManager": "bun",
   "scripts": {
-    "dev": "next dev",
+    "dev": "docker compose up -d && run-p dev:next dev:ws",
+    "dev:next": "next dev",
+    "dev:ws": "tsx scripts/start-ws-server.ts",
     "build": "next build",
     "start": "next start",
     "lint": "biome check .",
