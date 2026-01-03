@@ -7,6 +7,7 @@ const protectedRoutes = ["/server", "/account", "/settings"];
 // Routes that are always public
 const publicRoutes = [
   "/",
+  "/login",
   "/sign-in",
   "/sign-up",
   "/blog",
